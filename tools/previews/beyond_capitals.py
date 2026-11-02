@@ -1,16 +1,25 @@
-# Driftgate Beyond: capital ships, an escort and a carrier per faction (preview, not in the model pack yet).
-# Driftgate 1's two capitals set the working parts every design must keep (see DESIGN_NOTES "Capital ship models"):
-#   escort  - a torpedo destroyer: forward torpedo tubes, point-defence turrets on the flanks (3 a side), a bridge, a ventral
-#             assault bay, a main drive and auxiliaries, hull berths for docking, a shield generator
-#   carrier - a flight deck players land on from above (spots fore and aft), launch mouths at the bow, point-defence sponsons,
-#             a bridge tower, a shield generator, several drives
-# Sub-targets in the game: point defence, engines, shield generator, torpedo bays, launch bay. Each faction builds these its own way.
+# Driftgate Beyond: capital ships, an escort and a carrier per faction (preview, not in the model pack yet). Second pass.
+# Capital ships, not resized fighters: long layered hulls, plating, sponsons and superstructure, a raised BRIDGE with a lit
+# window band (no fighter canopies), no fighter fins.
+# Driftgate 1's two capitals set the working parts every design keeps (see DESIGN_NOTES "Capital ship models"):
+#   escort  - forward torpedo tubes, point-defence turrets on the flanks (3 a side), a bridge, a ventral assault bay, a shield
+#             generator, a main drive and auxiliaries, hull berths for docking
+#   carrier - a flight deck players land on from above (spots fore and aft), launch mouths at the bow, point-defence turrets,
+#             a bridge, a shield generator, several drives
 import math
 import numpy as np
 from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,loft,box,plate,barrel,ring,LENS,HEX,DIA,lens_role,hex_role
-from beyond_work import finish,tube,abox,crystal,lights,stacks,SP,STAR
-from beyond_recon import turret,dish,torpedo,SMH,smh_role
+from beyond_work import finish,abox,crystal,lights,SP,STAR
+from beyond_recon import dish,torpedo,SMH,smh_role
 PI=math.pi
+
+def tube(M,pts,rad,role,sh=1.0,sides=8,cap0=True,cap1=True):
+    # as beyond_work.tube, but picks a frame that also works for tubes standing straight up
+    p=np.array(pts,float);d=p[-1]-p[0];up=(0,0,1) if abs(d[1])>.9*(np.linalg.norm(d)+1e-12) else (0,1,0)
+    M.tube(pts,rad,sides,lambda i,j,n,q:(role,sh),cap0=cap0,cap1=cap1,up=up)
+def stacks(M,base,n,sp=.16,h=.3):
+    for k in range(n):
+        b=np.array(base,float)+[k*sp-(n-1)*sp/2,0,0];box(M,tuple(b+[0,.03,0]),(.13,.06,.13),DARK);tube(M,[b,b+[0,h,0]],[.065,.06],MID,1.0,8);ring(M,tuple(b+[0,h*.75,0]),.07,.014,ACC,seg=12,sides=4,axis='y');M.blob(tuple(b+[0,h+.005,0]),.045,DARK,sub=1,squash=(1,.3,1),noise=0)
 
 def pd(M,c,r=.07,role=MID,up=True):
     # a point-defence turret: a base, a dome and twin barrels pointing forward
@@ -18,144 +27,175 @@ def pd(M,c,r=.07,role=MID,up=True):
     tube(M,[c,c+[0,s*r*.5,0]],[r*1.2,r*1.1],DARK,.9,8);M.blob(tuple(c+[0,s*r*.7,0]),r,role,sub=1,squash=(1,.7,1),noise=0)
     for sx in (1,-1):tube(M,[c+[sx*r*.35,s*r*.8,r*.3],c+[sx*r*.35,s*r*.8,r*1.9]],[.012,.011],DARK,1.0,5)
 def spots(M,pts,r=.12,y=0):
-    # deck landing spots: an accent ring with a cross
+    # deck landing spots: an accent ring with a bar
     for x,z in pts:
         ring(M,(x,y+.01,z),r,.012,ACC,seg=16,sides=4,axis='y')
         plate(M,[(x-r*.7,y+.012,z-.012),(x+r*.7,y+.012,z-.012),(x+r*.7,y+.012,z+.012),(x-r*.7,y+.012,z+.012)],.004,ACC)
 def mouth(M,c,w,h,d=.25):
     # a hangar launch mouth: a dark recess with a lit lip
-    abox(M,(c[0],c[1],c[2]-d/2),(w,h,d),DARK,(1,1),.6);ring(M,tuple(c),max(w,h)*.55,.015,WIN,seg=4,sides=4)
+    abox(M,(c[0],c[1],c[2]-d/2),(w,h,d),DARK,(1,1),.6)
+    for a,b in (((-w/2,-h/2),(w/2,-h/2)),((w/2,-h/2),(w/2,h/2)),((w/2,h/2),(-w/2,h/2)),((-w/2,h/2),(-w/2,-h/2))):
+        tube(M,[(c[0]+a[0],c[1]+a[1],c[2]+.01),(c[0]+b[0],c[1]+b[1],c[2]+.01)],[.012,.012],WIN,1.0,4,cap0=False,cap1=False)
 def shieldgen(M,c,r=.14):
-    c=np.array(c,float);M.blob(tuple(c),r,GLASS,sub=2,squash=(1,.75,1),noise=0);ring(M,tuple(c-[0,r*.2,0]),r*1.12,.018,WIN,seg=18,sides=4,axis='y')
+    c=np.array(c,float);tube(M,[c-[0,r*.6,0],c],[r*.7,r*.6],DARK,.9,10);M.blob(tuple(c+[0,r*.15,0]),r,GLASS,sub=2,squash=(1,.65,1),noise=0)
+    ring(M,tuple(c),r*1.1,.016,WIN,seg=18,sides=4,axis='y')
+def windows(M,c,w,y,z,n=None):
+    # a lit window band facing forward
+    plate(M,[(c-w/2,y-.018,z),(c+w/2,y-.018,z),(c+w/2,y+.018,z),(c-w/2,y+.018,z)],.012,WIN,1.0)
+def sidewin(M,x,y,z0,z1):
+    plate(M,[(x,y-.015,z0),(x,y-.015,z1),(x,y+.015,z1),(x,y+.015,z0)],.01,WIN,1.0)
+
+def bridge_halcyon(M,c,s=1.0):
+    # a streamlined lens bridge pod on a pedestal, a wrap-round window band, a dish
+    x,y,z=c
+    loft(M,[(z-.45*s,[(a+x,b+y) for a,b in LENS(.1*s,.08*s)]),(z-.3*s,[(a+x,b+y) for a,b in LENS(.16*s,.12*s)]),(z+.1*s,[(a+x,b+y) for a,b in LENS(.15*s,.12*s)]),(z+.2*s,[(a+x,b+y) for a,b in LENS(.08*s,.07*s)])],lens_role)   # pedestal
+    yb=y+.16*s
+    loft(M,[(z-.3*s,[(a+x,b+yb) for a,b in LENS(.18*s,.08*s)]),(z-.15*s,[(a+x,b+yb) for a,b in LENS(.26*s,.11*s)]),(z+.2*s,[(a+x,b+yb) for a,b in LENS(.24*s,.1*s)]),(z+.33*s,[(a+x,b+yb) for a,b in LENS(.12*s,.05*s)])],lens_role)   # bridge pod
+    windows(M,x,.36*s,yb+.03*s,z+.27*s)
+    for sx in (1,-1):sidewin(M,x+sx*.252*s,yb+.03*s,z-.1*s,z+.18*s)
+    dish(M,(x,yb+.13*s,z-.18*s),.08*s);tube(M,[(x,yb+.08*s,z-.18*s),(x,yb+.12*s,z-.18*s)],[.015,.015],LIGHT,.9,5)
+def bridge_varkesh(M,c,s=1.0):
+    # stepped smoothed-hex tiers, a slit window band on the top tier, a mast
+    x,y,z=c
+    for k,(w,h,l,dy) in enumerate(((.42,.14,.7,0),(.32,.12,.52,.13),(.22,.1,.36,.24))):
+        loft(M,[(z-l/2*s,[(a+x,b+y+dy*s) for a,b in SMH(w/2*s,h/2*s)]),(z+l/2*s,[(a+x,b+y+dy*s) for a,b in SMH(w/2*s*.92,h/2*s*.92)])],smh_role)
+    windows(M,x,.18*s,y+.25*s,z+.18*s);[sidewin(M,x+sx*.105*s,y+.25*s,z-.12*s,z+.14*s) for sx in (1,-1)]
+    tube(M,[(x,y+.3*s,z-.08*s),(x,y+.62*s,z-.1*s)],[.016,.01],LIGHT,.9,5);ring(M,(x,y+.5*s,z-.09*s),.04*s,.008,ACC,seg=10,sides=4,axis='y')
+def bridge_ostrova(M,c,s=1.0):
+    # a faceted spire tower, a crystal window band round its head, a slender mast
+    x,y,z=c;b=np.array([x,y,z])
+    tube(M,[b,b+[0,.22*s,0],b+[0,.36*s,0]],[.16*s,.12*s,.15*s],MID,1.0,6)
+    tube(M,[b+[0,.36*s,0],b+[0,.46*s,0]],[.15*s,.12*s],WIN,1.0,6,cap0=False,cap1=False)
+    tube(M,[b+[0,.46*s,0],b+[0,.56*s,0],b+[0,.62*s,0]],[.12*s,.07*s,.01],LIGHT,1.0,6)
+    tube(M,[b+[0,.6*s,0],b+[0,.9*s,0]],[.012,.006],LIGHT,.9,5);ring(M,tuple(b+[0,.75*s,0]),.05*s,.008,ACC,seg=10,sides=4,axis='y')
 
 # ============================================================== HALCYON
-def shrike():    # escort: a long lens hull with a swept prow, twin torpedo tubes in the nose, smooth turret sponsons, a glass bridge,
-                 # emitter nodes on swept fins, twin tails, three drives
+def shrike():    # escort: a long layered lens hull: a broad torpedo prow, a raised dorsal superstructure spine, turret sponsons
+                 # faired along the flanks, a bridge pod aft of amidships, emitter nodes on short pylons, a three-drive engine block
     M=Mesh(111)
-    loft(M,[(-2.0,LENS(.3,.24)),(-1.4,LENS(.42,.32)),(.4,LENS(.4,.3)),(1.3,LENS(.24,.2,-.02)),(1.9,LENS(.06,.06,-.04))],lens_role)
+    loft(M,[(-2.3,LENS(.42,.3)),(-1.9,LENS(.5,.34)),(.9,LENS(.5,.34)),(1.6,LENS(.42,.28,-.02)),(2.05,LENS(.3,.18,-.04)),(2.25,LENS(.16,.1,-.05))],lens_role)   # main hull
+    loft(M,[(-1.8,LENS(.12,.06,.3)),(-1.5,LENS(.22,.12,.34)),(.8,LENS(.2,.11,.33)),(1.4,LENS(.08,.04,.3))],lens_role)   # dorsal superstructure spine
+    for z in (-1.0,-.2,.6):plate(M,[(-.16,.47,z+.18),(.16,.47,z+.18),(.16,.47,z-.18),(-.16,.47,z-.18)],.006,ACC,.9)
     for sx in (1,-1):
-        tube(M,[(sx*.14,-.08,1.35),(sx*.14,-.08,1.75)],[.07,.065],DARK,.9,8,cap1=False);M.blob((sx*.14,-.08,1.72),.05,ACC,sub=1,noise=0)   # torpedo tubes
-        loft(M,[(-1.3,[(a+sx*.42,b) for a,b in LENS(.05,.05)]),(-1.0,[(a+sx*.42,b) for a,b in LENS(.12,.12)]),(.5,[(a+sx*.42,b) for a,b in LENS(.12,.12)]),(.8,[(a+sx*.42,b) for a,b in LENS(.04,.04)])],lens_role)   # turret sponson
-        for z in (-.7,-.15,.4):pd(M,(sx*.45,.1,z),.065)
-        plate(M,[(sx*.38,.05,-1.0),(sx*1.0,.02,-1.6),(sx*.96,.02,-1.78),(sx*.38,.05,-1.6)],.04,LIGHT)                # swept fins
-        M.blob((sx*.98,.02,-1.69),.06,WIN,sub=1,noise=0)
-        plate(M,[(sx*.15,.28,-1.2),(sx*.3,.68,-1.68),(sx*.3,.68,-1.8),(sx*.15,.26,-1.78)],.035,ACC,.95)
-    loft(M,[(-.3,LENS(.14,.1,.32)),(.2,LENS(.17,.13,.36)),(.55,LENS(.08,.06,.32))],lens_role);M.blob((0,.47,.25),.12,GLASS,sub=2,squash=(1.1,.6,1.7),noise=0)   # bridge
-    shieldgen(M,(0,.36,-.75),.13)
-    abox(M,(0,-.33,-.3),(.3,.1,.5),DARK,(.9,.9))                                                                       # ventral assault bay
-    M.vent((0,0,-2.03),.2)
-    for sx in (1,-1):M.vent((sx*.26,.0,-1.98),.11)
-    lights(M,[(.2,-.12,1.7),(-.2,-.12,1.7)],.04)
-    return finish(M,3.4,1.0)
-def sovereign(): # carrier: a broad blended lens hull with a flat flight deck, twin hangar mouths in the bow, the Osprey's twin engine
-                 # booms aft, a glass bridge tower, turret sponsons and a shield emitter dish
+        for dy in (.04,-.1):tube(M,[(sx*.18,dy-.05,2.0),(sx*.18,dy-.05,2.3)],[.06,.06],DARK,.85,8,cap1=False);M.blob((sx*.18,dy-.05,2.27),.045,ACC,sub=1,noise=0)   # torpedo tubes
+        loft(M,[(-1.5,[(a+sx*.5,b-.04) for a,b in LENS(.05,.05)]),(-1.2,[(a+sx*.5,b-.04) for a,b in LENS(.15,.14)]),(.9,[(a+sx*.5,b-.04) for a,b in LENS(.15,.14)]),(1.3,[(a+sx*.5,b-.04) for a,b in LENS(.05,.05)])],lens_role)   # turret sponson
+        for z in (-.85,-.1,.65):pd(M,(sx*.56,.1,z),.07)
+        tube(M,[(sx*.5,.05,-1.65),(sx*.78,.12,-1.75)],[.025,.02],LIGHT,.9,5);M.blob((sx*.8,.13,-1.76),.06,WIN,sub=1,noise=0)   # emitter nodes on pylons
+        sidewin(M,sx*.505,.12,-.5,.5)
+    bridge_halcyon(M,(0,.42,-1.0),1.0)
+    shieldgen(M,(0,.5,.3),.12)
+    abox(M,(0,-.36,-.4),(.34,.12,.6),DARK,(.9,.9))                                                                   # ventral assault bay
+    loft(M,[(-2.6,LENS(.36,.26)),(-2.3,LENS(.44,.31))],(MID,.95))                                                    # engine block
+    M.vent((0,0,-2.62),.2)
+    for sx in (1,-1):M.vent((sx*.28,.0,-2.6),.11)
+    lights(M,[(.3,-.08,2.18),(-.3,-.08,2.18)],.04)
+    return finish(M,3.6,1.0)
+def sovereign(): # carrier: a broad blended lens hull with a flat flight deck, twin hangar mouths in the bow, twin engine booms aft
+                 # (no tail fins), a bridge pod beside the deck, turret sponsons and a shield generator
     M=Mesh(112)
-    loft(M,[(-2.2,LENS(.7,.32)),(-1.5,LENS(1.1,.42)),(1.0,LENS(1.05,.42)),(1.9,LENS(.7,.32)),(2.3,LENS(.32,.18))],lens_role)   # broad hull
+    loft(M,[(-2.2,LENS(.7,.32)),(-1.5,LENS(1.1,.42)),(1.0,LENS(1.05,.42)),(1.9,LENS(.7,.32)),(2.3,LENS(.32,.18))],lens_role)
     plate(M,[(-.62,.44,2.05),(.62,.44,2.05),(.7,.44,-1.2),(-.7,.44,-1.2)],.03,MID,.95)                               # flight deck
     spots(M,[(-.3,1.35),(.3,1.35),(-.3,-.45),(.3,-.45)],.14,.46)
     for x in (-.32,.32):plate(M,[(x-.012,.465,1.9),(x+.012,.465,1.9),(x+.012,.465,-1.1),(x-.012,.465,-1.1)],.003,WIN,.9)
-    for sx in (1,-1):mouth(M,(sx*.42,.05,2.28),.42,.26)                                                              # launch mouths
+    for sx in (1,-1):mouth(M,(sx*.42,.05,2.28),.42,.26)
     for sx in (1,-1):
-        loft(M,[(-1.6,[(a+sx*1.05,b) for a,b in LENS(.05,.05)]),(-1.3,[(a+sx*1.05,b) for a,b in LENS(.14,.14)]),(1.3,[(a+sx*1.05,b) for a,b in LENS(.14,.14)]),(1.6,[(a+sx*1.05,b) for a,b in LENS(.05,.05)])],lens_role)   # turret sponson
+        loft(M,[(-1.6,[(a+sx*1.05,b) for a,b in LENS(.05,.05)]),(-1.3,[(a+sx*1.05,b) for a,b in LENS(.14,.14)]),(1.3,[(a+sx*1.05,b) for a,b in LENS(.14,.14)]),(1.6,[(a+sx*1.05,b) for a,b in LENS(.05,.05)])],lens_role)
         for z in (-.9,-.1,.7):pd(M,(sx*1.1,.12,z),.07)
         tube(M,[(sx*1.15,-.05,-1.0),(sx*1.15,-.05,-2.5),(sx*1.15,-.05,-2.65)],[.16,.2,.19],MID,.95,12,cap1=False);M.vent((sx*1.15,-.05,-2.65),.16)   # engine booms
-        plate(M,[(sx*1.15,.12,-1.9),(sx*1.15,.65,-2.35),(sx*1.15,.65,-2.48),(sx*1.15,.12,-2.45)],.04,ACC,.95)
+        for z in (-1.5,-2.1):ring(M,(sx*1.15,-.05,z),.205,.014,ACC,seg=18,sides=4)
         M.blob((sx*1.2,.15,-1.5),.07,WIN,sub=1,noise=0)
-    plate(M,[(-1.15,.62,-2.35),(1.15,.62,-2.35),(1.15,.62,-2.48),(-1.15,.62,-2.48)],.04,ACC)
-    loft(M,[(-1.75,LENS(.24,.2,.6)),(-1.3,LENS(.26,.24,.66)),(-.95,LENS(.12,.1,.62))],lens_role)                     # bridge tower aft of the deck
-    M.blob((0,.88,-1.25),.15,GLASS,sub=2,squash=(1.2,.6,1.4),noise=0);dish(M,(0,1.0,-1.55),.14)
-    shieldgen(M,(0,.5,-1.9),.18)
+        sidewin(M,sx*1.07,.08,-1.2,1.2)
+    bridge_halcyon(M,(.85,.42,-.6),1.1)                                                                             # bridge beside the deck
+    shieldgen(M,(0,.48,-1.75),.18)
     for sx in (0,1,-1):M.vent((sx*.35,0,-2.25),.18)
     return finish(M,4.6,1.0)
 
 # ============================================================== VARKESH
-def vanguard():  # escort: a long armoured hex hull with a chisel prow, Talon-like torpedo sponsons forward, turret sponsons, a slit bridge,
-                 # four square drives and stacks
+def vanguard():  # escort: a clean armoured smoothed-hex hull, a chisel prow with four torpedo tubes, long turret sponsons, a stepped bridge,
+                 # a four-drive engine block
     M=Mesh(121)
-    chis=lambda w,h,dy=0:[(w,dy),(w*.8,h+dy),(-w*.8,h+dy),(-w,dy),(-w*.7,-h*.7+dy),(w*.7,-h*.7+dy)]
-    loft(M,[(-2.0,HEX(.42,.32)),(-1.2,HEX(.48,.36)),(.6,HEX(.46,.34)),(1.3,chis(.36,.26,-.02)),(1.8,chis(.2,.1,-.06))],hex_role)
+    loft(M,[(-2.2,SMH(.48,.36)),(1.0,SMH(.48,.36)),(1.7,SMH(.36,.26,-.02)),(2.15,SMH(.18,.1,-.05))],smh_role)
+    for x in (-.14,.14):
+        for y in (.0,-.14):tube(M,[(x,y,1.75),(x,y,1.95)],[.055,.055],DARK,.85,8,cap1=False);M.blob((x,y,1.92),.04,ACC,sub=1,noise=0)   # torpedo tubes
     for sx in (1,-1):
-        loft(M,[(.0,HEX(.12,.12,0,sx*.55)),(1.3,HEX(.12,.12,-.01,sx*.55)),(1.65,HEX(.06,.06,-.02,sx*.46))],hex_role)   # torpedo sponson
-        tube(M,[(sx*.55,0,1.3),(sx*.55,0,1.62)],[.06,.06],DARK,.85,8,cap1=False);M.blob((sx*.55,0,1.58),.045,ACC,sub=1,noise=0)
-        abox(M,(sx*.55,.0,-.75),(.24,.3,1.5),MID,(.85,.85))                                                          # turret sponson
-        for z in (-1.3,-.75,-.2):pd(M,(sx*.55,.15,z),.065,MID)
-        for k in range(3):abox(M,(sx*.48,.26,.6-k*.5),(.06,.18,.32),MID,(.9,.85),.96)
-        for dy in (.13,-.13):abox(M,(sx*.2,dy,-2.15),(.26,.24,.2),DARK,(1.1,1.1));M.vent((sx*.2,dy,-2.27),.1)
-        plate(M,[(sx*.32,.35,-1.3),(sx*.42,.68,-1.7),(sx*.42,.68,-1.82),(sx*.32,.35,-1.82)],.07,ACC,.9)
-    abox(M,(0,.44,.1),(.34,.16,.6),MID,(.85,.8));plate(M,[(-.12,.53,.38),(.12,.53,.38),(.12,.56,.12),(-.12,.56,.12)],.025,GLASS)   # slit bridge
-    shieldgen(M,(0,.4,-.85),.13)
-    abox(M,(0,-.36,-.4),(.36,.12,.6),DARK,(.9,.9))
-    for z in (-1.5,-.6,.3):abox(M,(0,.37,z),(.36,.04,.14),ACC,(1,1),.9)
-    stacks(M,(0,.37,-1.7),3,.2,.32)
-    return finish(M,3.4,1.0)
-def bastille():  # carrier: a massive slab fortress, a crenellated flight deck, hangar mouths in a blunt bow, turret sponsons,
-                 # a stepped bridge tower aft, six square drives, armour ribs
+        loft(M,[(-1.6,[(a+sx*.56,b-.02) for a,b in SMH(.06,.07)]),(-1.3,[(a+sx*.56,b-.02) for a,b in SMH(.14,.16)]),(.9,[(a+sx*.56,b-.02) for a,b in SMH(.14,.16)]),(1.2,[(a+sx*.56,b-.02) for a,b in SMH(.06,.07)])],smh_role)   # turret sponson
+        for z in (-1.0,-.25,.5):pd(M,(sx*.58,.14,z),.07,MID)
+        sidewin(M,sx*.485,.06,-1.5,.8)
+    for z in (-1.4,-.4,.6):loft(M,[(z-.05,SMH(.5,.38)),(z+.05,SMH(.5,.38))],(ACC,.95))                                # armour bands
+    bridge_varkesh(M,(0,.32,-.9),1.0)
+    shieldgen(M,(0,.38,.25),.12)
+    abox(M,(0,-.36,-.3),(.36,.1,.6),DARK,(.9,.9))
+    loft(M,[(-2.55,SMH(.42,.32)),(-2.2,SMH(.5,.38))],smh_role)                                                       # engine block
+    for x in (-.2,.2):
+        for y in (-.12,.12):M.vent((x,y,-2.57),.11)
+    stacks(M,(0,.36,-1.8),2,.22,.28)
+    lights(M,[(.2,-.06,2.1),(-.2,-.06,2.1)],.04)
+    return finish(M,3.6,1.0)
+def bastille():  # carrier: a smooth slab fortress, a railed flight deck, hangar mouths in a blunt bow, faired turret sponsons,
+                 # a stepped bridge aft, armour bands, an eight-drive engine block
     M=Mesh(122)
-    loft(M,[(-2.3,HEX(1.0,.48)),(1.8,HEX(1.0,.48)),(2.25,HEX(.82,.38,-.04))],hex_role)                             # slab hull
-    plate(M,[(-.75,.49,2.1),(.75,.49,2.1),(.75,.49,-1.2),(-.75,.49,-1.2)],.03,DARK,.95)                              # flight deck
-    spots(M,[(-.35,1.4),(.35,1.4),(-.35,-.5),(.35,-.5)],.15,.5)
+    loft(M,[(-2.3,SMH(1.0,.5)),(1.75,SMH(1.0,.5)),(2.25,SMH(.85,.4,-.04))],smh_role)                               # slab hull
+    plate(M,[(-.78,.5,2.05),(.78,.5,2.05),(.78,.5,-1.25),(-.78,.5,-1.25)],.03,DARK,.95)                              # flight deck
+    spots(M,[(-.35,1.4),(.35,1.4),(-.35,-.5),(.35,-.5)],.15,.51)
     for sx in (1,-1):
-        for k in range(8):abox(M,(sx*.82,.56,1.95-k*.42),(.1,.14,.2),MID,(1,1),1.05)                                 # crenellated deck edge
+        loft(M,[(-1.3,[(a+sx*.82,b+.56) for a,b in SMH(.04,.04)]),(1.95,[(a+sx*.82,b+.56) for a,b in SMH(.04,.04)])],(ACC,.95))   # deck rail
         mouth(M,(sx*.45,.0,2.26),.48,.3)
-        abox(M,(sx*1.05,-.05,.0),(.3,.42,3.4),MID,(.95,.95))                                                          # turret sponson
-        for z in (-1.3,-.5,.3,1.1):pd(M,(sx*1.08,.17,z),.075,MID)
-        for dy in (.22,-.1):
-            for dx in (.3,.7):abox(M,(sx*dx,dy,-2.45),(.32,.28,.22),DARK,(1.1,1.1));M.vent((sx*dx,dy,-2.58),.12)
-    for z in (-1.8,-.9,0,.9):loft(M,[(z-.06,HEX(1.04,.52)),(z+.06,HEX(1.04,.52))],(ACC,.95))                        # armour ribs
-    for k,(z,w,h,y) in enumerate(((-1.7,.6,.3,.65),(-1.75,.42,.26,.92),(-1.8,.28,.2,1.14))):abox(M,(0,y,z),(w,h,.7-k*.12),MID,(.9,.85))   # stepped bridge tower
-    plate(M,[(-.13,1.2,-1.55),(.13,1.2,-1.55),(.13,1.24,-1.75),(-.13,1.24,-1.75)],.02,GLASS)
-    shieldgen(M,(0,.62,-2.15),.16)
-    stacks(M,(0,1.25,-1.95),2,.18,.3)
+        loft(M,[(-1.9,[(a+sx*1.02,b-.04) for a,b in SMH(.08,.1)]),(-1.6,[(a+sx*1.02,b-.04) for a,b in SMH(.18,.24)]),(1.4,[(a+sx*1.02,b-.04) for a,b in SMH(.18,.24)]),(1.7,[(a+sx*1.02,b-.04) for a,b in SMH(.08,.1)])],smh_role)   # faired turret sponson
+        for z in (-1.2,-.4,.4,1.1):pd(M,(sx*1.05,.2,z),.075,MID)
+        sidewin(M,sx*1.0,.1,-1.8,1.6)
+    for z in (-1.8,-.9,0,.9):loft(M,[(z-.05,SMH(1.03,.5)),(z+.05,SMH(1.03,.5))],(ACC,.95))                          # armour bands
+    bridge_varkesh(M,(0,.5,-1.75),1.35)
+    shieldgen(M,(0,.6,-.95),.16)
+    loft(M,[(-2.65,SMH(.85,.42)),(-2.3,SMH(1.0,.5))],smh_role)                                                       # engine block
+    for x in (-.6,-.2,.2,.6):
+        for y in (-.15,.15):M.vent((x,y,-2.67),.12)
     lights(M,[(.6,.3,2.3),(-.6,.3,2.3)],.045)
     return finish(M,4.6,1.0)
 
 # ============================================================== OSTROVA
-def lantern():   # escort: a long spire with a crystal core, the Vigil's prongs holding torpedo lances forward, a halo carrying the
-                 # turrets, crystal fins, two tail fins at 45 degrees
+def lantern():   # escort: a long faceted spire hull in three sections, two turret halos round it, crystal cores between them,
+                 # a torpedo ring in the prow, a spire bridge, a drive cluster
     M=Mesh(131)
-    loft(M,[(-2.0,DIA(.12,.12)),(-1.4,DIA(.32,.3)),(.7,DIA(.32,.3)),(1.4,DIA(.14,.13)),(1.7,DIA(.03,.03))],SP)
-    crystal(M,-1.0,.5,.22,.22,0,.22)                                                                                 # crystal core on the back
-    for sx in (1,-1):
-        loft(M,[(.6,DIA(.07,.08,sx*.32)),(1.5,DIA(.06,.07,sx*.3)),(1.85,DIA(.006,.006,sx*.26))],SP)                  # prongs
-        torpedo(M,(sx*.32,-.12,1.0),.75,.06,LIGHT)                                                                    # torpedo lances
-        plate(M,[(sx*.2,-.05,.3),(sx*.62,-.1,.0),(sx*.6,-.1,-.3),(sx*.2,-.05,-.4)],.025,WIN,.85)                    # crystal fins
-    ring(M,(0,0,-.55),.78,.05,ACC,seg=36,sides=6)                                                                    # the turret halo
-    for k in range(6):
-        a=k*PI/3;x,y=math.cos(a)*.78,math.sin(a)*.78
-        pd(M,(x,y,-.55),.065,ACC,up=y>=-.01) if abs(y)>.3 else M.blob((x,y,-.55),.07,GLASS,sub=1,noise=0)
-    for k in range(3):a=PI/2+k*2*PI/3;tube(M,[(math.cos(a)*.25,math.sin(a)*.25,-.55),(math.cos(a)*.72,math.sin(a)*.72,-.55)],[.03,.03],LIGHT,.9,5)
-    for a in (PI/4,3*PI/4):
-        ca,sa=math.cos(a),math.sin(a);plate(M,[(ca*.2,sa*.2,-1.4),(ca*.9,sa*.9,-1.85),(ca*.84,sa*.84,-1.98),(ca*.16,sa*.16,-1.85)],.035,MID)
-    M.blob((0,.3,.75),.12,GLASS,sub=2,squash=(1,.6,1.8),noise=0)                                                     # bridge
-    shieldgen(M,(0,.32,-1.25),.12)
-    abox(M,(0,-.3,-.2),(.26,.1,.5),DARK,(.9,.9))
-    M.vent((0,0,-2.03),.12)
-    for sx in (1,-1):M.vent((sx*.18,0,-1.98),.07)
-    return finish(M,3.4,1.0)
-def cathedral(): # carrier: a great crystal-veined spire with a flight deck along its back, hangar mouths in the bow, two halos crossed
-                 # in an X aft carrying turrets and crystal holds, a tall bridge spire, drives in a triangle
+    OCT=lambda w,h,dy=0:[(math.cos(a)*w,math.sin(a)*h+dy) for a in np.linspace(PI/8,2*PI+PI/8,8,endpoint=False)]
+    oct_role=lambda i,j:([LIGHT,LIGHT,LIGHT,MID,MID,DARK,DARK,MID][j],[1,.97,1,.95,.9,.85,.85,.92][j])
+    loft(M,[(-2.3,OCT(.3,.28)),(-1.9,OCT(.4,.36)),(1.0,OCT(.38,.34)),(1.75,OCT(.24,.22)),(2.2,OCT(.08,.07))],oct_role)   # long faceted hull
+    for z in (-1.15,.15):                                                                                          # two turret halos round the hull
+        ring(M,(0,0,z),.66,.045,ACC,seg=36,sides=6)
+        for k in range(6):
+            a=PI/6+k*PI/3;x,y=math.cos(a)*.66,math.sin(a)*.66
+            if abs(math.cos(a))>.5:pd(M,(x,y,z),.06,ACC,up=y>0)
+            else:tube(M,[(math.cos(a)*.38,math.sin(a)*.38,z),(x*.95,y*.95,z)],[.03,.03],LIGHT,.9,5,cap0=False,cap1=False)
+        for k in (0,3):a=PI/6+k*PI/3;tube(M,[(math.cos(a)*.38,math.sin(a)*.38,z),(math.cos(a)*.62,math.sin(a)*.62,z)],[.03,.03],LIGHT,.9,5,cap0=False,cap1=False)
+    for sx in (1,-1):crystal(M,-.95,-.05,.14,.16,sx*.4,0)                                                            # crystal cores between the halos
+    ring(M,(0,0,1.55),.3,.03,ACC,seg=24,sides=5)                                                                     # torpedo ring in the prow
+    for k in range(4):a=PI/4+k*PI/2;tube(M,[(math.cos(a)*.18,math.sin(a)*.16,1.7),(math.cos(a)*.18,math.sin(a)*.16,1.95)],[.045,.045],DARK,.85,8,cap1=False);M.blob((math.cos(a)*.18,math.sin(a)*.16,1.92),.035,ACC,sub=1,noise=0)
+    bridge_ostrova(M,(0,.33,-.55),1.0)
+    shieldgen(M,(0,.35,.8),.12)
+    abox(M,(0,-.36,-.5),(.3,.1,.55),DARK,(.9,.9))
+    for k in range(3):a=PI/2+k*2*PI/3;M.vent((math.cos(a)*.16,math.sin(a)*.15,-2.32),.1)
+    return finish(M,3.6,1.0)
+def cathedral(): # carrier: a smooth, great crystal-veined hull with a flight deck along its back, hangar mouths in the bow, two halos round
+                 # the hull fore and aft carrying turrets and crystal holds, a spire bridge, a drive cluster
     M=Mesh(132)
-    loft(M,[(-2.3,DIA(.3,.3)),(-1.6,DIA(.8,.55)),(1.3,DIA(.78,.54)),(2.1,DIA(.42,.3)),(2.4,DIA(.08,.06))],SP)        # great spire hull
+    OCT=lambda w,h,dy=0:[(math.cos(a)*w,math.sin(a)*h+dy) for a in np.linspace(PI/8,2*PI+PI/8,8,endpoint=False)]
+    oct_role=lambda i,j:([LIGHT,LIGHT,LIGHT,MID,MID,DARK,DARK,MID][j],[1,.97,1,.95,.9,.85,.85,.92][j])
+    loft(M,[(-2.4,OCT(.5,.36)),(-1.9,OCT(.85,.55)),(1.4,OCT(.82,.54)),(2.1,OCT(.5,.34)),(2.45,OCT(.18,.12))],oct_role)   # smooth great hull
     for sx in (1,-1):
-        for k in range(3):plate(M,[(sx*.5,.12+k*.06,1.5-k*.2),(sx*.42,.2+k*.06,1.5-k*.2),(sx*.42,.18+k*.06,-1.4),(sx*.5,.1+k*.06,-1.4)],.01,WIN,.85)   # crystal veins
-        mouth(M,(sx*.32,-.02,2.22),.3,.2)
-    plate(M,[(-.5,.5,1.8),(.5,.5,1.8),(.5,.5,-1.0),(-.5,.5,-1.0)],.03,MID,.95)                                      # flight deck along the back
-    for x in (-.5,.5):plate(M,[(x,.5,1.8),(x*1.0,.42,1.8),(x*1.0,.42,-1.0),(x,.5,-1.0)],.02,LIGHT)
-    spots(M,[(-.25,1.35),(.25,1.35),(-.25,-.4),(.25,-.4)],.13,.52)
-    for th in (PI/4,-PI/4):                                                                                          # two halos crossed in an X aft
-        u=np.array([math.sin(th),math.cos(th),0.])
-        pts=[np.array([0,0,-1.5])+u*math.cos(a)*1.25+np.array([0,0,math.sin(a)*1.25]) for a in np.linspace(0,2*PI,41)]
-        M.tube(pts,[.06]*len(pts),6,lambda i,j,n,p:(ACC,1.0),cap0=False,cap1=False)
-        for sg in (1,-1):
-            tip=np.array([0,0,-1.5])+u*sg*1.25
-            if tip[1]>0:pd(M,tuple(tip+[0,.04,0]),.08,ACC)
-            else:crystal(M,-2.1,-.9,.18,.18,tip[0],tip[1])
-    loft(M,[(-1.3,DIA(.12,.12,0,.55)),(-.9,DIA(.16,.14,0,.75)),(-.6,DIA(.06,.05,0,.95))],SP);M.blob((0,.85,-.95),.13,GLASS,sub=2,squash=(1,.6,1.5),noise=0)   # bridge spire
-    tube(M,[(0,.95,-.95),(0,1.4,-.95)],[.025,.012],LIGHT,.9,6)
-    for z,r in ((1.2,.08),(1.32,.055)):ring(M,(0,z,-.95),r,.012,ACC,seg=12,sides=4,axis='y')
-    shieldgen(M,(0,.58,-1.4),.16)
-    for k in range(3):a=PI/2+k*2*PI/3;M.vent((math.cos(a)*.3,math.sin(a)*.22,-2.33),.14)
-    lights(M,[(.3,-.1,2.35),(-.3,-.1,2.35)],.045)
+        for k in range(2):plate(M,[(sx*.8,-.05+k*.14,1.6),(sx*.8,.05+k*.14,1.6),(sx*.79,.05+k*.14,-1.6),(sx*.79,-.05+k*.14,-1.6)],.01,WIN,.85)   # crystal veins
+        mouth(M,(sx*.3,-.02,2.3),.3,.2)
+    plate(M,[(-.46,.51,1.4),(.46,.51,1.4),(.46,.51,-.95),(-.46,.51,-.95)],.03,MID,.95)                          # flight deck along the back
+    spots(M,[(-.22,1.0),(.22,1.0),(-.22,-.45),(.22,-.45)],.13,.53)
+    for z,R in ((1.75,1.0),(-2.0,1.0)):                                                                            # two halos round the hull, fore and aft
+        ring(M,(0,0,z),R,.06,ACC,seg=44,sides=6)
+        for k in range(8):
+            a=k*PI/4;x,y=math.cos(a)*R,math.sin(a)*R
+            if k in (1,3):pd(M,(x,y,z),.08,ACC)
+            elif k in (5,7):crystal(M,z-.4,z+.4,.17,.17,x,y)
+            elif k in (0,4):tube(M,[(math.cos(a)*.8,math.sin(a)*.5,z),(x*.95,y,z)],[.035,.035],LIGHT,.9,5,cap0=False,cap1=False)
+    bridge_ostrova(M,(0,.5,-1.55),1.4)
+    shieldgen(M,(0,.56,-1.12),.13)
+    for k in range(3):a=PI/2+k*2*PI/3;M.vent((math.cos(a)*.3,math.sin(a)*.22,-2.42),.14)
+    lights(M,[(.3,-.1,2.4),(-.3,-.1,2.4)],.045)
     return finish(M,4.6,1.0)
 
 CAPITALS=[('halcyon','Halcyon Accord',[('Shrike','Escort',shrike),('Sovereign','Carrier',sovereign)]),
