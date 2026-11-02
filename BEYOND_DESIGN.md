@@ -80,7 +80,8 @@ Everything comes from mined rock, so the ledger stays exact.
 
 - **Grades 1–5 replace Mk I–III.** You upgrade a part by feeding it into the next grade's recipe, so your investment carries forward instead of being thrown away.
 - **Workshops.** Any faction or freeport station's workshop builds for a fee. Your own (from Lair level 2) builds with no fee.
-- **Your own brand, from Depot level.** Parts built at your Depot's or Station's workshop carry your company's name and a trait you choose, and sell on your market like any maker's. Parts from a Lair are standard.
+- **Your own brand, from Depot level.** Parts built at your Depot's or Station's workshop carry your company's name and your trait, and sell on your market like any maker's. Parts from a Lair are standard.
+- **Your trait is set with points, with trade-offs.** Each strength you buy (more damage, more shield, faster recharge, more hold…) costs points, and you earn points back by taking weaknesses. The budget nets to zero, so a brand is a shape, not a free gain. Proposal: one set of points per part type (weapons, shields, drives…), changeable at a cost.
 - **Corporate parts.** The makers (section 4) sell parts too. A maker's part carries its maker's trait, a strength and a weakness, like Driftgate 1's variants. A part you build yourself before you own a Depot is standard, with no trait. You can upgrade either; an upgraded corporate part keeps its maker and trait.
 
 ### 4. Makers: corporate items
@@ -115,11 +116,11 @@ In Driftgate 1 every faction flies the same model for each hull class, with a na
   - **Ostrova Mote:** a deep reactor, the best sensors and lock range, weak shields.
 - **Stats differ in more than one number:** hull, shield, energy, mass, top speed, turn, acceleration, hold, weapon slots, other slots and silhouette size. Two light fighters should fly differently and suit different parts.
 - **Own models,** built from kit parts (`tools/build_models.py`) or hand-built in code like the Heavy Bomber and the Gannet, so you tell a Fang from a Swift at a glance.
-- **The Unbound have their own designs,** carried over and extended from Driftgate 1's Raider, Corsair, Plunderer and Skiff. **The Brood** keeps its grown ships.
+- **The Unbound have their own designs,** carried over and extended from Driftgate 1's Raider, Corsair, Plunderer and Skiff. They fly them only: contractors meet and salvage Unbound ships but never build them. **The Brood** keeps its grown ships.
 - **Freeport yards build faction designs** (Quicksilver Hullworks at Mirrorwater), so a contractor in poor standing with a faction can still fly its ships, at a freeport price.
 - **AI fleets fly their own power's designs,** so you learn to read a Varkesh wing by its shapes.
 - **Balance rule:** within a class, no design wins more than about 60% of its mirror duels against another at the same grade (`tools/duel.py`). They differ in how they win, not whether.
-- **Scale:** three factions × about 12 classes is around 36 designs, plus the Unbound set. Build in waves: fighters first, then miners and haulers, then bombers, then scouts, then capitals. A class keeps the shared model with the faction trait until its designs exist.
+- **Scale:** three factions × about 12 classes is around 36 designs, plus the Unbound set. Build in waves: fighters first, then miners and haulers, then bombers, then the scouts, then capitals. A class keeps the shared model with the faction trait until its designs exist.
 
 ### 6. Ships: slots and weapons
 A ship is a hull with slots. Each slot takes one part from any maker, or one you built.
@@ -129,7 +130,7 @@ A ship is a hull with slots. Each slot takes one part from any maker, or one you
 | Hull | Sets mass, hold, slot counts and handling |
 | Drive, Reactor, Shield, Armour | One part each |
 | **Weapon slots** (number varies by ship) | One each: machine gun, laser, missile launcher, torpedo launcher; on mining hulls only, mining laser or charge launcher |
-| Utility | Cargo module, scanner, drone bay, beacon device, limpet rack |
+| Utility | Cargo module, scanner, drone bay; on scout hulls only, beacon device or limpet rack |
 
 **Weapons, each in its own slot, each limited differently:**
 - **Machine gun (kinetic):** strong against hull; you must lead your shots. **Limited by ammunition:** rounds are payload, bought or built, carried in the ship.
@@ -150,9 +151,10 @@ A ship is a hull with slots. Each slot takes one part from any maker, or one you
 ### 6a. Scouting: intel as a trade good
 Player scouting comes back in a different form: what you find and do is intel, and intel sells. The powers' AI scouts still fly the routine recon.
 
-- **Beacon device.** Load a beacon device (payload, one use) and flip a sector's beacon to the faction **you choose**. That faction pays for it, offers you jobs in that sector, and you get the beacon's intel: a scan of the system and its prices. Choosing who to flip a beacon to is a way to court a faction, or to sell a sector to its rival.
+- **Scout hulls return,** not as a starter: each faction designs a Scout and an Advanced Scout, unlocked by Rating. Only scout hulls carry beacon devices and limpet racks, as only mining hulls carry mining gear.
+- **Beacon device.** Load a beacon device (payload, one use) and flip a sector's beacon to the faction **you choose**. That faction pays you a fee and you gain standing with it; you lose standing with the faction you flipped it from. Choosing who to flip a beacon to is how you court a faction, or sell a sector to its rival.
 - **Hired intel work.** Factions hire you to **ping a rival's capital ships** (find and mark them) or **place a limpet** on a target, as in Driftgate 1 (a limpeted target is hit harder by the side that ordered it).
-- **Discoveries.** Find and sell **comets, derelict cargo and wreckage from anomalies**. Sell the find as intel to a faction or the Compact, or salvage it yourself.
+- **Discoveries.** Find and sell **comets, derelict cargo and wreckage from anomalies**. Sell the find as intel to a faction or the Compact, or salvage it yourself. (Proposal: finding them needs a scanner, which any hull can fit in a utility slot; scout hulls find them farthest out.)
 - **Anomalies move out beyond the gates.** They sit far out past the gate ring, away from the lanes, so finding them means flying out into the empty edge of a system.
 - **Ostrova's edge.** Ostrova pays a bonus on intel work (section 12a).
 
@@ -215,8 +217,8 @@ These reuse what Driftgate 1 has where they can: the station's task tabs, the Jo
 | Rating | Hulls you may build |
 |---|---|
 | 1 | Starters: Light Fighter, Light Miner, Light Hauler |
-| 2 | Medium Fighter, Medium Miner, Medium Hauler |
-| 4 | Heavy Fighter, Bomber |
+| 2 | Medium Fighter, Medium Miner, Medium Hauler, Scout |
+| 4 | Heavy Fighter, Bomber, Advanced Scout |
 | 5 | Heavy Miner, Heavy Hauler |
 | 6 | Heavy Bomber; house-brand hulls with Partner standing |
 | Station level 3 | Escort |
@@ -260,19 +262,15 @@ Their signature hulls survive as house-brand hulls built with Partner standing: 
 - **The war is checked by simulation.** New target for AI-only galaxies: the Brood about 20%, the three factions sharing the rest evenly (about 27% each). Until the Brood change is built, Driftgate 1's target in CLAUDE.md still applies.
 
 ### Decided in review (2 Nov 2026)
-Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is credits plus goods · your own brand from Depot level · Brood about 20% · Rating only goes up · a choice of three starting freeports · faction careers become job bonuses and the signature hulls survive · scouting returns as intel · flares stay on energy, drones restock at dock · only factions (and the Unbound and Brood) design hulls; freeports build faction designs · Lair 2 levels, Depot 3, Station 5 · makers' names kept for now · declaring needs only a Station · losing your last Station drops you back to a company · asteroid or standard station look.
+Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is credits plus goods · your own brand from Depot level · Brood about 20% · Rating only goes up · a choice of three starting freeports · faction careers become job bonuses and the signature hulls survive · scouting returns as intel, with scout hulls (Rating 2 and 4, not a starter) the only hulls for beacon devices and limpets · a beacon flip earns a fee and standing · your brand's trait is a net-zero point system · Unbound designs are pirates' only · flares stay on energy, drones restock at dock · only factions (and the Unbound and Brood) design hulls; freeports build faction designs · Lair 2 levels, Depot 3, Station 5 · makers' names kept for now · declaring needs only a Station · losing your last Station drops you back to a company · asteroid or standard station look.
 
 ### Open questions
 1. **Legacy across galaxies** (deferred). What does a callsign carry from one galaxy to the next?
-2. **Which hulls carry intel gear?** Beacon devices and limpet racks: scout hulls only (scout hulls return, not as a starter), or any hull with a utility slot?
-3. **Beacon rights.** What does flipping a beacon to a faction earn you exactly, and how long does it hold?
-4. **Station levels 1–5.** What does each level open (modules, yard size, capitals, defences)?
-5. **Lair, Depot, Station costs.** All numbers are guesses to tune.
-6. **Own-brand traits.** Choose from a fixed list of traits, or build your own strength-and-weakness pair?
-7. **Unbound designs for contractors.** Can a contractor build Unbound ships, and where?
-8. **Freeport licensed builds.** Which faction designs do freeport yards sell, and do the house-brand hulls stay faction-only?
-9. **AI wages.** Paid to the Compact, as drafted?
-10. **Galaxy length.** Confirm 8–12 hours of play in tuning; should the 7-system win scale up?
+2. **Station levels 1–5.** What does each level open (modules, yard size, capitals, defences)?
+3. **Lair, Depot, Station costs.** All numbers are guesses to tune.
+4. **Freeport licensed builds.** Which faction designs do freeport yards sell, and do the house-brand hulls stay faction-only?
+5. **AI wages.** Paid to the Compact, as drafted?
+6. **Galaxy length.** Confirm 8–12 hours of play in tuning; should the 7-system win scale up?
 
 ### Proposed build order (once the design is agreed)
 1. **Cut the faction tie:** start at a chosen freeport with three equipped starters; standing with every power; docking and hostility from standing; pay from the issuer; faction job bonuses.
