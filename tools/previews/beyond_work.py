@@ -220,7 +220,7 @@ def bulwark():   # medium hauler: the Talon's pincer sponsons become two armoure
         ring(M,(0,.4,z),.215,.012,ACC,seg=16,sides=4)
     stacks(M,(0,.27,-.85),2);lights(M,[(.1,-.04,.84),(-.1,-.04,.84)])
     return finish(M,2.6)
-def rampart():   # heavy hauler: a six-shooter: six ribbed armoured cargo pylons in a cylinder round a central axle, bridge ahead, engines astern
+def rampart():   # heavy hauler: a six-shooter: six ribbed armoured cargo pylons in a cylinder round a central axle, a tapered nose and cockpit ahead, a four-engine block astern
     M=Mesh(66)
     chis=lambda w,h,dy=0:[(w,dy),(w*.8,h+dy),(-w*.8,h+dy),(-w,dy),(-w*.7,-h*.7+dy),(w*.7,-h*.7+dy)]
     hull_role=lambda i,j:([MID,LIGHT,LIGHT,MID,DARK,DARK][j],[1,.95,1,1,.85,.9][j])
@@ -231,15 +231,19 @@ def rampart():   # heavy hauler: a six-shooter: six ribbed armoured cargo pylons
         loft(M,[(-1.2,HEX(.2,.24,y,x)),(1.0,HEX(.2,.24,y,x))],hull_role)                                          # cargo pylon
         for z in (-.85,-.4,.05,.5):loft(M,[(z-.05,HEX(.22,.26,y,x)),(z+.05,HEX(.22,.26,y,x))],(ACC,.95))         # armour ribs
         tube(M,[(x*.2,y*.2,-.2),(x*.75,y*.75,-.2)],[.04,.04],DARK,.9,6,cap0=False,cap1=False)
-        abox(M,(x,y,-1.42),(.3,.28,.24),DARK,(1.1,1.1));M.vent((x,y,-1.56),.11)                                    # a drive astern of each pylon
-    loft(M,[(1.0,[(math.cos(a)*(R+.32),math.sin(a)*(R+.32)) for a in np.linspace(PI/6,2*PI+PI/6,6,endpoint=False)]),
-            (1.3,[(math.cos(a)*(R+.2),math.sin(a)*(R+.2)) for a in np.linspace(PI/6,2*PI+PI/6,6,endpoint=False)])],(MID,1.0))   # forward bulkhead
-    loft(M,[(1.3,chis(.5,.4,.0)),(1.65,chis(.38,.26,-.02)),(1.85,chis(.24,.12,-.04))],hex_role)                     # bridge prow
-    plate(M,[(-.16,.42,1.62),(.16,.42,1.62),(.16,.46,1.36),(-.16,.46,1.36)],.025,GLASS)
+    nose=lambda r,dy=0:[(math.cos(a)*r,math.sin(a)*r*.82+dy) for a in np.linspace(PI/6,2*PI+PI/6,6,endpoint=False)]
+    loft(M,[(1.0,nose(R+.32)),(1.25,nose(R+.3)),(1.65,nose(.62,.03)),(2.0,nose(.36,.02)),(2.2,nose(.14,0))],lambda i,j:([LIGHT,LIGHT,MID,DARK,DARK,MID][j],[1,.95,.95,.85,.85,.95][j]))   # tapered nose
+    for z in (1.1,1.5):loft(M,[(z-.03,nose(R+.33 if z<1.3 else .78)),(z+.03,nose(R+.33 if z<1.3 else .78))],(ACC,.95))
+    M.blob((0,.52,1.55),.22,GLASS,sub=2,squash=(1.1,.55,1.6),noise=0)                                            # cockpit canopy on the nose
+    loft(M,[(1.3,HEX(.26,.12,.5)),(1.75,HEX(.2,.1,.48))],(MID,.95))
     loft(M,[(-1.3,[(math.cos(a)*(R+.3),math.sin(a)*(R+.3)) for a in np.linspace(PI/6,2*PI+PI/6,6,endpoint=False)]),
             (-1.18,[(math.cos(a)*(R+.3),math.sin(a)*(R+.3)) for a in np.linspace(PI/6,2*PI+PI/6,6,endpoint=False)])],(ACC,.95))  # aft collar
-    for sx in (1,-1):barrel(M,(sx*.55,.32,1.3),.45,.032)
-    stacks(M,(0,R+.25,-1.0),3,.22,.3);lights(M,[(.3,-.05,1.8),(-.3,-.05,1.8)])
+    for sx in (1,-1):barrel(M,(sx*.62,.0,1.55),.45,.032)
+    loft(M,[(-1.32,HEX(.85,.68)),(-1.5,HEX(.9,.72)),(-1.75,HEX(.78,.62))],hex_role)                                # four-engine block astern
+    for x in (-.38,.38):
+        for y in (-.27,.27):abox(M,(x,y,-1.9),(.42,.38,.3),DARK,(1.1,1.1));M.vent((x,y,-2.06),.16)
+    loft(M,[(-1.55,HEX(.92,.74)),(-1.45,HEX(.92,.74))],(ACC,.95))
+    stacks(M,(0,.72,-1.55),3,.24,.3);lights(M,[(.2,-.05,2.15),(-.2,-.05,2.15)])
     return finish(M,3.8)
 
 # ============================================================== OSTROVA
@@ -293,16 +297,17 @@ def delve():     # heavy miner: a great drill spire with a lens ring at its prow
     M.vent((0,0,-1.27),.09)
     lights(M,[(.22,.15,.95),(-.22,.15,.95)])
     return finish(M,3.2)
-def drift():     # light hauler: a spire through a revolver of six cargo capsules on a halo
+def drift():     # light hauler: a slim spire with two long crystal cargo containers, one either side, held by a front and a back ring
     M=Mesh(74)
-    loft(M,[(-.8,DIA(.06,.06)),(-.4,DIA(.14,.13)),(.4,DIA(.14,.13)),(.75,DIA(.1,.09))],SP)
-    ring(M,(0,0,-.15),.32,.03,ACC)
-    for k in range(6):
-        a=k*PI/3;cx,cy=math.cos(a)*.32,math.sin(a)*.32
-        tube(M,[(cx,cy,-.55),(cx,cy,-.45),(cx,cy,.15),(cx,cy,.25)],[.03,.1,.1,.03],LIGHT if k%2 else MID,.95,8)
+    loft(M,[(-.85,DIA(.06,.06)),(-.45,DIA(.14,.13)),(.4,DIA(.14,.13)),(.75,DIA(.1,.09))],SP)
+    R=.36
+    for z in (-.5,.35):ring(M,(0,0,z),R,.03,ACC)                                                                    # front and back rings
+    for sx in (1,-1):
+        crystal(M,-.8,.7,.17,.2,sx*R,0)                                                                              # long crystal container, almost the ship's length
+        for z in (-.5,.35):tube(M,[(sx*.12,0,z),(sx*(R-.12),0,z)],[.022,.022],LIGHT,.9,5,cap0=False,cap1=False)
     M.blob((0,.15,.5),.07,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
-    for k in range(3):a=PI/2+k*2*PI/3;plate(M,[(math.cos(a)*.1,math.sin(a)*.1,-.55),(math.cos(a)*.48,math.sin(a)*.48,-.78),(math.cos(a)*.44,math.sin(a)*.44,-.86),(math.cos(a)*.08,math.sin(a)*.08,-.82)],.02,MID)
-    M.vent((0,0,-.82),.06)
+    for k in range(3):a=PI/2+k*2*PI/3;plate(M,[(math.cos(a)*.1,math.sin(a)*.1,-.55),(math.cos(a)*.3,math.sin(a)*.3,-.78),(math.cos(a)*.27,math.sin(a)*.27,-.86),(math.cos(a)*.08,math.sin(a)*.08,-.82)],.02,MID)
+    M.vent((0,0,-.87),.06)
     lights(M,[(.08,-.05,.75),(-.08,-.05,.75)])
     return finish(M,2.0)
 def cairn():     # medium hauler: a spire, two rings, and three crystal cargo containers set in the rings. That's it.
