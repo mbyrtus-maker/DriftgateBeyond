@@ -76,6 +76,13 @@ class Mesh:
             a=j/10*2*math.pi;b=(j+1)/10*2*math.pi;s.tri(c+[0,0,-.002],c+[math.cos(b)*r*.8,math.sin(b)*r*.8,-.002],c+[math.cos(a)*r*.8,math.sin(a)*r*.8,-.002],GLOW,1.0)
     def out(s):return np.array(s.T),[None]*len(s.T),list(s.R)
 
+def fin(M,base,s,span,chord,drop=.55,sweep=.55):
+    # a Brood fin (in place of legs): a flesh membrane swept back and down from the flank, a bone rib along its leading edge
+    # and a thinner one through its middle; s is the side (+1/-1)
+    A=np.array(base,float);T=A+np.array([s*span,-drop*span,-sweep*span]);B=A-np.array([0,0,chord]);C=T-np.array([0,0,chord*.35])
+    M.membrane([A,T,C,B],ACC,.85)
+    L=np.linalg.norm(T-A);M.spine(A,[s,-drop*.6,.1],(T-A)/L,L,.022,LIGHT,sides=5,segs=6)
+    m0=(A+B)/2;m1=(T+C)/2;L2=np.linalg.norm(m1-m0);M.spine(m0,[s,-drop*.5,0],(m1-m0)/L2,L2,.012,LIGHT,sides=4,segs=5)
 def carapace_role(segs,top=.25,bot=-.35):
     def f(i,j,n,p):
         band=(i%segs==0)
@@ -105,7 +112,7 @@ def skitter():   # interceptor: a wasp-like darter
     body(M,zs,prof,prof*.85,sides=12,segs=2);plates(M,zs[5:11][::-1][::-1],prof[5:11],prof[5:11]*.85,n=5,lift=1.12)
     M.eyes([0,.06,.98],5,.05,.028)
     M.mirror(lambda s:(M.spine([.04*s,-.02,1.0],[.4*s,-.1,1],[.1*s,-.05,1],.32,.03,LIGHT,r1=.002),
-                       [M.spine([.1*s,-.06,.3-i*.22],[s,-.6,.2],[s*.6,-.9,-.5],.5,.022,LIGHT,joint=.45) for i in range(3)],
+                       [fin(M,[.1*s,-.06,.3-i*.34],s,.42,.22) for i in range(2)],
                        M.membrane([np.array([.1*s,.1,.45]),np.array([.95*s,.18,-.05]),np.array([.85*s,.14,-.55]),np.array([.45*s,.1,-.4]),np.array([.12*s,.1,-.05])])))
     M.blob([0,.12,.12],.07,WIN,sub=1);M.vent([0,0,-1.0],.05)
     return M.out()
@@ -139,7 +146,7 @@ def carapace():  # heavy: a beetle with split elytra, crushing mandibles and sac
     M.mirror(elytron)
     M.eyes([0,.1,1.02],6,.09,.035)
     M.mirror(lambda s:(M.spine([.16*s,-.05,1.0],[.8*s,0,1],[-.3*s,-.05,1],.5,.07,LIGHT,sides=6,segs=9),
-                       [M.spine([.4*s,-.12,.5-i*.38],[s,-.3,0],[s*.6,-1,-.2],.42,.04,DARK,joint=.4) for i in range(3)],
+                       [fin(M,[.4*s,-.12,.45-i*.6],s,.42,.3,.45) for i in range(2)],
                        [M.blob([.5*s,-.08,.45-i*.35],.085,WIN) for i in range(4)],M.vent([.22*s,-.02,-.99],.09)))
     return M.out()
 def sporemaw():  # bomber: a bulbous spore-carrier with a toothed maw and flank sacs
@@ -161,14 +168,14 @@ def grazer():    # miner: a rounded grazer with feeding tentacles and a grinding
     for k in range(8):
         a=k/8*2*math.pi;M.spine([math.cos(a)*.26,math.sin(a)*.22,.95],[math.cos(a),math.sin(a),1.2],[math.cos(a)*.2,math.sin(a)*.2,1],.55,.035,ACC,segs=9,joint=.5)
     M.eyes([0,.32,.8],4,.08,.03)
-    M.mirror(lambda s:([M.blob([.42*s,.25,.3-i*.35],.09,WIN) for i in range(3)],[M.spine([.4*s,-.2,.4-i*.4],[s,-.5,0],[s*.5,-1,-.1],.38,.035,DARK,joint=.4) for i in range(3)],M.vent([.2*s,0,-.99],.08)))
+    M.mirror(lambda s:([M.blob([.42*s,.25,.3-i*.35],.09,WIN) for i in range(3)],[fin(M,[.4*s,-.2,.35-i*.6],s,.4,.3) for i in range(2)],M.vent([.2*s,0,-.99],.08)))
     return M.out()
 def gorger():    # hauler: a long fat grub with storage sacs along its back
     M=Mesh(16);zs=np.linspace(-1.05,1.0,16);prof=np.array([.08,.28,.4,.47,.5,.52,.52,.52,.52,.51,.5,.48,.44,.38,.28,.12])
     body(M,zs,prof,prof*.82,sides=16,segs=2,role=carapace_role(2,top=.45,bot=-.25));plates(M,zs[3:13],prof[3:13],prof[3:13]*.82,n=9,lift=1.06,role=LIGHT)
     for i in range(5):
         z=.55-i*.33;M.mirror(lambda s:M.blob([.24*s,.4,z],.12,WIN,sub=1,squash=(1,.9,1.1)))
-    M.mirror(lambda s:[M.spine([.4*s,-.25,.7-i*.3],[s,-.6,0],[s*.4,-1,-.2],.3,.03,DARK,joint=.45) for i in range(6)])
+    M.mirror(lambda s:[fin(M,[.4*s,-.25,.65-i*.55],s,.36,.26) for i in range(3)])
     M.eyes([0,.12,1.0],4,.08,.032);M.mirror(lambda s:M.spine([.12*s,-.05,1.0],[.6*s,-.2,1],[.1*s,-.2,1],.3,.04,LIGHT))
     M.mirror(lambda s:M.vent([.16*s,0,-1.04],.08))
     return M.out()
@@ -177,7 +184,7 @@ def weaver():    # constructor: a grub with a spinneret and big egg sacs (the se
     body(M,zs,prof,prof*.8,sides=16,segs=2);plates(M,zs[2:10],prof[2:10],prof[2:10]*.8,n=7,lift=1.07)
     for i,(x,z) in enumerate([(0,.35),(.22,.05),(-.22,.05),(0,-.25),(.18,-.5),(-.18,-.5)]):M.blob([x,.47,z],.135,WIN,sub=2,squash=(1,1.1,1))
     M.spine([0,-.1,1.0],[0,-.3,1],[0,-.2,1],.4,.06,LIGHT,sides=7);M.eyes([0,.15,.98],5,.09,.032)
-    M.mirror(lambda s:([M.spine([.42*s,-.25,.6-i*.35],[s,-.5,0],[s*.5,-1,-.1],.42,.04,DARK,joint=.4) for i in range(4)],M.spine([.3*s,0,.6],[.6*s,-.1,.8],[.3*s,-.2,1],.6,.06,LIGHT,sides=6),M.vent([.2*s,0,-.99],.08)))
+    M.mirror(lambda s:([fin(M,[.42*s,-.25,.55-i*.65],s,.44,.32) for i in range(2)],M.spine([.3*s,0,.6],[.6*s,-.1,.8],[.3*s,-.2,1],.6,.06,LIGHT,sides=6),M.vent([.2*s,0,-.99],.08)))
     return M.out()
 def watcher():   # scout: a slim stalker with a great glowing eye on a stalk and long antennae
     M=Mesh(18);zs=np.linspace(-1,.9,12);prof=np.array([.03,.08,.12,.14,.14,.13,.12,.12,.12,.1,.07,.03])
@@ -192,7 +199,7 @@ def mite():      # drone / picket: a small round mite
     M=Mesh(19);zs=np.linspace(-.8,.8,10);prof=np.array([.05,.35,.5,.56,.58,.56,.5,.4,.25,.05])
     body(M,zs,prof,prof*.7,sides=12,segs=2);plates(M,zs[1:8],prof[1:8],prof[1:8]*.7,n=6,lift=1.08)
     M.eyes([0,.15,.75],4,.1,.05)
-    M.mirror(lambda s:([M.spine([.45*s,-.1,.4-i*.35],[s,-.3,.2],[s*.7,-1,0],.6,.05,DARK,joint=.45) for i in range(4)],M.spine([.15*s,-.05,.75],[.4*s,-.1,1],[0,-.1,1],.35,.05,LIGHT)))
+    M.mirror(lambda s:([fin(M,[.45*s,-.1,.35-i*.6],s,.55,.35,.45) for i in range(2)],M.spine([.15*s,-.05,.75],[.4*s,-.1,1],[0,-.1,1],.35,.05,LIGHT)))
     M.blob([0,.32,0],.12,WIN);M.vent([0,0,-.8],.08)
     return M.out()
 def leviathan(): # frigate: a vast segmented leviathan with a ridge of spines, rows of sacs, a tentacled maw and tail fins
@@ -200,7 +207,7 @@ def leviathan(): # frigate: a vast segmented leviathan with a ridge of spines, r
     body(M,zs,prof,prof*.82,sides=18,segs=2);plates(M,zs[3:23],prof[3:23],prof[3:23]*.82,n=19,lift=1.08)
     for i in range(14):M.spine([0,.28,.85-i*.12],[0,1,-.4],[0,.5,-1],.22-abs(i-6)*.01,.025,LIGHT)
     for i in range(9):
-        z=.7-i*.17;M.mirror(lambda s:(M.blob([.33*s,-.05,z],.06,WIN,sub=1),M.spine([.3*s,-.2,z],[s,-.5,.1],[s*.5,-1,-.2],.28,.02,DARK,joint=.45)))
+        z=.7-i*.17;M.mirror(lambda s:(M.blob([.33*s,-.05,z],.06,WIN,sub=1),fin(M,[.3*s,-.2,z],s,.3,.13) if i%2==0 else None))
     for k in range(8):
         a=k/8*2*math.pi;M.spine([math.cos(a)*.1,math.sin(a)*.09,1.05],[math.cos(a),math.sin(a),1.3],[math.cos(a)*.3,math.sin(a)*.3,1],.35,.022,ACC,segs=9,joint=.5)
     M.blob([0,0,1.04],.08,WIN,sub=1,squash=(1,1,.5));M.eyes([0,.14,.98],6,.08,.025)
@@ -238,8 +245,8 @@ def hive():      # Hive Ship (the Brood carrier): a swollen brood-queen that gro
             if i in (1,3):
                 M.blob([s*(k+.08),-.08,z+.05],.05,MID,sub=1,squash=(.7,.5,1.6))
                 M.spine([s*(k+.08),-.08,z+.12],[s*.3,0,1],[s*.2,-.1,1],.08,.012,LIGHT,sides=4,segs=4)
-        # vestigial legs and grasping hooks beneath
-        for z in (-.5,-.15,.2):M.spine([s*.3,-.28,z],[s,-.6,.1],[s*.5,-1,-.2],.42,.035,DARK,joint=.45)
+        # fins beneath
+        for z in (-.4,.15):fin(M,[s*.3,-.28,z],s,.45,.3)
         # a membrane fin aft, framed by bone
         a=np.array([s*.48,.02,-.55]);b=np.array([s*1.0,.06,-.95]);c2=np.array([s*.9,.04,-.55]);d=np.array([s*.55,.02,-.25])
         M.membrane([a,b,c2,d]);M.spine(a,[s,.05,-.6],[s,.05,-.8],.62,.02,LIGHT,segs=6)
@@ -279,9 +286,9 @@ def prowler():   # Brood escort: a lean hunter with a hammer head, twin spore-to
             k=float(np.interp(z,zs,rx));c=np.array([s*k*.95,.04,z]);M.blob(c,.04,DARK,sub=1,squash=(1,.9,1))
             t=M.spine(c,[s,.6,0],[s,.9,.2],.12,.022,MID,sides=5,segs=4);M.blob(t,.026,WIN,sub=1)
     M.mirror(spit)
-    # folded mantis forelimbs under the head, and hooked legs beneath
+    # folded mantis forelimbs under the head, and fins beneath
     M.mirror(lambda s:(M.spine([.12*s,-.13,.62],[s*.5,-1,.6],[s*.2,-.4,1],.36,.03,LIGHT,sides=6,segs=8,joint=.45),
-                       [M.spine([.14*s,-.13,.2-i*.32],[s,-.5,.1],[s*.5,-1,-.3],.3,.024,DARK,joint=.45) for i in range(3)]))
+                       [fin(M,[.14*s,-.13,.15-i*.5],s,.32,.22) for i in range(2)]))
     # tail fins and drive vents
     M.mirror(lambda s:(M.membrane([np.array([.03*s,0,-.7]),np.array([.42*s,.08,-1.08]),np.array([.3*s,.04,-.62]),np.array([.08*s,0,-.5])]),
                        M.spine([.03*s,0,-.7],[s,.15,-.7],[s,.2,-.95],.5,.018,LIGHT,segs=6),M.vent([.05*s,0,-.98],.03)))
