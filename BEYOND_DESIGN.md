@@ -422,6 +422,27 @@ A player faction's leader is its founder: AI leaders send it proposals and deman
 | Hurt by an exposed proxy campaign | Scheming: answers in kind |
 | Long peace and full treasuries | Patient or Mercantile |
 
+**AI pilots fly like their leader** (decided 2 Nov 2026). Every AI pilot of a power (fighters, escorts, miners, haulers, scouts, capitals) behaves the way its current leader's traits lean, so a faction's character shows in how its ships fight and work, not only in the events feed. A leader has two traits, so pilots blend both.
+
+| Leader trait | How that power's pilots behave |
+|---|---|
+| Ambitious | Aggressive: press attacks, chase further, contest outposts, take more risk |
+| Vengeful | Never break off when a squadmate is destroyed: they stay and fight; they remember who killed theirs and go for that faction or pilot first |
+| Mercantile | Guard convoys and traders before miners and outposts; avoid costly fights; break off to protect cargo |
+| Cautious | Break off sooner when outnumbered or damaged; keep formation; defend home space first |
+| Scheming | Hit and run, pick off isolated ships, ambush at gates, use scouts and contractors more |
+| Patient | Hold positions and wait for reinforcements; attack late and in force; slow, careful sieges |
+| Wary (successor) | Keep their distance from allied ships; patrols scan more often |
+| Loyal (successor) | Answer allies' distress calls; guard allied convoys |
+| Zealous (successor) | Put the Brood above every other target; push into Brood space |
+
+- **A new leader changes the fleet.** After a succession, pilots shift to the new leader's style as new orders go out, so a war-weary Cautious successor's ships really do start breaking off.
+- **Aces and a leader's own escort** fly the same way, more skilfully.
+- **Checked by simulation** with the leaders (stage 2): trait behaviour moves faction strength, so it goes through the war checks.
+- **Proposal:** your own AI pilots follow a **doctrine** you set for your company, two traits from the same list, so a founder's faction has a character too.
+
+**Distress calls in Brood space are answered by every faction** (decided 2 Nov 2026). A distress call sent from a system the Brood holds brings nearby pilots of every power, whatever their relations, even at war; while answering they fight only the Brood.
+
 **Storylines, not fixed alignments.** Nothing is permanent. Over a galaxy, two factions can go from wars of annihilation to friendship and back: a war, a weary ceasefire, a new Cautious leader, a trade pact, a shared fight against the Brood, an alliance, then a betrayal by an Ambitious successor. Each step has its trigger, and the Allegiance screen keeps a **chronicle** of each faction's leaders and decisions so the story can be read back.
 
 **Rules that keep it reasoned, not chaotic**
@@ -572,8 +593,9 @@ Today one field, the pilot's `faction`, does two jobs: it picks the **hull desig
 2. **Feed it, still at permanent war.** Hooks: trade (`traderArrive`, `fpImport`), ships destroyed (the death path before `payKill`), captures and razes (`capture`, `captureDepot`, `razeStation`), sieges (`resolveSiege`), raids (`raidFight`), beacon flips (`beaconFlip`). Run the fast simulator and record how relations move, to size the numbers.
 3. **Leaders in shadow mode.** Leaders with traits, the event table, triggers, cooldowns and successions, logged as what they *would* do ("would declare war") without acting.
 4. **Switch on.** All factions start Neutral. `hostile()` between powers follows the ledger (Hostile and War fight); new `warWith()` for sieges and campaigns; `planOffensive` also stops targeting outposts held by a power it isn't at war with; `campTargets`, `resolveAbstract`, `resolveSiege` use `warWith`. The Containment Accord stays as the "containment front" and still overrides the ledger. Traders may use Friendly factions' markets, which is how trade builds alliances.
-5. **Leaders as ships.** Built on Driftgate 1's ace system (an ace with a wing of escorts, a kill reported by `aceKilled`), plus an off-screen mover so a leader keeps travelling when nobody is watching; a killed leader triggers a succession shaped by history. Leaders never go into the aces record that carries between galaxies.
-6. **Leader jobs** (escort a leader, hunt one, sell a sighting) and proxy work can wait for the Faction jobs screen (stage 5).
+5. **Pilots fly like their leader:** trait-driven AI behaviour (the table in 11c): aggression, pursuit, break-off thresholds, staying when a squadmate dies (Vengeful), convoy-first guarding (Mercantile), and all powers answering distress calls in Brood space; shifted on succession; war checks.
+6. **Leaders as ships.** Built on Driftgate 1's ace system (an ace with a wing of escorts, a kill reported by `aceKilled`), plus an off-screen mover so a leader keeps travelling when nobody is watching; a killed leader triggers a succession shaped by history. Leaders never go into the aces record that carries between galaxies.
+7. **Leader jobs** (escort a leader, hunt one, sell a sighting) and proxy work can wait for the Faction jobs screen (stage 5).
 
 **The main risk.** If everyone starts Neutral, nobody shoots, nothing goes negative, and no war ever starts. The first negatives must come from AI scouts flipping beacons, building in contested systems, and leader events (border dispute, then embargo, then war). So leaders are built and tuned (steps 3 and 5) before and alongside the switch (step 4).
 
