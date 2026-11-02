@@ -6,15 +6,15 @@ from PIL import Image,ImageDraw,ImageFont
 sys.path.insert(0,os.path.dirname(__file__))
 from beyond_hulls import DESIGNS,FAMILY
 
-FAC_HEX={'halcyon':'#4fd8d0','varkesh':'#ff7a3d','ostrova':'#b893ff'}
-HULL={'halcyon':[.6,.61,.62],'varkesh':[.43,.41,.4],'ostrova':[.56,.54,.6]}
+FAC_HEX={'halcyon':'#4fd8d0','varkesh':'#ff7a3d','ostrova':'#b893ff','company':'#f0b24a'}
+HULL={'halcyon':[.6,.61,.62],'varkesh':[.43,.41,.4],'ostrova':[.56,.54,.6],'company':[.57,.58,.6]}
 def rgb(h):return np.array([int(h[i:i+2],16)/255 for i in (1,3,5)])
 def mix(a,b,t):return np.array(a)*(1-t)+np.array(b)*t
 def pal(fac):
     # mirrors mdlPal() in src/js/12_render.js: hull light, hull mid, dark metal, accent, glass, glow, lit window
     F=rgb(FAC_HEX[fac]);base=HULL[fac]
-    c=[mix(base,F,.1),mix([.36,.38,.43],F,.04),np.array([.15,.16,.19]),F*.92,np.array([.16,.3,.4]),F,mix([.2,.33,.42],F,.25)]
-    e=[0,0,0,0,.15,.85,.55]
+    c=[mix(base,F,.1),mix([.36,.38,.43],F,.04),np.array([.15,.16,.19]),F*.92,np.array([.16,.3,.4]),F,mix([.2,.33,.42],F,.25),np.array([.43,.4,.36]),np.array([.25,.23,.21])]
+    e=[0,0,0,0,.15,.85,.55,0,0]   # roles 7 and 8 are rock and dark rock, as in mdlPal()
     return c,e
 def rot(yaw,pitch):
     cy,sy,cp,sp=math.cos(yaw),math.sin(yaw),math.cos(pitch),math.sin(pitch)
