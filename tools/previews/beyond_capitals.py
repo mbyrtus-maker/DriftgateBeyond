@@ -115,15 +115,16 @@ def sovereign(): # carrier: a broad blended lens hull with a flat flight deck, t
     return finish(M,4.6,1.0)
 
 # ============================================================== VARKESH
-def vanguard():  # escort: a clean armoured smoothed-hex hull, a chisel prow with four torpedo tubes, long turret sponsons, a stepped bridge,
+def vanguard():  # escort: a clean armoured smoothed-hex hull, a chisel prow with four torpedo tubes, long turret pylons standing off the hull on two beams each, a stepped bridge,
                  # a four-drive engine block
     M=Mesh(121)
     loft(M,[(-2.2,SMH(.48,.36)),(1.0,SMH(.48,.36)),(1.7,SMH(.36,.26,-.02)),(2.15,SMH(.18,.1,-.05))],smh_role)
     for x in (-.14,.14):
         for y in (.0,-.14):tube(M,[(x,y,1.75),(x,y,1.95)],[.055,.055],DARK,.85,8,cap1=False);M.blob((x,y,1.92),.04,ACC,sub=1,noise=0)   # torpedo tubes
     for sx in (1,-1):
-        loft(M,[(-1.6,[(a+sx*.56,b-.02) for a,b in SMH(.06,.07)]),(-1.3,[(a+sx*.56,b-.02) for a,b in SMH(.14,.16)]),(.9,[(a+sx*.56,b-.02) for a,b in SMH(.14,.16)]),(1.2,[(a+sx*.56,b-.02) for a,b in SMH(.06,.07)])],smh_role)   # turret sponson
-        for z in (-1.0,-.25,.5):pd(M,(sx*.58,.14,z),.07,MID)
+        loft(M,[(-1.6,[(a+sx*.86,b-.02) for a,b in SMH(.06,.07)]),(-1.3,[(a+sx*.86,b-.02) for a,b in SMH(.14,.16)]),(.9,[(a+sx*.86,b-.02) for a,b in SMH(.14,.16)]),(1.2,[(a+sx*.86,b-.02) for a,b in SMH(.06,.07)])],smh_role)   # turret pylon, standing off the hull
+        for z in (.7,-1.1):abox(M,(sx*.6,-.02,z),(.5,.11,.17),MID,(1,1),.95);abox(M,(sx*.6,-.02,z),(.46,.125,.05),ACC,(1,1),.95)   # beams to the hull, fore and aft
+        for z in (-1.0,-.25,.5):pd(M,(sx*.88,.14,z),.07,MID)
         sidewin(M,sx*.485,.06,-1.5,.8)
     for z in (-1.4,-.4,.6):loft(M,[(z-.05,SMH(.5,.38)),(z+.05,SMH(.5,.38))],(ACC,.95))                                # armour bands
     bridge_varkesh(M,(0,.32,-.9),1.0)
@@ -135,7 +136,7 @@ def vanguard():  # escort: a clean armoured smoothed-hex hull, a chisel prow wit
     stacks(M,(0,.36,-1.8),2,.22,.28)
     lights(M,[(.2,-.06,2.1),(-.2,-.06,2.1)],.04)
     return finish(M,3.6,1.0)
-def bastille():  # carrier: a smooth slab fortress, a railed flight deck, hangar mouths in a blunt bow, faired turret sponsons,
+def bastille():  # carrier: a smooth slab fortress, a railed flight deck, hangar mouths in a blunt bow, turret pylons standing off the hull on two beams each,
                  # a stepped bridge aft, armour bands, an eight-drive engine block
     M=Mesh(122)
     loft(M,[(-2.3,SMH(1.0,.5)),(1.75,SMH(1.0,.5)),(2.25,SMH(.85,.4,-.04))],smh_role)                               # slab hull
@@ -144,8 +145,9 @@ def bastille():  # carrier: a smooth slab fortress, a railed flight deck, hangar
     for sx in (1,-1):
         loft(M,[(-1.3,[(a+sx*.82,b+.56) for a,b in SMH(.04,.04)]),(1.95,[(a+sx*.82,b+.56) for a,b in SMH(.04,.04)])],(ACC,.95))   # deck rail
         mouth(M,(sx*.45,.0,2.26),.48,.3)
-        loft(M,[(-1.9,[(a+sx*1.02,b-.04) for a,b in SMH(.08,.1)]),(-1.6,[(a+sx*1.02,b-.04) for a,b in SMH(.18,.24)]),(1.4,[(a+sx*1.02,b-.04) for a,b in SMH(.18,.24)]),(1.7,[(a+sx*1.02,b-.04) for a,b in SMH(.08,.1)])],smh_role)   # faired turret sponson
-        for z in (-1.2,-.4,.4,1.1):pd(M,(sx*1.05,.2,z),.075,MID)
+        loft(M,[(-1.9,[(a+sx*1.5,b-.04) for a,b in SMH(.08,.1)]),(-1.6,[(a+sx*1.5,b-.04) for a,b in SMH(.18,.24)]),(1.4,[(a+sx*1.5,b-.04) for a,b in SMH(.18,.24)]),(1.7,[(a+sx*1.5,b-.04) for a,b in SMH(.08,.1)])],smh_role)   # turret pylon, standing off the hull
+        for z in (1.05,-1.35):abox(M,(sx*1.17,-.04,z),(.62,.15,.24),MID,(1,1),.95);abox(M,(sx*1.17,-.04,z),(.58,.17,.07),ACC,(1,1),.95)   # beams to the hull, fore and aft
+        for z in (-1.2,-.4,.4,1.1):pd(M,(sx*1.53,.2,z),.075,MID)
         sidewin(M,sx*1.0,.1,-1.8,1.6)
     for z in (-1.8,-.9,0,.9):loft(M,[(z-.05,SMH(1.03,.5)),(z+.05,SMH(1.03,.5))],(ACC,.95))                          # armour bands
     bridge_varkesh(M,(0,.5,-1.75),1.35)
