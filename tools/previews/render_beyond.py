@@ -21,8 +21,20 @@ def rot(yaw,pitch):
     Ry=np.array([[cy,0,sy],[0,1,0],[-sy,0,cy]]);Rx=np.array([[1,0,0],[0,cp,-sp],[0,sp,cp]])
     return Rx@Ry
 L=np.array([-.45,.75,.5]);L/=np.linalg.norm(L)
+def split(T,RS,lim=.18):
+    # preview only: split long triangles into four until no edge is longer than lim, so the painter's algorithm sorts big flat
+    # panels (flight decks) correctly; the game draws with a depth buffer and doesn't need this
+    T=np.array(T,float);RS=list(RS)
+    for _ in range(6):
+        e=np.max(np.linalg.norm(T-np.roll(T,1,axis=1),axis=2),axis=1);big=e>lim
+        if not big.any():break
+        B=T[big];a,b,c=B[:,0],B[:,1],B[:,2];ab,bc,ca=(a+b)/2,(b+c)/2,(c+a)/2
+        new=np.concatenate([np.stack(t,1) for t in ((a,ab,ca),(ab,b,bc),(ca,bc,c),(ab,bc,ca))])
+        rb=[r for r,k in zip(RS,big) if k];RS=[r for r,k in zip(RS,big) if not k]+rb*4
+        T=np.concatenate([T[~big],new])
+    return T,RS
 def render(M,fac,yaw,pitch,W,H,ppu,ss=3):
-    T=np.array(M.T);RS=M.R;c,e=pal(fac);R=rot(yaw,pitch)
+    T,RS=split(M.T,M.R);c,e=pal(fac);R=rot(yaw,pitch)
     P=T@R.T;W2,H2,k=W*ss,H*ss,ppu*ss
     img=Image.new('RGBA',(W2,H2),(0,0,0,0));d=ImageDraw.Draw(img)
     order=np.argsort(P[:,:,2].mean(1))

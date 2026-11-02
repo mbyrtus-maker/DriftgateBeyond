@@ -36,8 +36,8 @@ def mouth(M,c,w,h,d=.25):
     abox(M,(c[0],c[1],c[2]-d/2),(w,h,d),DARK,(1,1),.6)
     for a,b in (((-w/2,-h/2),(w/2,-h/2)),((w/2,-h/2),(w/2,h/2)),((w/2,h/2),(-w/2,h/2)),((-w/2,h/2),(-w/2,-h/2))):
         tube(M,[(c[0]+a[0],c[1]+a[1],c[2]+.01),(c[0]+b[0],c[1]+b[1],c[2]+.01)],[.012,.012],WIN,1.0,4,cap0=False,cap1=False)
-def shieldgen(M,c,r=.14):
-    c=np.array(c,float);tube(M,[c-[0,r*.6,0],c],[r*.7,r*.6],DARK,.9,10);M.blob(tuple(c+[0,r*.15,0]),r,GLASS,sub=2,squash=(1,.65,1),noise=0)
+def shieldgen(M,c,r=.14,up=True):
+    c=np.array(c,float);s=1 if up else -1;tube(M,[c-[0,s*r*.6,0],c],[r*.7,r*.6],DARK,.9,10);M.blob(tuple(c+[0,s*r*.15,0]),r,GLASS,sub=2,squash=(1,.65,1),noise=0)
     ring(M,tuple(c),r*1.1,.016,WIN,seg=18,sides=4,axis='y')
 def windows(M,c,w,y,z,n=None):
     # a lit window band facing forward
@@ -83,7 +83,7 @@ def shrike():    # escort: a long layered lens hull: a broad torpedo prow, a rai
         tube(M,[(sx*.5,.05,-1.65),(sx*.78,.12,-1.75)],[.025,.02],LIGHT,.9,5);M.blob((sx*.8,.13,-1.76),.06,WIN,sub=1,noise=0)   # emitter nodes on pylons
         sidewin(M,sx*.505,.12,-.5,.5)
     bridge_halcyon(M,(0,.42,-1.0),1.0)
-    shieldgen(M,(0,.5,.3),.12)
+    shieldgen(M,(0,-.33,.75),.12,up=False)
     abox(M,(0,-.36,-.4),(.34,.12,.6),DARK,(.9,.9))                                                                   # ventral assault bay
     loft(M,[(-2.6,LENS(.36,.26)),(-2.3,LENS(.44,.31))],(MID,.95))                                                    # engine block
     M.vent((0,0,-2.62),.2)
@@ -123,7 +123,7 @@ def vanguard():  # escort: a clean armoured smoothed-hex hull, a chisel prow wit
         sidewin(M,sx*.485,.06,-1.5,.8)
     for z in (-1.4,-.4,.6):loft(M,[(z-.05,SMH(.5,.38)),(z+.05,SMH(.5,.38))],(ACC,.95))                                # armour bands
     bridge_varkesh(M,(0,.32,-.9),1.0)
-    shieldgen(M,(0,.38,.25),.12)
+    shieldgen(M,(0,-.35,.6),.12,up=False)
     abox(M,(0,-.36,-.3),(.36,.1,.6),DARK,(.9,.9))
     loft(M,[(-2.55,SMH(.42,.32)),(-2.2,SMH(.5,.38))],smh_role)                                                       # engine block
     for x in (-.2,.2):
@@ -154,7 +154,7 @@ def bastille():  # carrier: a smooth slab fortress, a railed flight deck, hangar
 
 # ============================================================== OSTROVA
 def lantern():   # escort: a long faceted spire hull in three sections, two turret halos round it, crystal cores between them,
-                 # a torpedo ring in the prow, a spire bridge, a drive cluster
+                 # four torpedo tubes in the prow, a spire bridge, a drive cluster
     M=Mesh(131)
     OCT=lambda w,h,dy=0:[(math.cos(a)*w,math.sin(a)*h+dy) for a in np.linspace(PI/8,2*PI+PI/8,8,endpoint=False)]
     oct_role=lambda i,j:([LIGHT,LIGHT,LIGHT,MID,MID,DARK,DARK,MID][j],[1,.97,1,.95,.9,.85,.85,.92][j])
@@ -167,15 +167,14 @@ def lantern():   # escort: a long faceted spire hull in three sections, two turr
             else:tube(M,[(math.cos(a)*.38,math.sin(a)*.38,z),(x*.95,y*.95,z)],[.03,.03],LIGHT,.9,5,cap0=False,cap1=False)
         for k in (0,3):a=PI/6+k*PI/3;tube(M,[(math.cos(a)*.38,math.sin(a)*.38,z),(math.cos(a)*.62,math.sin(a)*.62,z)],[.03,.03],LIGHT,.9,5,cap0=False,cap1=False)
     for sx in (1,-1):crystal(M,-.95,-.05,.14,.16,sx*.4,0)                                                            # crystal cores between the halos
-    ring(M,(0,0,1.55),.3,.03,ACC,seg=24,sides=5)                                                                     # torpedo ring in the prow
     for k in range(4):a=PI/4+k*PI/2;tube(M,[(math.cos(a)*.18,math.sin(a)*.16,1.7),(math.cos(a)*.18,math.sin(a)*.16,1.95)],[.045,.045],DARK,.85,8,cap1=False);M.blob((math.cos(a)*.18,math.sin(a)*.16,1.92),.035,ACC,sub=1,noise=0)
     bridge_ostrova(M,(0,.33,-.55),1.0)
-    shieldgen(M,(0,.35,.8),.12)
+    shieldgen(M,(0,-.33,.7),.12,up=False)
     abox(M,(0,-.36,-.5),(.3,.1,.55),DARK,(.9,.9))
     for k in range(3):a=PI/2+k*2*PI/3;M.vent((math.cos(a)*.16,math.sin(a)*.15,-2.32),.1)
     return finish(M,3.6,1.0)
-def cathedral(): # carrier: a smooth, great crystal-veined hull with a flight deck along its back, hangar mouths in the bow, two halos round
-                 # the hull fore and aft carrying turrets and crystal holds, a spire bridge, a drive cluster
+def cathedral(): # carrier: a smooth, great crystal-veined hull with a flight deck along its back, hangar mouths in the bow, two horizontal
+                 # rings round the hull fore and aft carrying turrets and crystal holds, a spire bridge, a drive cluster
     M=Mesh(132)
     OCT=lambda w,h,dy=0:[(math.cos(a)*w,math.sin(a)*h+dy) for a in np.linspace(PI/8,2*PI+PI/8,8,endpoint=False)]
     oct_role=lambda i,j:([LIGHT,LIGHT,LIGHT,MID,MID,DARK,DARK,MID][j],[1,.97,1,.95,.9,.85,.85,.92][j])
@@ -185,13 +184,12 @@ def cathedral(): # carrier: a smooth, great crystal-veined hull with a flight de
         mouth(M,(sx*.3,-.02,2.3),.3,.2)
     plate(M,[(-.46,.51,1.4),(.46,.51,1.4),(.46,.51,-.95),(-.46,.51,-.95)],.03,MID,.95)                          # flight deck along the back
     spots(M,[(-.22,1.0),(.22,1.0),(-.22,-.45),(.22,-.45)],.13,.53)
-    for z,R in ((1.75,1.0),(-2.0,1.0)):                                                                            # two halos round the hull, fore and aft
-        ring(M,(0,0,z),R,.06,ACC,seg=44,sides=6)
-        for k in range(8):
-            a=k*PI/4;x,y=math.cos(a)*R,math.sin(a)*R
-            if k in (1,3):pd(M,(x,y,z),.08,ACC)
-            elif k in (5,7):crystal(M,z-.4,z+.4,.17,.17,x,y)
-            elif k in (0,4):tube(M,[(math.cos(a)*.8,math.sin(a)*.5,z),(x*.95,y,z)],[.035,.035],LIGHT,.9,5,cap0=False,cap1=False)
+    for z0 in (1.2,-1.45):                                                                                         # two horizontal rings round the hull, fore and aft
+        R=1.25;ring(M,(0,0,z0),R,.06,ACC,seg=48,sides=6,axis='y')
+        for sx in (1,-1):
+            tube(M,[(sx*.8,0,z0),(sx*R*.97,0,z0)],[.05,.05],LIGHT,.9,6,cap0=False,cap1=False)                         # spoke from the hull
+            crystal(M,z0-.42,z0+.42,.17,.2,sx*R,0)                                                                   # crystal hold on the ring
+            for a in (.55,-.55):pd(M,(sx*math.cos(a)*R,.05,z0+math.sin(a)*R),.08,ACC)                                 # turrets on the ring
     bridge_ostrova(M,(0,.5,-1.55),1.4)
     shieldgen(M,(0,.56,-1.12),.13)
     for k in range(3):a=PI/2+k*2*PI/3;M.vent((math.cos(a)*.3,math.sin(a)*.22,-2.42),.14)
