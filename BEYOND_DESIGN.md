@@ -19,7 +19,7 @@ The war goes on, but you no longer fight in it as a soldier. You are an independ
 |---|---|---|
 | Flight, drift by mass, gates, docking | Pilot welded to one faction → **standing** with every power, work for anyone | **Unbound pirate mode** (the start card, crew galaxies, Scrapheart Haven works) |
 | Combat feel, shields, sub-targets, capitals and bridges | Pay from your faction's treasury → paid by **whoever issued the job** | **Legend levels** as they are (replaced, see Progression) |
-| Blast charges, salvage, hauling, convoys | Blast rig only → **mining lasers back** alongside charges, both in weapon slots | Mk I–III as one shared ladder (replaced by grades) |
+| Blast charges, salvage, hauling, convoys | Blast rig only → **mining lasers back** alongside charges, both in a mining hull's weapon slots | Mk I–III as one shared ladder (replaced by grades) |
 | The three factions, their AI war, campaigns, depots, sieges | One Weapons system for gun and laser together → **separate parts in weapon slots**; slot count varies by ship | Scout hulls for contractors |
 | **The Brood,** probably with more presence and a higher win rate | Free kinetic fire → **machine guns use ammunition**; lasers draw on the reactor | |
 | **AI Unbound raiders** in the galaxy | Missiles that reload by themselves → **payload** you carry, which hits harder | |
@@ -123,7 +123,7 @@ A ship is a hull with slots. Each slot takes one part from any maker, or one you
 |---|---|
 | Hull | Sets mass, hold, slot counts and handling |
 | Drive, Reactor, Shield, Armour | One part each |
-| **Weapon slots** (number varies by ship) | One each: machine gun, laser, missile launcher, torpedo launcher, mining laser, charge launcher |
+| **Weapon slots** (number varies by ship) | One each: machine gun, laser, missile launcher, torpedo launcher; on mining hulls only, mining laser or charge launcher |
 | Utility | Cargo module, scanner, drone bay |
 
 **Weapons, each in its own slot, each limited differently:**
@@ -135,7 +135,7 @@ A ship is a hull with slots. Each slot takes one part from any maker, or one you
 **Mining, in the same slots:**
 - **Mining laser (back from Driftgate 1, reworked):** slow, steady mining. Scan a rock and it shows its **ring**, a seam around the rock; hold the beam on the ring to cut ore steadily. Draws on the reactor like a combat laser. Quiet and safe, but slow.
 - **Charge launcher:** Driftgate 1's blast charges. Scan for fault points, place charges and blow the rock apart for a big, fast yield with the risk of a bad blast. Charges are payload.
-- **Any ship with a free weapon slot can fit either,** so a fighter can mine a little and a miner can carry a gun, at the cost of a slot. Mining hulls are best at it: more slots, bigger holds, drones.
+- **Only mining hulls can fit mining equipment.** Mining lasers and charge launchers go only in a mining hull's weapon slots. A miner can still carry a gun in a spare slot, at the cost of mining tools; no other hull can mine.
 
 **Fire controls:** one key per weapon type fitted (replacing 1 and 2), C for launchers as now, the mining keys as now. Starting proposal for slot counts: Light Fighter 3, Medium 3–4, Heavy 4–5; miners 2–3; haulers 1–2; bombers 2 plus the torpedo launcher. These vary by power's design.
 
@@ -252,7 +252,7 @@ These reuse what Driftgate 1 has where they can: the station's task tabs, the Jo
 
 ### Proposed build order (once the design is agreed)
 1. **Cut the faction tie:** start at a freeport with three equipped starters; standing with every power; docking and hostility from standing; pay from the issuer; scouts become AI-only.
-2. **Weapon slots and weapons:** slot counts per hull; machine gun with ammunition, laser on reactor energy, missile and torpedo payload; mining laser with rings and charge launchers in weapon slots.
+2. **Weapon slots and weapons:** slot counts per hull; machine gun with ammunition, laser on reactor energy, missile and torpedo payload; mining laser with rings and charge launchers in mining hulls' weapon slots.
 3. **Making things:** ore → components → parts → upgraded parts; grades replace Mk.
 4. **Faction jobs screen.**
 5. **Unique hull designs, first wave:** each faction's fighters, with their own models and stats, duel-balanced.
