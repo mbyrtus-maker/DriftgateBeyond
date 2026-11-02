@@ -13,7 +13,7 @@ bg=Image.new('RGB',(W,H),(9,12,18));g=ImageDraw.Draw(bg)
 for y in range(H):g.line([(0,y),(W,y)],fill=(9+int(6*y/H),12+int(8*y/H),18+int(12*y/H)))
 fb=lambda s:ImageFont.truetype('DejaVuSans-Bold.ttf',s);fr=lambda s:ImageFont.truetype('DejaVuSans.ttf',s)
 g.text((24,18),'Driftgate Beyond · Faction stations and depots, and the freeport',font=fb(24),fill=(230,232,236))
-g.text((24,48),'Generated in code · each faction in its ships\' design language, the freeport a grand spindle in the company style · each picture scaled to fit',font=fr(14),fill=(140,150,165))
+g.text((24,48),'Generated in code · each faction in its ships\' design language, the freeport a welcoming trade spindle · each picture scaled to fit',font=fr(14),fill=(140,150,165))
 x=LW
 for cw,t in C:g.text((x+14,HD-4),t,font=fr(14),fill=(130,140,155));x+=cw
 for r,(fac,fname,st,dp) in enumerate(rows):
