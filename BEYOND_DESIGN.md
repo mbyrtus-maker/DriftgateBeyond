@@ -209,6 +209,7 @@ These reuse what Driftgate 1 has where they can: the station's task tabs, the Jo
 
 ### 11. Declaring a faction
 - **The only requirement is a Station.** Once you own one base at Station level, you can declare.
+- **Losing your last Station ends it.** A declared faction that loses its last Station falls back into a company: it is no longer a contender, but keeps its Lairs, Depots, ships and AI. Win back or build a Station and you can declare again.
 - **Once declared,** you're a contender: you win by holding 7 systems for 20 minutes, the three powers treat you as a rival, and the truce-against-the-leader rule applies to you. Your standings with them drop to a war footing.
 - **Your faction runs on Driftgate 1's strategic AI,** steered by your orders on the strategic map and the jobs you post.
 
@@ -240,15 +241,14 @@ These reuse what Driftgate 1 has where they can: the station's task tabs, the Jo
 5. **AI upkeep.** Credits only, or credits plus goods (fuel, repairs, payload)? Who receives wages: the Compact, as drafted?
 6. **Lair, Depot, Station costs and levels.** The numbers above are guesses; three levels each?
 7. **Brood.** What win rate and how much more presence?
-8. **Losing a faction.** Can a declared faction fall back into a company, for example if it loses its last Station?
-9. **Rating loss.** Does Rating only go up, or can failure and deaths lower it?
-10. **Legacy across galaxies.** Titles only, or a small head start?
-11. **Galaxy length.** Is 8–12 hours of play the right target? Should the 7-system win scale up?
-12. **Starting freeport.** One for every new contractor, or a choice of three?
-13. **Faction careers.** Do Halcyon's hauling and Varkesh's mining bonuses survive as bonuses on their jobs? With scouting gone to the AI, what is Ostrova's edge, and does the Vesper (built on the Advanced Scout) survive as a house-brand fighter?
-14. **Any scouting left for contractors?** None, or a scanner part that reveals the system you're in?
-15. **Flares and drones.** Payload too, or kept as they are?
-16. **Hull designs per maker or per power?** One design per class per power, or rival designs from a power's two makers?
+8. **Rating loss.** Does Rating only go up, or can failure and deaths lower it?
+9. **Legacy across galaxies.** Titles only, or a small head start?
+10. **Galaxy length.** Is 8–12 hours of play the right target? Should the 7-system win scale up?
+11. **Starting freeport.** One for every new contractor, or a choice of three?
+12. **Faction careers.** Do Halcyon's hauling and Varkesh's mining bonuses survive as bonuses on their jobs? With scouting gone to the AI, what is Ostrova's edge, and does the Vesper (built on the Advanced Scout) survive as a house-brand fighter?
+13. **Any scouting left for contractors?** None, or a scanner part that reveals the system you're in?
+14. **Flares and drones.** Payload too, or kept as they are?
+15. **Hull designs per maker or per power?** One design per class per power, or rival designs from a power's two makers?
 
 ### Proposed build order (once the design is agreed)
 1. **Cut the faction tie:** start at a freeport with three equipped starters; standing with every power; docking and hostility from standing; pay from the issuer; scouts become AI-only.
