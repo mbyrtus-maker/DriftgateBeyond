@@ -51,11 +51,12 @@ def foundry():
     lights(M,[(.2,-.12,1.05),(-.2,-.12,1.05)],.03)
     return finish(M,3.0,1.0)
 def loom():
-    # Ostrova constructor: a faceted spire inside a halo, three long prongs reaching forward from the halo, glowing threads strung
+    # Ostrova constructor: a faceted spire with a cockpit, inside a halo, three long prongs reaching forward from the halo, glowing threads strung
     # between their tips weaving a crystal frame, crystal girders carried along the spire, spire drives
     M=Mesh(603)
     loft(M,[(-1.2,OCT(.18,.17)),(-.7,OCT(.3,.28)),(.5,OCT(.28,.26)),(.95,OCT(.12,.11)),(1.1,OCT(.02,.02))],oct_role)
     ring(M,(0,0,-.1),.62,.05,ACC,seg=36,sides=6)
+    M.blob((0,.24,.45),.13,GLASS,sub=2,squash=(1,.7,1.7),noise=0)                                                   # cockpit
     tips=[]
     for k in range(3):
         a=PI/2+k*2*PI/3;b=(math.cos(a)*.62,math.sin(a)*.62,-.1);t=(math.cos(a)*.42,math.sin(a)*.42,1.6)
@@ -70,20 +71,23 @@ def loom():
 
 # ============================================================== DRONES
 def aegis():
-    # Halcyon drone: a small lens disc with a glass eye, two emitter nodes on short swept vanes, a single gun under the chin
+    # Halcyon drone: a slim lens body with a sensor slit (no cockpit), two emitter nodes on short swept vanes, a chin gun
     M=Mesh(611)
-    loft(M,[(-.3,LENS(.12,.06)),(-.15,LENS(.3,.12)),(.15,LENS(.3,.12)),(.3,LENS(.12,.06))],lens_role)
-    M.blob((0,.06,.15),.09,GLASS,sub=2,squash=(1,.8,1),noise=0)
-    for sx in (1,-1):plate(M,[(sx*.25,0,.05),(sx*.5,.02,-.15),(sx*.5,.02,-.25),(sx*.25,0,-.15)],.02,LIGHT,1.0);M.blob((sx*.5,.02,-.2),.04,WIN,sub=1,noise=0)
-    tube(M,[(0,-.09,.0),(0,-.09,.35)],[.02,.018],DARK,1.0,6);M.vent((0,0,-.31),.05)
+    loft(M,[(-.34,LENS(.07,.05)),(-.18,LENS(.16,.09)),(.18,LENS(.15,.09)),(.34,LENS(.05,.04))],lens_role)            # slim lens body, no cockpit
+    plate(M,[(-.06,.07,.2),(.06,.07,.2),(.06,.07,.24),(-.06,.07,.24)],.008,WIN,1.0)                                   # sensor slit
+    for sx in (1,-1):plate(M,[(sx*.14,0,.0),(sx*.36,.02,-.2),(sx*.36,.02,-.27),(sx*.14,0,-.16)],.016,LIGHT,1.0);M.blob((sx*.36,.02,-.235),.03,WIN,sub=1,noise=0)
+    tube(M,[(0,-.07,.0),(0,-.07,.36)],[.016,.014],DARK,1.0,6);M.vent((0,0,-.34),.04)
     return finish(M,.9,1.0)
 def ward():
-    # Varkesh drone: a squat armoured hex box with twin guns forward, a sensor slit, one square drive
+    # Varkesh drone: a squat armoured hex box with amber armour bands and spine plate, twin guns forward, a sensor slit, one square drive
     M=Mesh(612)
     loft(M,[(-.28,HEX(.2,.16)),(.2,HEX(.22,.17)),(.3,HEX(.14,.11))],hex_role)
     plate(M,[(-.12,.12,.27),(.12,.12,.27),(.12,.15,.27),(-.12,.15,.27)],.01,WIN,1.0)
     for sx in (1,-1):abox(M,(sx*.24,-.03,.05),(.08,.08,.3),DARK,(.8,.8),.8);tube(M,[(sx*.24,-.03,.2),(sx*.24,-.03,.45)],[.018,.016],DARK,1.0,6)
     sqdrive(M,(0,0,-.34),.2)
+    for z in (-.12,.1):loft(M,[(z-.025,[(a*1.04,b*1.04) for a,b in HEX(.21,.165)]),(z+.025,[(a*1.04,b*1.04) for a,b in HEX(.21,.165)])],(ACC,1.0))   # amber armour bands
+    plate(M,[(-.09,.17,-.2),(.09,.17,-.2),(.09,.17,.12),(-.09,.17,.12)],.012,ACC,1.0)                                  # amber spine plate
+    for sx in (1,-1):M.blob((sx*.24,-.03,.45),.02,GLOW,sub=1,noise=0)
     return finish(M,.9,1.0)
 def halo_drone():
     # Ostrova drone: a faceted crystal core floating inside a ring, held by energy bridges; a small turret rides the ring
