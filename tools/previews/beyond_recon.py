@@ -107,9 +107,9 @@ def wolfhound(): # advanced scout: a broad streamlined smoothed-hex hull with se
         limpets(M,(sx*.3,-.08,-.05),3)
         plate(M,[(sx*.14,.14,-.68),(sx*.2,.32,-.92),(sx*.2,.32,-.98),(sx*.14,.14,-.96)],.035,ACC,.9)
         M.vent((sx*.11,0,-1.07),.07)
-    dish(M,(0,.25,-.3),.12);tube(M,[(0,.17,-.3),(0,.22,-.3)],[.022,.022],LIGHT,.9,5)
+    dish(M,(0,.34,-.3),.3);tube(M,[(0,.17,-.3),(0,.3,-.3)],[.03,.03],LIGHT,.9,5);M.blob((0,.38,-.3),.05,WIN,sub=1,noise=0)   # a big radar dish
     abox(M,(0,-.15,.05),(.1,.05,.22),ACC,(1,1))                                                                     # beacon device
-    return finish(M,2.35,1.0)
+    return finish(M,2.45,.78)
 def maul():      # bomber: a compact streamlined smoothed-hex hull with the torpedo magazine faired into its belly, two tubes forward
     M=Mesh(93)
     loft(M,[(-.85,SMH(.24,.2)),(-.45,SMH(.32,.26)),(.3,SMH(.3,.25)),(.62,SMH(.18,.15,-.01)),(.8,SMH(.07,.06,-.02))],smh_role)
@@ -133,7 +133,7 @@ def warhound():  # heavy bomber: a streamlined smoothed-hex hull, two seats, a t
         torpedo(M,(sx*.46,-.12,-.35),.6,.045)
         plate(M,[(sx*.3,-.02,.25),(sx*.65,-.04,-.1),(sx*.62,-.04,-.32),(sx*.28,-.02,-.45)],.05,MID)
         M.vent((sx*.13,0,-1.04),.09)
-    return finish(M,2.5,.76)
+    return finish(M,2.4,1.0)
 
 # ============================================================== OSTROVA
 def seer():      # scout: a spire behind a forward sensor halo with a crystal eye, one pair of swept wings, a long mast
