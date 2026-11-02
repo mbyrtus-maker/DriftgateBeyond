@@ -44,7 +44,7 @@ The war goes on, but you no longer fight in it as a soldier. You are an independ
 - **Three starters, fully equipped.** Choose one; each comes with drive, reactor, shield and armour fitted, plus its role kit:
   - **Light Fighter:** a machine gun with ammunition, a laser and a missile launcher with a first magazine.
   - **Light Miner:** a mining laser, a charge launcher with charges, and drones.
-  - **Light Hauler:** a machine gun and a cargo module.
+  - **Light Hauler:** guard drones and a cargo module (decided 2 Nov 2026: drones, not a machine gun).
 - **There is no scout start.** The powers' AI scouts still do most of the routine recon. Contractors scout in a different way: intel as a trade good (section 6a).
 - **Work for anyone, job by job.** Factions and freeports offer you jobs (the Faction jobs screen, section 9). Later you post your own.
 - **Pay comes from whoever issued the job,** out of their treasury. Bounties are paid by the power whose combat job you're flying; with no job running, by the power at war with the victim that you stand best with. Credits stay zero-sum, as now.
@@ -210,7 +210,7 @@ Players have several things to spend money and materials on, in this order, each
 |---|---|
 | **Holdings** (Lair → Depot → Station) | Every base you own, its level, its modules, and what the next level or upgrade costs in goods and credits. Build and upgrade from here. |
 | **Economy** | Income and costs: market sales, jobs, AI upkeep, wages. Treasury, stock at each base, and what each base buys and sells. |
-| **Job creation** | Post jobs: to your own AI pilots (mine this field, haul this cargo, escort, patrol, defend) and, in multiplayer, to other contractors, paid from your treasury. |
+| **Job creation** | Post jobs: to your own AI pilots (mine this field, haul this cargo, escort, patrol, defend, hunt), to other contractors in multiplayer, and to **other factions' pilots** (their AI and the players sworn to them), paid from your treasury. |
 | **Faction jobs** | What the factions and freeports will hire you for, filtered by your standing: pay, risk, standing gained, the faction bonus. |
 | **Allegiance** | Your standing with every power (the three factions, the Compact, each player faction), its band and what it opens; the relations between the factions themselves (at war, truce, allied, neutral), so you can see how a job for one lands with the others; each leader and their recent decisions. Declare or renounce allegiance here; a founder answers other factions' proposals here. |
 | **Strategic map** | The galaxy map, zoomable into a sector to see your bases, AI ships and the threats there, and give orders to your AI in that sector. |
@@ -218,11 +218,11 @@ Players have several things to spend money and materials on, in this order, each
 These reuse what Driftgate 1 has where they can: the station's task tabs, the Jobs board, the galaxy map and its sector panel.
 
 **Where they live (decided 2 Nov 2026).** Driftgate 1 has no in-game menu: docked screens have five tabs (Overview, Trade, Jobs, Ship, Station, keys 1–5), and M opens the galaxy map.
-- **One new Company screen** holds **Holdings, Economy, Post jobs and Allegiance** as tabs, plus a **read-only Faction jobs** tab so you can browse work in flight. It opens anywhere, in flight or docked, with its own key (proposal: **0**, since every letter is taken) and a **Company** button on the HUD beside Map, and works like the galaxy map: a full screen over a running game, closed with Esc.
+- **One new Company screen** holds, in this order, **Allegiance** (it opens there), **Holdings, Economy, Post jobs**, and a **read-only Faction jobs** tab so you can browse work in flight. It opens anywhere, in flight or docked, with its own key (proposal: **0**, since every letter is taken) and a **Company** button on the HUD beside Map, and works like the galaxy map: a full screen over a running game, closed with Esc.
 - **The Strategic map grows out of the galaxy map** (still M): click a sector to zoom into a live view of it, with your bases, your AI ships and the threats there, and give your AI orders (guard, mine here, escort, patrol), as the capital bridge's Strategic console already does for one ship.
 - **Faction jobs replace the dock's Jobs tab,** where you sign on; the Company screen's copy is for browsing.
 - **The title screen offers:** the freeport and role cards (in place of the faction cards), the **Legend start package** (spend start points on your unlocked perks), and keeps **Training** and the **Leaderboard**. The company's name and colour are not chosen there.
-- **Mockups (for review, 2 Nov 2026):** the Design canvas "Driftgate Beyond screens" (https://claude.ai/artifact/J1zRwXEc74WSmS59L2fjbP) holds seven screens in Driftgate's own look (Big Shoulders Display, Saira Semi Condensed, JetBrains Mono, amber on near-black): the title screen; the Company screen's Holdings, Economy, Post jobs and Allegiance tabs (their tabs link to one another in Play); the docked Jobs tab with faction jobs; and the galaxy map zoomed into a sector with orders. The example company is "Ashfall Hauling" in sky blue.
+- **Mockups: approved (2 Nov 2026), with the tab order above, the Light Hauler's drones and posted jobs open to other factions' pilots.** the Design canvas "Driftgate Beyond screens" (https://claude.ai/artifact/J1zRwXEc74WSmS59L2fjbP) holds seven screens in Driftgate's own look (Big Shoulders Display, Saira Semi Condensed, JetBrains Mono, amber on near-black): the title screen; the Company screen's Holdings, Economy, Post jobs and Allegiance tabs (their tabs link to one another in Play); the docked Jobs tab with faction jobs; and the galaxy map zoomed into a sector with orders. The example company is "Ashfall Hauling" in sky blue.
 
 ### 10. Progression: Contractor Rating (replaces Legend levels)
 - **Rating 1–10, per galaxy,** rising with Rating points from completed jobs (weighted by risk), kills on a job, deliveries, intel sold and stationworks built.
