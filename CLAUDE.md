@@ -2,7 +2,7 @@
 
 **What this is.** A new game in the Driftgate universe, forked from Driftgate 1 v255 (Nov 2026). The code here starts as Driftgate 1's complete game (a 3D browser space game: three factions, the alien Brood, the Unbound pirates, a closed economy, multiplayer for up to four pilots). We are designing something new on top of it. **Design comes first:** agree the change in `BEYOND_DESIGN.md` with the user before building it.
 
-**Driftgate 1 is frozen.** It lives in `mbyrtus-maker/driftgate` (branch `driftgate1-v255`, published at https://claude.ai/artifact/BpiqjUvanRKdLfRecpwdz2). Don't change it unless the user asks. Its history and every design decision up to the fork are in `DESIGN_NOTES.md` here (read the relevant section before changing a system) and `ECONOMY_DESIGN.md`.
+**Driftgate 1 is a separate game that is still being developed** in `mbyrtus-maker/driftgate` (published at https://claude.ai/artifact/BpiqjUvanRKdLfRecpwdz2; the fork point is its branch `driftgate1-v255`). Its changes after the fork do **not** carry into Beyond, and Beyond's changes never go back to it: don't touch that repository from a Beyond session, and port a Driftgate 1 change only if the user asks. Its history and every design decision up to the fork are in `DESIGN_NOTES.md` here (read the relevant section before changing a system) and `ECONOMY_DESIGN.md`.
 
 **Beyond's identity (keep it):** browser storage keys `dgbeyond.*` (save `dgbeyond.save.v1`), multiplayer host ids `dgbeyond1-<code>-host`, relay topics `dgbeyond1/…`, tab channel `dgbeyond`, title "Driftgate Beyond". Published page: https://claude.ai/artifact/9DnfnBp7b1bfJEMe25nkJv (publish with the Artifact tool and that `url`).
 
