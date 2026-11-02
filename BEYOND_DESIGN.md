@@ -49,6 +49,7 @@ The war goes on, but you no longer fight in it as a soldier. You are an independ
 - **Work for anyone, job by job.** Factions and freeports offer you jobs (the Faction jobs screen, section 9). Later you post your own.
 - **Pay comes from whoever issued the job,** out of their treasury. Bounties are paid by the power whose combat job you're flying; with no job running, by the power at war with the victim that you stand best with. Credits stay zero-sum, as now.
 - **Nothing is untouchable.** You can fire on anyone; doing so costs standing (section 2).
+- **Death, loss and insurance work as in Driftgate 1** (decided 2 Nov 2026): what you lose with a destroyed ship and what insurance pays back are unchanged. **A free starter is always available,** so a pilot who is broke and shipless can always fly again.
 - **War effort still counts.** Work done on a faction's job adds to that faction's war effort, as in Driftgate 1, so contractors still swing battles fought out of sight.
 
 ### 2. Standing
@@ -170,7 +171,7 @@ Players have several things to spend money and materials on, in this order, each
 | 2. Hull upgrades | Upgrade the hull you fly | Levels 1–3: stats only (hull, shield, energy or hold); slots never change |
 | 3. **Lair** | Your first base, hidden in a large asteroid | 1–2 |
 | 4. **Depot** | Your first open base, with a market and a hangar | 1–3 |
-| 5. **Station** | A full station that counts for the system | 1–5, plus station upgrades |
+| 5. **Station** | A full station that counts for the system | 1–5 (one external building per level) |
 | 6. Capital ships | Built at your stations | Escorts, then destroyers, then carriers |
 
 #### Lair (from Driftgate 1's Unbound Lair)
@@ -192,6 +193,8 @@ Players have several things to spend money and materials on, in this order, each
 - **A station counts for the system**: owning it gives you the system, as Driftgate 1's `sectorOwner` does for faction stations. This is the road to winning the galaxy (section 11).
 - **Levels 1–5 come from external buildings.** Each new level lets you add **one building of your choice** around the station, from six: **shipyard, external storage, defence platform, hangar, forge, market wing** (decided 2 Nov 2026). Five levels, five buildings, so no two stations are the same. You see your station grow, and an attacker can target its buildings one at a time.
 - **The shipyard** is one of these buildings: it builds hulls for you and your AI.
+- **You can fly your capitals yourself,** much as in Driftgate 1: the bridge you walk, the helm and consoles, landing aboard and launching from the hangar, guests riding along (decided 2 Nov 2026).
+- **When a base falls** (decided 2 Nov 2026): the AI that takes one of your Lairs, Depots or Stations decides whether to **capture** it, gaining it at least 75% intact with its buildings and stores, or **destroy** it, so everything there is lost. A captured base can be taken back; a destroyed one is gone.
 - **Capital ships** are built at the yard, which must be among the station's buildings: **escorts** from station level 3, **destroyers** from level 4, **carriers** at level 5.
 - **The destroyer** (decided 2 Nov 2026) is the line ship between the escort and the carrier: bigger than an escort, smaller than a carrier, built around a **main gun** that kills other capitals and stations, with **point-defence turrets** like the other capitals. It has no hull berths and no assault bay (the escort keeps those), so it is weak against swarms of small ships on its own. **The Brood have their own destroyer** (the Gullet): no shields, and a **Maw Cannon** that charges and then fires a beam doing incredible damage to everything along its firing path. **The main gun fires a charged shot:** it has to charge before each shot, and **while it charges the ship's shields are down**, so every shot is a window an enemy can punish (charge time, damage and the shield drop are tuning numbers).
 
@@ -395,14 +398,19 @@ A player faction's leader is its founder: AI leaders send it proposals and deman
 - **Checked by simulation.** Leaders drive whether the war happens at all, so their weights and cooldowns are tuned with war checks: the galaxy must still go to war, and the Brood must still win only about 20%.
 
 #### Winning the galaxy
-- **Two-thirds of the galaxy wins.** Any faction (the three powers, the Brood, or a declared contractor faction) that controls two-thirds of the systems (20 of 29) starts a 10-minute timer. Hold it to the end and it wins.
+- **Two-thirds of the galaxy wins.** Any faction (the three powers, the Brood, or a declared contractor faction) that controls two-thirds of the systems starts a 10-minute timer. Hold it to the end and it wins.
+- **Freeports can't be captured and don't count** (decided 2 Nov 2026): the freeport systems are left out of the count, so two-thirds is of the systems that can be held (with 29 systems and 3 freeports, 18 of 26; the exact number follows the galaxy).
 - **The others unite when the timer starts.** As in Driftgate 1, the rest of the factions call a truce and turn on whoever has started the two-thirds timer; the truce breaks if the timer stops.
 - **No other time limit.** There is no deadline and no tie-break count: a galaxy runs until someone wins. (Driftgate 1's 7 systems for 20 minutes and its 2-hour deadline go.)
 
 ### 12. The war around you
 - **The three factions fight on, AI-driven:** campaigns, depots, forges, sieges, capitals, the truce against the leader.
 - **The Brood is stronger:** more presence, and it wins about **20%** of AI-only galaxies (Driftgate 1: 10–13%). Containment pays every contractor.
-- **The AI Unbound stay** as the galaxy's raiders: a threat to your convoys and bases, and bounty work for you.
+- **The AI Unbound stay** as the galaxy's raiders: a threat to your convoys and bases, and bounty work for you. Decided 2 Nov 2026:
+  - **They hold no systems.** They ambush and they build **Lairs** (hidden asteroid bases like a contractor's) to raid from.
+  - **They have no economy but plunder.** Everything they have, they took: goods, payload and hulls come from raids, ambushes and wrecks, so the ledger stays exact.
+  - **They fly only their six designs** (Raider, Skiff, Corsair, Plunderer, Wrecker, Ravager).
+  - **Scrapheart Haven is their one main station, one per galaxy.** It can be **deactivated** (knocked out for a while) but **never destroyed**.
 - **The Freeport Compact stays neutral,** the marketplace of last resort and the independent makers' home.
 
 ### 12a. Faction job bonuses (from Driftgate 1's careers)
@@ -464,6 +472,7 @@ Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is cre
 
 ### Open questions
 1. **Lair, Depot, Station costs.** All numbers are guesses to tune.
+3. **Names:** placeholders that follow each power's naming conventions are fine as they are (decided 2 Nov 2026); no naming pass needed.
 2. ~~Allies and the win~~ (decided 2 Nov 2026, see below).
 
 ### Proposed build order (once the design is agreed)
@@ -477,7 +486,7 @@ Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is cre
 8. **Progression:** Contractor Rating gates hulls and grades; hull upgrades; drop Unbound mode.
 9. **Lairs and the Holdings screen.**
 10. **Depots:** markets, hiring and building AI with upkeep; the Economy and Job creation screens.
-11. **Stations and station upgrades;** capital ships built at your stations.
+11. **Stations and their buildings;** capital ships built at your stations.
 12. **Strategic map** with sector zoom and orders.
 13. **Declaring a faction;** player factions in the ledger and leaders' proposals to founders; slower war pacing; a stronger Brood (about 20%); war checks for the new balance.
 14. **Legend rework and Conqueror's spoils, multiplayer rivalries, training rewrite.**
