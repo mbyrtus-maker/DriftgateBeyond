@@ -212,24 +212,30 @@ def wisp():
     M.vent((0,0,-.92),.055)
     return M
 
-# ------------------------------------------------------------------ Ostrova Vigil: heavy fighter (a reliquary: a great faceted crystal held by three parallel spires and three halos)
+# ------------------------------------------------------------------ Ostrova Vigil: heavy fighter (a tuning fork: a broad crystal-veined body, twin forward prongs
+# holding a focus crystal, and a halo standing upright round the hull like a gyroscope)
 def vigil():
     M=Mesh(39)
-    star=lambda w,h:[(math.cos(a)*(w if k%2==0 else w*.62),math.sin(a)*(h if k%2==0 else h*.62)) for k,a in enumerate(np.linspace(0,2*math.pi,12,endpoint=False))]
-    loft(M,[(-1.15,star(.04,.04)),(-.75,star(.3,.3)),(.05,star(.36,.36)),(.7,star(.22,.22)),(1.15,star(.03,.03))],lambda i,j:((WIN,1.0) if j%2 else (LIGHT,.95)) if i in (1,2) else ((GLASS,1.0) if j%2 else (MID,.95)))   # the crystal body
-    R=.52
-    for k in range(3):
-        a=math.pi/2+k*2*math.pi/3;dx,dy=math.cos(a)*R,math.sin(a)*R
-        loft(M,[(-1.25,DIA(.03,.03,dx,dy)),(-.95,DIA(.075,.075,dx,dy)),(.5,DIA(.07,.07,dx,dy)),(1.2,DIA(.008,.008,dx,dy))],lambda i,j:((LIGHT,1.0) if j in (0,1) else (MID,.92)))   # slim parallel spires, prongs forward
-        M.vent((dx,dy,-1.27),.04)
-        plate(M,[(dx,dy,-.7),(dx*1.75,dy*1.75,-1.0),(dx*1.65,dy*1.65,-1.12),(dx,dy,-1.08)],.025,MID)                    # outer fins
-        barrel(M,(dx*1.08,dy*1.08,.3),.45,.02,ACC)
-        for z in (-.5,.15):                                                                                        # struts from spire to crystal
-            M.tube([(dx,dy,z),(dx*.62,dy*.62,z+.05)],[.014,.014],5,lambda i,j,n,p:(LIGHT,.9),cap0=False,cap1=False)
-    for z in (-.85,.6):ring(M,(0,0,z),R,.022,ACC,seg=30,sides=6)                                                    # two halos binding the spires
-    M.blob((0,R+.1,.6),.1,MID,sub=2,squash=(1,.35,1),noise=0);ring(M,(0,R+.14,.6),.1,.014,ACC,seg=18,sides=5,axis='y')   # sensor dish on the top halo
-    M.tube([(0,0,1.1),(0,0,1.6)],[.022,.01],6,lambda i,j,n,p:(LIGHT,.9))
-    for z,r in ((1.35,.075),(1.5,.05)):ring(M,(0,0,z),r,.012,ACC,seg=14,sides=5)
+    loft(M,[(-1.15,DIA(.08,.06)),(-.75,DIA(.3,.18)),(-.1,DIA(.36,.22)),(.4,DIA(.3,.18)),(.62,DIA(.2,.12))],lambda i,j:((LIGHT,1.0) if j in (0,1) else (MID,.92)))   # broad faceted body
+    for sx in (1,-1):
+        for z0,z1 in ((-.6,-.2),(-.05,.35)):plate(M,[(sx*.05,.2,z1),(sx*.27,.06,z1-.06),(sx*.27,.06,z0+.06),(sx*.05,.2,z0)],.01,WIN,.85)   # crystal veins on the back
+        loft(M,[(.45,DIA(.07,.09,sx*.22)),(.9,DIA(.06,.08,sx*.2)),(1.3,DIA(.04,.05,sx*.15)),(1.55,DIA(.005,.005,sx*.11))],lambda i,j:((LIGHT,1.0) if j in (0,1) else (MID,.92)))   # forward prongs
+        plate(M,[(sx*.3,0,-.55),(sx*.78,0,-.95),(sx*.74,0,-1.08),(sx*.26,0,-1.0)],.025,MID)                            # swept aft fins
+        M.vent((sx*.14,0,-1.08),.045)
+    plate(M,[(0,.15,-.6),(0,.48,-.95),(0,.45,-1.06),(0,.12,-1.0)],.025,MID)
+    star=lambda w,h:[(math.cos(a)*(w if k%2==0 else w*.6),math.sin(a)*(h if k%2==0 else h*.6)) for k,a in enumerate(np.linspace(0,2*math.pi,10,endpoint=False))]
+    loft(M,[(1.05,star(.01,.01)),(1.22,star(.1,.1)),(1.4,star(.01,.01))],lambda i,j:((WIN,1.0) if j%2 else (GLASS,1.0)))   # the focus crystal between the prongs
+    for sx in (1,-1):M.tube([(sx*.17,0,1.22),(sx*.09,0,1.22)],[.012,.012],5,lambda i,j,n,p:(ACC,1.0),cap0=False,cap1=False)
+    def vring(c,R,r,role,sides=6,seg=32):
+        pts=[np.array(c,float)+[0,math.cos(a)*R,math.sin(a)*R] for a in np.linspace(0,2*math.pi,seg+1)]
+        M.tube(pts,[r]*len(pts),sides,lambda i,j,n,p:(role,1.0),cap0=False,cap1=False)
+    vring((0,0,-.25),.62,.04,ACC);vring((0,0,-.25),.55,.013,WIN,sides=4)                                              # the upright halo
+    for a in (0,math.pi/2,math.pi,3*math.pi/2):M.blob((0,math.cos(a)*.62,-.25+math.sin(a)*.62),.06,GLASS,sub=1,noise=0)
+    for sx in (1,-1):M.tube([(sx*.02,0,-.25),(sx*.02,.0,-.25)],[.01,.01],4,lambda i,j,n,p:(DARK,1.0),cap0=False,cap1=False)
+    M.tube([(0,.2,-.25),(0,.6,-.25)],[.025,.025],6,lambda i,j,n,p:(LIGHT,.9),cap0=False,cap1=False)                    # spoke from body to halo, above
+    M.tube([(0,-.2,-.25),(0,-.6,-.25)],[.025,.025],6,lambda i,j,n,p:(LIGHT,.9),cap0=False,cap1=False)                  # and below
+    M.blob((0,.24,.25),.1,GLASS,sub=2,squash=(.9,.6,2.0),noise=0)                                                       # canopy
+    M.blob((0,.68,-.25),.1,MID,sub=2,squash=(1,.35,1),noise=0);ring(M,(0,.72,-.25),.1,.014,ACC,seg=18,sides=5,axis='y') # sensor dish atop the halo
     return M
 
 FAMILY=[('halcyon','Halcyon Accord',[('Swift','Light',swift),('Kite','Medium',kite),('Osprey','Heavy',osprey)]),
