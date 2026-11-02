@@ -64,10 +64,10 @@ def bridge_varkesh(M,c,s=1.0):
 def bridge_ostrova(M,c,s=1.0):
     # a faceted spire tower, a crystal window band round its head, a slender mast
     x,y,z=c;b=np.array([x,y,z])
-    tube(M,[b,b+[0,.22*s,0],b+[0,.36*s,0]],[.16*s,.12*s,.15*s],MID,1.0,6)
-    tube(M,[b+[0,.36*s,0],b+[0,.46*s,0]],[.15*s,.12*s],WIN,1.0,6,cap0=False,cap1=False)
-    tube(M,[b+[0,.46*s,0],b+[0,.56*s,0],b+[0,.62*s,0]],[.12*s,.07*s,.01],LIGHT,1.0,6)
-    tube(M,[b+[0,.6*s,0],b+[0,.9*s,0]],[.012,.006],LIGHT,.9,5);ring(M,tuple(b+[0,.75*s,0]),.05*s,.008,ACC,seg=10,sides=4,axis='y')
+    tube(M,[b,b+[0,.12*s,0],b+[0,.2*s,0]],[.16*s,.13*s,.15*s],MID,1.0,6)
+    tube(M,[b+[0,.2*s,0],b+[0,.28*s,0]],[.15*s,.13*s],WIN,1.0,6,cap0=False,cap1=False)
+    tube(M,[b+[0,.28*s,0],b+[0,.34*s,0],b+[0,.38*s,0]],[.13*s,.08*s,.01],LIGHT,1.0,6)
+    tube(M,[b+[0,.37*s,0],b+[0,.55*s,0]],[.012,.006],LIGHT,.9,5);ring(M,tuple(b+[0,.47*s,0]),.05*s,.008,ACC,seg=10,sides=4,axis='y')
 
 # ============================================================== HALCYON
 def shrike():    # escort: a long layered lens hull: a broad torpedo prow, a raised dorsal superstructure spine, turret sponsons
@@ -107,7 +107,9 @@ def sovereign(): # carrier: a broad blended lens hull with a flat flight deck, t
         sidewin(M,sx*1.07,.08,-1.2,1.2)
     bridge_halcyon(M,(.85,.42,-.6),1.1)                                                                             # bridge beside the deck
     shieldgen(M,(0,.48,-1.75),.18)
-    for sx in (0,1,-1):M.vent((sx*.35,0,-2.25),.18)
+    loft(M,[(-2.36,LENS(.6,.29)),(-2.2,LENS(.7,.32))],(MID,.95))                                                    # engine block: five drives
+    for x in (0,.34,-.34):M.vent((x,.07,-2.37),.14)
+    for x in (.17,-.17):M.vent((x,-.12,-2.37),.11)
     return finish(M,4.6,1.0)
 
 # ============================================================== VARKESH
