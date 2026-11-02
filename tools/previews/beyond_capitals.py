@@ -90,7 +90,7 @@ def shrike():    # escort: a long layered lens hull: a broad torpedo prow, a rai
     for sx in (1,-1):M.vent((sx*.28,.0,-2.6),.11)
     lights(M,[(.3,-.08,2.18),(-.3,-.08,2.18)],.04)
     return finish(M,3.6,1.0)
-def sovereign(): # carrier: a broad blended lens hull with a flat flight deck, twin hangar mouths in the bow, twin engine booms aft
+def sovereign(): # carrier: a broad blended lens hull with a flat flight deck, twin hangar mouths in the bow, four engine booms aft
                  # (no tail fins), a bridge pod beside the deck, turret sponsons and a shield generator
     M=Mesh(112)
     loft(M,[(-2.2,LENS(.7,.32)),(-1.5,LENS(1.1,.42)),(1.0,LENS(1.05,.42)),(1.9,LENS(.7,.32)),(2.3,LENS(.32,.18))],lens_role)
@@ -104,6 +104,8 @@ def sovereign(): # carrier: a broad blended lens hull with a flat flight deck, t
         tube(M,[(sx*1.15,-.05,-1.0),(sx*1.15,-.05,-2.5),(sx*1.15,-.05,-2.65)],[.16,.2,.19],MID,.95,12,cap1=False);M.vent((sx*1.15,-.05,-2.65),.16)   # engine booms
         for z in (-1.5,-2.1):ring(M,(sx*1.15,-.05,z),.205,.014,ACC,seg=18,sides=4)
         M.blob((sx*1.2,.15,-1.5),.07,WIN,sub=1,noise=0)
+        tube(M,[(sx*.62,-.3,-.9),(sx*.62,-.3,-2.45),(sx*.62,-.3,-2.6)],[.13,.17,.16],MID,.95,12,cap1=False);M.vent((sx*.62,-.3,-2.6),.14)   # inner engine booms under the hull
+        for z in (-1.6,-2.15):ring(M,(sx*.62,-.3,z),.175,.012,ACC,seg=18,sides=4)
         sidewin(M,sx*1.07,.08,-1.2,1.2)
     bridge_halcyon(M,(.85,.42,-.6),1.1)                                                                             # bridge beside the deck
     shieldgen(M,(0,.48,-1.75),.18)
