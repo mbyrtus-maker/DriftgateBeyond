@@ -302,3 +302,41 @@ def freeport():
 
 FACTION_STATIONS=[('halcyon','Halcyon Accord',halcyon_station,halcyon_depot),('varkesh','Varkesh Dominion',varkesh_station,varkesh_depot),
                   ('ostrova','Ostrova Collective',ostrova_station,ostrova_depot)]
+
+# ============================================================== LIGHTING (applied to every station, depot and the freeport)
+def light_up(M,windows=200,seed=7):
+    # lit windows scattered over the hull plating (on LIGHT and MID faces big enough to carry them), sized to the model, and
+    # navigation beacons in the faction colour at its outermost points
+    T=np.array(M.T);V=T.reshape(-1,3);cen=(V.max(0)+V.min(0))/2;L=np.linalg.norm(V.max(0)-V.min(0));sz=L*.0065
+    g=np.random.default_rng(seed);cand=[];area=[]
+    for t,(role,sh) in zip(T,M.R):
+        if role not in (LIGHT,MID):continue
+        a=np.linalg.norm(np.cross(t[1]-t[0],t[2]-t[0]))/2
+        if a>(sz*4)**2:cand.append(t);area.append(a)
+    if cand:
+        area=np.array(area);pick=g.choice(len(cand),size=windows,p=area/area.sum())
+        for k in pick:
+            t=cand[k];r1,r2=g.random(),g.random()
+            if r1+r2>1:r1,r2=1-r1,1-r2
+            p=t[0]+(t[1]-t[0])*r1+(t[2]-t[0])*r2;n=np.cross(t[1]-t[0],t[2]-t[0]);n/=np.linalg.norm(n)
+            if n@(p-cen)<0:n=-n
+            u=np.cross([0,1.,0],n)
+            if np.linalg.norm(u)<.3:u=t[1]-t[0]
+            u/=np.linalg.norm(u);v=np.cross(n,u);q=p+n*sz*.25;w=sz*(1.8 if g.random()<.35 else 1.0)
+            A,B,C,D=q+u*w+v*sz*.5,q-u*w+v*sz*.5,q-u*w-v*sz*.5,q+u*w-v*sz*.5;role=GLOW if g.random()<.25 else WIN
+            M.tri(A,B,C,role,1.0,ref=q-n);M.tri(A,C,D,role,1.0,ref=q-n)
+    navs=[]
+    for d in [(1,0,0),(-1,0,0),(0,0,1),(0,0,-1),(0,1,0),(0,-1,0),(1,0,1),(-1,0,1),(1,0,-1),(-1,0,-1)]:
+        d=np.array(d,float);d/=np.linalg.norm(d);p=V[np.argmax((V-cen)@d)]+d*sz
+        if any(np.linalg.norm(p-q)<sz*10 for q in navs):continue
+        navs.append(p);M.blob(tuple(p),sz*1.3,GLOW,sub=1,noise=0)
+    return M
+def _lit(fn,n):
+    def f():return light_up(fn(),n)
+    f.__name__=fn.__name__;return f
+halcyon_station=_lit(halcyon_station,220);halcyon_depot=_lit(halcyon_depot,70)
+varkesh_station=_lit(varkesh_station,220);varkesh_depot=_lit(varkesh_depot,70)
+ostrova_station=_lit(ostrova_station,180);ostrova_depot=_lit(ostrova_depot,60)
+freeport=_lit(freeport,320)
+FACTION_STATIONS=[('halcyon','Halcyon Accord',halcyon_station,halcyon_depot),('varkesh','Varkesh Dominion',varkesh_station,varkesh_depot),
+                  ('ostrova','Ostrova Collective',ostrova_station,ostrova_depot)]
