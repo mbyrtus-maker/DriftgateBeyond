@@ -85,8 +85,8 @@ def ward():
     plate(M,[(-.12,.12,.27),(.12,.12,.27),(.12,.15,.27),(-.12,.15,.27)],.01,WIN,1.0)
     for sx in (1,-1):abox(M,(sx*.24,-.03,.05),(.08,.08,.3),DARK,(.8,.8),.8);tube(M,[(sx*.24,-.03,.2),(sx*.24,-.03,.45)],[.018,.016],DARK,1.0,6)
     sqdrive(M,(0,0,-.34),.2)
-    for z in (-.12,.1):loft(M,[(z-.025,[(a*1.04,b*1.04) for a,b in HEX(.21,.165)]),(z+.025,[(a*1.04,b*1.04) for a,b in HEX(.21,.165)])],(ACC,1.0))   # amber armour bands
-    plate(M,[(-.09,.17,-.2),(.09,.17,-.2),(.09,.17,.12),(-.09,.17,.12)],.012,ACC,1.0)                                  # amber spine plate
+    for z in (-.12,.1):loft(M,[(z-.025,[(a*1.12,b*1.12) for a,b in HEX(.21,.165)]),(z+.025,[(a*1.12,b*1.12) for a,b in HEX(.21,.165)])],(ACC,1.0),cap0=False,cap1=False)   # amber armour bands
+    plate(M,[(-.09,.21,-.2),(.09,.21,-.2),(.09,.21,.12),(-.09,.21,.12)],.02,ACC,1.0)                                  # amber spine plate
     for sx in (1,-1):M.blob((sx*.24,-.03,.45),.02,GLOW,sub=1,noise=0)
     return finish(M,.9,1.0)
 def halo_drone():
