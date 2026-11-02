@@ -166,35 +166,30 @@ def talon():
     for z in (-.45,.05):box(M,(0,.24,z),(.2,.03,.12),ACC,sh=.9)
     return M
 
-# ------------------------------------------------------------------ Varkesh Halberd: heavy fighter (an axe: a long spar ending in a blade ahead of a tall armoured tower)
+# ------------------------------------------------------------------ Varkesh Halberd: heavy fighter (a brawler: an armoured core with four gun-and-drive pods on an X of slab arms)
 def halberd():
     M=Mesh(25)
-    loft(M,[(-1.35,HEX(.3,.42)),(-.8,HEX(.36,.48)),(-.25,HEX(.32,.44)),(.05,HEX(.18,.26,-.04))],hex_role)              # tall armoured tower
-    box(M,(0,.6,-.75),(.4,.22,.6),MID,taper=(.9,.9));box(M,(0,.76,-.82),(.28,.14,.4),MID,sh=1.05)                   # stepped bridge
-    plate(M,[(-.11,.8,-.6),(.11,.8,-.6),(.11,.84,-.7),(-.11,.84,-.7)],.02,GLASS)
-    box(M,(0,.9,-.95),(.2,.1,.22),DARK)                                                                            # dorsal turret
-    for sx in (1,-1):barrel(M,(sx*.05,.92,-.85),.5,.024)
-    box(M,(0,-.05,.7),(.16,.18,1.4),DARK,taper=(.8,.8))                                                           # the long spar
-    for k in range(4):box(M,(0,-.05,.15+k*.32),(.22,.22,.06),ACC,sh=.9)                                           # spar collars
-    plate(M,[(0,.08,1.25),(0,.62,1.05),(0,.7,1.38),(0,.12,1.55)],.05,ACC)                                          # the axe blade above
-    plate(M,[(0,-.18,1.25),(0,-.5,1.12),(0,-.52,1.4),(0,-.2,1.52)],.05,ACC,.9)                                     # the hook below
-    M.tube([(0,-.05,1.4),(0,-.05,1.9)],[.06,.005],6,lambda i,j,n,p:(DARK,1.0))                                     # spike
+    loft(M,[(-1.0,HEX(.32,.3)),(-.4,HEX(.38,.36)),(.35,HEX(.34,.32)),(.75,HEX(.22,.2,-.02)),(.95,HEX(.1,.1,-.03))],hex_role)   # armoured core
+    plate(M,[(-.1,.33,.55),(.1,.33,.55),(.1,.37,.2),(-.1,.37,.2)],.025,GLASS)
+    plate(M,[(-.3,.18,.82),(.3,.18,.82),(.22,-.2,1.02),(-.22,-.2,1.02)],.07,ACC)                                       # ram plate across the prow
+    for z in (-.55,-.1,.3):box(M,(0,.37,z),(.3,.03,.14),ACC,sh=.9)
     for sx in (1,-1):
-        box(M,(sx*.4,-.1,-.7),(.18,.5,1.1),MID,taper=(.9,.85))                                                    # armour slab
-        box(M,(sx*.54,.1,-.55),(.1,.24,.5),DARK)                                                                    # missile rack
-        for a in range(2):
-            for b in range(3):box(M,(sx*.6,.02+a*.12,-.4-b*.14),(.02,.08,.1),ACC,sh=.95)
-        barrel(M,(sx*.4,-.28,-.2),.55,.035)
-        for dy in (.25,0,-.25):box(M,(sx*.15,dy,-1.42),(.17,.16,.12),DARK);M.vent((sx*.15,dy,-1.48),.055)
-        plate(M,[(sx*.32,.35,-.95),(sx*.5,.62,-1.25),(sx*.5,.62,-1.36),(sx*.32,.35,-1.36)],.06,ACC,.9)
+        for sy in (1,-1):
+            px,py=sx*.78,sy*.5
+            plate(M,[(sx*.25,sy*.15,.25),(px*.95,py*.95,.05),(px*.95,py*.95,-.55),(sx*.25,sy*.15,-.75)],.07,DARK if sy<0 else MID)   # slab arm
+            box(M,(px,py,-.15),(.22,.22,1.1),MID,taper=(.8,.8))                                                  # pod
+            box(M,(px,py,.38),(.16,.16,.12),ACC,sh=.95)
+            barrel(M,(px,py,.42),.45,.034)                                                                         # gun out of each pod
+            box(M,(px,py,-.75),(.2,.2,.14),DARK);M.vent((px,py,-.82),.07)                                         # drive at the back of each pod
+            for k in range(3):box(M,(px+sx*.12,py,.1-k*.25),(.03,.18,.18),DARK,sh=.95)                              # armour ribs on the pod
+    box(M,(0,-.38,.0),(.22,.12,.4),DARK);barrel(M,(0,-.4,.2),.5,.03)                                                 # ventral gun
     return M
 
-# ------------------------------------------------------------------ Ostrova Wisp: medium fighter (a crescent: moth-like arcs with crystal membranes, no halo)
-def arc(M,c,R,r,role,a0,a1,seg=16,sides=6,plane='xz'):
+# ------------------------------------------------------------------ Ostrova Wisp: medium fighter (a crescent on rods)
+def arc(M,c,R,r,role,a0,a1,seg=16,sides=6):
     c=np.array(c,float);pts=[]
     for k in range(seg+1):
-        a=a0+(a1-a0)*k/seg
-        pts.append(c+([math.cos(a)*R,0,math.sin(a)*R] if plane=='xz' else [math.cos(a)*R,math.sin(a)*R,0]))
+        a=a0+(a1-a0)*k/seg;pts.append(c+[math.cos(a)*R,0,math.sin(a)*R])
     M.tube(pts,[r*(.6+.4*math.sin(math.pi*k/seg)) for k in range(seg+1)],sides,lambda i,j,n,p:(role,1.0),cap0=True,cap1=True)
     return pts
 def wisp():
@@ -202,39 +197,40 @@ def wisp():
     loft(M,[(-.9,DIA(.06,.06)),(-.55,DIA(.15,.12)),(-.05,DIA(.17,.16)),(.45,DIA(.1,.1)),(.95,DIA(.035,.035)),(1.1,DIA(.004,.004))],lambda i,j:((LIGHT,1.0) if j in (0,1) else (MID,.92)))
     for sx in (1,-1):
         a0,a1=(-1.25,1.05) if sx>0 else (math.pi-1.05,math.pi+1.25)
-        pts=arc(M,(0,0,-.25),.78,.04,ACC,a0,a1)
-        for k in range(0,len(pts)-1,2):                                                                         # crystal membrane from the spire to the crescent
-            p0,p1=pts[k],pts[k+2] if k+2<len(pts) else pts[-1]
-            plate(M,[(0,0,p0[2]*.55),(p0[0],p0[1],p0[2]),(p1[0],p1[1],p1[2]),(0,0,p1[2]*.55)],.008,WIN if k%4==0 else GLASS,.75)
+        pts=arc(M,(0,0,-.25),.78,.045,ACC,a0,a1)
+        for k in (2,8,14):                                                                                       # rods from the spire to the crescent
+            p=pts[k];base=np.array([sx*.08,0,p[2]*.6-.05])
+            M.tube([base,(base+p)/2,p],[.016,.013,.016],6,lambda i,j,n,q:(LIGHT,.9),cap0=False,cap1=False)
+            M.blob(tuple(p),.035,WIN,sub=1,noise=0)
         for p in (pts[0],pts[-1]):M.blob(tuple(p),.06,GLASS,sub=1,squash=(1,1,1.4),noise=0)
         barrel(M,tuple(pts[-1]+[0,0,.02]),.3,.016,ACC)
-    for sy in (1,-1):plate(M,[(0,sy*.1,-.5),(0,sy*.42,-.85),(0,sy*.38,-.95),(0,sy*.08,-.9)],.02,MID)                # upper and lower fins
+    for sy in (1,-1):plate(M,[(0,sy*.1,-.5),(0,sy*.42,-.85),(0,sy*.38,-.95),(0,sy*.08,-.9)],.02,MID)
     M.blob((0,.12,.32),.075,GLASS,sub=2,squash=(.9,.7,2.0),noise=0)
     M.tube([(0,0,1.0),(0,0,1.42)],[.02,.012],6,lambda i,j,n,p:(LIGHT,.9))
     for z,r in ((1.2,.065),(1.34,.045)):ring(M,(0,0,z),r,.011,ACC,seg=14,sides=5)
     M.vent((0,0,-.92),.055)
     return M
 
-# ------------------------------------------------------------------ Ostrova Vigil: heavy fighter (a crystal cage: three splayed spires holding a glowing core)
+# ------------------------------------------------------------------ Ostrova Vigil: heavy fighter (a reliquary: a great faceted crystal held by three parallel spires and three halos)
 def vigil():
     M=Mesh(39)
-    offs=[(-1.25,.5),(-.75,.44),(-.2,.32),(.4,.16),(.95,.04)]
+    star=lambda w,h:[(math.cos(a)*(w if k%2==0 else w*.62),math.sin(a)*(h if k%2==0 else h*.62)) for k,a in enumerate(np.linspace(0,2*math.pi,12,endpoint=False))]
+    loft(M,[(-.85,star(.03,.03)),(-.55,star(.2,.2)),(.1,star(.24,.24)),(.6,star(.14,.14)),(.85,star(.02,.02))],lambda i,j:((GLASS,1.0) if j%2 else (WIN,.8)))   # the crystal
+    M.blob((0,0,-.1),.13,WIN,sub=2,squash=(1,1,2.4),noise=0)
+    R=.46
     for k in range(3):
-        a=math.pi/2+k*2*math.pi/3;ca,sa=math.cos(a),math.sin(a)
-        w=[.06,.11,.12,.08,.02]
-        loft(M,[(z,DIA(w[i],w[i],ca*o,sa*o)) for i,(z,o) in enumerate(offs)],lambda i,j:((LIGHT,1.0) if j in (0,1) else (MID,.92)))
-        M.vent((ca*.5,sa*.5,-1.27),.05)
-        plate(M,[(ca*.48,sa*.48,-.9),(ca*.85,sa*.85,-1.2),(ca*.8,sa*.8,-1.32),(ca*.48,sa*.48,-1.24)],.025,MID)   # outer fin on each spire
-        barrel(M,(ca*.36,sa*.36,-.4),.5,.022,ACC)
-        b=a+math.pi/3;cb,sb=math.cos(b),math.sin(b)
-        plate(M,[(ca*.42,sa*.42,-.6),(cb*.18,sb*.18,-.35),(math.cos(a+2*math.pi/3)*.42,math.sin(a+2*math.pi/3)*.42,-.6)],.012,GLASS,.8)   # crystal panes between spires
-    M.blob((0,0,-.4),.2,WIN,sub=2,squash=(1,1,1.7),noise=0)                                                         # the glowing core
-    for z,R in ((-.8,.45),(-.05,.27)):ring(M,(0,0,z),R,.018,ACC,seg=24,sides=5)
-    M.blob((0,0,1.0),.16,MID,sub=2,squash=(1,1,.3),noise=0);ring(M,(0,0,1.03),.17,.018,ACC,seg=22,sides=5)
-    M.blob((0,0,1.06),.06,GLASS,sub=1,noise=0)
-    M.tube([(0,0,1.08),(0,0,1.55)],[.024,.012],6,lambda i,j,n,p:(LIGHT,.9))
-    for z,r in ((1.3,.08),(1.45,.055)):ring(M,(0,0,z),r,.013,ACC,seg=14,sides=5)
-    M.blob((0,.2,.35),.08,GLASS,sub=2,squash=(.9,.7,2.0),noise=0)
+        a=math.pi/2+k*2*math.pi/3;dx,dy=math.cos(a)*R,math.sin(a)*R
+        loft(M,[(-1.25,DIA(.04,.04,dx,dy)),(-.95,DIA(.11,.11,dx,dy)),(.5,DIA(.1,.1,dx,dy)),(1.2,DIA(.01,.01,dx,dy))],lambda i,j:((LIGHT,1.0) if j in (0,1) else (MID,.92)))   # parallel spires, prongs forward
+        M.vent((dx,dy,-1.27),.04)
+        plate(M,[(dx,dy,-.7),(dx*1.75,dy*1.75,-1.0),(dx*1.65,dy*1.65,-1.12),(dx,dy,-1.08)],.025,MID)                    # outer fins
+        barrel(M,(dx*1.08,dy*1.08,.3),.45,.02,ACC)
+        for z in (-.5,.15):                                                                                        # struts from spire to crystal
+            M.tube([(dx,dy,z),(dx*.3,dy*.3,z+.05)],[.014,.014],5,lambda i,j,n,p:(LIGHT,.9),cap0=False,cap1=False)
+    for z in (-.85,-.15,.55):ring(M,(0,0,z),R,.03,ACC,seg=30,sides=6)                                               # three halos binding the spires
+    ring(M,(0,0,-.15),R+.08,.01,WIN,seg=30,sides=4)
+    M.blob((0,R+.12,-.15),.11,MID,sub=2,squash=(1,.35,1),noise=0);ring(M,(0,R+.16,-.15),.11,.015,ACC,seg=18,sides=5,axis='y')   # sensor dish on the top halo
+    M.tube([(0,0,.85),(0,0,1.45)],[.022,.01],6,lambda i,j,n,p:(LIGHT,.9))
+    for z,r in ((1.2,.075),(1.36,.05)):ring(M,(0,0,z),r,.012,ACC,seg=14,sides=5)
     return M
 
 FAMILY=[('halcyon','Halcyon Accord',[('Swift','Light',swift),('Kite','Medium',kite),('Osprey','Heavy',osprey)]),
