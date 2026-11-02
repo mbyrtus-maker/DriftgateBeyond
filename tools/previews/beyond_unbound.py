@@ -64,7 +64,7 @@ def raider():
     patch(M,(.08,.2,-.1),.1,.16);spikes(M,[(.06,-.05,1.05),(-.06,-.05,1.05)])
     return finish(M,2.0,1.0)
 def skiff():
-    # scout: a slender Ostrova faceted spire for a hull, a salvaged Halcyon radome dish on a strut, two Varkesh square drives
+    # scout: a slender Ostrova faceted spire for a hull, a salvaged Halcyon radome dish set flush on the hull, two Varkesh square drives
     # strapped to its flanks, small forward-swept Halcyon wings,
     # a jammer array of rods aft
     M=Mesh(402)
@@ -74,7 +74,7 @@ def skiff():
         sq_drive(M,(sx*.27,-.02,-.75),.16)
         for z in (-.62,-.88):ring(M,(sx*.27,-.02,z),.1,.012,ACC,seg=10,sides=4)
         tube(M,[(sx*.17,-.02,-.75),(sx*.2,-.02,-.75)],[.03,.03],DARK,.8,4)
-    tube(M,[(0,.15,.0),(0,.42,.05)],[.025,.02],LIGHT,.9,5);dish(M,(0,.47,.05),.17)
+    dish(M,(0,.2,.05),.17)                                                                                          # radome set flush on the hull
     canopy(M,(0,.12,.62),.09,(1,.7,1.8))
     for sx in (1,-1):hal_wing(M,(sx*.16,-.02,-.25),(sx*.62,-.05,.12),.3)                                           # small forward-swept wings
     for k,x in enumerate((-.1,0,.1)):tube(M,[(x,.1,-.9),(x*1.6,.4+.06*(k%2),-1.15)],[.01,.006],LIGHT,.9,4);M.blob((x*1.6,.4+.06*(k%2),-1.15),.025,WIN,sub=1,noise=0)
