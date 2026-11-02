@@ -180,6 +180,8 @@ Smuggling is a way to make money outside the law, with its own parts. Names are 
 - **Surrender:** the goods are confiscated into that power's stores (the ledger stays exact), a fine, and a small standing hit.
 - **Run:** you keep the goods, but that power turns hostile to you for a while and posts a bounty on you.
 
+**The Black market tab** (on the Company screen, decided 2 Nov 2026) is where smuggling is run as a business. **Request** black-market work from your contacts (fixers at the freeports, quiet buyers at the powers' stations): smuggling runs, contraband buys and sells, Riftstone hauls, each priced by supply and demand, with embargo premiums showing. **Assign** each run to yourself, to one of your AI pilots (whose ship's hidden cargo container sets how much it can hide), or to a contractor, and follow the runs in progress: where they are, which patrols are near, and what each run was caught for or paid.
+
 **Where it sells: everywhere that wants it,** by supply and demand. Each market's demand sets the price, whether the goods are legal there or not; an embargo or a ban pushes demand and price up where the goods are scarce. Powers and freeports may post smuggling runs as jobs (deniable proxy work, 11c).
 
 ### 7. What you spend on: the ladder
@@ -244,7 +246,7 @@ Players have several things to spend money and materials on, in this order, each
 These reuse what Driftgate 1 has where they can: the station's task tabs, the Jobs board, the galaxy map and its sector panel.
 
 **Where they live (decided 2 Nov 2026).** Driftgate 1 has no in-game menu: docked screens have five tabs (Overview, Trade, Jobs, Ship, Station, keys 1–5), and M opens the galaxy map.
-- **One new Company screen** holds, in this order, **Allegiance** (it opens there), **Holdings, Economy, Post jobs**, and a **read-only Faction jobs** tab so you can browse work in flight. It opens anywhere, in flight or docked, with its own key (proposal: **0**, since every letter is taken) and a **Company** button on the HUD beside Map, and works like the galaxy map: a full screen over a running game, closed with Esc.
+- **One new Company screen** holds, in this order, **Allegiance** (it opens there), **Holdings, Economy, Post jobs, Black market**, and a **read-only Faction jobs** tab so you can browse work in flight. It opens anywhere, in flight or docked, with its own key (proposal: **0**, since every letter is taken) and a **Company** button on the HUD beside Map, and works like the galaxy map: a full screen over a running game, closed with Esc.
 - **The Strategic map grows out of the galaxy map** (still M): click a sector to zoom into a live view of it, with your bases, your AI ships and the threats there, and give your AI orders (guard, mine here, escort, patrol), as the capital bridge's Strategic console already does for one ship.
 - **Faction jobs replace the dock's Jobs tab,** where you sign on; the Company screen's copy is for browsing.
 - **The title screen offers:** the freeport and role cards (in place of the faction cards), the **Legend start package** (spend start points on your unlocked perks), and keeps **Training** and the **Leaderboard**. The company's name and colour are not chosen there.
