@@ -4,7 +4,7 @@
 #   Varkesh  a stepped hex fortress: armoured tiers, hangar slots in the walls, pincer docking clamps, heavy turrets, exhaust stacks
 #   Ostrova  a faceted crystal spire: a great horizontal halo with crystal holds, two reactor halos crossed in an X round the head,
 #            a crystal cluster at the root, docking spars
-#   Freeport the company style at its biggest: two habitat rings, two corporate towers (one per corporation), three market wings
+#   Freeport a trade harbour unlike any player base: a lit bazaar globe on a docking plaza, cargo piers, two corporate spires
 import math
 import numpy as np
 from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,box,plate,ring
@@ -104,53 +104,76 @@ def pincer_clamp(B,L=1.4,w=.7):
 def vstack(M,base,h=1.2,r=.22):
     b=np.array(base,float);box(M,tuple(b+[0,.08,0]),(r*2.4,.16,r*2.4),DARK);drum(M,b,b+[0,h,0],r,MID,8)
     ring(M,tuple(b+[0,h*.78,0]),r*1.05,r*.12,ACC,seg=12,sides=4,axis='y');M.blob(tuple(b+[0,h,0]),r*.8,DARK,sub=1,squash=(1,.3,1),noise=0)
+def war_blade(M,a,pts,th=.28,turret=None):
+    # a thick armoured blade standing out from the hull along angle a; pts are (radius,y) of a convex outline,
+    # with an amber edge along its top and an optional turret riding it
+    P=[np.array([math.cos(a)*r,y,math.sin(a)*r]) for r,y in pts]
+    plate(M,P,th,MID,.95)
+    tube(M,[P[-1],P[-2]],[th*.32,th*.32],ACC,1.0,5,cap0=False,cap1=False)
+    if turret:r,y,sc=turret;B=Mesh();main_turret(B,(0,0,0),sc);put(M,B,(math.cos(a)*r,y,math.sin(a)*r),outward(a))
 def varkesh_station():
+    # a war fortress: a smooth twelve-faceted double spike with a knife-edged waist, six armoured blades rising from the waist like a
+    # crown of spikes with heavy turrets riding them, three smaller blades below, hangar slots and pincer clamps in the waist,
+    # a lit command band near the top spike
     M=Mesh(311)
-    P=[(-2.0,.6),(-1.3,2.4),(-.95,3.7),(.25,3.7),(.45,3.25),(.45,2.65),(1.25,2.65),(1.4,2.3),(1.4,1.65),(2.05,1.65),(2.2,1.35)]
-    lathe(M,P,6,(MID,1.0),(LIGHT,.95),(DARK,.85),alt=.07)                                                        # stepped hex fortress
-    for y in (-.6,.0):band(M,y,3.72,6,.1,ACC)
-    band(M,.9,2.67,6,.08,ACC);band(M,.62,2.68,6,.05,WIN);band(M,1.9,1.67,6,.05,WIN)
-    bridge_varkesh(M,(0,2.2,.0),2.6)                                                                             # command tiers
-    ap=3.7*math.cos(PI/6)
+    P=[(-3.4,.04),(-1.8,1.3),(-.7,2.9),(-.05,3.45),(.05,3.45),(.6,2.85),(1.5,1.7),(2.6,.95),(3.9,.3),(4.8,.02)]
+    lathe(M,P,12,(MID,1.0),(LIGHT,.95),(DARK,.85),alt=.06)
+    band(M,0,3.47,12,.1,ACC);band(M,1.5,1.72,12,.07,WIN);band(M,-.75,2.86,12,.06,WIN);band(M,2.95,.72,12,.12,WIN)
     for k in range(6):
-        a=PI/6+k*PI/3
-        if k%2==0:turned(M,lambda B:mouth(B,(0,0,0),1.7,.6,.5),(math.cos(a)*ap,-.35,math.sin(a)*ap),a)              # hangar slots in three walls
-        else:turned(M,pincer_clamp,(math.cos(a)*ap*.98,-.35,math.sin(a)*ap*.98),a)                                  # pincer docking clamps on the others
-        av=k*PI/3;turned(M,lambda B:main_turret(B,(0,0,0),2.0),(math.cos(av)*3.0,.45,math.sin(av)*3.0),av)          # heavy turrets on the corners
-    for k in range(3):av=PI/2+k*2*PI/3;vstack(M,(math.cos(av)*2.0,1.25,math.sin(av)*2.0),1.3,.24)
-    floods(M,[(math.cos(PI/6+k*PI/3)*ap*1.01,.15,math.sin(PI/6+k*PI/3)*ap*1.01) for k in range(6)],.07)
+        a=k*PI/3
+        war_blade(M,a,[(2.9,.55),(2.9,-.75),(4.7,-.25),(6.6,1.9),(4.5,1.15)],.3,(5.4,1.45,1.6))                    # crown blades
+    for k in range(3):
+        a=PI/6+k*2*PI/3+PI/3
+        war_blade(M,a,[(1.6,-1.9),(2.5,-.9),(3.5,-1.6),(4.2,-3.2)],.24)                                            # lower blades
+    for k in range(6):
+        a=PI/6+k*PI/3;r=3.3
+        if k%2==0:turned(M,lambda B:mouth(B,(0,0,0),1.3,.45,.6),(math.cos(a)*r,-.25,math.sin(a)*r),a)               # hangar slots
+        else:turned(M,lambda B:pincer_clamp(B,1.0,.55),(math.cos(a)*2.55,-.95,math.sin(a)*2.55),a)                   # pincer clamps
+    for k in range(6):a=PI/6+k*PI/3;turned(M,lambda B:main_turret(B,(0,0,0),1.4),(math.cos(a)*2.0,1.35,math.sin(a)*2.0),a)
+    tube(M,[(0,4.6,0),(0,6.0,0)],[.06,.02],LIGHT,.9,5);ring(M,(0,5.3,0),.25,.03,ACC,seg=12,sides=4,axis='y')
+    floods(M,[(math.cos(PI/6+k*PI/3)*3.5,.15,math.sin(PI/6+k*PI/3)*3.5) for k in range(6)],.07)
     return M
 def varkesh_depot():
+    # the fortress in small: a twelve-faceted double spike, three crown blades, one hangar slot, one pincer clamp, a heavy turret on top
     M=Mesh(312)
-    lathe(M,[(-.75,.35),(-.45,1.25),(.35,1.25),(.5,1.05),(.5,.7),(.95,.7),(1.05,.5)],6,(MID,1.0),(LIGHT,.95),(DARK,.85),alt=.07)
-    band(M,-.1,1.27,6,.07,ACC);band(M,.62,.71,6,.04,WIN)
-    ap=1.25*math.cos(PI/6)
-    turned(M,lambda B:mouth(B,(0,0,0),.8,.35,.3),(math.cos(PI/6)*ap,-.1,math.sin(PI/6)*ap),PI/6)
-    turned(M,lambda B:pincer_clamp(B,.8,.42),(math.cos(PI*7/6)*ap,-.1,math.sin(PI*7/6)*ap),PI*7/6)
-    main_turret(M,(0,1.05,0),1.3)
-    vstack(M,(.8,.35,-.35),.8,.14);vstack(M,(-.6,.35,-.7),.8,.14)
-    tube(M,[(-.2,1.05,-.4),(-.2,1.9,-.4)],[.03,.015],LIGHT,.9,5);ring(M,(-.2,1.6,-.4),.08,.012,ACC,seg=10,sides=4,axis='y')
+    lathe(M,[(-1.5,.03),(-.75,.6),(-.3,1.25),(.0,1.4),(.3,1.15),(.8,.7),(1.4,.3),(1.9,.02)],12,(MID,1.0),(LIGHT,.95),(DARK,.85),alt=.06)
+    band(M,0,1.41,12,.06,ACC);band(M,.6,.82,12,.04,WIN)
+    for k in range(3):a=PI/2+k*2*PI/3;war_blade(M,a,[(1.2,.25),(1.2,-.35),(2.0,-.1),(2.8,.85),(1.9,.5)],.16)
+    a=PI/2+PI/3;turned(M,lambda B:mouth(B,(0,0,0),.6,.25,.3),(math.cos(a)*1.33,-.1,math.sin(a)*1.33),a)
+    a=PI/2+PI;turned(M,lambda B:pincer_clamp(B,.6,.32),(math.cos(a)*1.05,-.4,math.sin(a)*1.05),a)
+    main_turret(M,(0,1.15,.0),1.1)
     return M
 
 # ============================================================== OSTROVA
 OFF8=PI/8
 def ostrova_station():
+    # a cluster of crystal spires: a tall faceted main spire with lit crystal bands rising from a faceted plinth, six great crystals of
+    # different heights round it leaning outward, smaller crystals between, a crystal root below, the great halo with turrets and
+    # crystal holds circling the cluster, docking spars ending in faceted pods
     M=Mesh(321)
-    lathe(M,[(-3.2,.04),(-2.4,.62),(-1.0,1.2),(.6,1.3),(1.7,1.0),(3.0,.62),(4.4,.26),(5.5,.02)],8,(LIGHT,1.0),(LIGHT,.95),(MID,.88),off=OFF8,alt=.08)   # crystal spire
-    for y in (.15,2.3,3.6):band(M,y,{.15:1.31,2.3:.86,3.6:.45}[y],8,.12,WIN,OFF8)
-    ring(M,(0,.2,0),4.4,.2,ACC,seg=64,sides=8,axis='y')                                                          # the great halo
+    lathe(M,[(-1.6,.6),(-1.0,2.2),(-.2,2.5),(.3,2.2),(.5,1.4)],8,(LIGHT,1.0),(LIGHT,.95),(MID,.88),off=OFF8,alt=.08)   # plinth
+    band(M,-.45,2.36,8,.1,WIN,OFF8)
+    lathe(M,[(.3,1.0),(1.5,1.05),(3.5,.8),(5.5,.42),(7.2,.02)],8,(LIGHT,1.0),(LIGHT,.95),(MID,.88),off=OFF8,alt=.08)   # main spire
+    for y,r in ((1.6,1.06),(3.6,.79),(5.2,.48)):band(M,y,r,8,.12,WIN,OFF8)
+    g=np.random.default_rng(5)
+    for k in range(6):                                                                                            # six great crystal spires
+        a=k*PI/3+PI/6;L=(3.6,5.2,3.0,4.6,3.3,5.6)[k];lean=.22+.08*(k%2)
+        b=np.array([math.cos(a)*1.55,-.4,math.sin(a)*1.55]);d=np.array([math.cos(a)*lean,1,math.sin(a)*lean])
+        crystal_at(M,b-d/np.linalg.norm(d)*.9,d,L+.9,.42+.04*(k%3))
+    for k in range(6):                                                                                            # smaller crystals between
+        a=k*PI/3;b=np.array([math.cos(a)*2.1,-.2,math.sin(a)*2.1]);d=np.array([math.cos(a)*.6,1,math.sin(a)*.6])
+        crystal_at(M,b-d/np.linalg.norm(d)*.5,d,1.6+.5*(k%2),.24)
+    for k in range(7):                                                                                            # crystal root
+        a=k*2*PI/7;d=np.array([math.cos(a)*.5,-1,math.sin(a)*.5]);crystal_at(M,(math.cos(a)*.6,-1.3,math.sin(a)*.6),d,1.3+.5*(k%3),.26)
+    ring(M,(0,.9,0),4.9,.2,ACC,seg=64,sides=8,axis='y')                                                          # the great halo
     for k in range(4):
-        a=k*PI/2;tube(M,[(math.cos(a)*1.25,.2,math.sin(a)*1.25),(math.cos(a)*4.25,.2,math.sin(a)*4.25)],[.11,.08],LIGHT,.92,6)
-        hpd(M,(math.cos(a)*4.4,.4,math.sin(a)*4.4),1.2,ACC)
-        a2=a+PI/4;c=np.array([math.cos(a2)*4.4,.2,math.sin(a2)*4.4]);t=np.array([-math.sin(a2),0,math.cos(a2)])
-        crystal_at(M,c-t*.8,t,1.6,.38)                                                                           # crystal holds on the halo
-    for s in (1,-1):                                                                                              # two reactor halos crossed in an X
-        B=Mesh();ring(B,(0,0,0),2.0,.11,ACC,seg=44,sides=6,axis='z');put(M,B,(0,2.9,0),ry(s*PI/4))
-    for k in range(7):                                                                                            # crystal cluster at the root
-        a=k*2*PI/7;d=np.array([math.cos(a)*.55,-1,math.sin(a)*.55]);crystal_at(M,(math.cos(a)*.35,-2.2,math.sin(a)*.35),d,1.0+.4*(k%3),.22)
-    for k in range(4):                                                                                            # docking spars with faceted pods
-        a=k*PI/2+PI/4;e=np.array([math.cos(a)*3.0,-.9,math.sin(a)*3.0])
-        tube(M,[(math.cos(a)*1.1,-.7,math.sin(a)*1.1),e],[.12,.08],MID,.95,6)
+        a=k*PI/2;tube(M,[(math.cos(a)*1.2,.9,math.sin(a)*1.2),(math.cos(a)*4.75,.9,math.sin(a)*4.75)],[.11,.08],LIGHT,.92,6)
+        hpd(M,(math.cos(a)*4.9,1.1,math.sin(a)*4.9),1.2,ACC)
+        a2=a+PI/4;c=np.array([math.cos(a2)*4.9,.9,math.sin(a2)*4.9]);t=np.array([-math.sin(a2),0,math.cos(a2)])
+        crystal_at(M,c-t*.8,t,1.6,.36)
+    for k in range(3):                                                                                            # docking spars with faceted pods
+        a=k*2*PI/3+PI/2;e=np.array([math.cos(a)*3.6,-1.2,math.sin(a)*3.6])
+        tube(M,[(math.cos(a)*1.9,-1.1,math.sin(a)*1.9),e],[.12,.08],MID,.95,6)
         B=Mesh();lathe(B,[(-.5,.02),(-.25,.3),(.25,.3),(.5,.02)],8,off=OFF8,alt=.08);band(B,0,.31,8,.06,WIN,OFF8);put(M,B,e,frame_y((math.cos(a),0,math.sin(a))))
     return M
 def ostrova_depot():
@@ -171,32 +194,41 @@ def ostrova_depot():
     hpd(M,(0,1.35,0),.8,ACC)
     return M
 
-# ============================================================== FREEPORT (company style)
+# ============================================================== FREEPORT
 def freeport():
+    # a trade harbour, nothing like a player station: a great lit globe (the bazaar) sitting on a broad docking plaza with twelve
+    # berths round its rim, four long cargo piers stacked with containers, two tall corporate spires (one per corporation) each with
+    # its sign, the freeport light on a mast above, a keel of tanks below
     M=Mesh(331)
-    drum(M,(0,-3.6,0),(0,3.2,0),.9,MID,16,bands=(.1,.35,.65,.9))                                                # spine
-    drum(M,(0,-.3,0),(0,1.1,0),1.6,LIGHT,20,bands=(.15,.85))                                                    # hub
-    for y in (.15,.65):B=Mesh();ring(B,(0,0,0),1.62,.04,WIN,seg=44,sides=4,axis='y');put(M,B,(0,y,0))
-    for y,R,n in ((.4,3.9,6),(-1.9,2.9,4)):                                                                       # two habitat rings
-        B=Mesh();ring(B,(0,0,0),R,.34,MID,seg=60,sides=10,axis='y');ring(B,(0,0,0),R,.35,WIN,seg=60,sides=4,axis='y');put(M,B,(0,y,0))
-        for a in np.linspace(0,2*PI,n,endpoint=False)+PI/n:truss(M,(math.cos(a)*(1.6 if y>0 else .9),y,math.sin(a)*(1.6 if y>0 else .9)),(math.cos(a)*(R-.3),y,math.sin(a)*(R-.3)),.32,.03)
-        floods(M,[(math.cos(a)*R,y+.4,math.sin(a)*R) for a in np.linspace(0,2*PI,10,endpoint=False)],.08)
-    for a,h,lit in ((0.0,3.4,True),(PI,2.7,False)):                                                               # two corporate towers, one per corporation
-        b=np.array([math.cos(a)*3.9,.4,math.sin(a)*3.9])
-        drum(M,b,b+[0,h,0],.5,LIGHT,12,bands=() if lit else (.3,.55,.8))
-        if lit:
-            for f in (.35,.6,.85):B=Mesh();ring(B,(0,0,0),.51,.05,WIN,seg=20,sides=4,axis='y');put(M,B,b+[0,h*f,0])
-        M.blob(tuple(b+[0,h,0]),.5,LIGHT,sub=2,squash=(1,.5,1),noise=0)
-        n=np.array([math.cos(a),0,math.sin(a)]);t=np.array([-math.sin(a),0,math.cos(a)]);cc=b+[0,h*.62,0]+n*.55
-        plate(M,[cc-t*.5-[0,.35,0],cc+t*.5-[0,.35,0],cc+t*.5+[0,.35,0],cc-t*.5+[0,.35,0]],.06,ACC,1.0)                # corporate sign
-        mast(M,b+[0,h+.2,0],.9,.035)
-    for k in range(3):a=PI/2+k*2*PI/3+PI/6;put(M,market_wing(),(math.cos(a)*2.9,-1.9,math.sin(a)*2.9),outward(a),1.1)   # three market wings
-    drum(M,(0,3.2,0),(0,3.8,0),1.25,DARK,18)                                                                      # docking crown
-    for a in np.linspace(0,2*PI,6,endpoint=False):collar(M,(math.cos(a)*1.2,3.5,math.sin(a)*1.2),.22,(math.cos(a),0,math.sin(a)))
-    mast(M,(0,3.8,0),2.0,.06)
-    for a in np.linspace(0,2*PI,4,endpoint=False)+PI/4:tank(M,(math.cos(a)*1.25,-3.0,math.sin(a)*1.25),.5)
-    tube(M,[(0,-3.6,0),(0,-4.3,0),(0,-4.6,0)],[.9,.4,.12],DARK,.95,16)
-    for a in (PI/2,-PI/2):radiator(M,(math.cos(a)*.9,2.2,math.sin(a)*.9),(math.cos(a)*3.0,2.2,math.sin(a)*3.0),.8,3)
+    prof=[(y,max(r,.02)) for y,r in sorted([(math.sin(t)*2.3+1.5,math.cos(t)*2.3) for t in np.linspace(-PI/2,PI/2,13)])]
+    lathe(M,prof,28,(LIGHT,1.0),(LIGHT,.94),(MID,.88),alt=.05)                                                  # the bazaar globe
+    for t in (-.3,.05,.4,.75):band(M,math.sin(t)*2.3+1.5,math.cos(t)*2.3+.02,28,.09)                              # lit decks
+    lathe(M,[(-.25,2.0),(-.25,5.9),(-.05,6.1),(.15,5.9),(.15,2.0)],48,(MID,1.0),(LIGHT,.92),(DARK,.85),caps=False)   # docking plaza
+    band(M,-.05,6.11,48,.06,ACC);band(M,.16,2.6,48,.1,ACC);band(M,.16,4.6,48,.05,WIN)
+    for k in range(12):                                                                                          # twelve berths on the rim
+        a=k*PI/6+PI/12;c=np.array([math.cos(a)*5.3,.17,math.sin(a)*5.3]);t=np.array([-math.sin(a),0,math.cos(a)]);n=np.array([math.cos(a),0,math.sin(a)])
+        plate(M,[c-t*.35-n*.4,c+t*.35-n*.4,c+t*.35+n*.4,c-t*.35+n*.4],.03,DARK,.9);ring(M,tuple(c+[0,.03,0]),.28,.025,ACC,seg=16,sides=4,axis='y')
+        floods(M,[c+n*.75+[0,.05,0]],.05)
+    for k in range(4):                                                                                           # four cargo piers with container stacks
+        a=k*PI/2+PI/4;n=np.array([math.cos(a),0,math.sin(a)]);t=np.array([-math.sin(a),0,math.cos(a)])
+        B=Mesh();box(B,(0,0,1.9),(.7,.3,3.8),MID)
+        for z in (.8,1.7,2.6,3.5):
+            for x in (-.5,.5):container(B,(x,.1,z),(.4,.34,.75),MID)
+            container(B,(0,.42,z),(.4,.34,.75),MID if z!=1.7 else LIGHT)
+        floods(B,[(0,.2,3.85)],.06)
+        put(M,B,n*5.9+[0,-.08,0],outward(a))
+    for a,h in ((0.0,6.2),(PI,5.2)):                                                                              # two corporate spires
+        b=np.array([math.cos(a)*3.6,.15,math.sin(a)*3.6]);n=np.array([math.cos(a),0,math.sin(a)]);t=np.array([-math.sin(a),0,math.cos(a)])
+        lathe(M,[(0,.55),(h*.5,.4),(h*.85,.25),(h,.02)],4,(LIGHT,1.0),(LIGHT,.93),(MID,.88),c=b,off=PI/4+a,alt=.08)
+        for f in (.3,.5,.7):band(M,h*f,.5-.3*f+.02,4,.06,WIN,PI/4+a,b)
+        cc=b+[0,h*.62,0]+n*.42
+        plate(M,[cc-t*.75-[0,.45,0],cc+t*.75-[0,.45,0],cc+t*.75+[0,.45,0],cc-t*.75+[0,.45,0]],.08,ACC,1.0)        # corporate sign
+        tube(M,[b+[0,h*.62,0],cc],[.05,.05],DARK,.9,5)
+    tube(M,[(0,3.75,0),(0,5.7,0)],[.12,.05],LIGHT,.9,8);node(M,(0,5.8,0),.3)                                      # the freeport light
+    ring(M,(0,5.8,0),.6,.05,WIN,seg=24,sides=4,axis='y');ring(M,(0,4.9,0),.4,.04,ACC,seg=20,sides=4,axis='y')
+    lathe(M,[(-.25,1.9),(-1.4,1.2),(-2.6,.5),(-3.4,.08)],16,(MID,1.0),(MID,.92),(DARK,.85),alt=.05)             # keel
+    for a in np.linspace(0,2*PI,4,endpoint=False)+PI/4:tank(M,(math.cos(a)*1.5,-1.4,math.sin(a)*1.5),.55)
+    tube(M,[(0,-3.4,0),(0,-4.6,0)],[.06,.02],LIGHT,.9,5);node(M,(0,-4.65,0),.1)
     return M
 
 FACTION_STATIONS=[('halcyon','Halcyon Accord',halcyon_station,halcyon_depot),('varkesh','Varkesh Dominion',varkesh_station,varkesh_depot),
