@@ -132,7 +132,7 @@ A ship is a hull with slots. Each slot takes one part from any maker, or one you
 | Hull | Sets mass, hold, slot counts and handling |
 | Drive, Reactor, Shield, Armour | One part each |
 | **Weapon slots** (number varies by ship) | One each: machine gun, laser, missile launcher, torpedo launcher; on mining hulls only, mining laser or charge launcher |
-| Utility | Cargo module, scanner, drone bay, landing kit; on scout hulls only, beacon device or limpet rack |
+| Utility | Cargo module, scanner, drone bay, landing kit, hidden cargo container (6b); on scout hulls only, beacon device or limpet rack |
 
 **Weapons, each in its own slot, each limited differently:**
 - **Machine gun (kinetic):** strong against hull; you must lead your shots. **Limited by ammunition:** rounds are payload, bought or built, carried in the ship.
@@ -161,6 +161,26 @@ Player scouting comes back in a different form: what you find and do is intel, a
 - **Discoveries.** Find and sell **comets, derelict cargo and wreckage from anomalies**. Sell the find as intel to a faction or the Compact, or salvage it yourself. (Proposal: finding them needs a scanner, which any hull can fit in a utility slot; scout hulls find them farthest out.)
 - **Anomalies move out beyond the gates.** They sit far out past the gate ring, away from the lanes, so finding them means flying out into the empty edge of a system.
 - **Ostrova's edge.** Ostrova pays a bonus on intel work (section 12a).
+
+### 6b. Smuggling: contraband, hidden cargo and scanners (decided 2 Nov 2026)
+Smuggling is a way to make money outside the law, with its own parts. Names are placeholders.
+
+**What is contraband**
+- **Stolen goods.** Cargo taken from a power's ships, convoys or wrecks stays tagged as that power's property, and is contraband in its space. The tag is a mark on real goods, not a new good, so the ledger is unchanged.
+- **Embargo goods.** While one power embargoes another (a leader event, 11c), the other's goods are contraband in its space. Embargoes make smuggling pay: demand for the embargoed goods climbs, and smugglers get a premium for running them in.
+- **Cash-only contraband.** A few goods that are illegal in every power's space and can only be bought and sold for credits (no crafting use). Proposal: **Ghost relics** (artefacts from anomalies out beyond the gates), **Black data cores** (salvaged from destroyed stations and capitals), **Vael spore extract** (harvested from Brood wrecks). Each comes only from a real find, so the ledger stays exact; markets that buy them use them up, like life support.
+- **Riftstone,** a new asteroid type. **Very dangerous** to mine: the rock is unstable, throws off rift discharges that damage nearby ships, its mining-laser ring flickers out, and a blast can set off a chain reaction. Rare, found mostly out beyond the gates. **Embargoed by most powers** (contraband in their space). Refined, it is a **wild-card crafting resource**: a Rift Shard stands in for any one component in any recipe, or adds a random trait to a part as it is upgraded.
+
+**Hidden cargo containers** (a utility part). A concealed hold that keeps goods out of scans. Its grade sets how much it holds and how well it hides it (proposal: 4 t at grade 1 up to 20 t at grade 5). It takes a utility slot, so hiding cargo costs a scanner, a drone bay or a landing kit. Sold by freeport makers, or built.
+
+**Scanners** (a utility part, already used to find discoveries). **Only the powers' AI patrols do customs:** they scan ships in their space now and then, more often near stations and gates and the lower your standing; a scan takes a few seconds in range and you are warned it is coming. A patrol's scanner grade against your hidden container's grade decides how likely it is to find what is hidden. Players' scanners are for discoveries and do no customs work.
+
+**When a scan finds contraband,** you choose:
+- **Bribe:** pay credits into that power's treasury. More likely to work at better standing; patrols of a Vengeful leader refuse. A refused bribe counts as a worse offence.
+- **Surrender:** the goods are confiscated into that power's stores (the ledger stays exact), a fine, and a small standing hit.
+- **Run:** you keep the goods, but that power turns hostile to you for a while and posts a bounty on you.
+
+**Where it sells: everywhere that wants it,** by supply and demand. Each market's demand sets the price, whether the goods are legal there or not; an embargo or a ban pushes demand and price up where the goods are scarce. Powers and freeports may post smuggling runs as jobs (deniable proxy work, 11c).
 
 ### 7. What you spend on: the ladder
 Players have several things to spend money and materials on, in this order, each with its own levels:
@@ -454,7 +474,7 @@ Their signature hulls survive as house-brand hulls built with Partner standing: 
 | Station external buildings | **Designed and approved:** the six buildings |
 | Faction stations and depots, the freeport, Scrapheart Haven | **Designed and approved** (below) |
 | Brood, leaders, ace escorts | Yes (leaders fly ordinary hulls) |
-| Mining-laser ring, comets, anomalies, beacon devices | Effects drawn in code |
+| Mining-laser ring, comets, anomalies, beacon devices, Riftstone asteroids | Effects drawn in code (Riftstone needs a look: an unstable rock with glowing rifts) |
 | New screens | HTML and CSS, no assets |
 
 - **Hulls are generated in code, one design language per faction**, the way the Brood is: Halcyon long, swept and bird-like with glass canopies; Varkesh blocky armoured slabs with exposed guns; Ostrova slender spires with a reactor halo, sensor masts and crystal. Each class is a set of parameters in its faction's language. Previews (the method approved, and all nine fighter designs approved, 2 Nov 2026): `tools/previews/beyond_light_fighters.png` (Swift, Fang, Mote from four angles) and `beyond_fighters_by_faction.png` (Light, Medium and Heavy fighters: Halcyon Swift, Kite, Osprey; Varkesh Fang, Talon (a pincer), Halberd (a brawler: an armoured core with a chisel prow and four gun-and-drive pods on an X of slab arms); Ostrova Mote (one halo), Wisp (a crescent joined to the spire by one pair of wings), Vigil (a tuning fork: a broad crystal-veined body, twin forward prongs holding a focus crystal, and two halos crossed in an X round the hull; close-up in `beyond_vigil.png`)). Rule from review: within a faction, every size has its own silhouette, not a bigger copy of the light one, from `tools/previews/beyond_hulls.py` and `render_beyond.py`.
@@ -500,6 +520,7 @@ Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is cre
 5. **Faction jobs screen,** with intel jobs: beacon devices, capital pings, limpets, and discoveries out beyond the gates.
 6. **Unique hull designs, first wave:** each faction's fighters, with their own models and stats, duel-balanced; freeport yards build them.
 7. **Makers:** the corporations, their works and stock; product lines replace variants; AI fleets fitted from their makers.
+7b. **Smuggling:** contraband tags (stolen, embargo, cash-only), hidden cargo containers, patrol scans with bribe, surrender or run, Riftstone and Rift Shards.
 8. **Progression:** Contractor Rating gates hulls and grades; hull upgrades; drop Unbound mode.
 9. **Lairs and the Holdings screen.**
 10. **Depots:** markets, hiring and building AI with upkeep; the Economy and Job creation screens.
