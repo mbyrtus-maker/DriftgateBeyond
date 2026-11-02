@@ -292,7 +292,8 @@ A solid galaxy that ends at Depot level earns about 4 points. A founder whose fa
 A pilot doesn't have to build their own faction. At **Partner** standing (the top band) with a faction, you may **declare allegiance** and fly for that faction, much as a Driftgate 1 pilot did.
 - **You fly as one of theirs:** you dock at its stations as a member, earn its war effort, get its job bonuses and house-brand hulls, and share its win in full (6 Legend points and the full Conqueror's spoils).
 - **Its enemies become yours:** your standing with its rivals drops to a war footing.
-- **Your assets become the faction's.** When you swear, everything you own (Lairs, Depots, Stations, ships, AI pilots and stores) becomes that faction's, so a Station you held now counts as one of its systems.
+- **Your owned assets become the faction's.** When you swear, your Lairs, Depots and Stations with their stores, and your AI pilots with the ships they fly, become that faction's, so a Station you held now counts as one of its systems.
+- **Your personal holds and wealth stay yours:** your credits, the ship you fly, its hold and your personal vault space.
 - **You can't declare your own faction while sworn.**
 - **Player factions: any time.** You can apply to swear allegiance to another player's declared faction at any time; no Partner standing is needed, but its founder must accept your application. That's how a multiplayer crew joins one pilot's faction.
 - **Renouncing costs your reputation** with that faction: your standing with it is lost (back to 0). What you handed over when you swore stays with the faction.
