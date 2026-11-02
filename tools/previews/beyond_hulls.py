@@ -169,9 +169,11 @@ def talon():
 # ------------------------------------------------------------------ Varkesh Halberd: heavy fighter (a brawler: an armoured core with four gun-and-drive pods on an X of slab arms)
 def halberd():
     M=Mesh(25)
-    loft(M,[(-1.0,HEX(.32,.3)),(-.4,HEX(.38,.36)),(.35,HEX(.34,.32)),(.75,HEX(.22,.2,-.02)),(.95,HEX(.1,.1,-.03))],hex_role)   # armoured core
+    chis=lambda w,h,dy=0:[(w,dy),(w*.8,h+dy),(-w*.8,h+dy),(-w,dy),(-w*.7,-h*.7+dy),(w*.7,-h*.7+dy)]
+    loft(M,[(-1.0,HEX(.32,.3)),(-.4,HEX(.38,.36)),(.35,HEX(.34,.32)),(.75,chis(.3,.24,-.02)),(1.1,chis(.24,.12,-.06)),(1.28,chis(.18,.03,-.09))],hex_role)   # armoured core into a chisel prow
     plate(M,[(-.1,.33,.55),(.1,.33,.55),(.1,.37,.2),(-.1,.37,.2)],.025,GLASS)
-    plate(M,[(-.3,.18,.82),(.3,.18,.82),(.22,-.2,1.02),(-.22,-.2,1.02)],.07,ACC)                                       # ram plate across the prow
+    for sx in (1,-1):plate(M,[(sx*.05,.24,.8),(sx*.26,.2,.8),(sx*.2,.07,1.18),(sx*.05,.08,1.18)],.03,ACC)                # chevron armour on the prow
+    box(M,(0,.0,1.15),(.3,.1,.16),DARK)
     for z in (-.55,-.1,.3):box(M,(0,.37,z),(.3,.03,.14),ACC,sh=.9)
     for sx in (1,-1):
         for sy in (1,-1):
@@ -198,10 +200,9 @@ def wisp():
     for sx in (1,-1):
         a0,a1=(-1.25,1.05) if sx>0 else (math.pi-1.05,math.pi+1.25)
         pts=arc(M,(0,0,-.25),.78,.045,ACC,a0,a1)
-        for k in (2,8,14):                                                                                       # rods from the spire to the crescent
-            p=pts[k];base=np.array([sx*.08,0,p[2]*.6-.05])
-            M.tube([base,(base+p)/2,p],[.016,.013,.016],6,lambda i,j,n,q:(LIGHT,.9),cap0=False,cap1=False)
-            M.blob(tuple(p),.035,WIN,sub=1,noise=0)
+        m=pts[8];w0=pts[5];w1=pts[11]
+        plate(M,[(sx*.14,0,.2),(w1[0],w1[1],w1[2]),(w0[0],w0[1],w0[2]),(sx*.14,0,-.6)],.03,LIGHT)                   # one wing, spire to crescent
+        plate(M,[(sx*.3,.018,.0),(m[0]*.85,.018,m[2]+.12),(m[0]*.85,.018,m[2]-.12),(sx*.3,.018,-.35)],.008,ACC,.9)      # wing trim
         for p in (pts[0],pts[-1]):M.blob(tuple(p),.06,GLASS,sub=1,squash=(1,1,1.4),noise=0)
         barrel(M,tuple(pts[-1]+[0,0,.02]),.3,.016,ACC)
     for sy in (1,-1):plate(M,[(0,sy*.1,-.5),(0,sy*.42,-.85),(0,sy*.38,-.95),(0,sy*.08,-.9)],.02,MID)
@@ -215,22 +216,20 @@ def wisp():
 def vigil():
     M=Mesh(39)
     star=lambda w,h:[(math.cos(a)*(w if k%2==0 else w*.62),math.sin(a)*(h if k%2==0 else h*.62)) for k,a in enumerate(np.linspace(0,2*math.pi,12,endpoint=False))]
-    loft(M,[(-.85,star(.03,.03)),(-.55,star(.2,.2)),(.1,star(.24,.24)),(.6,star(.14,.14)),(.85,star(.02,.02))],lambda i,j:((GLASS,1.0) if j%2 else (WIN,.8)))   # the crystal
-    M.blob((0,0,-.1),.13,WIN,sub=2,squash=(1,1,2.4),noise=0)
-    R=.46
+    loft(M,[(-1.15,star(.04,.04)),(-.75,star(.3,.3)),(.05,star(.36,.36)),(.7,star(.22,.22)),(1.15,star(.03,.03))],lambda i,j:((WIN,1.0) if j%2 else (LIGHT,.95)) if i in (1,2) else ((GLASS,1.0) if j%2 else (MID,.95)))   # the crystal body
+    R=.52
     for k in range(3):
         a=math.pi/2+k*2*math.pi/3;dx,dy=math.cos(a)*R,math.sin(a)*R
-        loft(M,[(-1.25,DIA(.04,.04,dx,dy)),(-.95,DIA(.11,.11,dx,dy)),(.5,DIA(.1,.1,dx,dy)),(1.2,DIA(.01,.01,dx,dy))],lambda i,j:((LIGHT,1.0) if j in (0,1) else (MID,.92)))   # parallel spires, prongs forward
+        loft(M,[(-1.25,DIA(.03,.03,dx,dy)),(-.95,DIA(.075,.075,dx,dy)),(.5,DIA(.07,.07,dx,dy)),(1.2,DIA(.008,.008,dx,dy))],lambda i,j:((LIGHT,1.0) if j in (0,1) else (MID,.92)))   # slim parallel spires, prongs forward
         M.vent((dx,dy,-1.27),.04)
         plate(M,[(dx,dy,-.7),(dx*1.75,dy*1.75,-1.0),(dx*1.65,dy*1.65,-1.12),(dx,dy,-1.08)],.025,MID)                    # outer fins
         barrel(M,(dx*1.08,dy*1.08,.3),.45,.02,ACC)
         for z in (-.5,.15):                                                                                        # struts from spire to crystal
-            M.tube([(dx,dy,z),(dx*.3,dy*.3,z+.05)],[.014,.014],5,lambda i,j,n,p:(LIGHT,.9),cap0=False,cap1=False)
-    for z in (-.85,-.15,.55):ring(M,(0,0,z),R,.03,ACC,seg=30,sides=6)                                               # three halos binding the spires
-    ring(M,(0,0,-.15),R+.08,.01,WIN,seg=30,sides=4)
-    M.blob((0,R+.12,-.15),.11,MID,sub=2,squash=(1,.35,1),noise=0);ring(M,(0,R+.16,-.15),.11,.015,ACC,seg=18,sides=5,axis='y')   # sensor dish on the top halo
-    M.tube([(0,0,.85),(0,0,1.45)],[.022,.01],6,lambda i,j,n,p:(LIGHT,.9))
-    for z,r in ((1.2,.075),(1.36,.05)):ring(M,(0,0,z),r,.012,ACC,seg=14,sides=5)
+            M.tube([(dx,dy,z),(dx*.62,dy*.62,z+.05)],[.014,.014],5,lambda i,j,n,p:(LIGHT,.9),cap0=False,cap1=False)
+    for z in (-.85,.6):ring(M,(0,0,z),R,.022,ACC,seg=30,sides=6)                                                    # two halos binding the spires
+    M.blob((0,R+.1,.6),.1,MID,sub=2,squash=(1,.35,1),noise=0);ring(M,(0,R+.14,.6),.1,.014,ACC,seg=18,sides=5,axis='y')   # sensor dish on the top halo
+    M.tube([(0,0,1.1),(0,0,1.6)],[.022,.01],6,lambda i,j,n,p:(LIGHT,.9))
+    for z,r in ((1.35,.075),(1.5,.05)):ring(M,(0,0,z),r,.012,ACC,seg=14,sides=5)
     return M
 
 FAMILY=[('halcyon','Halcyon Accord',[('Swift','Light',swift),('Kite','Medium',kite),('Osprey','Heavy',osprey)]),
