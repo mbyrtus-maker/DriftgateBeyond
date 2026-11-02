@@ -1,10 +1,10 @@
 # Driftgate Beyond: the factions' stations and depots, each in its faction's design language, and the freeport
 # (preview, not in the model pack yet). Up is +y.
 #   Halcyon  a great lens disc with a glass crown, a spire and dish, three swept arms ending in emitter nodes, hangars in the rim
-#   Varkesh  the Talon Citadel: a blade-topped hex keep gripped by three great curved talons, armour scales, heavy turrets
+#   Varkesh  the Talon Citadel: a triangular spire up and a same-sized one down, three talons curling up and three curling down
 #   Ostrova  nothing touches: a spire in floating sections, floating crystal spires, a helix of shards, three free-floating halos,
 #            docking pods floating outside the halos, energy bridges linking the key pieces
-#   Freeport a welcoming trade spindle: a lit glass atrium, promenade rings, welcome gates and berth flowers at both ends,
+#   Freeport a welcoming trade spire, upright: a lit glass atrium, promenade rings, welcome gates above and below, four docking arms from the centre,
 #            two corporate towers, hanging lanterns and strings of lights
 import math
 import numpy as np
@@ -120,42 +120,47 @@ def talon(M,a,path,w0,t0,edge=True):
             M.tri(S[k][j],S[k][(j+1)%6],S[k+1][(j+1)%6],role,sh,ref=P[k]);M.tri(S[k][j],S[k+1][(j+1)%6],S[k+1][j],role,sh,ref=P[k])
     if edge:tube(M,[s_[3] for s_ in S[1:-1]],[.05]*(n-2),ACC,1.0,4,cap0=False,cap1=False)
     return P
+def tri_spire(M,y0,h,r,sg=1):
+    # one triangular Varkesh spire: a chamfered three-sided pyramid standing up (sg=1) or hanging down (sg=-1) from y0
+    P=[(0,r),(.12*h,r*.94),(.45*h,r*.56),(.85*h,r*.16),(h,.03)]
+    lathe(M,[(y0+sg*y,rr) for y,rr in (P if sg>0 else P)],3,(MID,1.0),(LIGHT,.97),(LIGHT,1.6),off=PI/2,alt=.0) if sg>0 else \
+    lathe(M,[(y0-y,rr) for y,rr in P[::-1]],3,(MID,1.0),(LIGHT,.97),(LIGHT,1.6),off=PI/2)
+UP_CLAW=[(2.7,.35),(3.9,1.0),(4.6,2.5),(4.4,4.1),(3.6,5.5),(2.4,6.5),(1.1,7.0)]
 def varkesh_station():
-    # the Talon Citadel: a tall hex keep with a blade-sharp crown and a chisel keel, gripped by three great curved talons that rise
-    # from beneath it and curl in over its head, heavy turrets riding the talons, a collar of angled armour scales round its waist,
-    # hangar slots between the talons, pincer clamps below, lit slits and a war beacon on the crown
-    M=Mesh(311)
-    lathe(M,[(-3.0,.03),(-2.0,.9),(-.9,1.75),(1.4,1.55),(3.0,1.15),(4.4,.7),(5.6,.03)],6,(MID,1.0),(LIGHT,.97),(LIGHT,1.6),off=PI/2,alt=.07)   # the keep
-    for y,r in ((-.2,1.68),(2.2,1.36),(3.7,.92)):band(M,y,r,6,.09,WIN,PI/2)
-    band(M,.5,1.62,6,.12,ACC,PI/2);band(M,-1.5,1.33,6,.08,WIN,PI/2)
-    for k in range(12):                                                                                           # armour scales
-        a=k*PI/6;u=np.array([math.cos(a),0,math.sin(a)]);t=np.array([-math.sin(a),0,math.cos(a)])
-        r0,y0,r1,y1=1.6,1.25,2.45,.05
-        plate(M,[u*r0+t*.45+[0,y0,0],u*r0-t*.45+[0,y0,0],u*r1-t*.62+[0,y1,0],u*r1+t*.62+[0,y1,0]],.1,LIGHT if k%2 else MID,1.0)
-        tube(M,[u*r1-t*.6+[0,y1,0],u*r1+t*.6+[0,y1,0]],[.035,.035],ACC,1.0,4)
-    for k in range(3):                                                                                            # three great talons
+    # the Talon Citadel: a triangular spire standing up from an armoured waist with a same-sized one hanging down, three great curved
+    # talons rising from the waist corners and curling in over the top apex, three more stretching down and curling under the
+    # bottom one; heavy turrets on the faces and riding the talons, hangar slots in the waist faces, pincer clamps on the lower
+    # faces, lit slits, a war beacon on the top apex and a lit tip below
+    M=Mesh(311);H=5.4;Rw=3.2
+    tri_spire(M,0,H,Rw,1);tri_spire(M,0,H,Rw,-1)
+    lathe(M,[(-.35,Rw*1.02),(-.15,Rw*1.08),(.15,Rw*1.08),(.35,Rw*1.02)],3,(MID,1.0),(LIGHT,1.0),(LIGHT,1.4),off=PI/2,caps=False)   # armoured waist
+    band(M,0,Rw*1.09,3,.1,ACC,PI/2)
+    for y,r in ((1.6,Rw*.78),(3.0,Rw*.47),(-1.6,Rw*.78),(-3.0,Rw*.47)):band(M,y,r+.02,3,.08,WIN,PI/2)
+    for k in range(3):
         a=PI/2+k*2*PI/3
-        path=[(1.1,-2.3),(2.6,-2.0),(3.9,-.9),(4.5,.8),(4.3,2.6),(3.5,4.2),(2.4,5.3),(1.2,5.9)]
-        talon(M,a,path,.85,.32)
-        for (r,y) in ((4.55,.2),(4.2,2.9)):
-            u=np.array([math.cos(a),0,math.sin(a)]);B=Mesh();main_turret(B,(0,0,0),1.6);put(M,B,u*(r+.25)+[0,y+.2,0],outward(a))
-        a2=a+PI/3;u=np.array([math.cos(a2),0,math.sin(a2)])
-        turned(M,lambda B:mouth(B,(0,0,0),1.1,.5,.6),u*1.62+[0,-.4,0],a2)                                           # hangar slots
-        floods(M,[u*1.7+np.array([-math.sin(a2),0,math.cos(a2)])*s_*.7+[0,-.4,0] for s_ in (-1,1)],.07)
-        turned(M,lambda B:pincer_clamp(B,1.1,.55),u*1.25+[0,-1.6,0],a2)                                            # pincer clamps
-    tube(M,[(0,5.5,0),(0,7.0,0)],[.07,.02],LIGHT,.9,5);node(M,(0,7.05,0),.12,GLOW)                                # war beacon
-    ring(M,(0,6.2,0),.3,.04,ACC,seg=12,sides=4,axis='y');node(M,(0,-3.05,0),.12)
+        talon(M,a,UP_CLAW,.8,.3);talon(M,a,[(r,-y) for r,y in UP_CLAW],.8,.3)                                        # talons up and down
+        u=np.array([math.cos(a),0,math.sin(a)])
+        for (r,y) in ((4.65,1.6),(4.65,-1.6)):B=Mesh();main_turret(B,(0,0,0),1.5);put(M,B,u*(r+.25)+[0,y+(.2 if y>0 else -.2),0],outward(a))
+        a2=a+PI/3;u2=np.array([math.cos(a2),0,math.sin(a2)]);ap=Rw*.5
+        turned(M,lambda B:mouth(B,(0,0,0),1.4,.5,.7),u2*(ap+.12)+[0,.0,0],a2)                                          # hangar slot in each waist face
+        floods(M,[u2*(ap+.2)+np.array([-math.sin(a2),0,math.cos(a2)])*s_*.95 for s_ in (-1,1)],.07)
+        B=Mesh();main_turret(B,(0,0,0),1.5);put(M,B,u2*(Rw*.5*.6)+[0,1.95,0],outward(a2))                            # turret on each upper face
+        turned(M,lambda B:pincer_clamp(B,1.0,.55),u2*(Rw*.5*.62)+[0,-1.9,0],a2)                                        # clamp on each lower face
+    tube(M,[(0,H-.2,0),(0,H+1.4,0)],[.06,.02],LIGHT,.9,5);node(M,(0,H+1.45,0),.12,GLOW);ring(M,(0,H+.7,0),.3,.04,ACC,seg=12,sides=4,axis='y')
+    node(M,(0,-H-.05,0),.14)
     return M
 def varkesh_depot():
-    # the citadel in small: a hex keep with a blade crown, two talons curling over it, one hangar, one clamp, a heavy turret
-    M=Mesh(312)
-    lathe(M,[(-1.4,.03),(-.9,.45),(-.4,.8),(.6,.72),(1.4,.5),(2.1,.25),(2.6,.02)],6,(MID,1.0),(LIGHT,.97),(LIGHT,1.6),off=PI/2,alt=.07)
-    band(M,.15,.78,6,.06,ACC,PI/2);band(M,1.0,.62,6,.05,WIN,PI/2)
-    for a in (PI/2,PI/2+PI):
-        talon(M,a,[(.5,-1.0),(1.3,-.85),(1.9,-.2),(2.1,.7),(1.8,1.6),(1.2,2.3),(.6,2.7)],.42,.16)
-    a=0.0;turned(M,lambda B:mouth(B,(0,0,0),.6,.3,.35),(.72,-.2,0),a)
-    turned(M,lambda B:pincer_clamp(B,.6,.32),(-.55,-.7,0),PI)
-    B=Mesh();main_turret(B,(0,0,0),1.1);put(M,B,(0,.75,.62))
+    # the citadel in small: the two triangular spires on an armoured waist, three short talons up and three down, one hangar,
+    # one clamp, a heavy turret
+    M=Mesh(312);H=1.7;Rw=1.0
+    tri_spire(M,0,H,Rw,1);tri_spire(M,0,H,Rw,-1)
+    lathe(M,[(-.12,Rw*1.02),(-.05,Rw*1.08),(.05,Rw*1.08),(.12,Rw*1.02)],3,(MID,1.0),(LIGHT,1.0),(LIGHT,1.4),off=PI/2,caps=False)
+    band(M,0,Rw*1.09,3,.05,ACC,PI/2);band(M,.6,Rw*.72,3,.04,WIN,PI/2);band(M,-.6,Rw*.72,3,.04,WIN,PI/2)
+    C=[(r*.33,y*.33) for r,y in UP_CLAW]
+    for k in range(3):a=PI/2+k*2*PI/3;talon(M,a,C,.3,.11);talon(M,a,[(r,-y) for r,y in C],.3,.11)
+    a2=PI/2+PI/3;u2=np.array([math.cos(a2),0,math.sin(a2)]);turned(M,lambda B:mouth(B,(0,0,0),.5,.2,.25),u2*.55,a2)
+    a3=a2+2*PI/3;u3=np.array([math.cos(a3),0,math.sin(a3)]);turned(M,lambda B:pincer_clamp(B,.4,.22),u3*.32+[0,-.6,0],a3)
+    a4=a3+2*PI/3;u4=np.array([math.cos(a4),0,math.sin(a4)]);B=Mesh();main_turret(B,(0,0,0),.75);put(M,B,u4*.3+[0,.62,0],outward(a4))
     return M
 
 # ============================================================== OSTROVA
@@ -237,50 +242,62 @@ def lights_string(M,a,b,sag=.6,n=12):
     tube(M,pts,[.015]*n,DARK,.9,4,cap0=False,cap1=False)
     for k,p in enumerate(pts[1:-1]):M.blob(tuple(p),.07,WIN if k%2 else ACC,sub=1,noise=0)
 def freeport():
-    # a welcoming trade spindle, not a player station: a lit glass atrium (the bazaar) in the middle of a smooth capsule spine,
-    # two promenade rings with lit window stripes and lantern lights, welcome gates at both ends with flowers of berths inside them,
-    # two corporate towers (one per corporation, unlike each other), lanterns hanging below the atrium, strings of lights between
-    # the towers and the rings, lit billboards on the rings
+    # a welcoming trade spire, standing upright: a smooth capsule spine with a lit glass atrium (the bazaar) at its heart, two
+    # promenade rings round it with lit window stripes, lantern lights and billboards, welcome gates above and below ringed with lights,
+    # four long docking arms reaching out from the centre lined with berths and ending in docking heads, two corporate towers standing on the upper promenade (one per corporation, unlike
+    # each other), lanterns hanging under the atrium, strings of festival lights from the towers to the spine
     M=Mesh(331)
-    B=Mesh();lathe(B,[(-6.6,.05),(-6.4,.6),(-6.0,.85),(6.0,.85),(6.4,.6),(6.6,.05)],18,(LIGHT,1.0),(LIGHT,.95),(MID,.9));put(M,B,(0,0,0),YZ)   # capsule spine
-    for z in (-5.2,-1.9,1.9,5.2):B=Mesh();band(B,0,.87,18,.12,ACC);put(M,B,(0,0,z),YZ)
+    lathe(M,[(-6.6,.05),(-6.4,.6),(-6.0,.85),(6.0,.85),(6.4,.6),(6.6,.05)],18,(LIGHT,1.0),(LIGHT,.95),(MID,.9))      # capsule spine
+    for y in (-5.2,-1.9,1.9,5.2):band(M,y,.87,18,.12,ACC)
     prof=[(math.sin(t)*2.4,max(math.cos(t)*2.4,.03)) for t in np.linspace(-PI/2,PI/2,15)]                          # glass atrium
     lathe(M,prof,24,pick=lambda i,j:(WIN,1.0) if i in (3,5,7,9,11) else (GLASS,1.0))
     for k in range(6):B=Mesh();ring(B,(0,0,0),2.42,.05,LIGHT,seg=40,sides=4,axis='z');put(M,B,(0,0,0),ry(k*PI/6))   # ribs
     ring(M,(0,0,0),2.45,.09,ACC,seg=48,sides=5,axis='y')
-    for z in (-3.7,3.7):                                                                                          # promenade rings
-        ring(M,(0,0,z),3.5,.42,LIGHT,seg=64,sides=12,axis='z');ring(M,(0,0,z),3.92,.13,WIN,seg=64,sides=4,axis='z')
+    for y in (-3.7,3.7):                                                                                          # promenade rings
+        ring(M,(0,y,0),3.6,.42,LIGHT,seg=64,sides=12,axis='y');ring(M,(0,y,0),4.02,.13,WIN,seg=64,sides=4,axis='y')
         for a in np.linspace(0,2*PI,4,endpoint=False)+PI/4:
-            tube(M,[(math.cos(a)*.85,math.sin(a)*.85,z),(math.cos(a)*3.1,math.sin(a)*3.1,z)],[.1,.1],LIGHT,.95,8);node(M,(math.cos(a)*2.0,math.sin(a)*2.0,z),.13)
-        for k in range(24):a=k*PI/12;M.blob((math.cos(a)*3.5,math.sin(a)*3.5,z+.46),.07,WIN if k%2 else ACC,sub=1,noise=0)
-        plate(M,[(-1.0,3.95,z-.15),(1.0,3.95,z-.15),(1.0,4.75,z-.15),(-1.0,4.75,z-.15)],.08,ACC,1.0)               # billboard
-        plate(M,[(-.85,4.05,z-.21),(.85,4.05,z-.21),(.85,4.65,z-.21),(-.85,4.65,z-.21)],.01,WIN,1.0)
-    for z,sg in ((-6.6,-1),(6.6,1)):                                                                               # welcome gates and berth flowers
-        zg=z+sg*1.6;ring(M,(0,0,zg),2.8,.16,ACC,seg=48,sides=6,axis='z')
-        for k in range(16):a=k*PI/8;M.blob((math.cos(a)*2.8,math.sin(a)*2.8,zg+sg*.18),.09,WIN if k%2 else GLOW,sub=1,noise=0)
-        for a in (PI/2,PI/2+2*PI/3,PI/2+4*PI/3):tube(M,[(math.cos(a)*.5,math.sin(a)*.5,z),(math.cos(a)*2.7,math.sin(a)*2.7,zg)],[.06,.06],LIGHT,.9,5)
-        for k in range(6):
-            a=k*PI/3+PI/6;e=np.array([math.cos(a)*2.0,math.sin(a)*2.0,z+sg*.3])
-            tube(M,[(math.cos(a)*.6,math.sin(a)*.6,z-sg*.4),e],[.07,.05],LIGHT,.92,6)
-            B=Mesh();plate(B,[(math.cos(t)*.42,0,math.sin(t)*.42) for t in np.linspace(0,2*PI,8,endpoint=False)],.05,MID,1.0)
-            ring(B,(0,.04,0),.32,.03,ACC,seg=16,sides=4,axis='y');node(B,(0,.06,0),.06)
-            put(M,B,e,frame_y((math.cos(a),math.sin(a),0)))
-    for x,lit in ((-1.1,True),(1.1,False)):                                                                        # two corporate towers
-        b=np.array([x,1.9,0.0])
+            tube(M,[(math.cos(a)*.85,y,math.sin(a)*.85),(math.cos(a)*3.2,y,math.sin(a)*3.2)],[.1,.1],LIGHT,.95,8);node(M,(math.cos(a)*2.0,y,math.sin(a)*2.0),.13)
+        for k in range(24):a=k*PI/12;M.blob((math.cos(a)*3.6,y+.46,math.sin(a)*3.6),.07,WIN if k%2 else ACC,sub=1,noise=0)
+        for a in (PI/2,PI/2+PI):                                                                                   # billboards on the rim
+            u=np.array([math.cos(a),0,math.sin(a)]);t=np.array([-math.sin(a),0,math.cos(a)]);c=u*4.15+[0,y,0]
+            plate(M,[c-t*1.0-[0,.4,0],c+t*1.0-[0,.4,0],c+t*1.0+[0,.4,0],c-t*1.0+[0,.4,0]],.08,ACC,1.0)
+            c2=c+u*.06;plate(M,[c2-t*.85-[0,.3,0],c2+t*.85-[0,.3,0],c2+t*.85+[0,.3,0],c2-t*.85+[0,.3,0]],.01,WIN,1.0)
+    for y,sg in ((-6.6,-1),(6.6,1)):                                                                               # welcome gates above and below
+        yg=y+sg*1.6;ring(M,(0,yg,0),2.8,.16,ACC,seg=48,sides=6,axis='y')
+        for k in range(16):a=k*PI/8;M.blob((math.cos(a)*2.8,yg+sg*.18,math.sin(a)*2.8),.09,WIN if k%2 else GLOW,sub=1,noise=0)
+        for a in (PI/2,PI/2+2*PI/3,PI/2+4*PI/3):tube(M,[(math.cos(a)*.5,y,math.sin(a)*.5),(math.cos(a)*2.7,yg,math.sin(a)*2.7)],[.06,.06],LIGHT,.9,5)
+        node(M,(0,yg,0),.22,GLOW)
+    for k in range(4):                                                                                            # four docking arms from the centre
+        a=k*PI/2+PI/4;u=np.array([math.cos(a),0,math.sin(a)]);t=np.array([-math.sin(a),0,math.cos(a)])
+        tube(M,[u*2.2,u*8.0],[.38,.32],LIGHT,.95,12);B=Mesh();ring(B,(0,0,0),.39,.06,ACC,seg=16,sides=4,axis='z')
+        for d in (3.2,5.4,7.6):put(M,B,u*d,zdir(u))
+        tube(M,[u*2.3+[0,.36,0],u*7.9+[0,.36,0]],[.035,.035],WIN,1.0,4,cap0=False,cap1=False)                       # lit stripe along the top
+        for d in (3.9,5.6,7.3):                                                                                    # berths along each arm, above and below
+            for sy in (1,-1):
+                c=u*d+[0,sy*.42,0];B=Mesh();plate(B,[(math.cos(q)*.5,0,math.sin(q)*.5) for q in np.linspace(0,2*PI,8,endpoint=False)],.05,MID,1.0)
+                ring(B,(0,.04,0),.38,.03,ACC,seg=16,sides=4,axis='y');node(B,(0,.06,0),.06);put(M,B,c,frame_y((0,sy,0)))
+        e=u*8.0;lathe(M,[(-.6,.3),(-.45,.95),(.45,.95),(.6,.3)],16,c=e,alt=.05)                                   # docking head with four collars
+        band(M,0,.97,16,.12,WIN,c=e)
+        for q in (-1,1):collar(M,e+t*q*.9,.24,t*q)
+        collar(M,e+u*.9,.26,u);floods(M,[e+[0,.65,0],e-[0,.65,0]],.07)
+    for a,lit in ((0.0,True),(PI,False)):                                                                          # two corporate towers on the upper promenade
+        b=np.array([math.cos(a)*3.6,3.95,math.sin(a)*3.6])
         if lit:
             lathe(M,[(0,.55),(1.6,.48),(3.4,.36),(4.4,.2),(5.0,.02)],12,c=b,alt=.04)
             for y in (1.0,2.0,3.0):band(M,y,.5-.05*y+.02,12,.12,WIN,c=b)
             ring(M,tuple(b+[0,3.9,0]),.75,.06,ACC,seg=24,sides=4,axis='y');node(M,b+[0,5.05,0],.1)
-            plate(M,[b+[-.7,2.2,.55],b+[.7,2.2,.55],b+[.7,2.9,.55],b+[-.7,2.9,.55]],.06,ACC,1.0)
+            plate(M,[b+[.55,2.2,-.7],b+[.55,2.2,.7],b+[.55,2.9,.7],b+[.55,2.9,-.7]],.06,ACC,1.0)
+            top=b+[0,5.0,0]
         else:
             lathe(M,[(0,.6),(1.4,.6),(1.4,.48),(2.6,.48),(2.6,.36),(3.6,.36),(3.6,.02)],4,c=b,off=PI/4,alt=.06)
             for y in (.7,2.0,3.1):band(M,y,{.7:.61,2.0:.49,3.1:.37}[y],4,.1,WIN,PI/4,b)
-            plate(M,[b+[-.9,3.7,0],b+[.9,3.7,0],b+[.9,4.5,0],b+[-.9,4.5,0]],.08,ACC,1.0);mast(M,b+[0,4.5,0],.7,.03)
-    for (x,z) in ((-1.2,-.6),(0,.9),(1.1,-.3),(.4,-1.2),(-.7,1.1)):                                                 # lanterns under the atrium
+            plate(M,[b+[-.1,3.7,-.9],b+[-.1,3.7,.9],b+[-.1,4.5,.9],b+[-.1,4.5,-.9]],.08,ACC,1.0);mast(M,b+[0,4.5,0],.7,.03)
+            top=b+[0,4.5,0]
+        lights_string(M,top,(0,6.5,0),.9,14)                                                                         # strings of lights to the spine
+        lights_string(M,top,(math.cos(a+PI/2)*3.6,4.4,math.sin(a+PI/2)*3.6),.8,12)
+    for (x,z) in ((-1.2,-.6),(0,.9),(1.1,-.3),(.4,-1.2),(-.7,1.1),(1.3,.9)):                                         # lanterns under the atrium
         y0=-math.sqrt(max(2.4**2-x*x-z*z,0))+.05;L=.8+.5*((x+z)%1)
         tube(M,[(x,y0,z),(x,y0-L,z)],[.012,.012],DARK,.9,4);M.blob((x,y0-L-.15,z),.16,WIN,sub=1,squash=(1,1.3,1),noise=0)
-    lights_string(M,(-1.1,6.4,0),(0,3.9,-3.7),1.0,14);lights_string(M,(-1.1,6.4,0),(0,3.9,3.7),1.0,14)            # strings of lights
-    lights_string(M,(1.1,5.5,0),(2.76,2.76,-3.7),.8,12);lights_string(M,(1.1,5.5,0),(2.76,2.76,3.7),.8,12)
     return M
 
 FACTION_STATIONS=[('halcyon','Halcyon Accord',halcyon_station,halcyon_depot),('varkesh','Varkesh Dominion',varkesh_station,varkesh_depot),
