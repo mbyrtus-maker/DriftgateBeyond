@@ -75,7 +75,6 @@ def plover():    # medium miner: the Osprey's twin booms become fat ore hoppers 
         M.blob((sx*1.04,0,-.3),.05,WIN,sub=1,noise=0)
         M.vent((sx*.72,0,-1.16),.1)
         launcher(M,(sx*.72,-.27,.3),3)
-    plate(M,[(-.72,.44,-1.1),(.72,.44,-1.1),(.72,.44,-1.2),(-.72,.44,-1.2)],.03,ACC)
     for sx in (1,-1):[ring(M,(sx*.72,0,z),.33,.016,ACC,seg=22,sides=4) for z in (-.75,.5)]
     lights(M,[(.15,-.04,.82),(-.15,-.04,.82)])
     return finish(M,2.6)
@@ -86,8 +85,6 @@ def heron():     # heavy miner: a broad flattened lens hull with two stacked hop
     for x in (-.35,.35):
         for z in (-.4,-.05,.25):ring(M,(x,.3,z),.265,.015,ACC,seg=18,sides=4)
     M.blob((0,.36,.72),.16,GLASS,sub=2,squash=(1.2,.7,1.5),noise=0)
-    tube(M,[(0,.2,.9),(0,.42,1.25),(0,.4,1.6)],[.09,.08,.08],LIGHT,1.0,8)                                        # crane neck
-    lens_head(M,(0,.4,1.62),.16)
     for sx in (1,-1):
         drill(M,(sx*.55,-.08,.9),.55,.12)
         plate(M,[(sx*.75,.0,-.1),(sx*1.25,.02,-.55),(sx*1.2,.02,-.75),(sx*.7,.0,-.7)],.06,LIGHT)
@@ -152,38 +149,39 @@ def pick():      # light miner: a stubby hex body with two short claw sponsons, 
     for z in (-.4,.05):box(M,(0,.27,z),(.24,.03,.12),ACC,sh=.9)
     stacks(M,(0,.24,-.5),2);lights(M,[(.12,-.05,.62),(-.12,-.05,.62)])
     return finish(M,2.0)
-def gouge():     # medium miner: a broad hex hull, an armoured scoop between pincer sponsons, lenses on the scoop lip
+def gouge():     # medium miner: a broad hex hull with an armoured scoop built onto its prow, lenses on the lip, ore bins on the flanks
     M=Mesh(62)
-    loft(M,[(-1.0,HEX(.4,.28)),(-.4,HEX(.46,.32)),(.2,HEX(.42,.3)),(.45,HEX(.3,.22,-.02))],hex_role)
-    plate(M,[(-.1,.31,.35),(.1,.31,.35),(.1,.34,.05),(-.1,.34,.05)],.025,GLASS)
+    loft(M,[(-1.0,HEX(.42,.3)),(-.4,HEX(.48,.34)),(.25,HEX(.46,.32)),(.5,HEX(.36,.26,-.02))],hex_role)
+    plate(M,[(-.1,.33,.35),(.1,.33,.35),(.1,.36,.05),(-.1,.36,.05)],.025,GLASS)
+    plate(M,[(-.46,-.22,.45),(.46,-.22,.45),(.5,-.24,1.1),(-.5,-.24,1.1)],.06,DARK)                                # scoop floor
     for sx in (1,-1):
-        loft(M,[(-.9,HEX(.15,.18,0,sx*.68)),(-.1,HEX(.17,.2,0,sx*.7)),(.8,HEX(.14,.17,-.01,sx*.66)),(1.1,HEX(.08,.1,-.02,sx*.58))],hex_role)   # pincer sponsons
-        plate(M,[(sx*.6,.12,1.0),(sx*.66,-.12,1.0),(sx*.46,-.08,1.22),(sx*.44,.06,1.2)],.06,ACC)
-        plate(M,[(sx*.53,-.22,.45),(sx*.53,-.22,1.05),(sx*.53,.12,1.0),(sx*.53,.16,.45)],.05,DARK)                  # scoop wall
-        for dy in (.1,-.1):sqdrive(M,(sx*.22,dy,-1.1),.18)
-        launcher(M,(sx*.7,.2,.3),3)
-        for k,z in enumerate((.4,-.05,-.5)):box(M,(sx*.86,.05,z),(.05,.24,.3),MID,taper=(.9,.85),sh=.96+.03*k)
-    plate(M,[(-.53,-.22,.45),(.53,-.22,.45),(.5,-.24,1.1),(-.5,-.24,1.1)],.06,DARK)                                # scoop floor
+        plate(M,[(sx*.47,-.22,.45),(sx*.51,-.24,1.1),(sx*.51,.1,1.05),(sx*.47,.2,.45)],.06,MID)                    # scoop walls, built onto the hull
+        box(M,(sx*.62,-.02,-.35),(.26,.42,.95),DARK,taper=(.92,.92));box(M,(sx*.62,.2,-.35),(.28,.04,.97),ACC,sh=.9)   # ore bins on the flanks
+        for dy in (.12,-.12):sqdrive(M,(sx*.24,dy,-1.1),.18)
+        launcher(M,(sx*.3,.34,.3),2)
     box(M,(0,-.23,1.12),(1.0,.05,.06),ACC)
     for x in (-.3,0,.3):lens_head(M,(x,-.18,1.14),.06)
-    stacks(M,(0,.32,-.75),3);lights(M,[(.25,.3,.42),(-.25,.3,.42)])
+    for z in (-.55,-.1):box(M,(0,.35,z),(.3,.03,.13),ACC,sh=.9)
+    stacks(M,(0,.32,-.75),3);lights(M,[(.25,.3,.48),(-.25,.3,.48)])
     return finish(M,2.6)
-def sledge():    # heavy miner: a hammerhead: a broad charge-battery bar across the prow of a thick armoured hull, ore bins, a great drill
+def sledge():    # heavy miner: a low heavy crawler with a toothed cutter drum across its prow, a conveyor spine and a big rear hopper
     M=Mesh(63)
-    loft(M,[(-1.25,HEX(.42,.36)),(-.5,HEX(.5,.42)),(.45,HEX(.46,.4)),(.7,HEX(.34,.3,-.02))],hex_role)              # thick hull
-    plate(M,[(-.12,.41,.4),(.12,.41,.4),(.12,.45,.1),(-.12,.45,.1)],.025,GLASS)
-    box(M,(0,.05,.9),(2.2,.5,.42),MID,taper=(.96,.9));box(M,(0,.32,.9),(2.24,.05,.44),ACC,sh=.9)                 # the hammerhead bar
-    for x in np.linspace(-.9,.9,7):
-        for y in (.13,-.05):tube(M,[(x,y,1.1),(x,y,1.22)],[.055,.055],DARK,.9,6)                                  # charge battery
+    loft(M,[(-1.3,HEX(.6,.32)),(-.6,HEX(.66,.36)),(.55,HEX(.62,.34)),(.8,HEX(.5,.26,-.02))],hex_role)               # low wide hull
+    pts=[(-.95,-.05,1.05),(.95,-.05,1.05)]
+    M.tube([np.array(p,float) for p in pts],[.26,.26],12,lambda i,j,n,p:(MID,1.0),cap0=True,cap1=True)              # the cutter drum, across the prow
+    for x in np.linspace(-.8,.8,7):
+        pts=[np.array([x,-.05,1.05])+[0,math.cos(a)*.27,math.sin(a)*.27] for a in np.linspace(0,2*PI,17)]
+        M.tube(pts,[.022]*len(pts),4,lambda i,j,n,p:(ACC,1.0),cap0=False,cap1=False)
+        for k in range(6):a=k*PI/3+x;box(M,(x+.06,-.05+math.cos(a)*.3,1.05+math.sin(a)*.3),(.06,.07,.07),DARK)   # cutter teeth
     for sx in (1,-1):
-        box(M,(sx*1.12,.05,.9),(.14,.6,.5),DARK)
-        lens_head(M,(sx*1.0,-.24,1.12),.08)
-        box(M,(sx*.62,-.05,-.35),(.32,.5,1.1),DARK,taper=(.9,.9));box(M,(sx*.62,.22,-.35),(.34,.04,1.12),ACC,sh=.9)  # ore bins
-        for dy in (.15,-.15):sqdrive(M,(sx*.24,dy,-1.38),.24)
-        plate(M,[(sx*.3,.38,-.6),(sx*.42,.7,-.95),(sx*.42,.7,-1.08),(sx*.3,.38,-1.08)],.07,ACC,.9)
-    drill(M,(0,-.3,1.0),.75,.17)
-    for z in (-.8,-.3,.2):box(M,(0,.43,z),(.38,.04,.16),ACC,sh=.9)
-    stacks(M,(0,.42,-1.0),3,.2,.38);lights(M,[(.5,.32,1.1),(-.5,.32,1.1)])
+        plate(M,[(sx*.55,.1,.75),(sx*1.0,.05,.95),(sx*1.0,-.2,.95),(sx*.55,-.2,.75)],.08,DARK)                     # drum arms
+        box(M,(sx*.68,-.12,-.3),(.12,.3,1.6),DARK)                                                                 # skids
+        for dy in (.12,-.12):sqdrive(M,(sx*.35,dy,-1.45),.22)
+        lights(M,[(sx*.55,.32,.82)])
+    box(M,(0,.38,.1),(.36,.08,1.2),DARK);[box(M,(0,.43,z),(.4,.03,.06),ACC,sh=.9) for z in np.linspace(-.4,.6,6)]   # conveyor spine
+    box(M,(0,.55,-.85),(.95,.5,.75),MID,taper=(1.1,1.0));box(M,(0,.81,-.85),(1.0,.04,.78),ACC,sh=.9)               # rear ore hopper
+    plate(M,[(-.11,.36,.65),(.11,.36,.65),(.11,.4,.35),(-.11,.4,.35)],.025,GLASS)
+    stacks(M,(0,.82,-1.15),3,.22,.32)
     return finish(M,3.2)
 def runner():    # light hauler: a Fang-like hex cab clamped onto one big armoured container, square drives
     M=Mesh(64)
@@ -229,33 +227,38 @@ def rampart():   # heavy hauler: a long chisel-prowed hull of ribbed armoured ho
     return finish(M,3.4)
 
 # ============================================================== OSTROVA
-def glim():      # light miner: a fat crystal ore hopper in a halo, a small spire cab on top, prongs holding a mining lens
+def glim():      # light miner: a spire cockpit with a crystal cargo hold either side, all in a halo; prongs holding a mining lens
     M=Mesh(71)
-    crystal(M,-.75,.45,.36,.32)                                                                                     # the ore hopper
-    loft(M,[(-.55,DIA(.06,.05,0,.3)),(-.2,DIA(.13,.1,0,.34)),(.35,DIA(.1,.08,0,.32)),(.6,DIA(.07,.06,0,.29))],SP)  # spire cab on top
-    M.blob((0,.42,.25),.08,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
-    ring(M,(0,0,-.15),.48,.045,ACC)
-    for k in range(3):a=PI/2+k*2*PI/3;M.blob((math.cos(a)*.48,math.sin(a)*.48,-.15),.06,GLASS,sub=1,noise=0)
-    for sx in (1,-1):loft(M,[(.2,DIA(.05,.06,sx*.2)),(.65,DIA(.04,.05,sx*.15)),(.8,DIA(.004,.004,sx*.12))],SP)       # prongs
-    lens_head(M,(0,0,.62),.1)
-    for k in range(3):a=PI/2+k*2*PI/3;plate(M,[(math.cos(a)*.25,math.sin(a)*.25,-.55),(math.cos(a)*.55,math.sin(a)*.55,-.8),(math.cos(a)*.5,math.sin(a)*.5,-.88),(math.cos(a)*.2,math.sin(a)*.2,-.82)],.025,MID)
-    launcher(M,(0,-.34,.0),2,ACC)
-    for k in range(2):M.vent(((-1)**k*.12,0,-.8),.06)
-    lights(M,[(.1,-.1,.55),(-.1,-.1,.55)])
-    return finish(M,2.0)
-def lumen():     # medium miner: twin crystal ore hoppers side by side, joined at the front by a crescent carrying three mining lenses
-    M=Mesh(72)
+    loft(M,[(-.8,DIA(.07,.07)),(-.45,DIA(.18,.16)),(.2,DIA(.2,.18)),(.55,DIA(.12,.11)),(.68,DIA(.07,.06))],SP)      # spire cockpit
+    M.blob((0,.17,.22),.09,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
     for sx in (1,-1):
-        crystal(M,-1.0,.5,.3,.3,sx*.5,0)                                                                            # crystal hoppers
-        plate(M,[(sx*.5,.3,-.8),(sx*.5,.62,-1.05),(sx*.5,.6,-1.15),(sx*.5,.28,-1.1)],.025,MID)
-        M.vent((sx*.5,0,-.98),.07)
-    loft(M,[(-.6,DIA(.08,.08)),(-.2,DIA(.16,.14)),(.5,DIA(.13,.12)),(.8,DIA(.09,.08))],SP)                        # central spire cab
-    M.blob((0,.17,.3),.08,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
-    pts=[np.array([math.cos(a)*.75,0,.15+math.sin(a)*.55]) for a in np.linspace(.15,PI-.15,21)]
-    M.tube(pts,[.05]*len(pts),6,lambda i,j,n,p:(ACC,1.0),cap0=True,cap1=True)                                     # the crescent across the front
-    for k in (3,10,17):lens_head(M,tuple(pts[k]+[0,0,.04]),.08)
-    for sx in (1,-1):tube(M,[(sx*.12,0,-.3),(sx*.42,0,-.3)],[.03,.03],LIGHT,.9,5);tube(M,[(sx*.12,0,.2),(sx*.42,0,.2)],[.03,.03],LIGHT,.9,5)
-    lights(M,[(.12,-.06,.8),(-.12,-.06,.8)])
+        crystal(M,-.65,.35,.2,.24,sx*.36,0)                                                                         # crystal cargo hold, either side
+        tube(M,[(sx*.12,0,-.15),(sx*.26,0,-.15)],[.03,.03],LIGHT,.9,5)
+        loft(M,[(.3,DIA(.05,.06,sx*.18)),(.68,DIA(.04,.05,sx*.13)),(.82,DIA(.004,.004,sx*.1))],SP)                 # prongs
+    ring(M,(0,0,-.15),.62,.045,ACC)
+    for k in range(3):a=PI/2+k*2*PI/3;M.blob((math.cos(a)*.62,math.sin(a)*.62,-.15),.06,GLASS,sub=1,noise=0)
+    lens_head(M,(0,-.02,.7),.09)
+    for k in range(3):a=PI/2+k*2*PI/3;plate(M,[(math.cos(a)*.12,math.sin(a)*.12,-.55),(math.cos(a)*.5,math.sin(a)*.5,-.82),(math.cos(a)*.45,math.sin(a)*.45,-.9),(math.cos(a)*.1,math.sin(a)*.1,-.85)],.025,MID)
+    launcher(M,(0,-.2,.0),2,ACC)
+    M.vent((0,0,-.82),.06)
+    lights(M,[(.1,-.1,.6),(-.1,-.1,.6)])
+    return finish(M,2.0)
+def lumen():     # medium miner: a crystal ore body and spire cab inside two rings crossed in an X, mining lenses at the four tips
+    M=Mesh(72)
+    crystal(M,-.85,.45,.3,.3)                                                                                       # crystal ore body
+    loft(M,[(-.7,DIA(.06,.06,0,.24)),(-.3,DIA(.14,.12,0,.3)),(.45,DIA(.12,.1,0,.28)),(.75,DIA(.08,.07,0,.25))],SP)   # spire cab
+    M.blob((0,.4,.35),.08,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
+    for th in (PI/4,-PI/4):
+        u=np.array([math.sin(th),math.cos(th),0.])
+        pts=[np.array([0,0,-.15])+u*math.cos(a)*.78+np.array([0,0,math.sin(a)*.78]) for a in np.linspace(0,2*PI,37)]
+        M.tube(pts,[.045]*len(pts),6,lambda i,j,n,p:(ACC,1.0),cap0=False,cap1=False)                                # crossed rings
+        for sg in (1,-1):
+            tip=np.array([0,0,-.15])+u*sg*.78
+            lens_head(M,tuple(tip+[0,0,.05]),.08)                                                                   # mining lens at each tip
+            tube(M,[u*sg*.22+[0,0,-.15],u*sg*.7+[0,0,-.15]],[.025,.025],LIGHT,.9,5,cap0=False,cap1=False)
+    for k in range(3):a=PI/2+k*2*PI/3;plate(M,[(math.cos(a)*.15,math.sin(a)*.15,-.7),(math.cos(a)*.5,math.sin(a)*.5,-.98),(math.cos(a)*.45,math.sin(a)*.45,-1.06),(math.cos(a)*.12,math.sin(a)*.12,-1.0)],.025,MID)
+    M.vent((0,0,-.86),.07)
+    lights(M,[(.12,-.06,.5),(-.12,-.06,.5)])
     return finish(M,2.6)
 def delve():     # heavy miner: four crystal ore pods round a great drill spire, all inside one big halo, a lens ring at the prow
     M=Mesh(73)
