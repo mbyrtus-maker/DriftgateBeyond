@@ -356,11 +356,27 @@ A player faction's leader is its founder: AI leaders send it proposals and deman
 | Betrayal | Allied, but the ally nears two-thirds or is rich and weak | Ambitious, Scheming | Alliance broken; telegraphed by cooling relations first | − very large |
 | Containment front | The Brood holds enough systems | Everyone | Driftgate 1's Containment Accord: all unite against the Brood | + between all |
 | Bounty on a pilot | A contractor badly hurts the faction | Vengeful | A public bounty on that pilot (affects standing, not the ledger) | none |
-| Succession | A leader's core station falls, or a long losing war | (any) | A new leader with new traits; grudges partly forgiven | partial reset |
+| Succession | A leader's core station falls, a long losing war, a betrayal by an ally, or an exposed scheme | (any) | A new leader whose traits come from the faction's history (below) | partial reset, or a new grudge |
+
+**Successors are shaped by what happened.** A new leader's traits come from the faction's story in this galaxy, so a reversal always has a reason:
+
+| What happened to the faction | The successor is likely to be |
+|---|---|
+| Lost systems or its core station to a rival | Vengeful, with a grudge against that rival |
+| Bled by a long war, heavy losses | Cautious: seeks ceasefires and pacts |
+| Trade ruined by embargoes | Mercantile |
+| Betrayed by an ally | Wary: slow to trust, quick to break pacts |
+| Saved by allies or aid convoys | Loyal: honours alliances, never betrays |
+| Grew fast by conquest | Ambitious |
+| Ravaged by the Brood | Zealous: puts containment above everything |
+| Hurt by an exposed proxy campaign | Scheming: answers in kind |
+| Long peace and full treasuries | Patient or Mercantile |
+
+**Storylines, not fixed alignments.** Nothing is permanent. Over a galaxy, two factions can go from wars of annihilation to friendship and back: a war, a weary ceasefire, a new Cautious leader, a trade pact, a shared fight against the Brood, an alliance, then a betrayal by an Ambitious successor. Each step has its trigger, and the Allegiance screen keeps a **chronicle** of each faction's leaders and decisions so the story can be read back.
 
 **Rules that keep it reasoned, not chaotic**
 - **Cause first.** An event fires only when its trigger is true in the galaxy right now; personality only chooses among eligible events.
-- **Escalation, not jumps.** Relations change by steps: dispute → embargo → reprisal → war. No faction goes from Friendly to war in one event, except a telegraphed betrayal.
+- **Escalation, not jumps.** Relations change by steps: dispute → embargo → reprisal → war, and back down through ceasefire → pact → alliance. No faction goes from Friendly to war in one event, except a telegraphed betrayal. Big turns usually come with a new leader.
 - **Memory.** Leaders remember the ledger: grudges fade slowly (more slowly for a Vengeful leader), favours too.
 - **Pace.** Each leader acts at most once every few minutes, and each pair of factions has its own cooldown.
 - **Announced with a reason.** Every event goes to the feed in plain words: who, against whom, and why ("The Marshal declares war on the Accord after the siege of Tessellate Reach").
@@ -402,7 +418,7 @@ Their signature hulls survive as house-brand hulls built with Partner standing: 
 - **The war is checked by simulation.** New target for AI-only galaxies: the Brood about 20%, the three factions sharing the rest evenly (about 27% each). Until the Brood change is built, Driftgate 1's target in CLAUDE.md still applies.
 
 ### Decided in review (2 Nov 2026)
-Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is credits plus goods · your own brand from Depot level · Brood about 20% · Rating only goes up · a pilot at Partner standing may declare allegiance (to a player's faction at any time, no standing needed, once its founder accepts), shown on an Allegiance screen with standings between factions; swearing hands the faction all your assets, renouncing costs your standing with it, and re-swearing to an AI faction needs Partner again, and fly for that faction instead of building their own (11a) · factions become allied by trading and not fighting, tracked in a background faction status ledger (11b); all factions start Neutral; allies still hire contractors against each other; leaders with personalities drive reasoned faction events (11c) · Legend reworked: levels unlock perks you pick from each galaxy with a start-point budget, level 10's Station stays, and Conqueror's spoils go in full to the winning faction and half to its allies (10a) · a choice of three starting freeports · faction careers become job bonuses and the signature hulls survive · scouting returns as intel, with scout hulls (Rating 2 and 4, not a starter) the only hulls for beacon devices and limpets · a beacon flip earns a fee and standing · your brand's trait is a net-zero point system · Unbound designs are pirates' only · Station levels come from external buildings · freeport yards roll a random set of faction designs; house-brand hulls only at their faction's station · AI wages go to the Compact · two-thirds of the galaxy for 10 minutes wins, with no deadline, and the others unite once the timer starts · you choose one external building per station level · flares stay on energy, drones restock at dock · only factions (and the Unbound and Brood) design hulls; freeports build faction designs · Lair 2 levels, Depot 3, Station 5 · makers' names kept for now · declaring needs only a Station · losing your last Station drops you back to a company · asteroid or standard station look.
+Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is credits plus goods · your own brand from Depot level · Brood about 20% · Rating only goes up · a pilot at Partner standing may declare allegiance (to a player's faction at any time, no standing needed, once its founder accepts), shown on an Allegiance screen with standings between factions; swearing hands the faction all your assets, renouncing costs your standing with it, and re-swearing to an AI faction needs Partner again, and fly for that faction instead of building their own (11a) · factions become allied by trading and not fighting, tracked in a background faction status ledger (11b); all factions start Neutral; allies still hire contractors against each other; leaders with personalities drive reasoned faction events, and successors' traits come from their faction's history, so relations can swing from annihilation to friendship over a storyline (11c) · Legend reworked: levels unlock perks you pick from each galaxy with a start-point budget, level 10's Station stays, and Conqueror's spoils go in full to the winning faction and half to its allies (10a) · a choice of three starting freeports · faction careers become job bonuses and the signature hulls survive · scouting returns as intel, with scout hulls (Rating 2 and 4, not a starter) the only hulls for beacon devices and limpets · a beacon flip earns a fee and standing · your brand's trait is a net-zero point system · Unbound designs are pirates' only · Station levels come from external buildings · freeport yards roll a random set of faction designs; house-brand hulls only at their faction's station · AI wages go to the Compact · two-thirds of the galaxy for 10 minutes wins, with no deadline, and the others unite once the timer starts · you choose one external building per station level · flares stay on energy, drones restock at dock · only factions (and the Unbound and Brood) design hulls; freeports build faction designs · Lair 2 levels, Depot 3, Station 5 · makers' names kept for now · declaring needs only a Station · losing your last Station drops you back to a company · asteroid or standard station look.
 
 ### Open questions
 1. **Lair, Depot, Station costs.** All numbers are guesses to tune.
@@ -410,15 +426,16 @@ Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is cre
 
 ### Proposed build order (once the design is agreed)
 1. **Cut the faction tie:** start at a chosen freeport with three equipped starters; standing with every power; docking and hostility from standing; pay from the issuer; faction job bonuses.
-2. **Weapon slots and weapons:** slot counts per hull; machine gun with ammunition, laser on reactor energy, missile and torpedo payload; mining laser with rings and charge launchers in mining hulls' weapon slots.
-3. **Making things:** ore → components → parts → upgraded parts; grades replace Mk.
-4. **Faction jobs screen,** with intel jobs: beacon devices, capital pings, limpets, and discoveries out beyond the gates.
-5. **Unique hull designs, first wave:** each faction's fighters, with their own models and stats, duel-balanced; freeport yards build them.
-6. **Makers:** the corporations, their works and stock; product lines replace variants; AI fleets fitted from their makers.
-7. **Progression:** Contractor Rating gates hulls and grades; hull upgrades; drop Unbound mode.
-8. **Lairs and the Holdings screen.**
-9. **Depots:** markets, hiring and building AI with upkeep; the Economy and Job creation screens.
-10. **Stations and station upgrades;** capital ships built at your stations.
-11. **Strategic map** with sector zoom and orders.
-12. **Declaring a faction;** the faction status ledger, leaders and events; slower war pacing; a stronger Brood (about 20%); war checks for the new balance.
-13. **Legend rework and Conqueror's spoils, multiplayer rivalries, training rewrite.**
+2. **Faction relations and leaders:** the faction status ledger, all factions starting Neutral, leaders with traits, the event table and successions, the chronicle; war checks that galaxies still go to war. (It comes this early because the Neutral start only works once leaders can start wars.)
+3. **Weapon slots and weapons:** slot counts per hull; machine gun with ammunition, laser on reactor energy, missile and torpedo payload; mining laser with rings and charge launchers in mining hulls' weapon slots.
+4. **Making things:** ore → components → parts → upgraded parts; grades replace Mk.
+5. **Faction jobs screen,** with intel jobs: beacon devices, capital pings, limpets, and discoveries out beyond the gates.
+6. **Unique hull designs, first wave:** each faction's fighters, with their own models and stats, duel-balanced; freeport yards build them.
+7. **Makers:** the corporations, their works and stock; product lines replace variants; AI fleets fitted from their makers.
+8. **Progression:** Contractor Rating gates hulls and grades; hull upgrades; drop Unbound mode.
+9. **Lairs and the Holdings screen.**
+10. **Depots:** markets, hiring and building AI with upkeep; the Economy and Job creation screens.
+11. **Stations and station upgrades;** capital ships built at your stations.
+12. **Strategic map** with sector zoom and orders.
+13. **Declaring a faction;** player factions in the ledger and leaders' proposals to founders; slower war pacing; a stronger Brood (about 20%); war checks for the new balance.
+14. **Legend rework and Conqueror's spoils, multiplayer rivalries, training rewrite.**
