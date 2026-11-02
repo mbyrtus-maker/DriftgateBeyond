@@ -227,6 +227,7 @@ These reuse what Driftgate 1 has where they can: the station's task tabs, the Jo
 | 5 | Heavy Miner, Heavy Hauler |
 | 6 | Heavy Bomber; house-brand hulls with Partner standing |
 | Station level 3, with a yard | Escort |
+| Station level 4, with a yard | Destroyer |
 | Station level 5, with a yard | Carrier |
 
 - **Parts unlock by Rating and cost:** grade 1 at Rating 1, 2 at 2, 3 at 4, 4 at 6, 5 at 8. A maker's grade 4–5 parts also need Trusted or Partner standing with its power.
@@ -427,9 +428,10 @@ Their signature hulls survive as house-brand hulls built with Partner standing: 
 
 | Need | Covered? |
 |---|---|
-| Unique hulls: about 13 classes × 3 factions, plus scouts, Unbound designs and faction capitals (about 45–50) | **No.** The main gap |
-| Lair, Depot, Station (standard and asteroid look) | Yes |
-| Station external buildings | Mostly (yard, forge, works modules); a market wing and a defence platform may need making |
+| Unique hulls: 13 classes × 3 factions, three capitals each, the Unbound set and the Brood destroyer | **Designed and approved** as previews (below); not in the model pack yet. Not yet designed: constructors, pickets and drones |
+| Lair, Depot, Station (standard and asteroid look) | **Designed and approved** (below) |
+| Station external buildings | **Designed and approved:** the six buildings |
+| Faction stations and depots, the freeport, Scrapheart Haven | **Designed and approved** (below) |
 | Brood, leaders, ace escorts | Yes (leaders fly ordinary hulls) |
 | Mining-laser ring, comets, anomalies, beacon devices | Effects drawn in code |
 | New screens | HTML and CSS, no assets |
