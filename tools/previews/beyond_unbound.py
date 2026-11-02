@@ -47,21 +47,25 @@ def canopy(M,c,r,sq=(1,.75,1.6)):M.blob(tuple(c),r,GLASS,sub=2,squash=sq,noise=0
 
 # ------------------------------------------------------------------ hulls
 def raider():
-    # light: a stolen Halcyon lens fuselage and canopy on a Varkesh hex drive block, a Halcyon swept wing mounted high on top reaching
-    # right to a small Varkesh pontoon braced back to the fuselage, a Varkesh gun stub on the left, an Ostrova crystal for a radar mast, a scrap cargo pod under the belly, ram spikes on the nose
+    # light: an off-centre cockpit. A Varkesh smoothed-hex spine is the body (drives aft, twin chin guns and ram spikes at the nose);
+    # the stolen Halcyon cockpit pod and canopy are welded to its left flank like a sidecar; a Halcyon wing mounted high on top reaches
+    # right to a small Varkesh pontoon with a gun, braced back to the spine; an Ostrova crystal radar mast; a scrap cargo pod below
     M=Mesh(401)
-    hal_pod(M,[(-.45,.2,.16),(.5,.22,.17),(1.0,.12,.09),(1.22,.03,.03)])
-    var_slab(M,[(-1.2,.26,.2),(-.42,.3,.22)]);weld(M,-.43,HEX(.3,.22))
-    for x in (-.14,.14):M.vent((x,0,-1.21),.09)
-    canopy(M,(0,.14,.5),.13)
-    hal_wing(M,(.08,.2,.0),(.95,.3,-.5),.45,node=False)                                                          # high wing on top, to the right
-    var_slab(M,[(-.85,.05,.04),(-.75,.08,.07),(-.2,.08,.07),(-.1,.05,.04)],dx=.95,dy=.22)                          # small pontoon at its tip
-    var_gun(M,(.95,.22,-.1),.4,.028);M.blob((.95,.3,-.78),.04,WIN,sub=1,noise=0)
-    tube(M,[(.92,.16,-.45),(.18,-.05,-.3)],[.018,.018],DARK,.85,5)                                                # brace back to the fuselage
-    var_stub(M,(-.38,-.02,-.2),(.42,.12,.4));var_gun(M,(-.55,-.02,.0),.45,.032)
-    crystal(M,-.95,-.55,.05,.05,0,.27);tube(M,[(0,.18,-.75),(0,.3,-.75)],[.015,.015],LIGHT,.9,4)
-    box(M,(0,-.2,-.25),(.22,.12,.45),MID,sh=.8)
-    patch(M,(.08,.2,-.1),.1,.16);spikes(M,[(.06,-.05,1.05),(-.06,-.05,1.05)])
+    var_slab(M,[(-1.2,.22,.2),(-.4,.25,.21),(.6,.2,.16),(1.1,.08,.06),(1.25,.02,.02)],dx=.06,smooth=True)          # Varkesh spine
+    for x in (-.06,.18):M.vent((x,0,-1.21),.085)
+    hal_pod(M,[(-.6,.06,.05),(-.35,.14,.12),(.4,.15,.13),(.8,.07,.07),(.95,.02,.02)],dx=-.3,dy=.03)               # Halcyon cockpit pod, off centre
+    canopy(M,(-.3,.15,.25),.11,(1,.75,1.8))
+    for z in (-.25,.3):tube(M,[(-.2,.02,z),(-.12,.02,z)],[.035,.035],DARK,.8,5)                                    # welded on
+    ring(M,(-.3,.03,-.1),.155,.012,ACC,seg=18,sides=4);ring(M,(-.3,.03,.55),.148,.012,ACC,seg=18,sides=4)
+    M.vent((-.3,.03,-.61),.045)
+    hal_wing(M,(.16,.2,.0),(1.0,.3,-.5),.45,node=False)                                                         # high wing on top, to the right
+    var_slab(M,[(-.85,.05,.04),(-.75,.08,.07),(-.2,.08,.07),(-.1,.05,.04)],dx=1.0,dy=.22)                         # small pontoon at its tip
+    var_gun(M,(1.0,.22,-.1),.4,.028);M.blob((1.0,.3,-.78),.04,WIN,sub=1,noise=0)
+    tube(M,[(.97,.16,-.45),(.26,-.05,-.3)],[.018,.018],DARK,.85,5)                                                # brace back to the spine
+    var_gun(M,(.06,-.17,.72),.45,.03,2,.08)                                                                       # twin chin guns
+    crystal(M,-1.0,-.6,.05,.05,.1,.24);tube(M,[(.1,.17,-.8),(.1,.24,-.8)],[.015,.015],LIGHT,.9,4)               # crystal radar mast
+    box(M,(.06,-.2,-.45),(.2,.1,.4),MID,sh=.8)
+    patch(M,(.12,.2,-.3),.1,.18);spikes(M,[(.12,-.05,1.05),(.0,-.05,1.05)])
     return finish(M,2.0,1.0)
 def skiff():
     # scout: a slender Ostrova faceted spire for a hull, a salvaged Halcyon radome dish set flush on the hull, two Varkesh square drives
