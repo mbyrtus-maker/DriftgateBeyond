@@ -419,6 +419,22 @@ Their signature hulls survive as house-brand hulls built with Partner standing: 
 - **No deadline.** The galaxy runs until a faction holds two-thirds for 10 minutes.
 - **The war's clock slows to match.** Capitals from minute 45 and Overgrowth from minute 20 need new values. Working target for tuning: a typical galaxy is won in about 8–12 hours of play.
 
+### Assets: models and art
+**What exists (from Driftgate 1's model pack):** 17 ship models shared by every faction (the fighters are 5 Quaternius "Lowpoly Spaceships"; miners, haulers and the constructor are Kenney Space Kit craft with parts added; carrier and escort are assembled from Kenney parts in `tools/capitals.py`), 11 Brood models generated in code (`tools/brood.py`), and the structures: station, depot, asteroid base, yard, forge, relay and six works modules. All CC0.
+
+| Need | Covered? |
+|---|---|
+| Unique hulls: about 13 classes × 3 factions, plus scouts, Unbound designs and faction capitals (about 45–50) | **No.** The main gap |
+| Lair, Depot, Station (standard and asteroid look) | Yes |
+| Station external buildings | Mostly (yard, forge, works modules); a market wing and a defence platform may need making |
+| Brood, leaders, ace escorts | Yes (leaders fly ordinary hulls) |
+| Mining-laser ring, comets, anomalies, beacon devices | Effects drawn in code |
+| New screens | HTML and CSS, no assets |
+
+- **Hulls are generated in code, one design language per faction**, the way the Brood is: Halcyon long, swept and bird-like with glass canopies; Varkesh blocky armoured slabs with exposed guns; Ostrova slender spires with a reactor halo, sensor masts and crystal. Each class is a set of parameters in its faction's language. First preview: `tools/previews/beyond_light_fighters.png` (Swift, Fang, Mote), from `tools/previews/beyond_hulls.py` and `render_beyond.py`.
+- **Asset packs may still be needed** for variety (more CC0 ship kits to mix with the generated hulls). Driftgate 1's kit sources (Kenney Space Kit, Quaternius Lowpoly Spaceships) aren't in the build workspace, and its shell can't download from the asset sites, so packs have to be attached to the session. New generated models can be added to the existing pack without the kits.
+- **Every design is previewed and approved** before it goes in the game, as Driftgate 1's signature hulls were.
+
 ### Rules Beyond keeps
 - **The ledger is exact.** Components, parts, payload, bases and AI ships are all made of real goods from real rock.
 - **The host simulates;** guests send inputs.
