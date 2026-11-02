@@ -150,37 +150,46 @@ def pick():      # light miner: a stubby hex body with two short claw sponsons, 
     for z in (-.4,.05):box(M,(0,.27,z),(.24,.03,.12),ACC,sh=.9)
     stacks(M,(0,.24,-.5),2);lights(M,[(.12,-.05,.62),(-.12,-.05,.62)])
     return finish(M,2.0)
+def abox(M,c,size,role,taper=(1,1),sh=1.0):
+    # an angled box: chamfered hex section along z, optional taper toward the front
+    x,y,z=c;w,h,l=size;tw,th=taper
+    loft(M,[(z-l/2,[(a+x,b+y) for a,b in HEX(w/2,h/2)]),(z+l/2,[(a+x,b+y) for a,b in HEX(w/2*tw,h/2*th)])],(role,sh))
 def laser(M,base,length=.35,r=.07):
-    # a mining laser: a barrel on a mount block, a collar and a glowing lens at the muzzle, facing +z
-    b=np.array(base,float);box(M,tuple(b+[0,0,-.05]),(r*2.6,r*2.4,.18),DARK)
+    # a mining laser: a barrel on an angled mount, a collar and a glowing lens at the muzzle, facing +z
+    b=np.array(base,float);abox(M,tuple(b+[0,0,-.05]),(r*2.8,r*2.4,.2),DARK,(.8,.8))
     tube(M,[b,b+[0,0,length]],[r,r*.85],MID,1.0,8,cap0=False,cap1=False);ring(M,tuple(b+[0,0,length*.5]),r*1.05,r*.16,ACC,seg=12,sides=4)
     lens_head(M,tuple(b+[0,0,length]),r*.95)
-def gouge():     # medium miner: a broad hex hull with three mining lasers across its prow, ore bins on the flanks
+def gouge():     # medium miner: a broad hex hull with three mining lasers across its prow, angled ore bins on the flanks
     M=Mesh(62)
     loft(M,[(-1.0,HEX(.42,.3)),(-.4,HEX(.48,.34)),(.25,HEX(.46,.32)),(.55,HEX(.4,.28,-.02)),(.7,HEX(.34,.22,-.03))],hex_role)
     plate(M,[(-.1,.33,.35),(.1,.33,.35),(.1,.36,.05),(-.1,.36,.05)],.025,GLASS)
-    box(M,(0,-.02,.72),(.95,.2,.14),DARK);box(M,(0,.09,.72),(.97,.03,.15),ACC,sh=.9)                              # laser mount across the prow
-    for x in (-.32,0,.32):laser(M,(x,-.02,.8))                                                                       # three mining lasers
+    abox(M,(0,-.02,.72),(.95,.22,.16),DARK,(.9,.8));abox(M,(0,.1,.72),(.85,.05,.14),ACC,(.9,1),.9)                # angled laser mount
+    for x in (-.32,0,.32):laser(M,(x,-.02,.82))                                                                     # three mining lasers
     for sx in (1,-1):
-        box(M,(sx*.62,-.02,-.35),(.26,.42,.95),DARK,taper=(.92,.92));box(M,(sx*.62,.2,-.35),(.28,.04,.97),ACC,sh=.9)   # ore bins on the flanks
-        for dy in (.12,-.12):sqdrive(M,(sx*.24,dy,-1.1),.18)
+        abox(M,(sx*.62,-.02,-.35),(.3,.44,.95),DARK,(.7,.75));abox(M,(sx*.62,.19,-.38),(.22,.05,.85),ACC,(.75,1),.9)  # angled ore bins
+        for dy in (.12,-.12):abox(M,(sx*.24,dy,-1.08),(.2,.18,.14),DARK,(1.1,1.1));M.vent((sx*.24,dy,-1.16),.07)   # angled drives
         launcher(M,(sx*.3,.34,.3),2)
-    for z in (-.55,-.1):box(M,(0,.35,z),(.3,.03,.13),ACC,sh=.9)
+    for z in (-.55,-.1):abox(M,(0,.35,z),(.3,.04,.13),ACC,(1,1),.9)
     stacks(M,(0,.32,-.75),3);lights(M,[(.25,.3,.48),(-.25,.3,.48)])
     return finish(M,2.6)
-def sledge():    # heavy miner: a low heavy crawler with four mining lasers across its prow, a conveyor spine and a big rear hopper
+def sledge():    # heavy miner: the Heron's layout in Varkesh form: a broad, bulky hex hull, two stacked hex hoppers, four mining lasers
     M=Mesh(63)
-    loft(M,[(-1.3,HEX(.6,.32)),(-.6,HEX(.66,.36)),(.55,HEX(.62,.34)),(.8,HEX(.5,.26,-.02))],hex_role)               # low wide hull
-    box(M,(0,-.02,.88),(1.5,.28,.2),DARK);box(M,(0,.13,.88),(1.52,.03,.21),ACC,sh=.9)                              # laser mount across the prow
-    for x in (-.54,-.18,.18,.54):laser(M,(x,-.02,.98),.42,.085)                                                      # four mining lasers
+    loft(M,[(-1.25,HEX(.55,.3)),(-.7,HEX(.9,.42)),(.3,HEX(.92,.44)),(.8,HEX(.62,.32,-.02)),(1.02,HEX(.4,.2,-.04))],hex_role)   # broad bulky hull
+    for x in (-.4,.4):
+        loft(M,[(-.95,HEX(.14,.1,.36,x)),(-.7,HEX(.28,.24,.4,x)),(.3,HEX(.28,.24,.4,x)),(.52,HEX(.12,.1,.36,x))],hex_role)   # stacked hoppers
+        for z in (-.45,-.1,.2):abox(M,(x,.55,z),(.4,.04,.12),ACC,(1,1),.9)
+    plate(M,[(-.14,.42,.8),(.14,.42,.8),(.14,.46,.45),(-.14,.46,.45)],.025,GLASS)
+    abox(M,(0,-.08,1.0),(1.4,.24,.18),DARK,(.9,.8))
+    for x in (-.54,-.18,.18,.54):laser(M,(x,-.08,1.1),.4,.085)                                                      # four mining lasers
     for sx in (1,-1):
-        box(M,(sx*.68,-.12,-.3),(.12,.3,1.6),DARK)                                                                 # skids
-        for dy in (.12,-.12):sqdrive(M,(sx*.35,dy,-1.45),.22)
-        lights(M,[(sx*.6,.3,.82)])
-    box(M,(0,.38,.1),(.36,.08,1.2),DARK);[box(M,(0,.43,z),(.4,.03,.06),ACC,sh=.9) for z in np.linspace(-.4,.6,6)]   # conveyor spine
-    box(M,(0,.55,-.85),(.95,.5,.75),MID,taper=(1.1,1.0));box(M,(0,.81,-.85),(1.0,.04,.78),ACC,sh=.9)               # rear ore hopper
-    plate(M,[(-.11,.36,.65),(.11,.36,.65),(.11,.4,.35),(-.11,.4,.35)],.025,GLASS)
-    stacks(M,(0,.82,-1.15),3,.22,.32)
+        plate(M,[(sx*.9,.0,-.1),(sx*1.3,.02,-.5),(sx*1.25,.02,-.72),(sx*.85,.0,-.7)],.08,MID)
+        abox(M,(sx*1.2,-.04,-.6),(.22,.18,.36),DARK,(.85,.85));M.blob((sx*1.2,.1,-.6),.05,WIN,sub=1,noise=0)       # drone bays
+        launcher(M,(sx*.7,-.38,.4),3)
+        for dx in (.25,.6):
+            for dy in (.12,-.12):abox(M,(sx*dx,dy,-1.3),(.24,.2,.16),DARK,(1.1,1.1));M.vent((sx*dx,dy,-1.39),.08)
+        abox(M,(sx*.72,.28,-.6),(.08,.3,.45),ACC,(.7,.7),.9)
+    stacks(M,(0,.5,-1.05),3,.22,.32)
+    lights(M,[(.6,.1,1.0),(-.6,.1,1.0)])
     return finish(M,3.2)
 def runner():    # light hauler: an armoured courier wedge: a chisel prow widening into a boxy cargo body, cargo doors on top, side skirts
     M=Mesh(64)
@@ -211,25 +220,25 @@ def bulwark():   # medium hauler: the Talon's pincer sponsons become two armoure
         ring(M,(0,.4,z),.215,.012,ACC,seg=16,sides=4)
     stacks(M,(0,.27,-.85),2);lights(M,[(.1,-.04,.84),(-.1,-.04,.84)])
     return finish(M,2.6)
-def rampart():   # heavy hauler: a long chisel-prowed hull of ribbed armoured hold segments, crenellated walls, four corner pods (Varkesh colours)
+def rampart():   # heavy hauler: six parallel armoured cargo pylons, ribbed and crenellated, between a bridge block ahead and an engine block astern
     M=Mesh(66)
     chis=lambda w,h,dy=0:[(w,dy),(w*.8,h+dy),(-w*.8,h+dy),(-w,dy),(-w*.7,-h*.7+dy),(w*.7,-h*.7+dy)]
     hull_role=lambda i,j:([MID,LIGHT,LIGHT,MID,DARK,DARK][j],[1,.95,1,1,.85,.9][j])
-    loft(M,[(-1.5,HEX(.5,.4)),(.9,HEX(.5,.4)),(1.25,chis(.44,.32,-.02)),(1.45,chis(.36,.24,-.04))],hull_role)
-    plate(M,[(-.12,.38,1.3),(.12,.38,1.3),(.12,.42,1.02),(-.12,.42,1.02)],.025,GLASS)
-    for k,z in enumerate((-1.2,-.7,-.2,.3,.8)):
-        loft(M,[(z-.08,HEX(.55,.45)),(z+.08,HEX(.55,.45))],(ACC,.95))                                             # armour ribs in Varkesh orange
-        plate(M,[(-.25,.41,z+.4),(.25,.41,z+.4),(.25,.41,z+.12),(-.25,.41,z+.12)],.012,DARK,.95)
+    xs=[-1.0,-.6,-.2,.2,.6,1.0]
+    for x in xs:
+        loft(M,[(-1.2,HEX(.17,.22,0,x)),(1.0,HEX(.17,.22,0,x))],hull_role)                                         # cargo pylon
+        for z in (-.9,-.45,0,.45):loft(M,[(z-.05,HEX(.19,.24,0,x)),(z+.05,HEX(.19,.24,0,x))],(ACC,.95))           # armour ribs
+        for z in (-.7,-.25,.2,.65):box(M,(x,.26,z),(.12,.07,.16),LIGHT,sh=.95)                                       # crenellations
+    abox(M,(0,0,1.25),(2.5,.5,.5),MID,(.85,.75))                                                                   # bridge block ahead
+    loft(M,[(1.45,chis(.5,.3,.05)),(1.75,chis(.38,.2,.0)),(1.9,chis(.26,.1,-.03))],hex_role)                         # bridge prow
+    plate(M,[(-.16,.33,1.72),(.16,.33,1.72),(.16,.37,1.45),(-.16,.37,1.45)],.025,GLASS)
+    abox(M,(0,0,-1.45),(2.5,.55,.5),MID,(1.0,1.0));abox(M,(0,.27,-1.45),(2.4,.05,.48),ACC,(1,1),.9)               # engine block astern
+    for x in xs:abox(M,(x,0,-1.8),(.26,.24,.2),DARK,(1.1,1.1));M.vent((x,0,-1.9),.1)
     for sx in (1,-1):
-        for k in range(6):box(M,(sx*.42,.48,1.0-k*.45),(.1,.14,.2),LIGHT,sh=.95);box(M,(sx*.42,.56,1.0-k*.45),(.11,.02,.21),ACC,sh=.9)   # crenellations
-        for sz in (1,-1):
-            px,pz=sx*.78,(1.0 if sz>0 else -1.3)
-            plate(M,[(sx*.45,.0,pz+.25),(px,.0,pz+.2),(px,.0,pz-.2),(sx*.45,.0,pz-.25)],.08,MID)
-            box(M,(px,0,pz),(.26,.3,.5),LIGHT,sh=.95);box(M,(px,.16,pz),(.27,.03,.51),ACC,sh=.9)
-            if sz>0:barrel(M,(px,.06,pz+.25),.4,.03)
-            else:sqdrive(M,(px,0,pz-.35),.24)
-    stacks(M,(0,.42,-1.3),4,.2,.35);lights(M,[(.25,0,1.45),(-.25,0,1.45)])
-    return finish(M,3.4)
+        abox(M,(sx*1.3,0,1.2),(.24,.3,.5),LIGHT,(.85,.85));barrel(M,(sx*1.3,.08,1.45),.45,.032)                    # corner guns ahead
+        abox(M,(sx*1.3,0,-1.45),(.24,.34,.5),LIGHT,(1,1))
+    stacks(M,(0,.3,-1.5),4,.3,.35);lights(M,[(.35,0,1.86),(-.35,0,1.86)])
+    return finish(M,3.8)
 # ============================================================== OSTROVA
 def glim():      # light miner: a spire cockpit with a crystal cargo hold either side, all in a halo; prongs holding a mining lens
     M=Mesh(71)
@@ -249,22 +258,22 @@ def glim():      # light miner: a spire cockpit with a crystal cargo hold either
     return finish(M,2.0)
 def lumen():     # medium miner: a central spire cockpit with crystal holds on three sides, inside two rings crossed in an X, lenses at the tips
     M=Mesh(72)
-    loft(M,[(-.85,DIA(.07,.07)),(-.5,DIA(.17,.16)),(.3,DIA(.18,.17)),(.7,DIA(.11,.1)),(.82,DIA(.06,.05))],SP)        # central spire cockpit
-    M.blob((0,.17,.35),.09,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
+    loft(M,[(-.85,DIA(.07,.07)),(-.5,DIA(.17,.16)),(.45,DIA(.18,.17)),(.95,DIA(.11,.1)),(1.08,DIA(.06,.05))],SP)        # central spire cockpit
+    M.blob((0,.17,.6),.09,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
     for k in range(3):
         a=-PI/2+k*2*PI/3;dx,dy=math.cos(a)*.36,math.sin(a)*.36
-        crystal(M,-.75,.4,.2,.2,dx,dy)                                                                              # crystal holds on three sides
-        tube(M,[(dx*.35,dy*.35,-.15),(dx*.7,dy*.7,-.15)],[.03,.03],LIGHT,.9,5)
+        crystal(M,-.55,.7,.2,.2,dx,dy)                                                                              # crystal holds on three sides
+        tube(M,[(dx*.35,dy*.35,.1),(dx*.7,dy*.7,.1)],[.03,.03],LIGHT,.9,5)
     for th in (PI/4,-PI/4):
         u=np.array([math.sin(th),math.cos(th),0.])
-        pts=[np.array([0,0,-.15])+u*math.cos(a)*.78+np.array([0,0,math.sin(a)*.78]) for a in np.linspace(0,2*PI,37)]
+        pts=[np.array([0,0,-.6])+u*math.cos(a)*.78+np.array([0,0,math.sin(a)*.78]) for a in np.linspace(0,2*PI,37)]
         M.tube(pts,[.045]*len(pts),6,lambda i,j,n,p:(ACC,1.0),cap0=False,cap1=False)                                # crossed rings
         for sg in (1,-1):
-            tip=np.array([0,0,-.15])+u*sg*.78
+            tip=np.array([0,0,-.6])+u*sg*.78
             lens_head(M,tuple(tip+[0,0,.05]),.08)
-    for k in range(3):a=PI/2+k*2*PI/3;plate(M,[(math.cos(a)*.15,math.sin(a)*.15,-.75),(math.cos(a)*.5,math.sin(a)*.5,-1.0),(math.cos(a)*.45,math.sin(a)*.45,-1.08),(math.cos(a)*.12,math.sin(a)*.12,-1.02)],.025,MID)
-    M.vent((0,0,-.87),.07)
-    lights(M,[(.1,-.08,.72),(-.1,-.08,.72)])
+    for k in range(3):a=PI/2+k*2*PI/3;plate(M,[(math.cos(a)*.15,math.sin(a)*.15,-1.05),(math.cos(a)*.5,math.sin(a)*.5,-1.35),(math.cos(a)*.45,math.sin(a)*.45,-1.43),(math.cos(a)*.12,math.sin(a)*.12,-1.37)],.025,MID)
+    tube(M,[(0,0,-.85),(0,0,-1.3)],[.07,.05],LIGHT,.95,6,cap1=False);M.vent((0,0,-1.3),.05)
+    lights(M,[(.1,-.08,.98),(-.1,-.08,.98)])
     return finish(M,2.6)
 def delve():     # heavy miner: four crystal ore pods round a great drill spire, all inside one big halo, a lens ring at the prow
     M=Mesh(73)
@@ -294,38 +303,35 @@ def drift():     # light hauler: a spire through a revolver of six cargo capsule
     M.vent((0,0,-.82),.06)
     lights(M,[(.08,-.05,.75),(-.08,-.05,.75)])
     return finish(M,2.0)
-def cairn():     # medium hauler: a spire threaded through three stacked faceted cargo blocks that taper forward to a point
+def cairn():     # medium hauler: the Drift's idea grown up: tiers of cargo capsules round a spire, fewer and smaller toward a point
     M=Mesh(75)
-    loft(M,[(-1.05,DIA(.06,.06)),(-.8,DIA(.12,.12)),(.6,DIA(.11,.11)),(1.0,DIA(.05,.05)),(1.3,DIA(.004,.004))],SP)   # spire, drawn to a point
-    for k,(z0,z1,w) in enumerate(((-.75,-.3,.52),(-.25,.2,.42),(.25,.65,.3))):
-        loft(M,[(z0,HEX(w*.75,w*.65)),(z0+.08,HEX(w,w*.85)),(z1-.08,HEX(w*.88,w*.75)),(z1,HEX(w*.62,w*.52))],lambda i,j,k=k:((LIGHT if k%2 else MID),[1,.95,1,.9,.85,.9][j]))
-        for sx in (1,-1):plate(M,[(sx*w*.98,0,z0+.12),(sx*w*.86,0,z1-.12),(sx*w*.7,w*.36,z1-.12),(sx*w*.8,w*.4,z0+.12)],.008,WIN,.85)
-    loft(M,[(.65,HEX(.19,.16)),(.95,HEX(.06,.05))],(MID,.95))                                                        # the point
-    for z,R in ((-.28,.55),(.22,.45)):ring(M,(0,0,z),R,.03,ACC,seg=28,sides=5)
-    M.blob((0,.27,.5),.07,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
-    for k in range(3):a=PI/2+k*2*PI/3;plate(M,[(math.cos(a)*.1,math.sin(a)*.1,-.8),(math.cos(a)*.6,math.sin(a)*.6,-1.0),(math.cos(a)*.55,math.sin(a)*.55,-1.08),(math.cos(a)*.08,math.sin(a)*.08,-1.05)],.02,MID)
-    M.vent((0,0,-1.07),.07)
-    lights(M,[(.08,-.06,.9),(-.08,-.06,.9)])
+    loft(M,[(-1.1,DIA(.06,.06)),(-.85,DIA(.13,.13)),(.6,DIA(.12,.12)),(1.0,DIA(.05,.05)),(1.3,DIA(.004,.004))],SP)   # spire, drawn to a point
+    for t,(z0,z1,R,n,cr) in enumerate(((-.8,-.15,.42,8,.13),(-.05,.45,.32,6,.11),(.5,.85,.21,4,.08))):
+        ring(M,(0,0,(z0+z1)/2),R,.028,ACC,seg=26,sides=5)
+        for k in range(n):
+            a=k*2*PI/n+t*.3;cx,cy=math.cos(a)*R,math.sin(a)*R
+            tube(M,[(cx,cy,z0),(cx,cy,z0+.08),(cx,cy,z1-.08),(cx,cy,z1)],[.03,cr,cr,.03],LIGHT if k%2 else MID,.95,8)   # cargo capsules
+    M.blob((0,.14,.95),.06,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
+    for k in range(3):a=PI/2+k*2*PI/3;plate(M,[(math.cos(a)*.1,math.sin(a)*.1,-.85),(math.cos(a)*.65,math.sin(a)*.65,-1.05),(math.cos(a)*.6,math.sin(a)*.6,-1.13),(math.cos(a)*.08,math.sin(a)*.08,-1.1)],.02,MID)
+    M.vent((0,0,-1.12),.07)
+    lights(M,[(.06,-.06,1.0),(-.06,-.06,1.0)])
     return finish(M,2.6)
-def monolith():  # heavy hauler: the ship is the monolith: a great square obelisk laid along its course, a pyramid prow, crystal seams,
-                 # one halo at its waist on spokes, three spire drives astern
+def monolith():  # heavy hauler: a great crystal fuselage, with large crystal cargo containers set in two halos round it
     M=Mesh(76)
-    sq=lambda w,h,dy=0:[(w,-h+dy),(w,h+dy),(-w,h+dy),(-w,-h+dy)]
-    loft(M,[(-1.3,sq(.42,.5)),(.85,sq(.36,.44)),(1.3,sq(.03,.03))],lambda i,j:([LIGHT,MID,LIGHT,DARK][j],[1,.95,.9,.85][j]))   # the obelisk with its pyramid prow
-    for sx in (1,-1):
-        for k in range(3):plate(M,[(sx*.4,-.38+k*.36,-1.15),(sx*.4,-.3+k*.36,-1.15),(sx*.36,-.26+k*.33,.8),(sx*.36,-.32+k*.33,.8)],.01,WIN,.85)   # crystal seams along the flanks
-    for k in range(2):plate(M,[(-.3+k*.6-.04,.48,-1.1),(-.3+k*.6+.04,.48,-1.1),(-.3+k*.6+.04,.42,.75),(-.3+k*.6-.04,.42,.75)],.01,WIN,.85)
-    plate(M,[(-.14,.45,.75),(.14,.45,.75),(.12,.36,1.0),(-.12,.36,1.0)],.02,GLASS)                                # bridge slit near the prow
-    ring(M,(0,0,-.3),.95,.05,ACC,seg=40,sides=6)
-    for k in range(4):
-        a=PI/4+k*PI/2;ca,sa=math.cos(a),math.sin(a)
-        tube(M,[(ca*.5,sa*.5,-.3),(ca*.92,sa*.92,-.3)],[.03,.03],LIGHT,.9,5,cap0=False,cap1=False)
-        M.blob((ca*.95,sa*.95,-.3),.07,GLASS,sub=1,noise=0)
+    crystal(M,-1.4,1.4,.42,.42)                                                                                     # the crystal fuselage
+    loft(M,[(.6,DIA(.08,.07,0,.4)),(1.0,DIA(.1,.08,0,.38)),(1.3,DIA(.04,.03,0,.32))],SP)
+    M.blob((0,.47,.95),.09,GLASS,sub=2,squash=(.9,.6,1.8),noise=0)                                                   # bridge on the back
+    for zc,R,ph in ((-.55,.95,PI/4),(.35,.85,0)):
+        ring(M,(0,0,zc),R,.05,ACC,seg=40,sides=6)
+        for k in range(4):
+            a=ph+k*PI/2;cx,cy=math.cos(a)*R,math.sin(a)*R
+            crystal(M,zc-.45,zc+.45,.2,.2,cx,cy)                                                                     # large crystal containers in the ring
+            tube(M,[(cx*.45,cy*.45,zc),(cx*.8,cy*.8,zc)],[.03,.03],LIGHT,.9,5,cap0=False,cap1=False)
     for k in range(3):
         a=PI/2+k*2*PI/3;dx,dy=math.cos(a)*.3,math.sin(a)*.3
-        loft(M,[(-1.75,DIA(.03,.03,dx,dy)),(-1.55,DIA(.1,.1,dx,dy)),(-1.25,DIA(.1,.1,dx,dy))],SP);M.vent((dx,dy,-1.77),.05)   # spire drives astern
-        plate(M,[(dx*1.3,dy*1.3,-1.2),(dx*2.6,dy*2.6,-1.45),(dx*2.5,dy*2.5,-1.55),(dx*1.3,dy*1.3,-1.5)],.03,MID)
-    lights(M,[(.22,-.3,.95),(-.22,-.3,.95)])
+        loft(M,[(-1.85,DIA(.03,.03,dx,dy)),(-1.6,DIA(.1,.1,dx,dy)),(-1.25,DIA(.1,.1,dx,dy))],SP);M.vent((dx,dy,-1.87),.05)   # spire drives astern
+        plate(M,[(dx*1.3,dy*1.3,-1.25),(dx*2.6,dy*2.6,-1.5),(dx*2.5,dy*2.5,-1.6),(dx*1.3,dy*1.3,-1.55)],.03,MID)
+    lights(M,[(.15,-.1,1.3),(-.15,-.1,1.3)])
     return finish(M,3.3)
 WORK=[('halcyon','Halcyon Accord',[('Wren','Light miner',wren),('Plover','Medium miner',plover),('Heron','Heavy miner',heron),('Tern','Light hauler',tern),('Albatross','Medium hauler',albatross),('Pelican','Heavy hauler',pelican)]),
       ('varkesh','Varkesh Dominion',[('Pick','Light miner',pick),('Gouge','Medium miner',gouge),('Sledge','Heavy miner',sledge),('Runner','Light hauler',runner),('Bulwark','Medium hauler',bulwark),('Rampart','Heavy hauler',rampart)]),
