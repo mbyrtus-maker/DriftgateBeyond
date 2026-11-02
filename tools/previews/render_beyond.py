@@ -6,8 +6,8 @@ from PIL import Image,ImageDraw,ImageFont
 sys.path.insert(0,os.path.dirname(__file__))
 from beyond_hulls import DESIGNS,FAMILY
 
-FAC_HEX={'halcyon':'#4fd8d0','varkesh':'#ff7a3d','ostrova':'#b893ff','company':'#f0b24a','freeport':'#e8c878','pirate':'#d8cd98','brood':'#9be35a'}
-HULL={'halcyon':[.6,.61,.62],'varkesh':[.43,.41,.4],'ostrova':[.56,.54,.6],'company':[.57,.58,.6],'freeport':[.57,.58,.6],'pirate':[.5,.47,.42],'brood':[.5,.5,.5]}
+FAC_HEX={'halcyon':'#4fd8d0','varkesh':'#ff7a3d','ostrova':'#b893ff','company':'#f0b24a','freeport':'#e8c878','pirate':'#d8cd98','brood':'#9be35a','wraith':'#bfe3ff'}
+HULL={'halcyon':[.6,.61,.62],'varkesh':[.43,.41,.4],'ostrova':[.56,.54,.6],'company':[.57,.58,.6],'freeport':[.57,.58,.6],'pirate':[.5,.47,.42],'brood':[.5,.5,.5],'wraith':[.19,.2,.24]}
 def rgb(h):return np.array([int(h[i:i+2],16)/255 for i in (1,3,5)])
 def mix(a,b,t):return np.array(a)*(1-t)+np.array(b)*t
 def pal(fac):

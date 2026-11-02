@@ -11,8 +11,8 @@ if brand:
 else:
     from beyond_support import SUPPORT as ROWS
     title='Driftgate Beyond · Support craft: constructors and drones';sub='One of each per faction, in its design language · each scaled to fit (drones are far smaller in game)'
-V=[(-36,22),(0,89)]
-CW,RH,LW=330,300,220;ncol=max(len(sh) for _,_,sh in ROWS)*2;W=LW+CW*ncol;H=90+RH*len(ROWS)+20
+V=[(-36,22),(-90,0),(0,89)] if brand else [(-36,22),(0,89)]
+CW,RH,LW=330,300,220;ncol=max(len(sh) for _,_,sh in ROWS)*len(V);W=LW+CW*ncol;H=90+RH*len(ROWS)+20
 bg=Image.new('RGB',(W,H),(9,12,18));g=ImageDraw.Draw(bg)
 for y in range(H):g.line([(0,y),(W,y)],fill=(9+int(6*y/H),12+int(8*y/H),18+int(12*y/H)))
 fb=lambda s:ImageFont.truetype('DejaVuSans-Bold.ttf',s);fr=lambda s:ImageFont.truetype('DejaVuSans.ttf',s)
@@ -23,7 +23,7 @@ for r,(fac,fname,ships) in enumerate(ROWS):
     for k,(n,c,fn) in enumerate(ships):
         M=fn()
         for j,(yw,pt) in enumerate(V):
-            x0=LW+CW*(k*2+j);im=fit(M,math.radians(yw),math.radians(pt),CW-10,RH-60,fac,.86);bg.paste(im,(x0+5,y0+4),im)
-        x0=LW+CW*k*2;g.text((x0+14,y0+RH-52),n,font=fb(17),fill=F);g.text((x0+14,y0+RH-28),f'{c} · {len(M.T)} tris · 3/4 and from above',font=fr(12),fill=(120,128,140))
+            x0=LW+CW*(k*len(V)+j);im=fit(M,math.radians(yw),math.radians(pt),CW-10,RH-60,fac,.86);bg.paste(im,(x0+5,y0+4),im)
+        x0=LW+CW*k*len(V);g.text((x0+14,y0+RH-52),n,font=fb(17),fill=F);g.text((x0+14,y0+RH-28),f'{c} · {len(M.T)} tris',font=fr(12),fill=(120,128,140))
     if r:g.line([(16,y0),(W-16,y0)],fill=(30,36,48))
 bg.save(out);print('wrote',out)
