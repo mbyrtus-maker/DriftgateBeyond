@@ -47,25 +47,24 @@ def canopy(M,c,r,sq=(1,.75,1.6)):M.blob(tuple(c),r,GLASS,sub=2,squash=sq,noise=0
 
 # ------------------------------------------------------------------ hulls
 def raider():
-    # light: an off-centre cockpit. A Varkesh smoothed-hex spine is the body (drives aft, twin chin guns and ram spikes at the nose);
-    # the stolen Halcyon cockpit pod and canopy are welded to its left flank like a sidecar; a Halcyon wing mounted high on top reaches
-    # right to a small Varkesh pontoon with a gun, braced back to the spine; an Ostrova crystal radar mast; a scrap cargo pod below
-    M=Mesh(401)
-    var_slab(M,[(-1.2,.22,.2),(-.4,.25,.21),(.6,.2,.16),(1.1,.08,.06),(1.25,.02,.02)],dx=.06,smooth=True)          # Varkesh spine
-    for x in (-.06,.18):M.vent((x,0,-1.21),.085)
-    hal_pod(M,[(-.6,.06,.05),(-.35,.14,.12),(.4,.15,.13),(.8,.07,.07),(.95,.02,.02)],dx=-.3,dy=.03)               # Halcyon cockpit pod, off centre
-    canopy(M,(-.3,.15,.25),.11,(1,.75,1.8))
-    for z in (-.25,.3):tube(M,[(-.2,.02,z),(-.12,.02,z)],[.035,.035],DARK,.8,5)                                    # welded on
-    ring(M,(-.3,.03,-.1),.155,.012,ACC,seg=18,sides=4);ring(M,(-.3,.03,.55),.148,.012,ACC,seg=18,sides=4)
-    M.vent((-.3,.03,-.61),.045)
-    hal_wing(M,(.16,.2,.0),(1.0,.3,-.5),.45,node=False)                                                         # high wing on top, to the right
-    var_slab(M,[(-.85,.05,.04),(-.75,.08,.07),(-.2,.08,.07),(-.1,.05,.04)],dx=1.0,dy=.22)                         # small pontoon at its tip
-    var_gun(M,(1.0,.22,-.1),.4,.028);M.blob((1.0,.3,-.78),.04,WIN,sub=1,noise=0)
-    tube(M,[(.97,.16,-.45),(.26,-.05,-.3)],[.018,.018],DARK,.85,5)                                                # brace back to the spine
-    var_gun(M,(.06,-.17,.72),.45,.03,2,.08)                                                                       # twin chin guns
-    crystal(M,-1.0,-.6,.05,.05,.1,.24);tube(M,[(.1,.17,-.8),(.1,.24,-.8)],[.015,.015],LIGHT,.9,4)               # crystal radar mast
-    box(M,(.06,-.2,-.45),(.2,.1,.4),MID,sh=.8)
-    patch(M,(.12,.2,-.3),.1,.18);spikes(M,[(.12,-.05,1.05),(.0,-.05,1.05)])
+    # light: an asymmetric twin-body with an off-centre cockpit. A long Ostrova faceted boom to port carries the drive and the tail;
+    # a short stolen Halcyon cockpit pod with its canopy sits out on the wing to starboard; a thick Varkesh wing slab joins them, with
+    # guns slung under it; a Halcyon tailplane on the boom side only; an Ostrova crystal radar fin on the boom; ram spikes
+    M=Mesh(401);bx=-.32;cx=.42
+    ost_spire(M,[(-1.15,.07,.07),(-.95,.13,.12),(.5,.13,.12),(.95,.07,.07),(1.1,.015,.015)],dx=bx)                  # Ostrova boom
+    for z in (-.55,.15):ring(M,(bx,0,z),.14,.012,ACC,seg=16,sides=4)
+    M.vent((bx,0,-1.16),.075)
+    hal_pod(M,[(-.42,.06,.06),(-.25,.15,.14),(.45,.16,.14),(.78,.08,.07),(.92,.02,.02)],dx=cx,dy=.02)             # Halcyon cockpit pod, off centre
+    canopy(M,(cx,.15,.25),.12,(1,.75,1.8));M.vent((cx,.02,-.43),.05)
+    loft(M,[(z,[(x,y*(1 if y>0 else .8)) for x,y in [(1.05,0),(.6,.045),(-.95,.045),(-1.2,0),(-.95,-.04),(.6,-.04)]]) for z in (-.32,.22)],dark_hex)   # Varkesh wing slab
+    loft(M,[(-.36,[(1.08,0),(.6,.05),(-.95,.05),(-1.24,0),(-.95,-.045),(.6,-.045)]),(-.32,[(1.08,0),(.6,.05),(-.95,.05),(-1.24,0),(-.95,-.045),(.6,-.045)])],(ACC,.85),cap0=False,cap1=False)
+    for x in (.0,.15):var_gun(M,(x,-.08,.2),.5,.028)                                                               # guns under the wing
+    hal_wing(M,(bx+.08,0,-.95),(bx-.55,.02,-1.15),.22,node=False)                                                  # tailplane on the boom side only
+    plate(M,[(bx,.1,-.8),(bx,.1,-1.1),(bx,.36,-1.12),(bx,.3,-.92)],.02,LIGHT,1.0)                                    # tail fin
+    crystal(M,-.75,-.35,.04,.05,bx,.18)                                                                             # crystal radar fin on the boom
+    for p_ in ((1.05,0,-.05),(-1.2,0,-.05)):M.blob(p_,.035,WIN,sub=1,noise=0)
+    patch(M,(-.5,.05,0),.18,.22);patch(M,(.7,.05,-.1),.14,.18)
+    spikes(M,[(bx,-.04,1.0),(cx,-.05,.82)],L=.12)
     return finish(M,2.0,1.0)
 def skiff():
     # scout: a slender Ostrova faceted spire for a hull, a salvaged Halcyon radome dish set flush on the hull, two Varkesh square drives
@@ -78,21 +77,22 @@ def skiff():
         sq_drive(M,(sx*.27,-.02,-.75),.16)
         for z in (-.62,-.88):ring(M,(sx*.27,-.02,z),.1,.012,ACC,seg=10,sides=4)
         tube(M,[(sx*.17,-.02,-.75),(sx*.2,-.02,-.75)],[.03,.03],DARK,.8,4)
-    dish(M,(0,.2,.05),.17)                                                                                          # radome set flush on the hull
+    dish(M,(0,.22,.05),.25)                                                                                          # radome set flush on the hull
     canopy(M,(0,.12,.62),.09,(1,.7,1.8))
     for sx in (1,-1):hal_wing(M,(sx*.16,-.02,-.25),(sx*.62,-.05,.12),.3)                                           # small forward-swept wings
     for k,x in enumerate((-.1,0,.1)):tube(M,[(x,.1,-.9),(x*1.6,.4+.06*(k%2),-1.15)],[.01,.006],LIGHT,.9,4);M.blob((x*1.6,.4+.06*(k%2),-1.15),.025,WIN,sub=1,noise=0)
     patch(M,(-.12,.14,.2),.08,.2,(-.5,1,0))
     return finish(M,2.2,1.0)
 def corsair():
-    # medium: a Varkesh hex body with a chisel prow and twin chin guns, welded to a Halcyon lens drive section, matching Halcyon swept
-    # wings, a small Ostrova ring on the nose, an Ostrova halo round the tail as a jammer
+    # medium: a Varkesh hex body with a chisel prow and twin chin guns, welded to a Halcyon lens drive section, four Halcyon swept
+    # wings in an X, a small Ostrova ring on the nose, an Ostrova halo round the tail as a jammer
     M=Mesh(403)
     var_slab(M,[(-.3,.3,.22),(.9,.3,.22),(1.35,.16,.12),(1.55,.04,.03)],smooth=True)
     hal_pod(M,[(-1.35,.22,.18),(-.85,.3,.22),(-.28,.3,.22)]);weld(M,-.29,SMH(.3,.22))
     for x in (-.11,.11):M.vent((x,0,-1.36),.1)
     canopy(M,(0,.2,.65),.14)
-    for sx in (1,-1):hal_wing(M,(sx*.26,0,-.1),(sx*1.05,-.05,-.7),.55)                                             # matching wings
+    for sx in (1,-1):
+        for sy in (1,-1):hal_wing(M,(sx*.22,sy*.1,-.1),(sx*.9,sy*.62,-.7),.5)                                     # four wings in an X
     ring(M,(0,-.02,1.18),.3,.025,ACC,seg=24,sides=5)                                                                # small Ostrova ring on the nose
     for sx in (1,-1):tube(M,[(sx*.19,-.02,1.18),(sx*.28,-.02,1.18)],[.015,.015],LIGHT,.9,4)
     for x in (-.1,.1):var_gun(M,(x,-.2,.7),.55,.03)
@@ -102,8 +102,8 @@ def corsair():
     return finish(M,2.6,1.0)
 def plunderer():
     # heavy: a Halcyon lens cockpit pod on a Varkesh box spine; the holds don't match (a Varkesh hex container to port, a long Ostrova
-    # crystal hold to starboard), a Halcyon engine boom on a pylon on top, an Ostrova crystal
-    # pontoon underneath, a Varkesh drive block on the right, a turret on top
+    # crystal hold to starboard), a crystal-clad engine boom on a pylon on top, an Ostrova
+    # crystal pontoon underneath, a Varkesh drive block on the right, a turret on top
     M=Mesh(404)
     hal_pod(M,[(.55,.24,.2),(1.1,.26,.21),(1.5,.14,.1),(1.68,.03,.03)]);canopy(M,(0,.2,1.05),.15)
     var_slab(M,[(-1.35,.22,.2),(.6,.24,.22)]);weld(M,.56,HEX(.24,.22))
@@ -111,7 +111,8 @@ def plunderer():
     var_slab(M,[(-1.15,.16,.2),(.25,.16,.2)],dx=-.58,smooth=True);weld(M,-.45,SMH(.16,.2))                          # Varkesh container hold
     for z in (-.95,-.45,.05):loft(M,[(z-.02,at(SMH(.17,.21),-.58)),(z+.02,at(SMH(.17,.21),-.58))],(ACC,.85))
     crystal(M,-1.25,.4,.19,.2,.6,0)                                                                                 # Ostrova crystal hold
-    tube(M,[(0,.46,-.45),(0,.46,-1.75)],[.12,.14],LIGHT,1.05,10,cap1=False);M.vent((0,.46,-1.76),.11)               # Halcyon boom engine on a pylon on top
+    tube(M,[(0,.46,-.45),(0,.46,-1.75)],[.12,.14],GLASS,1.0,10,cap1=False);M.vent((0,.46,-1.76),.11)               # boom engine on a pylon on top, crystal-clad
+    for z in (-.7,-1.1,-1.5):ring(M,(0,.46,z),.14,.014,WIN,seg=14,sides=4)
     for z in (-.8,-1.35):abox(M,(0,.33,z),(.08,.2,.16),DARK,(1,1),.75)
     crystal(M,-1.15,.35,.13,.13,0,-.47)                                                                            # crystal pontoon underneath
     for z in (-.75,-.1):tube(M,[(0,-.2,z),(0,-.38,z)],[.03,.03],DARK,.8,5)
