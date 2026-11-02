@@ -34,6 +34,7 @@ def gannet():
         for dx in (.3,.75):M.vent((sx*dx,0,-1.0),.09)
     M.blob((0,.24,.62),.15,GLASS,sub=2,squash=(1,.55,1.6),noise=0)                                                 # cockpit set straight into the hull
     lights(M,[(.38,-.02,1.05),(-.38,-.02,1.05)],.035)
+    M.T=[np.array(t)*[.86,1,1] for t in M.T]                                                                       # a little narrower
     return finish(M,2.8,1.0)
 def bombard():
     # Varkesh house-brand miner: one huge shell cannon running the whole length of the ship down its centre, carried between two
@@ -52,6 +53,8 @@ def bombard():
             z=-.1+k*.22;plate(M,[(sx*.665,-.08,z-.07),(sx*.665,.08,z-.07),(sx*.665,.08,z+.07),(sx*.665,-.08,z+.07)],.012,DARK,.7)
             plate(M,[(sx*.672,-.05,z-.04),(sx*.672,.05,z-.04),(sx*.672,.05,z+.04),(sx*.672,-.05,z+.04)],.006,GLOW,1.0)
         lights(M,[(sx*.45,-.12,1.1)],.03)
+        plate(M,[(sx*.62,-.02,-.2),(sx*.95,-.06,-.48),(sx*.95,-.06,-.6),(sx*.62,-.02,-.62)],.03,MID,.95)            # very small wing on the side hull
+        M.blob((sx*.95,-.06,-.54),.025,WIN,sub=1,noise=0)
     for z in (-.55,.35):abox(M,(0,.16,z),(.7,.12,.2),MID,(1,1),.9)                                                   # braces over the cannon
     M.blob((-.45,.25,.55),.13,GLASS,sub=2,squash=(1,.65,1.5),noise=0)                                                # cockpit, port hull
     abox(M,(.45,.3,-.3),(.3,.18,.55),MID,(.9,.9));box(M,(.62,-.02,.25),(.1,.14,.2),MID)                             # hopper and docked Ward Drone, starboard
@@ -93,7 +96,7 @@ def wraith():
     for sx in (1,-1):
         W=[(sx*.25,.02,.42),(sx*1.2,-.03,-.6),(sx*1.08,-.03,-.82),(sx*.25,0,-.9)]
         plate(M,W,.08,MID,.92)                                                                                         # thick swept wing
-        tube(M,[(sx*.48,.03,.32),(sx*1.2,-.02,-.58)],[.012,.012],GLOW,1.0,4,cap0=False,cap1=False)                      # edge light
+        r0=np.array(W[0]);t1=np.array(W[1]);tube(M,[r0+(t1-r0)*.26+[0,.045,0],t1+[0,.045,0]],[.012,.012],GLOW,1.0,4,cap0=False,cap1=False)   # edge light, along the leading edge
         tube(M,[(sx*.33,-.04,.38),(sx*.33,-.04,.66)],[.025,.02],DARK,1.0,6)                                             # hidden guns
         plate(M,[(sx*.12,-.01,-.96),(sx*.34,-.01,-.94),(sx*.34,-.01,-.99),(sx*.12,-.01,-1.01)],.012,GLOW,1.0)            # slit vents
     loft(M,[(.12,D(.12,.05,.17)),(.45,D(.1,.07,.16)),(.68,D(.03,.02,.13))],(GLASS,1.0))
