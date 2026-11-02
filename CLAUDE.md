@@ -12,7 +12,7 @@
 - **Always** syntax-check after building (the build's `--check` doesn't catch syntax errors):
   `node -e "const fs=require('fs');const h=fs.readFileSync('index.html','utf8');const m=[...h.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(x=>x[1]);for(const s of m){try{new Function(s);console.log('syntax ok')}catch(e){console.log('SYNTAX',e.message)}}"`
 - The whole script is one closure. Systems are extended with the wrapper pattern `{const o=fn;fn=function(){...;return o.apply(this,arguments)}}` (function declarations can be reassigned). `16_expansion.js` and `16f_factions.js` are mostly wrappers on earlier files.
-- Model pack: `cd tools && python3 build_models.py`, then write `src/data/mdlidx.html` as `<script type="application/json" id="mdlidx">`+`tools/models_idx.json`+`</script>` and `src/data/mdlbin.html` as `<script type="text/plain" id="mdlbin">`+`tools/models_gz.b64`+`</script>`. Kit models come from /home/claude/kenney and /home/claude/qlp (may need re-fetching in a new environment).
+- Model pack: `cd tools && python3 build_models.py`, then write `src/data/mdlidx.html` as `<script type="application/json" id="mdlidx">`+`tools/models_idx.json`+`</script>` and `src/data/mdlbin.html` as `<script type="text/plain" id="mdlbin">`+`tools/models_gz.b64`+`</script>`. The CC0 model kits it reads are in `tools/kits/` (Kenney Space Kit GLTF, Quaternius Lowpoly Spaceships OBJ).
 - In-page debugging: `__dg.ev(code)` runs code inside the game's scope (Playwright tests use it).
 
 ## Rules the game keeps
