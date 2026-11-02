@@ -68,16 +68,16 @@ def condor():    # bomber: a heavy lens fuselage, a great swept wing span with t
         M.vent((sx*.12,0,-1.1),.08)
     plate(M,[(-.14,-.2,.3),(.14,-.2,.3),(.14,-.2,-.5),(-.14,-.2,-.5)],.02,DARK)                                    # bomb-bay doors
     return finish(M,2.7,1.0)
-def harrier():   # heavy bomber: a long clean lens hull, tandem canopies, one swept wing with a torpedo pod under each side, a rear ball turret
+def harrier():   # heavy bomber: a long clean lens hull, tandem canopies, a forward-swept wing with a torpedo pod under each side, a rear ball turret
     M=Mesh(84)
     loft(M,[(-1.25,LENS(.15,.13)),(-.7,LENS(.27,.21)),(.4,LENS(.26,.21)),(.95,LENS(.1,.09,-.01)),(1.15,LENS(.02,.02,-.02))],lens_role)
     for z in (.62,.3):M.blob((0,.19,z),.095,GLASS,sub=2,squash=(.9,.75,1.6),noise=0)                                # tandem canopies: two seats
     turret(M,(0,.2,-1.0),.1)                                                                                         # rear turret
     for sx in (1,-1):
-        plate(M,[(sx*.24,.0,.3),(sx*1.1,-.03,-.35),(sx*1.06,-.03,-.5),(sx*.24,.0,-.45)],.04,LIGHT)                   # one clean swept wing
-        M.blob((sx*1.08,-.03,-.43),.045,WIN,sub=1,noise=0)
-        loft(M,[(-.6,[(a+sx*.6,b-.14) for a,b in LENS(.04,.04)]),(-.4,[(a+sx*.6,b-.14) for a,b in LENS(.09,.08)]),(.2,[(a+sx*.6,b-.14) for a,b in LENS(.09,.08)]),(.38,[(a+sx*.6,b-.14) for a,b in LENS(.03,.03)])],(MID,.95))   # torpedo pod under the wing
-        torpedo(M,(sx*.6,-.25,-.3),.65,.045)
+        plate(M,[(sx*.24,.0,-.05),(sx*1.08,-.03,.38),(sx*1.03,-.03,.24),(sx*.24,.0,-.6)],.04,LIGHT)                  # forward-swept wing
+        M.blob((sx*1.06,-.03,.31),.045,WIN,sub=1,noise=0)
+        loft(M,[(-.55,[(a+sx*.6,b-.14) for a,b in LENS(.04,.04)]),(-.35,[(a+sx*.6,b-.14) for a,b in LENS(.09,.08)]),(.25,[(a+sx*.6,b-.14) for a,b in LENS(.09,.08)]),(.45,[(a+sx*.6,b-.14) for a,b in LENS(.03,.03)])],(MID,.95))   # torpedo pod under the wing
+        torpedo(M,(sx*.6,-.25,-.25),.65,.045)
         plate(M,[(sx*.13,.16,-.68),(sx*.24,.4,-.96),(sx*.24,.4,-1.03),(sx*.13,.15,-.99)],.025,ACC,.95)
         M.vent((sx*.12,0,-1.27),.08)
     return finish(M,2.9,1.0)
@@ -96,7 +96,7 @@ def jackal():    # scout: a streamlined but bulky smoothed-hex wedge, the sensor
         plate(M,[(sx*.12,.1,-.45),(sx*.18,.26,-.7),(sx*.18,.26,-.76),(sx*.12,.1,-.74)],.03,ACC,.9)
         M.vent((sx*.08,0,-.82),.06)
     limpets(M,(0,-.14,-.05))
-    return finish(M,2.0,1.0)
+    return finish(M,2.05,.78)
 def wolfhound(): # advanced scout: a broad streamlined smoothed-hex hull with sensor blisters faired into its flanks, a dorsal dish, limpets, beacon
     M=Mesh(92)
     loft(M,[(-1.05,SMH(.17,.12)),(-.6,SMH(.3,.19)),(.15,SMH(.3,.19)),(.6,SMH(.17,.11,-.01)),(1.0,SMH(.04,.03,-.02))],smh_role)
@@ -133,7 +133,7 @@ def warhound():  # heavy bomber: a streamlined smoothed-hex hull, two seats, a t
         torpedo(M,(sx*.46,-.12,-.35),.6,.045)
         plate(M,[(sx*.3,-.02,.25),(sx*.65,-.04,-.1),(sx*.62,-.04,-.32),(sx*.28,-.02,-.45)],.05,MID)
         M.vent((sx*.13,0,-1.04),.09)
-    return finish(M,2.4,1.0)
+    return finish(M,2.5,.76)
 
 # ============================================================== OSTROVA
 def seer():      # scout: a spire behind a forward sensor halo with a crystal eye, one pair of swept wings, a long mast
