@@ -60,10 +60,10 @@ def sheet(out):
         if r:g.line([(16,y0-6),(W-16,y0-6)],fill=(30,36,48))
     g.text((24,Hh-26),'Preview only: not in the game yet. Halcyon: swept, bird-like, glass canopy · Varkesh: blocky slabs, exposed guns · Ostrova: spires, reactor halo, crystal',font=fr(12),fill=(110,118,130))
     bg.save(out);print('wrote',out,bg.size)
-def family(out,fam=None,title='Driftgate Beyond · Fighters by faction: Light, Medium, Heavy',cols=('Light fighter','Medium fighter','Heavy fighter'),ppu=92):
+def family(out,fam=None,title='Driftgate Beyond · Fighters by faction: Light, Medium, Heavy',cols=('Light fighter','Medium fighter','Heavy fighter'),ppu=92,cw=450):
     fam=fam or FAMILY
     # three factions x Light/Medium/Heavy fighters: a big 3/4 view per cell with the planform inset, all at one scale
-    CW,RH,LW,HD=450,330,230,74;W=LW+CW*len(cols);Hh=HD+RH*3+34
+    CW,RH,LW,HD=cw,330,230,74;W=LW+CW*len(cols);Hh=HD+RH*3+34
     bg=Image.new('RGB',(W,Hh),(9,12,18));g=ImageDraw.Draw(bg)
     for y in range(Hh):g.line([(0,y),(W,y)],fill=(9+int(6*y/Hh),12+int(8*y/Hh),18+int(12*y/Hh)))
     fb=lambda s:ImageFont.truetype('DejaVuSans-Bold.ttf',s);fr=lambda s:ImageFont.truetype('DejaVuSans.ttf',s)
@@ -89,6 +89,9 @@ if __name__=='__main__':
         fam=[(f,n,s[k:k+3]) for f,n,s in WORK]
         family(a,fam,'Driftgate Beyond · '+('Miners' if k==0 else 'Haulers')+' by faction: Light, Medium, Heavy',
                tuple(c+(' miner' if k==0 else ' hauler') for c in ('Light','Medium','Heavy')),ppu=60)
+    elif 'capitals' in a:
+        from beyond_capitals import CAPITALS
+        family(a,CAPITALS,'Driftgate Beyond · Capital ships by faction',('Escort','Carrier'),ppu=62,cw=700)
     elif 'scouts_bombers' in a:
         from beyond_recon import RECON
         family(a,RECON,'Driftgate Beyond · Scouts and bombers by faction',('Scout','Advanced scout','Bomber','Heavy bomber (two seats)'),ppu=78)
