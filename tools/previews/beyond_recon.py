@@ -87,29 +87,29 @@ SMH=lambda w,h,dy=0:[(w,dy),(w*.82,h*.7+dy),(w*.4,h+dy),(-w*.4,h+dy),(-w*.82,h*.
 def smh_role(i,j):return ([MID,MID,MID,MID,MID,DARK,DARK,DARK,DARK,DARK][j],[1,1.03,1.06,1.06,1.03,.9,.85,.82,.85,.9][j])
 def jackal():    # scout: a streamlined but bulky smoothed-hex wedge, the sensor faired into the nose, a raked mast
     M=Mesh(91)
-    loft(M,[(-.75,SMH(.18,.15)),(-.4,SMH(.26,.21)),(.15,SMH(.26,.21)),(.5,SMH(.17,.14,-.01)),(.72,SMH(.07,.06,-.02))],smh_role)
-    plate(M,[(-.06,.2,.35),(.06,.2,.35),(.06,.22,.1),(-.06,.22,.1)],.02,GLASS)
-    M.blob((0,-.06,.62),.07,WIN,sub=1,squash=(1,.8,1.4),noise=0)                                                      # sensor faired into the nose
-    tube(M,[(0,.19,-.3),(0,.42,-.55)],[.018,.01],LIGHT,.9,5);ring(M,(0,.33,-.45),.04,.007,ACC,seg=10,sides=4,axis='y')   # raked mast
+    loft(M,[(-.8,SMH(.14,.1)),(-.45,SMH(.22,.15)),(.05,SMH(.22,.15)),(.45,SMH(.13,.09,-.01)),(.78,SMH(.04,.03,-.02))],smh_role)
+    plate(M,[(-.05,.14,.32),(.05,.14,.32),(.05,.155,.08),(-.05,.155,.08)],.02,GLASS)
+    M.blob((0,-.05,.6),.05,WIN,sub=1,squash=(1,.7,1.6),noise=0)                                                       # sensor faired into the nose
+    tube(M,[(0,.13,-.3),(0,.34,-.6)],[.016,.008],LIGHT,.9,5);ring(M,(0,.26,-.48),.035,.007,ACC,seg=10,sides=4,axis='y')   # raked mast
     for sx in (1,-1):
-        plate(M,[(sx*.24,-.02,.05),(sx*.5,-.04,-.25),(sx*.48,-.04,-.42),(sx*.22,-.02,-.45)],.05,MID)
-        plate(M,[(sx*.15,.15,-.4),(sx*.2,.32,-.6),(sx*.2,.32,-.67),(sx*.15,.15,-.66)],.04,ACC,.9)
-        M.vent((sx*.1,0,-.77),.07)
-    limpets(M,(0,-.2,-.05))
-    return finish(M,1.9,1.0)
+        plate(M,[(sx*.2,-.02,.0),(sx*.5,-.03,-.35),(sx*.48,-.03,-.48),(sx*.18,-.02,-.48)],.035,MID)
+        plate(M,[(sx*.12,.1,-.45),(sx*.18,.26,-.7),(sx*.18,.26,-.76),(sx*.12,.1,-.74)],.03,ACC,.9)
+        M.vent((sx*.08,0,-.82),.06)
+    limpets(M,(0,-.14,-.05))
+    return finish(M,2.0,1.0)
 def wolfhound(): # advanced scout: a broad streamlined smoothed-hex hull with sensor blisters faired into its flanks, a dorsal dish, limpets, beacon
     M=Mesh(92)
-    loft(M,[(-1.0,SMH(.22,.17)),(-.55,SMH(.36,.26)),(.25,SMH(.36,.26)),(.65,SMH(.22,.17,-.01)),(.9,SMH(.08,.07,-.02))],smh_role)
-    plate(M,[(-.07,.25,.55),(.07,.25,.55),(.07,.27,.3),(-.07,.27,.3)],.02,GLASS)
+    loft(M,[(-1.05,SMH(.17,.12)),(-.6,SMH(.3,.19)),(.15,SMH(.3,.19)),(.6,SMH(.17,.11,-.01)),(1.0,SMH(.04,.03,-.02))],smh_role)
+    plate(M,[(-.06,.18,.5),(.06,.18,.5),(.06,.2,.25),(-.06,.2,.25)],.02,GLASS)
     for sx in (1,-1):
-        loft(M,[(-.55,[(a+sx*.36,b) for a,b in SMH(.05,.06)]),(-.35,[(a+sx*.36,b) for a,b in SMH(.1,.11)]),(.15,[(a+sx*.36,b) for a,b in SMH(.1,.11)]),(.35,[(a+sx*.36,b) for a,b in SMH(.04,.05)])],smh_role)   # sensor blister
-        M.blob((sx*.42,.04,.1),.05,WIN,sub=1,noise=0)
-        limpets(M,(sx*.36,-.12,-.05),3)
-        plate(M,[(sx*.18,.2,-.65),(sx*.24,.4,-.88),(sx*.24,.4,-.95),(sx*.18,.2,-.93)],.04,ACC,.9)
-        M.vent((sx*.13,0,-1.02),.08)
-    dish(M,(0,.33,-.3),.14);tube(M,[(0,.24,-.3),(0,.3,-.3)],[.025,.025],LIGHT,.9,5)
-    abox(M,(0,-.22,.05),(.12,.06,.22),ACC,(1,1))                                                                     # beacon device
-    return finish(M,2.2,1.0)
+        loft(M,[(-.6,[(a+sx*.3,b) for a,b in SMH(.04,.04)]),(-.35,[(a+sx*.3,b) for a,b in SMH(.08,.07)]),(.15,[(a+sx*.3,b) for a,b in SMH(.08,.07)]),(.45,[(a+sx*.3,b) for a,b in SMH(.02,.02)])],smh_role)   # sensor blister
+        M.blob((sx*.35,.02,.1),.04,WIN,sub=1,noise=0)
+        limpets(M,(sx*.3,-.08,-.05),3)
+        plate(M,[(sx*.14,.14,-.68),(sx*.2,.32,-.92),(sx*.2,.32,-.98),(sx*.14,.14,-.96)],.035,ACC,.9)
+        M.vent((sx*.11,0,-1.07),.07)
+    dish(M,(0,.25,-.3),.12);tube(M,[(0,.17,-.3),(0,.22,-.3)],[.022,.022],LIGHT,.9,5)
+    abox(M,(0,-.15,.05),(.1,.05,.22),ACC,(1,1))                                                                     # beacon device
+    return finish(M,2.35,1.0)
 def maul():      # bomber: a compact streamlined smoothed-hex hull with the torpedo magazine faired into its belly, two tubes forward
     M=Mesh(93)
     loft(M,[(-.85,SMH(.24,.2)),(-.45,SMH(.32,.26)),(.3,SMH(.3,.25)),(.62,SMH(.18,.15,-.01)),(.8,SMH(.07,.06,-.02))],smh_role)
@@ -127,6 +127,7 @@ def warhound():  # heavy bomber: a streamlined smoothed-hex hull, two seats, a t
     loft(M,[(-1.0,SMH(.22,.19)),(-.5,SMH(.3,.25)),(.45,SMH(.28,.24)),(.8,SMH(.16,.13,-.01)),(1.0,SMH(.06,.05,-.02))],smh_role)
     for z in (.6,.3):plate(M,[(-.07,.25,z+.1),(.07,.25,z+.1),(.07,.27,z-.1),(-.07,.27,z-.1)],.022,GLASS)          # two seats
     loft(M,[(-.95,SMH(.06,.05,.22)),(-.75,SMH(.12,.1,.24)),(-.45,SMH(.1,.08,.23))],smh_role);turret(M,(0,.32,-.75),.09,MID)   # turret faired into the aft spine
+    for sx in (1,-1):plate(M,[(sx*.18,.18,-.6),(sx*.3,.42,-.88),(sx*.3,.42,-.96),(sx*.18,.18,-.95)],.05,ACC,.9)     # tail fins
     for sx in (1,-1):
         loft(M,[(-.7,[(a+sx*.34,b-.04) for a,b in SMH(.05,.05)]),(-.5,[(a+sx*.34,b-.04) for a,b in SMH(.09,.09)]),(.3,[(a+sx*.34,b-.04) for a,b in SMH(.09,.09)]),(.45,[(a+sx*.34,b-.04) for a,b in SMH(.04,.04)])],smh_role)   # flank fairing
         torpedo(M,(sx*.46,-.12,-.35),.6,.045)
@@ -135,7 +136,7 @@ def warhound():  # heavy bomber: a streamlined smoothed-hex hull, two seats, a t
     return finish(M,2.4,1.0)
 
 # ============================================================== OSTROVA
-def seer():      # scout: a spire behind a forward sensor halo with a crystal eye, two pairs of swept wings, a long mast
+def seer():      # scout: a spire behind a forward sensor halo with a crystal eye, one pair of swept wings, a long mast
     M=Mesh(101)
     loft(M,[(-.85,DIA(.05,.05)),(-.45,DIA(.12,.11)),(.2,DIA(.13,.12)),(.52,DIA(.06,.06))],SP)
     ring(M,(0,0,.65),.18,.022,ACC,seg=20,sides=5);crystal(M,.52,.82,.07,.07)                                        # sensor halo and crystal eye
@@ -143,14 +144,13 @@ def seer():      # scout: a spire behind a forward sensor halo with a crystal ey
     M.blob((0,.1,.12),.065,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
     mast(M,(0,.09,-.35),.35)
     for sx in (1,-1):
-        plate(M,[(sx*.1,0,.15),(sx*.5,.02,-.1),(sx*.47,.02,-.2),(sx*.1,0,-.15)],.02,LIGHT)                          # forward wings
         plate(M,[(sx*.1,0,-.35),(sx*.6,-.02,-.65),(sx*.56,-.02,-.75),(sx*.08,0,-.65)],.02,MID)                      # aft wings
         M.blob((sx*.58,-.02,-.7),.035,GLASS,sub=1,noise=0)
     plate(M,[(0,.08,-.5),(0,.3,-.75),(0,.28,-.83),(0,.06,-.8)],.02,MID)
     limpets(M,(0,-.11,-.05))
     M.vent((0,0,-.87),.05)
     return finish(M,2.1,1.0)
-def obelisk():   # bomber: the Sentinel's single-seat cousin: a spire with crystal fins, a halo carrying four torpedo lances, a forked tail
+def obelisk():   # bomber: the Sentinel's single-seat cousin: a spire with crystal fins, a halo carrying four torpedo lances, two tail fins at 45 degrees
     M=Mesh(103)
     loft(M,[(-1.0,DIA(.07,.07)),(-.6,DIA(.17,.16)),(.35,DIA(.18,.17)),(.8,DIA(.07,.07)),(.98,DIA(.01,.01))],SP)
     M.blob((0,.16,.45),.08,GLASS,sub=2,squash=(.9,.7,1.6),noise=0)                                                  # one seat
@@ -160,16 +160,21 @@ def obelisk():   # bomber: the Sentinel's single-seat cousin: a spire with cryst
         torpedo(M,(x,y,-.6),.75,.05,LIGHT)                                                                           # torpedo lances on the halo
         tube(M,[(math.cos(a)*.13,math.sin(a)*.13,-.2),(x*.88,y*.88,-.2)],[.02,.02],LIGHT,.9,4)
     for sx in (1,-1):plate(M,[(sx*.13,-.03,.3),(sx*.42,-.08,.05),(sx*.4,-.08,-.12),(sx*.13,-.03,-.2)],.022,WIN,.85)  # crystal fins
-    forked_tail(M,-.75,.42)
+    vee_tail(M,-.72,.42)
     M.vent((0,0,-1.02),.06)
     return finish(M,2.4,1.0)
+def vee_tail(M,z0,span):
+    # two tail fins set 45 degrees either side of the fuselage's top
+    for a in (PI/4,3*PI/4):
+        ca,sa=math.cos(a),math.sin(a)
+        plate(M,[(ca*.1,sa*.1,z0),(ca*span,sa*span,z0-.32),(ca*span*.93,sa*span*.93,z0-.42),(ca*.08,sa*.08,z0-.32)],.025,MID)
 def forked_tail(M,z0,span):
-    # forked tail wings: each fin splits into two prongs
+    # (retired) forked tail wings: each fin splits into two prongs
     for k in range(3):
         a=PI/2+k*2*PI/3;ca,sa=math.cos(a),math.sin(a);pa,pb=a+.32,a-.32
         plate(M,[(ca*.1,sa*.1,z0),(ca*span*.5,sa*span*.5,z0-.15),(ca*span*.45,sa*span*.45,z0-.25),(ca*.08,sa*.08,z0-.22)],.025,MID)
         for b in (pa,pb):plate(M,[(ca*span*.48,sa*span*.48,z0-.15),(math.cos(b)*span,math.sin(b)*span,z0-.42),(math.cos(b)*span*.94,math.sin(b)*span*.94,z0-.5),(ca*span*.45,sa*span*.45,z0-.25)],.022,MID,.95)
-def sentinel():  # heavy bomber: a spire with tandem seats, a gun pod low on the aft fuselage, torpedo lances under crystal fins, a forked tail
+def sentinel():  # heavy bomber: a spire with tandem seats, a gun pod on the aft fuselage, torpedo lances under crystal fins, two tail fins at 45 degrees
     M=Mesh(104)
     loft(M,[(-1.2,DIA(.07,.07)),(-.7,DIA(.19,.18)),(.4,DIA(.2,.19)),(.95,DIA(.08,.08)),(1.15,DIA(.01,.01))],SP)
     for z in (.65,.3):M.blob((0,.17,z),.08,GLASS,sub=2,squash=(.9,.7,1.6),noise=0)                                 # two seats
@@ -179,13 +184,14 @@ def sentinel():  # heavy bomber: a spire with tandem seats, a gun pod low on the
     for sx in (1,-1):
         plate(M,[(sx*.15,-.05,.35),(sx*.5,-.1,.0),(sx*.48,-.1,-.25),(sx*.15,-.05,-.35)],.025,WIN,.85)              # crystal fins
         torpedo(M,(sx*.36,-.18,-.4),.8,.05,LIGHT)                                                                      # torpedo lances
-    forked_tail(M,-.85,.55)
+    vee_tail(M,-.82,.52)
     M.vent((0,0,-1.22),.06)
     return finish(M,2.9,1.0)
 def oracle():    # advanced scout: a spire with a great sensor dish set between two rings crossed in an X, crystal nodes, limpet launchers, a beacon device
     M=Mesh(102)
     loft(M,[(-1.0,DIA(.05,.05)),(-.55,DIA(.13,.12)),(.35,DIA(.13,.12)),(.75,DIA(.04,.04))],SP)
-    dish(M,(0,.0,-.5),.3,MID,axis='z');M.blob((0,0,-.42),.06,WIN,sub=1,noise=0)                                     # great sensor dish, between the crossed rings
+    for sx in (1,-1):plate(M,[(sx*.03,.1,-.3),(sx*.06,.24,-.38),(sx*.06,.24,-.6),(sx*.03,.1,-.68)],.02,LIGHT)       # radome pylons
+    M.blob((0,.26,-.5),.3,MID,sub=2,squash=(1,.17,1),noise=0);ring(M,(0,.26,-.5),.3,.016,ACC,seg=24,sides=4,axis='y')   # great flat radome, like the Skylark's, between the rings
     for th in (PI/4,-PI/4):
         u=np.array([math.sin(th),math.cos(th),0.])
         pts=[np.array([0,0,-.5])+u*math.cos(a)*.42+np.array([0,0,math.sin(a)*.42]) for a in np.linspace(0,2*PI,33)]
