@@ -6,8 +6,8 @@ from PIL import Image,ImageDraw,ImageFont
 sys.path.insert(0,os.path.dirname(__file__))
 from beyond_hulls import DESIGNS,FAMILY
 
-FAC_HEX={'halcyon':'#4fd8d0','varkesh':'#ff7a3d','ostrova':'#b893ff','company':'#f0b24a','freeport':'#e8c878'}
-HULL={'halcyon':[.6,.61,.62],'varkesh':[.43,.41,.4],'ostrova':[.56,.54,.6],'company':[.57,.58,.6],'freeport':[.57,.58,.6]}
+FAC_HEX={'halcyon':'#4fd8d0','varkesh':'#ff7a3d','ostrova':'#b893ff','company':'#f0b24a','freeport':'#e8c878','pirate':'#d8cd98'}
+HULL={'halcyon':[.6,.61,.62],'varkesh':[.43,.41,.4],'ostrova':[.56,.54,.6],'company':[.57,.58,.6],'freeport':[.57,.58,.6],'pirate':[.5,.47,.42]}
 def rgb(h):return np.array([int(h[i:i+2],16)/255 for i in (1,3,5)])
 def mix(a,b,t):return np.array(a)*(1-t)+np.array(b)*t
 def pal(fac):
@@ -75,7 +75,7 @@ def sheet(out):
 def family(out,fam=None,title='Driftgate Beyond · Fighters by faction: Light, Medium, Heavy',cols=('Light fighter','Medium fighter','Heavy fighter'),ppu=92,cw=450):
     fam=fam or FAMILY
     # three factions x Light/Medium/Heavy fighters: a big 3/4 view per cell with the planform inset, all at one scale
-    CW,RH,LW,HD=cw,330,230,74;W=LW+CW*len(cols);Hh=HD+RH*3+34
+    CW,RH,LW,HD=cw,330,230,74;W=LW+CW*len(cols);Hh=HD+RH*len(fam)+34
     bg=Image.new('RGB',(W,Hh),(9,12,18));g=ImageDraw.Draw(bg)
     for y in range(Hh):g.line([(0,y),(W,y)],fill=(9+int(6*y/Hh),12+int(8*y/Hh),18+int(12*y/Hh)))
     fb=lambda s:ImageFont.truetype('DejaVuSans-Bold.ttf',s);fr=lambda s:ImageFont.truetype('DejaVuSans.ttf',s)
@@ -104,6 +104,9 @@ if __name__=='__main__':
     elif 'capitals' in a:
         from beyond_capitals import CAPITALS
         family(a,CAPITALS,'Driftgate Beyond · Capital ships by faction',('Escort','Destroyer','Carrier'),ppu=56,cw=560)
+    elif 'unbound' in a:
+        from beyond_unbound import UNBOUND
+        family(a,UNBOUND,'Driftgate Beyond · The Unbound: hulls kitbashed from all three factions',('','',''),ppu=64,cw=520)
     elif 'scouts_bombers' in a:
         from beyond_recon import RECON
         family(a,RECON,'Driftgate Beyond · Scouts and bombers by faction',('Scout','Advanced scout','Bomber','Heavy bomber (two seats)'),ppu=78)
