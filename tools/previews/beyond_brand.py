@@ -22,7 +22,7 @@ def cells(M,x0,x1,z0,z1,y,nx,nz,dy=0.0):
 
 def gannet():
     # Halcyon house-brand hauler: the hauler line's thick lens flying wing (the Albatross's frame, centuries on), its wing bays split
-    # between freight hatches and banks of missile launch cells (the barrage), a raised glass bridge, small tail plates, floodlights
+    # between freight hatches and banks of missile launch cells (the barrage), a glass cockpit set straight into the hull, small tail plates, floodlights
     M=Mesh(701)
     sec=lambda w,h,dy=0:[(math.cos(a)*w,math.sin(a)*h*(1 if math.sin(a)>0 else .55)+dy) for a in np.linspace(0,2*PI,16,endpoint=False)]
     loft(M,[(-1.0,sec(.75,.15)),(-.6,sec(1.3,.26)),(.2,sec(1.15,.28)),(.75,sec(.6,.22)),(1.1,sec(.2,.1))],lambda i,j:((LIGHT,1.0) if j<8 else (MID,.92)))
@@ -32,22 +32,25 @@ def gannet():
         plate(M,[(sx*.4,.22,-.7),(sx*.5,.42,-.92),(sx*.5,.42,-1.02),(sx*.4,.22,-.98)],.035,ACC,.95)
         M.blob((sx*1.28,.0,-.4),.06,WIN,sub=1,noise=0)
         for dx in (.3,.75):M.vent((sx*dx,0,-1.0),.09)
-    loft(M,[(.2,LENS(.14,.1,.24)),(.45,LENS(.16,.13,.28)),(.75,LENS(.08,.06,.24))],lens_role);M.blob((0,.4,.5),.11,GLASS,sub=2,squash=(1,.7,1.6),noise=0)
+    M.blob((0,.24,.62),.15,GLASS,sub=2,squash=(1,.55,1.6),noise=0)                                                 # cockpit set straight into the hull
     lights(M,[(.38,-.02,1.05),(-.38,-.02,1.05)],.035)
     return finish(M,2.8,1.0)
 def bombard():
     # Varkesh house-brand miner: one huge shell cannon running the whole length of the ship down its centre, carried between two
-    # armoured side hulls joined by braces over it; the port hull carries the cockpit, the starboard hull the ore hopper and a docked
-    # Ward Drone; a breech block astern between them, stacks and drives on each hull
+    # armoured side hulls joined by braces over it, disappearing astern into a broad armoured aft section; the port hull carries the
+    # cockpit, the starboard hull the ore hopper and a docked Ward Drone; vents along each side hull's outer flank, stacks and drives
     M=Mesh(702)
-    tube(M,[(0,0,-1.25),(0,0,-.8),(0,0,1.5)],[.15,.12,.09],DARK,1.0,10,cap0=True,cap1=False)                        # the cannon, end to end
+    tube(M,[(0,0,-.7),(0,0,-.4),(0,0,1.5)],[.15,.12,.09],DARK,1.0,10,cap0=True,cap1=False)                          # the cannon, out of the aft section
     for z in (-.4,.3,.9):ring(M,(0,0,z),.12,.02,ACC,seg=14,sides=4)
     tube(M,[(0,0,1.45),(0,0,1.8)],[.13,.13],MID,.95,8,cap1=False)
     for z in (1.56,1.68):ring(M,(0,0,z),.135,.015,DARK,seg=12,sides=4)
-    abox(M,(0,0,-1.1),(.4,.36,.5),DARK,(.9,.9),.8)                                                                   # breech block
+    loft(M,[(-1.55,SMH(.62,.3)),(-.65,SMH(.66,.32)),(-.45,SMH(.5,.24))],smh_role)                                   # aft section the gun runs into
     for sx in (1,-1):
         loft(M,[(-1.3,[(a+sx*.45,b) for a,b in SMH(.2,.22)]),(.6,[(a+sx*.45,b) for a,b in SMH(.22,.24)]),(1.0,[(a+sx*.45,b-.02) for a,b in SMH(.14,.15)]),(1.2,[(a+sx*.45,b-.04) for a,b in SMH(.05,.05)])],smh_role)   # side hull
-        sqdrive(M,(sx*.45,0,-1.42),.26);stacks(M,(sx*.45,.24,-.9),1,.2,.26)
+        sqdrive(M,(sx*.45,0,-1.68),.26);stacks(M,(sx*.45,.3,-1.1),1,.2,.26)
+        for k in range(4):                                                                                       # vents along the outer flank
+            z=-.1+k*.22;plate(M,[(sx*.665,-.08,z-.07),(sx*.665,.08,z-.07),(sx*.665,.08,z+.07),(sx*.665,-.08,z+.07)],.012,DARK,.7)
+            plate(M,[(sx*.672,-.05,z-.04),(sx*.672,.05,z-.04),(sx*.672,.05,z+.04),(sx*.672,-.05,z+.04)],.006,GLOW,1.0)
         lights(M,[(sx*.45,-.12,1.1)],.03)
     for z in (-.55,.35):abox(M,(0,.16,z),(.7,.12,.2),MID,(1,1),.9)                                                   # braces over the cannon
     M.blob((-.45,.25,.55),.13,GLASS,sub=2,squash=(1,.65,1.5),noise=0)                                                # cockpit, port hull
@@ -86,9 +89,9 @@ def wraith():
     D=lambda w,h,dy=0:[(w,dy),(w*.4,h+dy),(-w*.4,h+dy),(-w,dy),(-w*.4,-h*.6+dy),(w*.4,-h*.6+dy)]
     role=lambda i,j:([LIGHT,MID,MID,LIGHT,DARK,DARK][j],[1,.95,.9,1,.8,.8][j])
     loft(M,[(-.95,D(.42,.1)),(-.35,D(.52,.2)),(.45,D(.34,.17)),(1.05,D(.04,.03))],role)                               # raised diamond body
-    loft(M,[(-.8,D(.1,.05,.18)),(-.1,D(.12,.1,.2)),(.5,D(.06,.04,.16))],role)                                         # spine ridge
+    loft(M,[(-.85,D(.12,.08,.08)),(-.1,D(.14,.13,.14)),(.5,D(.07,.07,.12))],role)                                     # spine ridge, seated in the body
     for sx in (1,-1):
-        W=[(sx*.48,.02,.3),(sx*1.2,-.03,-.6),(sx*1.08,-.03,-.82),(sx*.44,0,-.82)]
+        W=[(sx*.25,.02,.42),(sx*1.2,-.03,-.6),(sx*1.08,-.03,-.82),(sx*.25,0,-.9)]
         plate(M,W,.08,MID,.92)                                                                                         # thick swept wing
         tube(M,[(sx*.48,.03,.32),(sx*1.2,-.02,-.58)],[.012,.012],GLOW,1.0,4,cap0=False,cap1=False)                      # edge light
         tube(M,[(sx*.33,-.04,.38),(sx*.33,-.04,.66)],[.025,.02],DARK,1.0,6)                                             # hidden guns
