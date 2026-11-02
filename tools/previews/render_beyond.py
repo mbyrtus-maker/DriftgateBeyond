@@ -88,5 +88,5 @@ if __name__=='__main__':
         k=0 if 'miners' in a else 3
         fam=[(f,n,s[k:k+3]) for f,n,s in WORK]
         family(a,fam,'Driftgate Beyond · '+('Miners' if k==0 else 'Haulers')+' by faction: Light, Medium, Heavy',
-               tuple(c+(' miner' if k==0 else ' hauler') for c in ('Light','Medium','Heavy')),ppu=74)
+               tuple(c+(' miner' if k==0 else ' hauler') for c in ('Light','Medium','Heavy')),ppu=60)
     else:family(a) if 'family' in a or 'fighters_by' in a else sheet(a)
