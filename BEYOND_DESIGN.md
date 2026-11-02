@@ -18,7 +18,7 @@ The war goes on, but you no longer fight in it as a soldier. You are an independ
 | Keep from Driftgate 1 | Change | Drop |
 |---|---|---|
 | Flight, drift by mass, gates, docking | Pilot welded to one faction → **standing** with every power, work for anyone | **Unbound pirate mode** (the start card, crew galaxies, Scrapheart Haven works) |
-| Combat feel, shields, sub-targets, capitals and bridges | Pay from your faction's treasury → paid by **whoever issued the job** | **Legend levels** as they are (replaced, see Progression) |
+| Combat feel, shields, sub-targets, capitals and bridges | Pay from your faction's treasury → paid by **whoever issued the job** | **Legend levels** as they are (reworked, see section 10a) |
 | Blast charges, salvage, hauling, convoys | Blast rig only → **mining lasers back** alongside charges, both in a mining hull's weapon slots | Mk I–III as one shared ladder (replaced by grades) |
 | The three factions, their AI war, campaigns, depots, sieges | One Weapons system for gun and laser together → **separate parts in weapon slots**; slot count varies by ship | Scout hulls as a starter |
 | **The Brood,** stronger: more presence, about 20% of galaxies | Free kinetic fire → **machine guns use ammunition**; lasers draw on the reactor | |
@@ -226,7 +226,56 @@ These reuse what Driftgate 1 has where they can: the station's task tabs, the Jo
 | Station level 5, with a yard | Carrier |
 
 - **Parts unlock by Rating and cost:** grade 1 at Rating 1, 2 at 2, 3 at 4, 4 at 6, 5 at 8. A maker's grade 4–5 parts also need Trusted or Partner standing with its power.
-- **Across galaxies (replaces Legend): deferred.** Legend can't carry over as it is, because one pilot can now own a faction. We'll come back to what a callsign carries between galaxies.
+- **Across galaxies:** Legend, reworked (section 10a).
+
+### 10a. Legend: what carries between galaxies (sample, under review)
+Starting from nothing in every galaxy doesn't fit a game where you can build up to a Station. Legend has two parts: **Legend levels**, which build up across every galaxy you play, and **Conqueror's spoils**, a one-off reward for the pilots who won the last galaxy. Kept per callsign on the device, as Driftgate 1's Legend is.
+
+**Earning Legend points** (kept for good)
+
+| Achievement in a galaxy | Points |
+|---|---|
+| Reach Rating 5 | 1 |
+| Reach Rating 10 | 1 more |
+| Build a Lair | 1 |
+| Build a Depot | 1 |
+| Build a Station | 2 |
+| Declare a faction | 2 |
+| Kill an ace, or a Brood Hive Ship | 1 |
+| Your faction wins the galaxy (founder and partners) | 6 |
+| Back the winner (Partner standing with the faction that wins) | 2 |
+| The Brood wins | No win points for anyone |
+
+A solid galaxy that ends at Depot level earns about 4 points. A founder whose faction conquers the galaxy earns 15 or more.
+
+**Legend levels** (each perk applies from the start of every new galaxy)
+
+| Level | Points | Perk carried forward |
+|---|---|---|
+| 1 | 2 | Start at Rating 2 · title *Journeyman* |
+| 2 | 4 | +5,000 starting credits |
+| 3 | 7 | Start in a fully equipped medium hull of your choice |
+| 4 | 10 | Three grade 2 parts of your choice, fitted free |
+| 5 | 14 | Start at Rating 4 · title *Veteran* |
+| 6 | 18 | A Lair kit in your hold: build a level 1 Lair anywhere at the start |
+| 7 | 23 | House-brand hulls need only Trusted standing, not Partner |
+| 8 | 28 | Start with a level 1 Depot in a system of your choice (instead of the Lair kit) |
+| 9 | 34 | Start at Rating 6 · your brand starts with extra trait points |
+| 10 | 40 | Start with a level 1 Station · title *Founder* |
+
+**Conqueror's spoils** (next galaxy only, for the founder of the winning faction and their partners, on top of their Legend level)
+
+| Spoil | What you get |
+|---|---|
+| Flagship | The ship you left the last galaxy with carries forward, with its fitted parts (not a capital ship) |
+| War chest | 10% of your faction's treasury at the win, up to 25,000 cr |
+| Veteran crew | Three AI pilots who serve without wages for your first 2 hours once you own a Depot |
+| Renown | Start Trusted (+25) with every power |
+| The Wraith | Driftgate 1's top hull returns as a trophy, built only by former conquerors |
+
+Contractors who backed the winner but weren't partners get a smaller share: the war chest at half, plus Renown.
+
+- **The ledger:** anything a pilot carries into a new galaxy (a flagship, parts, kits, a starting base) is added when the galaxy is created and counted in its starting ledger, so the economy stays exact from that point on.
 
 ### 11. Declaring a faction
 - **The only requirement is a Station.** Once you own one base at Station level, you can declare.
@@ -269,11 +318,13 @@ Their signature hulls survive as house-brand hulls built with Partner standing: 
 - **The war is checked by simulation.** New target for AI-only galaxies: the Brood about 20%, the three factions sharing the rest evenly (about 27% each). Until the Brood change is built, Driftgate 1's target in CLAUDE.md still applies.
 
 ### Decided in review (2 Nov 2026)
-Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is credits plus goods · your own brand from Depot level · Brood about 20% · Rating only goes up · a choice of three starting freeports · faction careers become job bonuses and the signature hulls survive · scouting returns as intel, with scout hulls (Rating 2 and 4, not a starter) the only hulls for beacon devices and limpets · a beacon flip earns a fee and standing · your brand's trait is a net-zero point system · Unbound designs are pirates' only · Station levels come from external buildings · freeport yards roll a random set of faction designs; house-brand hulls only at their faction's station · AI wages go to the Compact · two-thirds of the galaxy for 10 minutes wins, with no deadline, and the others unite once the timer starts · you choose one external building per station level · flares stay on energy, drones restock at dock · only factions (and the Unbound and Brood) design hulls; freeports build faction designs · Lair 2 levels, Depot 3, Station 5 · makers' names kept for now · declaring needs only a Station · losing your last Station drops you back to a company · asteroid or standard station look.
+Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is credits plus goods · your own brand from Depot level · Brood about 20% · Rating only goes up · Legend reworked: levels carried across galaxies plus Conqueror's spoils (sample in 10a; level 4 gives three grade 2 parts; the flagship is the non-capital ship you left the last galaxy with) · a choice of three starting freeports · faction careers become job bonuses and the signature hulls survive · scouting returns as intel, with scout hulls (Rating 2 and 4, not a starter) the only hulls for beacon devices and limpets · a beacon flip earns a fee and standing · your brand's trait is a net-zero point system · Unbound designs are pirates' only · Station levels come from external buildings · freeport yards roll a random set of faction designs; house-brand hulls only at their faction's station · AI wages go to the Compact · two-thirds of the galaxy for 10 minutes wins, with no deadline, and the others unite once the timer starts · you choose one external building per station level · flares stay on energy, drones restock at dock · only factions (and the Unbound and Brood) design hulls; freeports build faction designs · Lair 2 levels, Depot 3, Station 5 · makers' names kept for now · declaring needs only a Station · losing your last Station drops you back to a company · asteroid or standard station look.
 
 ### Open questions
-1. **Legacy across galaxies** (deferred). What does a callsign carry from one galaxy to the next?
-2. **Lair, Depot, Station costs.** All numbers are guesses to tune.
+1. **Legend level 10's Station** lets a Founder declare a faction in the first minute. Keep it, or make the top reward a level 3 Depot that upgrades to a Station cheaply?
+2. **Stack or pick?** In the sample all perks stack. Alternative: each level adds points to spend on a start package chosen each galaxy (credits, a better hull or a base), so veterans start differently.
+3. **Who shares the spoils?** The sample gives them to the founder and partners of the winning faction. In multiplayer, should every pilot who flew for that faction share them in full?
+4. **Lair, Depot, Station costs.** All numbers are guesses to tune.
 
 ### Proposed build order (once the design is agreed)
 1. **Cut the faction tie:** start at a chosen freeport with three equipped starters; standing with every power; docking and hostility from standing; pay from the issuer; faction job bonuses.
@@ -282,10 +333,10 @@ Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is cre
 4. **Faction jobs screen,** with intel jobs: beacon devices, capital pings, limpets, and discoveries out beyond the gates.
 5. **Unique hull designs, first wave:** each faction's fighters, with their own models and stats, duel-balanced; freeport yards build them.
 6. **Makers:** the corporations, their works and stock; product lines replace variants; AI fleets fitted from their makers.
-7. **Progression:** Contractor Rating gates hulls and grades; hull upgrades; remove Legend; drop Unbound mode.
+7. **Progression:** Contractor Rating gates hulls and grades; hull upgrades; drop Unbound mode.
 8. **Lairs and the Holdings screen.**
 9. **Depots:** markets, hiring and building AI with upkeep; the Economy and Job creation screens.
 10. **Stations and station upgrades;** capital ships built at your stations.
 11. **Strategic map** with sector zoom and orders.
 12. **Declaring a faction;** slower war pacing; a stronger Brood (about 20%); war checks for the new balance.
-13. **Legacy, multiplayer rivalries, training rewrite.**
+13. **Legend rework and Conqueror's spoils, multiplayer rivalries, training rewrite.**
