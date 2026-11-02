@@ -202,6 +202,81 @@ def cathedral(): # carrier: a smooth, great crystal-veined hull with a flight de
     lights(M,[(.3,-.1,2.4),(-.3,-.1,2.4)],.045)
     return finish(M,4.6,1.0)
 
-CAPITALS=[('halcyon','Halcyon Accord',[('Shrike','Escort',shrike),('Sovereign','Carrier',sovereign)]),
-          ('varkesh','Varkesh Dominion',[('Vanguard','Escort',vanguard),('Bastille','Carrier',bastille)]),
-          ('ostrova','Ostrova Collective',[('Lantern','Escort',lantern),('Cathedral','Carrier',cathedral)])]
+# ============================================================== DESTROYERS: line ships between the escort and the carrier, built around a main gun
+def main_turret(M,c,s=1.0,aft=False,n=3):
+    # a heavy gun turret: a barbette ring, an angled housing, n long barrels (pointing +z, or -z if aft)
+    x,y,z=c;d=-1 if aft else 1
+    tube(M,[(x,y-.04*s,z),(x,y+.05*s,z)],[.21*s,.2*s],DARK,.9,12)
+    loft(M,[(z-d*.22*s,[(a+x,b+y+.1*s) for a,b in HEX(.2*s,.09*s)]),(z+d*.2*s,[(a+x,b+y+.1*s) for a,b in HEX(.17*s,.07*s)])],smh_role) if not aft else \
+    loft(M,[(z-.2*s,[(a+x,b+y+.1*s) for a,b in HEX(.17*s,.07*s)]),(z+.22*s,[(a+x,b+y+.1*s) for a,b in HEX(.2*s,.09*s)])],smh_role)
+    for k in range(n):
+        bx=x+(k-(n-1)/2)*.09*s;bz=z+d*.18*s
+        tube(M,[(bx,y+.1*s,bz),(bx,y+.1*s,bz+d*.7*s)],[.032*s,.026*s],DARK,1.0,6,cap0=False)
+        ring(M,(bx,y+.1*s,bz+d*.08*s),.04*s,.01,ACC,seg=10,sides=4)
+
+def peregrine(): # destroyer: a lens hull that splits into two prongs round a spinal rail cannon, accelerator rings glowing between them,
+                 # a capacitor bank along its back, faired drive nacelles, a bridge pod aft
+    M=Mesh(113)
+    loft(M,[(-2.3,LENS(.38,.28)),(-1.8,LENS(.52,.34)),(.3,LENS(.5,.34)),(.9,LENS(.3,.22))],lens_role)                 # main hull
+    for sx in (1,-1):
+        loft(M,[(.2,[(a+sx*.26,b) for a,b in LENS(.17,.2)]),(1.4,[(a+sx*.26,b) for a,b in LENS(.14,.17)]),(2.15,[(a+sx*.24,b-.01) for a,b in LENS(.08,.09)]),(2.4,[(a+sx*.22,b-.02) for a,b in LENS(.03,.03)])],lens_role)   # prongs
+        loft(M,[(-2.5,[(a+sx*.56,b-.04) for a,b in LENS(.14,.15)]),(-1.1,[(a+sx*.56,b-.04) for a,b in LENS(.14,.15)]),(-.7,[(a+sx*.52,b-.04) for a,b in LENS(.05,.06)])],lens_role)   # drive nacelle, faired into the flank
+        M.vent((sx*.56,-.04,-2.52),.11)
+        for z in (-1.2,-.4,.4):pd(M,(sx*.4,.2,z),.07)
+        pd(M,(sx*.27,.2,1.3),.06)
+        sidewin(M,sx*.505,.08,-1.6,.2)
+    tube(M,[(0,0,.6),(0,0,2.55)],[.075,.06],DARK,.95,10,cap1=False);ring(M,(0,0,2.55),.075,.016,ACC,seg=14,sides=4)   # spinal rail cannon
+    for z in (1.0,1.4,1.8,2.15):ring(M,(0,0,z),.15-.012*(z-1),.022,WIN,seg=20,sides=5)                          # accelerator rings
+    loft(M,[(-1.2,LENS(.1,.05,.3)),(-1.0,LENS(.2,.09,.32)),(.2,LENS(.18,.08,.31)),(.5,LENS(.06,.03,.3))],lens_role)   # capacitor bank
+    for z in (-.8,-.4,0):plate(M,[(-.14,.405,z+.1),(.14,.405,z+.1),(.14,.405,z-.1),(-.14,.405,z-.1)],.006,WIN,.9)
+    bridge_halcyon(M,(0,.4,-1.55),.95)
+    shieldgen(M,(0,-.33,-.7),.12,up=False)
+    loft(M,[(-2.55,LENS(.3,.22)),(-2.3,LENS(.38,.28))],(MID,.95));M.vent((0,0,-2.57),.17)
+    lights(M,[(.26,-.1,2.2),(-.26,-.1,2.2)],.035)
+    return finish(M,4.1,1.0)
+
+def ironclad():  # destroyer: an armoured smoothed-hex hull on a flared armour belt, three heavy gun turrets on the centreline (two forward,
+                 # the second raised to fire over the first, one aft), a stepped bridge between them, exhaust stacks, a four-drive block
+    M=Mesh(123)
+    loft(M,[(-2.3,SMH(.48,.34)),(1.2,SMH(.48,.34)),(1.9,SMH(.34,.24,-.03)),(2.35,SMH(.14,.08,-.06))],smh_role)     # hull
+    loft(M,[(-2.2,SMH(.42,.1,-.2)),(-1.9,SMH(.62,.16,-.18)),(1.3,SMH(.62,.16,-.18)),(1.85,SMH(.4,.1,-.2))],smh_role)   # flared armour belt
+    for sx in (1,-1):
+        loft(M,[(-1.85,[(a+sx*.6,b-.03) for a,b in SMH(.03,.02)]),(1.3,[(a+sx*.6,b-.03) for a,b in SMH(.03,.02)])],(ACC,.95))   # belt trim
+        for z in (-1.4,-.6,.25):pd(M,(sx*.56,-.02,z),.07,MID)
+        sidewin(M,sx*.485,.12,-1.9,1.0)
+    main_turret(M,(0,.34,1.1),1.35)
+    abox(M,(0,.41,.15),(.62,.16,.7),MID,(1,1),.95);main_turret(M,(0,.49,.15),1.35)                                      # raised barbette, superfiring turret
+    bridge_varkesh(M,(0,.34,-.85),1.0)
+    main_turret(M,(0,.34,-1.8),1.2,aft=True)
+    stacks(M,(0,.34,-1.35),2,.24,.26)
+    shieldgen(M,(0,-.36,-.4),.12,up=False)
+    loft(M,[(-2.6,SMH(.4,.3)),(-2.3,SMH(.48,.34))],smh_role)
+    for x in (-.19,.19):
+        for y in (-.11,.11):M.vent((x,y,-2.62),.1)
+    lights(M,[(.2,-.1,2.25),(-.2,-.1,2.25)],.04)
+    return finish(M,4.1,1.0)
+
+def prism():     # destroyer: a faceted hull carrying three long spars (two above, one below) that converge on a great crystal lens in the prow,
+                 # the spinal lance; an energy conduit feeds it, turrets ride the spars, a low spire bridge
+    M=Mesh(133)
+    OCT=lambda w,h,dy=0:[(math.cos(a)*w,math.sin(a)*h+dy) for a in np.linspace(PI/8,2*PI+PI/8,8,endpoint=False)]
+    oct_role=lambda i,j:([LIGHT,LIGHT,LIGHT,MID,MID,DARK,DARK,MID][j],[1,.97,1,.95,.9,.85,.85,.92][j])
+    loft(M,[(-2.3,OCT(.3,.28)),(-1.8,OCT(.44,.38)),(.2,OCT(.4,.34)),(.85,OCT(.2,.18))],oct_role)                     # faceted hull
+    tube(M,[(0,0,.8),(0,0,1.55)],[.1,.08],WIN,1.0,6,cap0=False,cap1=False)                                          # energy conduit
+    crystal(M,1.3,2.8,.3,.3,0,0)                                                                               # the lens: a great prow crystal
+    for a in (PI/6,5*PI/6,3*PI/2):                                                                                   # three spars
+        u=np.array([math.cos(a),math.sin(a)])
+        pts=[(u[0]*r,u[1]*r,z) for r,z in ((.3,-1.6),(.62,-.5),(.62,.9),(.2,2.1))]
+        tube(M,pts,[.1,.13,.13,.07],MID,1.0,6)
+        for k in (1,2):M.blob(pts[k],.15,LIGHT,sub=1,squash=(1,1,1.4),noise=0)
+        for (r,z) in ((.64,-.15),(.64,.6)):pd(M,(u[0]*r,u[1]*r+(.11 if u[1]>0 else -.11),z),.065,ACC,up=u[1]>0)
+    for sx in (1,-1):
+        for k in range(2):plate(M,[(sx*.405,-.04+k*.12,.0),(sx*.405,.04+k*.12,.0),(sx*.42,.04+k*.12,-1.6),(sx*.42,-.04+k*.12,-1.6)],.01,WIN,.85)   # crystal veins
+    bridge_ostrova(M,(0,.34,-1.2),.95)
+    shieldgen(M,(0,-.36,-.3),.11,up=False)
+    for k in range(3):a=PI/2+k*2*PI/3;M.vent((math.cos(a)*.15,math.sin(a)*.14,-2.32),.1)
+    return finish(M,4.1,1.0)
+
+CAPITALS=[('halcyon','Halcyon Accord',[('Shrike','Escort',shrike),('Peregrine','Destroyer',peregrine),('Sovereign','Carrier',sovereign)]),
+          ('varkesh','Varkesh Dominion',[('Vanguard','Escort',vanguard),('Ironclad','Destroyer',ironclad),('Bastille','Carrier',bastille)]),
+          ('ostrova','Ostrova Collective',[('Lantern','Escort',lantern),('Prism','Destroyer',prism),('Cathedral','Carrier',cathedral)])]

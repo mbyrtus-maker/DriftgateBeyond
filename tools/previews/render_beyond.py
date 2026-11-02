@@ -103,7 +103,7 @@ if __name__=='__main__':
                tuple(c+(' miner' if k==0 else ' hauler') for c in ('Light','Medium','Heavy')),ppu=60)
     elif 'capitals' in a:
         from beyond_capitals import CAPITALS
-        family(a,CAPITALS,'Driftgate Beyond · Capital ships by faction',('Escort','Carrier'),ppu=62,cw=700)
+        family(a,CAPITALS,'Driftgate Beyond · Capital ships by faction',('Escort','Destroyer','Carrier'),ppu=56,cw=560)
     elif 'scouts_bombers' in a:
         from beyond_recon import RECON
         family(a,RECON,'Driftgate Beyond · Scouts and bombers by faction',('Scout','Advanced scout','Bomber','Heavy bomber (two seats)'),ppu=78)
