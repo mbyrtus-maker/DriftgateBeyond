@@ -60,26 +60,33 @@ def sheet(out):
         if r:g.line([(16,y0-6),(W-16,y0-6)],fill=(30,36,48))
     g.text((24,Hh-26),'Preview only: not in the game yet. Halcyon: swept, bird-like, glass canopy · Varkesh: blocky slabs, exposed guns · Ostrova: spires, reactor halo, crystal',font=fr(12),fill=(110,118,130))
     bg.save(out);print('wrote',out,bg.size)
-def family(out):
+def family(out,fam=None,title='Driftgate Beyond · Fighters by faction: Light, Medium, Heavy',cols=('Light fighter','Medium fighter','Heavy fighter'),ppu=92):
+    fam=fam or FAMILY
     # three factions x Light/Medium/Heavy fighters: a big 3/4 view per cell with the planform inset, all at one scale
     CW,RH,LW,HD=450,330,230,74;W=LW+CW*3;Hh=HD+RH*3+34
     bg=Image.new('RGB',(W,Hh),(9,12,18));g=ImageDraw.Draw(bg)
     for y in range(Hh):g.line([(0,y),(W,y)],fill=(9+int(6*y/Hh),12+int(8*y/Hh),18+int(12*y/Hh)))
     fb=lambda s:ImageFont.truetype('DejaVuSans-Bold.ttf',s);fr=lambda s:ImageFont.truetype('DejaVuSans.ttf',s)
-    g.text((24,18),'Driftgate Beyond · Fighters by faction: Light, Medium, Heavy',font=fb(24),fill=(230,232,236))
+    g.text((24,18),title,font=fb(24),fill=(230,232,236))
     g.text((24,48),'Generated in code, one design language per faction · game palette · one scale throughout · inset: from above',font=fr(14),fill=(140,150,165))
-    for c,cl in enumerate(('Light','Medium','Heavy')):g.text((LW+CW*c+14,HD-4),cl+' fighter',font=fr(14),fill=(130,140,155))
-    for r,(fac,fname,ships) in enumerate(FAMILY):
+    for c,cl in enumerate(cols):g.text((LW+CW*c+14,HD-4),cl,font=fr(14),fill=(130,140,155))
+    for r,(fac,fname,ships) in enumerate(fam):
         y0=HD+RH*r+14;F=tuple(int(v*255) for v in rgb(FAC_HEX[fac]))
         g.rectangle([16,y0+8,20,y0+RH-24],fill=F);g.text((32,y0+12),fname.split()[0],font=fb(26),fill=F);g.text((32,y0+46),fname.split()[1],font=fr(14),fill=(200,204,212))
         for c,(name,cl,fn) in enumerate(ships):
             M=fn();x0=LW+CW*c
-            im=render(M,fac,math.radians(-36),math.radians(22),CW-150,RH-40,92);bg.paste(im,(x0-6,y0+6),im)
-            ins=render(M,fac,0.0,math.radians(89),130,150,42);g.rectangle([x0+CW-150,y0+RH-176,x0+CW-14,y0+RH-22],outline=(34,40,54));bg.paste(ins,(x0+CW-147,y0+RH-174),ins)
+            im=render(M,fac,math.radians(-36),math.radians(22),CW-150,RH-40,ppu);bg.paste(im,(x0-6,y0+6),im)
+            ins=render(M,fac,0.0,math.radians(89),130,150,42*ppu/92);g.rectangle([x0+CW-150,y0+RH-176,x0+CW-14,y0+RH-22],outline=(34,40,54));bg.paste(ins,(x0+CW-147,y0+RH-174),ins)
             g.text((x0+14,y0+RH-48),name,font=fb(18),fill=F);g.text((x0+14,y0+RH-24),f'{cl} · {len(M.T)} tris',font=fr(12),fill=(120,128,140))
         if r:g.line([(16,y0-6),(W-16,y0-6)],fill=(30,36,48))
     g.text((24,Hh-26),'Preview only: not in the game yet. Hull names are Driftgate 1\'s faction names for each class.',font=fr(12),fill=(110,118,130))
     bg.save(out);print('wrote',out,bg.size)
 if __name__=='__main__':
     a=sys.argv[1] if len(sys.argv)>1 else 'beyond_light_fighters.png'
-    family(a) if 'family' in a or 'fighters_by' in a else sheet(a)
+    if 'miners' in a or 'haulers' in a:
+        from beyond_work import WORK
+        k=0 if 'miners' in a else 3
+        fam=[(f,n,s[k:k+3]) for f,n,s in WORK]
+        family(a,fam,'Driftgate Beyond · '+('Miners' if k==0 else 'Haulers')+' by faction: Light, Medium, Heavy',
+               tuple(c+(' miner' if k==0 else ' hauler') for c in ('Light','Medium','Heavy')),ppu=74)
+    else:family(a) if 'family' in a or 'fighters_by' in a else sheet(a)

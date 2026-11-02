@@ -10,6 +10,7 @@ from brood import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN
 
 def loft(M,secs,role,cap0=True,cap1=True,sh0=1.0):
     # secs: [(z,[(x,y),...])] with the same point count; quads between sections, oriented outward from each section's centre
+    if isinstance(role,tuple):role,sh0=role
     S=[(z,[np.array([x,y,z],float) for x,y in pts]) for z,pts in secs];n=len(S[0][1])
     for i in range(len(S)-1):
         a,b=S[i][1],S[i+1][1];ref=(sum(a)/n+sum(b)/n)/2
