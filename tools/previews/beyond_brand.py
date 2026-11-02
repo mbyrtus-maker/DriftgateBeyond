@@ -90,16 +90,17 @@ def wraith():
     # canopy, faint edge lights; a dark trophy finish
     M=Mesh(704)
     D=lambda w,h,dy=0:[(w,dy),(w*.4,h+dy),(-w*.4,h+dy),(-w,dy),(-w*.4,-h*.6+dy),(w*.4,-h*.6+dy)]
-    role=lambda i,j:([LIGHT,MID,MID,LIGHT,DARK,DARK][j],[1,.95,.9,1,.8,.8][j])
-    loft(M,[(-.95,D(.42,.1)),(-.35,D(.52,.2)),(.45,D(.34,.17)),(1.05,D(.04,.03))],role)                               # raised diamond body
-    loft(M,[(-.85,D(.12,.08,.08)),(-.1,D(.14,.13,.14)),(.5,D(.07,.07,.12))],role)                                     # spine ridge, seated in the body
+    # one faceted body with the spine ridge built into its section (no overlapping pieces to fight), evenly shaded planes
+    B=lambda w,h,r:[(w,0),(w*.4,h),(0,h+r),(-w*.4,h),(-w,0),(-w*.4,-h*.6),(w*.4,-h*.6)]
+    role=lambda i,j:([MID,LIGHT,LIGHT,MID,DARK,DARK,DARK][j],[.95,1,.96,.95,.8,.78,.8][j])
+    loft(M,[(-.95,B(.42,.1,.04)),(-.35,B(.52,.2,.08)),(.45,B(.34,.17,.0)),(1.05,B(.04,.03,0))],role)
     for sx in (1,-1):
-        W=[(sx*.25,.02,.42),(sx*1.2,-.03,-.6),(sx*1.08,-.03,-.82),(sx*.25,0,-.9)]
-        plate(M,W,.08,MID,.92)                                                                                         # thick swept wing
+        W=[(sx*.345,0,.42),(sx*1.2,-.03,-.6),(sx*1.08,-.03,-.82),(sx*.43,0,-.9)]                                    # wing root on the body's side edge
+        plate(M,W,.03,MID,.9)                                                                                          # thick swept wing
         r0=np.array(W[0]);t1=np.array(W[1]);tube(M,[r0+(t1-r0)*.26+[0,.045,0],t1+[0,.045,0]],[.012,.012],GLOW,1.0,4,cap0=False,cap1=False)   # edge light, along the leading edge
         tube(M,[(sx*.33,-.04,.38),(sx*.33,-.04,.66)],[.025,.02],DARK,1.0,6)                                             # hidden guns
         plate(M,[(sx*.12,-.01,-.96),(sx*.34,-.01,-.94),(sx*.34,-.01,-.99),(sx*.12,-.01,-1.01)],.012,GLOW,1.0)            # slit vents
-    loft(M,[(.12,D(.12,.05,.17)),(.45,D(.1,.07,.16)),(.68,D(.03,.02,.13))],(GLASS,1.0))
+    loft(M,[(.12,D(.12,.05,.205)),(.45,D(.1,.07,.18)),(.68,D(.03,.02,.15))],(GLASS,1.0))
     return finish(M,2.0,1.0)
 
 BRAND=[('halcyon','Halcyon Accord',[('Gannet','House-brand hauler: missile barrage',gannet)]),

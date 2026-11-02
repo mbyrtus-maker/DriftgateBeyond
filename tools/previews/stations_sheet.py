@@ -6,10 +6,10 @@ from render_beyond import render,rgb,FAC_HEX,rot
 from beyond_stations import *
 from PIL import Image,ImageDraw,ImageFont
 class _M:pass
-def fit(M,yaw,pitch,W,H,fac='company',fill=.86):
+def fit(M,yaw,pitch,W,H,fac='company',fill=.86,zbuf=False):
     T=np.array(M.T);c=(T.reshape(-1,3).max(0)+T.reshape(-1,3).min(0))/2;N=_M();N.T=list(T-c);N.R=M.R
     P=(T-c).reshape(-1,3)@rot(yaw,pitch).T;ex=np.abs(P[:,0]).max();ey=np.abs(P[:,1]).max()
-    return render(N,fac,yaw,pitch,W,H,min(W/2/ex,H/2/ey)*fill)
+    return render(N,fac,yaw,pitch,W,H,min(W/2/ex,H/2/ey)*fill,zbuf=zbuf)
 ROWS=[('Lair',[('Lair 1','hidden: one hangar, a hatch, a whip antenna',lambda:lair(1)),('Lair 2','+ second berth, forge vent, container stash, dish',lambda:lair(2))]),
       ('Depot',[('Depot 1','hub, docking arm, storage',lambda:depot(1)),('Depot 2','+ production module, hangar',lambda:depot(2)),('Depot 3','+ defence turrets, armour, life-support ring',lambda:depot(3))]),
       ('Station',[('Station core, standard','spine, habitat ring, crown dock, 5 hardpoints',lambda:station_core('standard')),('Station core, asteroid','the same core set into rock, 5 hardpoints',lambda:station_core('asteroid'))]),

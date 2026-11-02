@@ -23,7 +23,7 @@ for r,(fac,fname,ships) in enumerate(ROWS):
     for k,(n,c,fn) in enumerate(ships):
         M=fn()
         for j,(yw,pt) in enumerate(V):
-            x0=LW+CW*(k*len(V)+j);im=fit(M,math.radians(yw),math.radians(pt),CW-10,RH-60,fac,.86);bg.paste(im,(x0+5,y0+4),im)
+            x0=LW+CW*(k*len(V)+j);im=fit(M,math.radians(yw),math.radians(pt),CW-10,RH-60,fac,.86,zbuf=brand);bg.paste(im,(x0+5,y0+4),im)
         x0=LW+CW*k*len(V);g.text((x0+14,y0+RH-52),n,font=fb(17),fill=F);g.text((x0+14,y0+RH-28),f'{c} · {len(M.T)} tris',font=fr(12),fill=(120,128,140))
     if r:g.line([(16,y0),(W-16,y0)],fill=(30,36,48))
 bg.save(out);print('wrote',out)

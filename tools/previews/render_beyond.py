@@ -35,7 +35,8 @@ def split(T,RS,lim=.18):
         rb=[r for r,k in zip(RS,big) if k];RS=[r for r,k in zip(RS,big) if not k]+rb*4
         T=np.concatenate([T[~big],new])
     return T,RS
-def render(M,fac,yaw,pitch,W,H,ppu,ss=3):
+def render(M,fac,yaw,pitch,W,H,ppu,ss=3,zbuf=False):
+    if zbuf:return render_z(M,fac,yaw,pitch,W,H,ppu,ss)
     T,RS=split(M.T,M.R);c,e=pal(fac);R=rot(yaw,pitch)
     P=T@R.T;W2,H2,k=W*ss,H*ss,ppu*ss
     img=Image.new('RGBA',(W2,H2),(0,0,0,0));d=ImageDraw.Draw(img)
@@ -52,6 +53,31 @@ def render(M,fac,yaw,pitch,W,H,ppu,ss=3):
         pts=[(W2/2+p[0]*k,H2/2-p[1]*k) for p in t]
         d.polygon(pts,fill=col,outline=col)
     return img.resize((W,H),Image.LANCZOS)
+def render_z(M,fac,yaw,pitch,W,H,ppu,ss=3):
+    # the same look with a per-pixel depth buffer, as the game draws: no sorting artefacts where parts meet
+    T=np.array(M.T,float);RS=M.R;c,e=pal(fac);R=rot(yaw,pitch)
+    P=T@R.T;W2,H2,k=W*ss,H*ss,ppu*ss
+    col=np.zeros((H2,W2,4),np.uint8);zb=np.full((H2,W2),-1e9)
+    for i in range(len(P)):
+        t=P[i];n=np.cross(t[1]-t[0],t[2]-t[0]);ln=np.linalg.norm(n)
+        if ln<1e-12:continue
+        n/=ln
+        if n[2]<0:n=-n
+        role,sh=RS[i];base=c[role]*sh
+        lit=.32+.68*max(0.,float(n@L))+.18*max(0.,n[2])**8
+        cc=base*lit*(1-e[role])+c[role]*e[role]*1.15;cc=np.clip(cc,0,1)*255
+        xs=W2/2+t[:,0]*k;ys=H2/2-t[:,1]*k;zs=t[:,2]
+        x0=max(int(np.floor(xs.min())),0);x1=min(int(np.ceil(xs.max())),W2-1);y0=max(int(np.floor(ys.min())),0);y1=min(int(np.ceil(ys.max())),H2-1)
+        if x1<x0 or y1<y0:continue
+        gx,gy=np.meshgrid(np.arange(x0,x1+1)+.5,np.arange(y0,y1+1)+.5)
+        d=(ys[1]-ys[2])*(xs[0]-xs[2])+(xs[2]-xs[1])*(ys[0]-ys[2])
+        if abs(d)<1e-9:continue
+        a=((ys[1]-ys[2])*(gx-xs[2])+(xs[2]-xs[1])*(gy-ys[2]))/d;b=((ys[2]-ys[0])*(gx-xs[2])+(xs[0]-xs[2])*(gy-ys[2]))/d;g=1-a-b
+        m=(a>=-1e-6)&(b>=-1e-6)&(g>=-1e-6)
+        if not m.any():continue
+        z=a*zs[0]+b*zs[1]+g*zs[2];sub=zb[y0:y1+1,x0:x1+1];m&=z>sub
+        sub[m]=z[m];cs=col[y0:y1+1,x0:x1+1];cs[m]=[int(cc[0]),int(cc[1]),int(cc[2]),255]
+    return Image.fromarray(col,'RGBA').resize((W,H),Image.LANCZOS)
 
 VIEWS=[('3/4 front',math.radians(-38),math.radians(22)),('side',math.radians(-90),0.0),('top',0.0,math.radians(89)),('3/4 rear',math.radians(-145),math.radians(18))]
 def sheet(out):
