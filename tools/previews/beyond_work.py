@@ -243,16 +243,16 @@ def rampart():   # heavy hauler: a six-shooter: six ribbed armoured cargo pylons
     return finish(M,3.8)
 
 # ============================================================== OSTROVA
-def glim():      # light miner: a spire cockpit with a crystal cargo hold either side, all in a halo; prongs holding a mining lens
+def glim():      # light miner: a spire cockpit inside a halo, a crystal cargo hold set in the halo either side; prongs holding a mining lens
     M=Mesh(71)
     loft(M,[(-.8,DIA(.07,.07)),(-.45,DIA(.18,.16)),(.2,DIA(.2,.18)),(.55,DIA(.12,.11)),(.68,DIA(.07,.06))],SP)      # spire cockpit
     M.blob((0,.17,.22),.09,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
     for sx in (1,-1):
-        crystal(M,-.65,.35,.2,.24,sx*.36,0)                                                                         # crystal cargo hold, either side
-        tube(M,[(sx*.12,0,-.15),(sx*.26,0,-.15)],[.03,.03],LIGHT,.9,5)
+        crystal(M,-.65,.35,.2,.24,sx*.62,0)                                                                         # crystal cargo hold, set in the halo either side
+        tube(M,[(sx*.14,0,-.15),(sx*.5,0,-.15)],[.03,.03],LIGHT,.9,5)
         loft(M,[(.3,DIA(.05,.06,sx*.18)),(.68,DIA(.04,.05,sx*.13)),(.82,DIA(.004,.004,sx*.1))],SP)                 # prongs
     ring(M,(0,0,-.15),.62,.045,ACC)
-    for k in range(3):a=PI/2+k*2*PI/3;M.blob((math.cos(a)*.62,math.sin(a)*.62,-.15),.06,GLASS,sub=1,noise=0)
+    M.blob((0,.62,-.15),.06,GLASS,sub=1,noise=0);M.blob((0,-.62,-.15),.06,GLASS,sub=1,noise=0)
     lens_head(M,(0,-.02,.7),.09)
     for k in range(3):a=PI/2+k*2*PI/3;plate(M,[(math.cos(a)*.12,math.sin(a)*.12,-.55),(math.cos(a)*.5,math.sin(a)*.5,-.82),(math.cos(a)*.45,math.sin(a)*.45,-.9),(math.cos(a)*.1,math.sin(a)*.1,-.85)],.025,MID)
     launcher(M,(0,-.2,.0),2,ACC)
