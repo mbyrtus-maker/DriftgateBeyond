@@ -235,8 +235,18 @@ def peregrine(): # destroyer: a lens hull that splits into two prongs round a sp
     lights(M,[(.26,-.1,2.2),(-.26,-.1,2.2)],.035)
     return finish(M,4.1,1.0)
 
-def ironclad():  # destroyer: an armoured smoothed-hex hull on a flared armour belt, three heavy gun turrets on the centreline (two forward,
-                 # the second raised to fire over the first, one aft), a stepped bridge between them, exhaust stacks, a four-drive block
+def giant_gun(M,c):
+    # one giant main gun: a broad barbette, a long angled housing, one huge barrel with a muzzle brake, pointing +z
+    x,y,z=c
+    tube(M,[(x,y-.06,z),(x,y+.06,z)],[.3,.28],DARK,.9,14)
+    loft(M,[(z-.42,[(a+x,b+y+.15) for a,b in SMH(.2,.1)]),(z-.3,[(a+x,b+y+.15) for a,b in SMH(.27,.14)]),(z+.3,[(a+x,b+y+.15) for a,b in SMH(.25,.13)]),(z+.42,[(a+x,b+y+.15) for a,b in SMH(.18,.09)])],smh_role)
+    tube(M,[(x,y+.15,z+.35),(x,y+.15,z+.6),(x,y+.15,z+1.55)],[.1,.075,.06],DARK,1.0,10,cap0=False,cap1=False)
+    ring(M,(x,y+.15,z+.62),.085,.02,ACC,seg=14,sides=4)
+    tube(M,[(x,y+.15,z+1.5),(x,y+.15,z+1.72)],[.09,.09],MID,.95,8,cap1=False)
+    for zz in (1.56,1.64):ring(M,(x,y+.15,z+zz),.092,.012,DARK,seg=12,sides=4)
+    plate(M,[(x-.12,y+.29,z+.15),(x+.12,y+.29,z+.15),(x+.12,y+.29,z-.15),(x-.12,y+.29,z-.15)],.006,ACC,.9)
+def ironclad():  # destroyer: an armoured smoothed-hex hull on a flared armour belt, two giant main guns on the centreline (the second
+                 # raised to fire over the first), a stepped bridge behind them, exhaust stacks, a four-drive block
     M=Mesh(123)
     loft(M,[(-2.3,SMH(.48,.34)),(1.2,SMH(.48,.34)),(1.9,SMH(.34,.24,-.03)),(2.35,SMH(.14,.08,-.06))],smh_role)     # hull
     loft(M,[(-2.2,SMH(.42,.1,-.2)),(-1.9,SMH(.62,.16,-.18)),(1.3,SMH(.62,.16,-.18)),(1.85,SMH(.4,.1,-.2))],smh_role)   # flared armour belt
@@ -244,11 +254,10 @@ def ironclad():  # destroyer: an armoured smoothed-hex hull on a flared armour b
         loft(M,[(-1.85,[(a+sx*.6,b-.03) for a,b in SMH(.03,.02)]),(1.3,[(a+sx*.6,b-.03) for a,b in SMH(.03,.02)])],(ACC,.95))   # belt trim
         for z in (-1.4,-.6,.25):pd(M,(sx*.56,-.02,z),.07,MID)
         sidewin(M,sx*.485,.12,-1.9,1.0)
-    main_turret(M,(0,.34,1.1),1.35)
-    abox(M,(0,.41,.15),(.62,.16,.7),MID,(1,1),.95);main_turret(M,(0,.49,.15),1.35)                                      # raised barbette, superfiring turret
-    bridge_varkesh(M,(0,.34,-.85),1.0)
-    main_turret(M,(0,.34,-1.8),1.2,aft=True)
-    stacks(M,(0,.34,-1.35),2,.24,.26)
+    giant_gun(M,(0,.34,.75))                                                                                       # two giant main guns, the second raised to fire over the first
+    abox(M,(0,.43,-.35),(.72,.2,.95),MID,(1,1),.95);giant_gun(M,(0,.54,-.35))
+    bridge_varkesh(M,(0,.34,-1.35),1.0)
+    stacks(M,(0,.34,-1.95),2,.24,.26)
     shieldgen(M,(0,-.36,-.4),.12,up=False)
     loft(M,[(-2.6,SMH(.4,.3)),(-2.3,SMH(.48,.34))],smh_role)
     for x in (-.19,.19):
@@ -257,7 +266,7 @@ def ironclad():  # destroyer: an armoured smoothed-hex hull on a flared armour b
     return finish(M,4.1,1.0)
 
 def prism():     # destroyer: a faceted hull carrying three long spars (two above, one below) that converge on a great crystal lens in the prow,
-                 # the spinal lance; an energy conduit feeds it, turrets ride the spars, a low spire bridge
+                 # the spinal lance; an energy conduit feeds it, turrets ride the spars, a low spire bridge, a small halo round the stern
     M=Mesh(133)
     OCT=lambda w,h,dy=0:[(math.cos(a)*w,math.sin(a)*h+dy) for a in np.linspace(PI/8,2*PI+PI/8,8,endpoint=False)]
     oct_role=lambda i,j:([LIGHT,LIGHT,LIGHT,MID,MID,DARK,DARK,MID][j],[1,.97,1,.95,.9,.85,.85,.92][j])
@@ -272,6 +281,8 @@ def prism():     # destroyer: a faceted hull carrying three long spars (two abov
         for (r,z) in ((.64,-.15),(.64,.6)):pd(M,(u[0]*r,u[1]*r+(.11 if u[1]>0 else -.11),z),.065,ACC,up=u[1]>0)
     for sx in (1,-1):
         for k in range(2):plate(M,[(sx*.405,-.04+k*.12,.0),(sx*.405,.04+k*.12,.0),(sx*.42,.04+k*.12,-1.6),(sx*.42,-.04+k*.12,-1.6)],.01,WIN,.85)   # crystal veins
+    ring(M,(0,0,-1.95),.58,.035,ACC,seg=32,sides=6)                                                                 # a small halo round the stern
+    for k in range(4):a=PI/4+k*PI/2;tube(M,[(math.cos(a)*.3,math.sin(a)*.27,-1.95),(math.cos(a)*.56,math.sin(a)*.56,-1.95)],[.025,.025],LIGHT,.9,5,cap0=False,cap1=False)
     bridge_ostrova(M,(0,.34,-1.2),.95)
     shieldgen(M,(0,-.36,-.3),.11,up=False)
     for k in range(3):a=PI/2+k*2*PI/3;M.vent((math.cos(a)*.15,math.sin(a)*.14,-2.32),.1)
