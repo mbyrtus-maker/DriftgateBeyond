@@ -209,7 +209,7 @@ Players have several things to spend money and materials on, in this order, each
 | Screen | What it does |
 |---|---|
 | **Holdings** (Lair → Depot → Station) | Every base you own, its level, its modules, and what the next level or upgrade costs in goods and credits. Build and upgrade from here. |
-| **Economy** | Income and costs: market sales, jobs, AI upkeep, wages. Treasury, stock at each base, and what each base buys and sells. |
+| **Economy** | Income and costs: market sales, jobs, AI upkeep, wages. Treasury, stock at each base, and what each base buys and sells. **A credit trend for the company and for each base** (decided 2 Nov 2026): whether each Station, Depot and Lair is gaining or losing credits, its net per hour and its trend over the last hours, and **why**, in plain words with the lines behind it ("Losing: the Varkesh embargo cut trader visits by half; market +1,200, defence and guards −1,640"). |
 | **Job creation** | Post jobs: to your own AI pilots (mine this field, haul this cargo, escort, patrol, defend, hunt), to other contractors in multiplayer, and to **other factions' pilots** (their AI and the players sworn to them), paid from your treasury. |
 | **Faction jobs** | What the factions and freeports will hire you for, filtered by your standing: pay, risk, standing gained, the faction bonus. |
 | **Allegiance** | Your standing with every power (the three factions, the Compact, each player faction), its band and what it opens; the relations between the factions themselves (at war, truce, allied, neutral), so you can see how a job for one lands with the others; each leader and their recent decisions. Declare or renounce allegiance here; a founder answers other factions' proposals here. |
