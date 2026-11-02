@@ -6,7 +6,7 @@
 // trigger state 20 times a second. Trades, docking, jumps and missile launches are requests the host carries out.
 // Every pilot's browser keeps the latest galaxy checkpoint, so anyone can host the next session, and if the host leaves
 // mid-session the next browser takes over from the last checkpoint. With nobody online the galaxy simply waits.
-const MP_HOME='https://mbyrtus-maker.github.io/Driftgate/';
+const MP_HOME='https://mbyrtus-maker.github.io/DriftgateBeyond/';
 const MPV=1,MP={st:'off',code:'',name:'',pid:'',hostId:'',myId:'',sig:null,sigCfg:null,ice:null,links:{},host:null,cl:{},inp:{},rp:{},
   seenEv:new Set(),snT:0,syT:0,prT:0,ckT:0,uT:0,since:0,ckpt:null,hostPid:null,roster:[],mid:0,pend:[],needPilot:false,elect:0,ckMeta:null};
 const rid=n=>{let s='';const a='abcdefghijkmnpqrstuvwxyz23456789';for(let i=0;i<n;i++)s+=a[Math.floor(Math.random()*a.length)];return s};
@@ -20,10 +20,10 @@ const mpSlug=c=>String(c||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,24)
 function mpConfig(){const q=new URLSearchParams(location.search);let c={host:'0.peerjs.com',port:443,path:'/',key:'peerjs',secure:true};
   const sg=q.get('sig');if(sg){try{const u=new URL(sg);c={host:u.hostname,port:+u.port||(u.protocol==='wss:'?443:80),path:u.pathname.endsWith('/')?u.pathname:u.pathname+'/',key:q.get('key')||'peerjs',secure:u.protocol==='wss:'}}catch(e){}}
   MP.sigCfg=c;MP.mqURLs=(q.get('mqtt')||'wss://broker.emqx.io:8084/mqtt,wss://broker.hivemq.com:8884/mqtt').split(',').filter(Boolean);MP.ice=q.get('ice')==='none'?[]:[{urls:'stun:stun.l.google.com:19302'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}];
-  try{MP.pid=localStorage.getItem('driftgate.pid')||'';if(!MP.pid){MP.pid=rid(12);localStorage.setItem('driftgate.pid',MP.pid)}}catch(e){MP.pid=MP.pid||rid(12)}
+  try{MP.pid=localStorage.getItem('dgbeyond.pid')||'';if(!MP.pid){MP.pid=rid(12);localStorage.setItem('dgbeyond.pid',MP.pid)}}catch(e){MP.pid=MP.pid||rid(12)}
   if(q.get('pid'))MP.pid=q.get('pid')}
 const mpOK=()=>typeof RTCPeerConnection!=='undefined'&&typeof WebSocket!=='undefined';
-const ckKey=()=>'driftgate.mp.'+mpSlug(MP.code);
+const ckKey=()=>'dgbeyond.mp.'+mpSlug(MP.code);
 function mpStatus(t,bad){const el=$('mpStat');if(el){el.innerHTML=t;el.style.color=bad?'var(--danger)':''}}
 
 // ---- backup relay: a tiny MQTT 3.1.1 client over WebSocket. Each browser listens on a topic named after its id;
@@ -39,13 +39,13 @@ function mqttOpen(url){let ws;try{ws=new WebSocket(url,'mqtt')}catch(e){return n
   ws.onopen=()=>{ws.send(pkt(0x10,[...str('MQTT'),4,2,0,60,...str('dg'+rid(14))]))};
   ws.onmessage=e=>{const d=new Uint8Array(e.data);let i=0;while(i<d.length){const t=d[i]>>4,qos=(d[i]>>1)&3;let m=1,len=0,j=i+1,b;do{b=d[j++];len+=(b&127)*m;m*=128}while(b&128&&j<d.length);const body=d.subarray(j,j+len);
     if(t===2){api.ok=true;for(const x of api.q)ws.send(x);api.q=[];clearInterval(api.pi);api.pi=setInterval(()=>{if(ws.readyState===1)ws.send(new Uint8Array([0xC0,0]))},25000)}
-    else if(t===3){const tl=(body[0]<<8)|body[1],topic=dec.decode(body.subarray(2,2+tl));let msg;try{msg=JSON.parse(dec.decode(body.subarray(2+tl+(qos?2:0))))}catch(er){msg=null}if(msg&&msg.dst===MP.myId&&topic==='driftgate1/'+MP.myId)sigMsg(msg)}
+    else if(t===3){const tl=(body[0]<<8)|body[1],topic=dec.decode(body.subarray(2,2+tl));let msg;try{msg=JSON.parse(dec.decode(body.subarray(2+tl+(qos?2:0))))}catch(er){msg=null}if(msg&&msg.dst===MP.myId&&topic==='dgbeyond1/'+MP.myId)sigMsg(msg)}
     i=j+len}};
   ws.onclose=()=>{api.ok=false;clearInterval(api.pi);if(!api.dead&&NET.on)setTimeout(()=>{if(NET.on&&MP.mq&&MP.mq.includes(api)){const n=mqttOpen(url);if(n){for(const t of api.subs)n.sub(t);MP.mq[MP.mq.indexOf(api)]=n}}},5000)};
   return api}
 function mqStart(){if(MP.mq&&MP.mq.length)return;MP.mq=MP.mqURLs.map(mqttOpen).filter(Boolean)}
-function mqInbox(){for(const q of MP.mq||[])q.sub('driftgate1/'+MP.myId)}
-function sigSend(o){if(MP.sig)MP.sig.send(o);const m=JSON.stringify({...o,src:MP.myId});for(const q of MP.mq||[])q.pub('driftgate1/'+o.dst,m)}
+function mqInbox(){for(const q of MP.mq||[])q.sub('dgbeyond1/'+MP.myId)}
+function sigSend(o){if(MP.sig)MP.sig.send(o);const m=JSON.stringify({...o,src:MP.myId});for(const q of MP.mq||[])q.pub('dgbeyond1/'+o.dst,m)}
 // ---- matchmaking socket (speaks the PeerJS server protocol: it only relays offers, answers and candidates)
 function sigOpen(id){return new Promise(res=>{let done=false;const c=MP.sigCfg;let ws;
   try{ws=new WebSocket(`${c.secure?'wss':'ws'}://${c.host}:${c.port}${c.path}peerjs?key=${encodeURIComponent(c.key)}&id=${encodeURIComponent(id)}&token=${rid(10)}&version=1.5.4`)}catch(e){res({err:'Could not reach the matchmaking server.'});return}
@@ -99,14 +99,14 @@ function linkDown(L){if(L.downDone)return;L.downDone=true;const quiet=L.quiet;li
 async function mpJoin(){if(!mpOK()){mpStatus('This browser cannot do peer-to-peer connections.',true);return}
   MP.name=cleanCall($('mpName').value);$('mpName').value=MP.name;MP.code=($('mpCode').value||'').trim().slice(0,24);
   if(MP.name.length<2){mpStatus('Choose a callsign first (step 1, at least 2 letters).',true);$('mpName').focus();return}if(!mpSlug(MP.code)){mpStatus('Enter a galaxy code (letters and numbers).',true);return}
-  try{localStorage.setItem('driftgate.mpname',MP.name);localStorage.setItem('driftgate.mpcode',MP.code)}catch(e){}
-  MP.hostId='driftgate1-'+mpSlug(MP.code)+'-host';mqStart();$('bMp').disabled=true;mpStatus('Contacting the matchmaking server…');
+  try{localStorage.setItem('dgbeyond.mpname',MP.name);localStorage.setItem('dgbeyond.mpcode',MP.code)}catch(e){}
+  MP.hostId='dgbeyond1-'+mpSlug(MP.code)+'-host';mqStart();$('bMp').disabled=true;mpStatus('Contacting the matchmaking server…');
   try{const t=localStorage.getItem(ckKey());if(t){const ck=JSON.parse(t);MP.ckpt=ck;MP.ckMeta={gid:ck.gid,T:ck.T}}}catch(e){}
   await mpElect(true)}
 async function mpElect(first){if(MP.sig){MP.sig.close();MP.sig=null}
   const r=await sigOpen(MP.hostId);
   if(r.ok){MP.sig=r;MP.myId=MP.hostId;mqInbox();hostBegin(first);return}
-  if(r.taken){const me='driftgate1-'+mpSlug(MP.code)+'-'+MP.pid.slice(0,8)+'-'+rid(4);const r2=await sigOpen(me);
+  if(r.taken){const me='dgbeyond1-'+mpSlug(MP.code)+'-'+MP.pid.slice(0,8)+'-'+rid(4);const r2=await sigOpen(me);
     if(!r2.ok){mpFail(r2.err||'Could not register with the matchmaking server.');return}
     MP.sig=r2;MP.myId=me;mqInbox();NET.on=true;NET.cl=true;NET.host=false;NET.me=MP.pid;MP.st='connecting';holdLock();
 
@@ -124,7 +124,7 @@ function clientDial(n){MP.host=mkLink(MP.hostId,true);const L=MP.host;clearTimeo
 function mpFail(msg){mpStatus(esc(msg)+(/github\.io$|^localhost$|^127\./.test(location.hostname)?' Check your connection and try again.':` Multiplayer runs from <a href="${MP_HOME}" target="_blank" rel="noopener" style="color:var(--amber)">${MP_HOME.replace('https://','')}</a>.`),true);$('bMp').disabled=false;NET.on=false;NET.cl=false;NET.host=false;MP.st='off'}
 
 // ---- hosting
-function holdLock(){try{if(MP.lockHeld||!navigator.locks)return;MP.lockHeld=true;navigator.locks.request('driftgate-tab-'+rid(8),()=>new Promise(r=>{MP.lockRel=r}))}catch(e){}}
+function holdLock(){try{if(MP.lockHeld||!navigator.locks)return;MP.lockHeld=true;navigator.locks.request('dgbeyond-tab-'+rid(8),()=>new Promise(r=>{MP.lockRel=r}))}catch(e){}}
 function hostBegin(first){holdLock();NET.on=true;NET.host=true;NET.cl=false;NET.me=MP.pid;MP.since=performance.now();MP.st='host';MP.hostPid=MP.pid;
   if(first){
     if(MP.ckpt&&MP.ckpt.S){mpAdoptState(MP.ckpt.S)}
@@ -481,7 +481,7 @@ async function hostGone(){if(MP.elect)return;MP.elect=1;const banner=$('netBanne
   for(let tries=0;tries<20&&NET.on;tries++){await new Promise(r=>setTimeout(r,300+Math.random()*1200+tries*400));
     if(MP.sig){MP.sig.close();MP.sig=null}const r=await sigOpen(MP.hostId);
     if(r.ok){MP.sig=r;MP.myId=MP.hostId;mqInbox();takeOver();break}
-    if(r.taken){const me='driftgate1-'+mpSlug(MP.code)+'-'+MP.pid.slice(0,8)+'-'+rid(4);const r2=await sigOpen(me);if(!r2.ok)continue;MP.sig=r2;MP.myId=me;mqInbox();
+    if(r.taken){const me='dgbeyond1-'+mpSlug(MP.code)+'-'+MP.pid.slice(0,8)+'-'+rid(4);const r2=await sigOpen(me);if(!r2.ok)continue;MP.sig=r2;MP.myId=me;mqInbox();
       const L=MP.host=mkLink(MP.hostId,true);const ok=await new Promise(res=>{const t0=performance.now(),iv=setInterval(()=>{if(L.open){clearInterval(iv);res(true)}else if(L.dead||performance.now()-t0>12000){clearInterval(iv);res(false)}},200)});
       if(ok)break;linkClose(L,true);MP.host=null}}
   MP.elect=0;if(banner)banner.hidden=true}

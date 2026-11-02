@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<title>Driftgate</title>
+<title>Driftgate Beyond</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Saira+Semi+Condensed:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -395,7 +395,7 @@ table.t td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white
     <div class="console">
       <div class="sbody">
         <div class="brand">
-          <h1>Driftgate</h1>
+          <h1>Driftgate Beyond</h1>
           <p>Three powers, an alien Brood, fifteen sectors and one closed economy. Every plate, coil and crystal was mined from a rock that already existed. Mine it, forge it, bolt it to your ship, and fight over the stations and outposts that make the best parts possible.</p>
         </div>
         <div class="note snote" id="legacy" style="padding-top:8px"></div>
@@ -1301,7 +1301,7 @@ let WORLDS={},LW=null,MUTE=false,CTX=null;
 const NET={on:false,host:false,cl:false,me:null};
 function inW(w,fn){if(!w)return;const o=W;W=w;try{return fn()}finally{W=o}}
 function liveIn(sid){const w=WORLDS[sid];return w&&!(w===LW&&w.dead)?w:null}
-const SAVE_KEY='driftgate.save.v2';
+const SAVE_KEY='dgbeyond.save.v1';
 const FEED=[];
 function oreTotal(a){let t=0;for(const k in a.ore)t+=a.ore[k];return t}
 function mainOre(a){let b=null,m=0;for(const k in a.ore)if(a.ore[k]>m){m=a.ore[k];b=k}return b}
@@ -2209,8 +2209,8 @@ function victoryTick(){if(deadlineTick())return;const n=controlCounts(),need=VIC
   if(!lead){if(S.victory)feed(`${sideName(S.victory.side)} has lost its grip on the galaxy.`,'news');S.victory=null;return}
   if(!S.victory||S.victory.side!==lead){S.victory={side:lead,since:S.T};feed(`${lead==='brood'?'⚠ The Brood':sideName(lead)} now controls ${n[lead]} of ${SECTOR_DEFS.length} systems. Hold ${VIC_NEED} for ${Math.round(WIN_TIME/60)} minutes and the galaxy is ${lead===S.player.faction?'yours':'theirs'}.`,lead===S.player.faction?'good':'bad');return}
   if(S.T-S.victory.since>=WIN_TIME)galaxyWon(lead)}
-function loadLegacy(){try{return JSON.parse(localStorage.getItem('driftgate.legacy')||'{}')||{}}catch(e){return{}}}
-function galaxyWon(side,how){{const v=$('winV');if(v)v.hidden=true}if(!NET.cl)legAward(side);if(NET.host)for(const c of readyCl())send(c.L,{t:'won',side,how});const lg=loadLegacy();lg.wins=lg.wins||{};lg.wins[side]=(lg.wins[side]||0)+1;lg.last=side;try{localStorage.setItem('driftgate.legacy',JSON.stringify(lg));localStorage.removeItem(SAVE_KEY)}catch(e){}
+function loadLegacy(){try{return JSON.parse(localStorage.getItem('dgbeyond.legacy')||'{}')||{}}catch(e){return{}}}
+function galaxyWon(side,how){{const v=$('winV');if(v)v.hidden=true}if(!NET.cl)legAward(side);if(NET.host)for(const c of readyCl())send(c.L,{t:'won',side,how});const lg=loadLegacy();lg.wins=lg.wins||{};lg.wins[side]=(lg.wins[side]||0)+1;lg.last=side;try{localStorage.setItem('dgbeyond.legacy',JSON.stringify(lg));localStorage.removeItem(SAVE_KEY)}catch(e){}
   S.won=side;hideSheets();const mine=side===S.player.faction,n=controlCounts()[side]||0;
   $('winT').textContent=side==='brood'?'The Bloom spreads':mine?'Victory':`${FACTIONS[side].short} rules`;
   const held=how==='tie'?`held the most systems (${n} of ${SECTOR_DEFS.length}) when the two-hour deadline arrived`:`held ${n} of ${SECTOR_DEFS.length} systems for ${Math.round(WIN_TIME/60)} minutes`;
@@ -2961,7 +2961,7 @@ function campGoal(){const n=controlCounts();for(const f of FAC_IDS){const P=camp
 const VIC_BONUS={cr:CAMP_GOAL,items:{lattice:2,core:1}};
 function vicServed(k,side){return FAC_IDS.includes(side)&&!!(S.plans&&S.plans[side]&&S.plans[side].crew[k]>0)}
 function vicLine(side){return`★★ Victory bonus for serving the ${DOCTRINE[side].name}: ${fmt(VIC_BONUS.cr)} cr, ${VIC_BONUS.items.lattice} Crystal Lattice and ${VIC_BONUS.items.core} Resonance Core. They're waiting in your vault in the next galaxy.`}
-function vicBank(side){try{const lg=loadLegacy();lg.vb={cr:(lg.vb&&lg.vb.cr||0)+VIC_BONUS.cr,items:{...VIC_BONUS.items},side};localStorage.setItem('driftgate.legacy',JSON.stringify(lg))}catch(e){}const el=$('winV');if(el){el.textContent=vicLine(side);el.hidden=false}}
+function vicBank(side){try{const lg=loadLegacy();lg.vb={cr:(lg.vb&&lg.vb.cr||0)+VIC_BONUS.cr,items:{...VIC_BONUS.items},side};localStorage.setItem('dgbeyond.legacy',JSON.stringify(lg))}catch(e){}const el=$('winV');if(el){el.textContent=vicLine(side);el.hidden=false}}
 // ---- the pilot's side: sign on (P), set a course, deliver at the docks
 // ---- strategy orders: beside its supply drive, command posts an intel and a combat order for the same target, and answers threats
 // as they come (a counter-attack when its ground is hit, a hunt for an enemy capital ship nearby, a Brood purge). Each order succeeds
@@ -3468,9 +3468,9 @@ function gateKey(a,b){return[a,b].sort().join('-')}
 //@src 07_audio.js
 // ============================================================ audio: everything synthesized, low and soft; a global low-pass caps brightness
 const AU={ctx:null,on:{sfx:true,music:false},voices:0};
-try{const v=JSON.parse(localStorage.getItem('driftgate.audio2')||'null');if(v&&typeof v.sfx==='boolean')AU.on=v}catch(e){}
+try{const v=JSON.parse(localStorage.getItem('dgbeyond.audio2')||'null');if(v&&typeof v.sfx==='boolean')AU.on=v}catch(e){}
 if(!(AU.on.mvol>=0))AU.on.mvol=35;if(!AU.on.mv2){if(AU.on.mvol===45)AU.on.mvol=35;AU.on.mv2=1}if(!(AU.on.svol>=0))AU.on.svol=100;   // music and effects volume, 0-100
-function auSave(){try{localStorage.setItem('driftgate.audio2',JSON.stringify(AU.on))}catch(e){}}
+function auSave(){try{localStorage.setItem('dgbeyond.audio2',JSON.stringify(AU.on))}catch(e){}}
 function auOK(){return!!(AU.ctx&&AU.ctx.state==='running')}
 function auInit(){
   if(AU.ctx){if(AU.ctx.state==='suspended')AU.ctx.resume().catch(()=>{});return}
@@ -4344,7 +4344,7 @@ const KEY_ACTS=[
  ['Screens',[['map','KeyM','Galaxy map'],['help','KeyH','This manual'],['cam','KeyV','Chase or cockpit camera'],['sound','KeyN','Sound: all on, music off, muted'],['touch','Backquote','Show or hide touch buttons']]]];
 const KEY_FIXED=[['Mouse','Steer: the further from the centre ring, the harder you turn'],['Arrows','Pitch and yaw without the mouse'],['Shift','Afterburner'],['Click','Target a ship, or a row in Contacts'],['Wheel','Chase camera distance'],['Esc','Close a screen; in flight, free the mouse cursor (the ship holds its heading). Esc again to steer'],['F11','Full screen']];
 const KEY_DEF={};for(const[,L]of KEY_ACTS)for(const[id,code]of L)KEY_DEF[id]=code;
-let KEYB={};try{KEYB=JSON.parse(localStorage.getItem('driftgate.keys')||'{}')||{}}catch(e){KEYB={}}
+let KEYB={};try{KEYB=JSON.parse(localStorage.getItem('dgbeyond.keys')||'{}')||{}}catch(e){KEYB={}}
 let KEY_P2D={},KEY_AWAY=new Set();
 function keyRemap(){KEY_P2D={};KEY_AWAY=new Set();for(const id in KEYB){const d=KEY_DEF[id],ph=KEYB[id];if(!d||!ph||ph===d)continue;KEY_P2D[ph]=d;KEY_AWAY.add(d)}for(const ph in KEY_P2D)KEY_AWAY.delete(ph)}
 keyRemap();
@@ -4360,7 +4360,7 @@ function keyListHtml(){let h='';for(const[g,L]of KEY_ACTS){h+=`<div class="h3" s
   h+=`<div class="h3" style="margin-top:12px">Fixed</div><div class="keys">${KEY_FIXED.map(([k,t])=>`<kbd>${k}</kbd><span>${t}</span>`).join('')}</div>`;
   if(Object.keys(KEYB).length)h+=`<p style="margin-top:8px"><button class="btn sm" type="button" data-rebind="__reset">Reset all keys</button></p>`;return h}
 function keyListRender(){const el=$('keyList');if(el)el.innerHTML=keyListHtml()}
-function keySave(){try{localStorage.setItem('driftgate.keys',JSON.stringify(KEYB))}catch(e){}keyRemap();keyListRender()}
+function keySave(){try{localStorage.setItem('dgbeyond.keys',JSON.stringify(KEYB))}catch(e){}keyRemap();keyListRender()}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-rebind]');if(!b)return;const id=b.dataset.rebind;
   if(id==='__reset'){KEYB={};keyWait=null;keySave();flash('All keys are back to their defaults.');return}keyWait=keyWait===id?null:id;keyListRender()});
 // while waiting for a new key, the next key press binds it (Esc cancels); a key another action uses is swapped onto that action
@@ -4443,9 +4443,9 @@ document.querySelectorAll('#touch button').forEach(b=>{const k=b.dataset.t;
   b.addEventListener('pointerdown',e=>{e.preventDefault();b.classList.add('on');if(k==='act'){actPress()}else if(k==='tgt')cycleHostile();else if(k==='msl')fireMissile();else if(k==='flare')playerFlares();else if(k==='wpn')setWeapon(S.player.wpn==='laser'?'kinetic':'laser');else touch[k]=true});
   const up=()=>{b.classList.remove('on');if(!['act','tgt','msl','flare','wpn'].includes(k))touch[k]=false};b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up)});
 // the touch buttons can be switched off with ` (remembered on this device)
-let touchOff=false;try{touchOff=localStorage.getItem('dg_touchOff')==='1'}catch(e){}
+let touchOff=false;try{touchOff=localStorage.getItem('dgb_touchOff')==='1'}catch(e){}
 function showTouch(){$('touch').hidden=!coarse||!running||touchOff}
-function toggleTouch(){touchOff=!touchOff;try{localStorage.setItem('dg_touchOff',touchOff?'1':'0')}catch(e){}showTouch();flash(touchOff?'Touch buttons hidden. Press ` to show them again.':coarse?'Touch buttons shown. Press ` to hide them.':'Touch buttons on: they appear when you use a touch screen. Press ` to switch them off.')}
+function toggleTouch(){touchOff=!touchOff;try{localStorage.setItem('dgb_touchOff',touchOff?'1':'0')}catch(e){}showTouch();flash(touchOff?'Touch buttons hidden. Press ` to show them again.':coarse?'Touch buttons shown. Press ` to hide them.':'Touch buttons on: they appear when you use a touch screen. Press ` to switch them off.')}
 
 function targetables(){const out=[];if(!W)return out;for(const e of W.ents){if(e.type==='ship'&&!e.isPlayer&&e.alive){if(seenShip(e))out.push({kind:'ship',ref:e})}else if(e.type==='outpost')out.push({kind:'outpost',ref:e});else if(e.type==='station')out.push({kind:'station',ref:e});else if(e.type==='gate')out.push({kind:'gate',ref:e});else if(e.type==='works')out.push({kind:'works',ref:e})}
   const s=S.sectors[W.sid];for(const a of s.ast)out.push({kind:'ast',ref:a});for(const c of s.crates)out.push({kind:'crate',ref:c});for(const x of wptsIn(s))out.push({kind:'wpt',ref:x});if(W.stationEnt&&!out.some(t=>t.ref===W.stationEnt))out.push({kind:'station',ref:W.stationEnt});if(W.outpostEnt&&!out.some(t=>t.ref===W.outpostEnt))out.push({kind:'outpost',ref:W.outpostEnt});if(S.beacons&&S.beacons[W.sid])out.push({kind:'beacon',ref:S.beacons[W.sid]});return out}
@@ -6831,7 +6831,7 @@ function fsEl(){return document.fullscreenElement||document.webkitFullscreenElem
 function toggleFull(){try{if(fsEl()){(document.exitFullscreen||document.webkitExitFullscreen).call(document);return}
   const el=document.documentElement,rq=el.requestFullscreen||el.webkitRequestFullscreen;if(!rq||document.fullscreenEnabled===false){fsBlocked();return}
   const pr=rq.call(el,{navigationUI:'hide'});if(pr&&pr.catch)pr.catch(fsBlocked)}catch(e){fsBlocked()}}
-function fsBlocked(){flash('Full screen isn\'t allowed in this embedded view. Open the game on its own page (mbyrtus-maker.github.io/Driftgate) to play full screen.',true)}
+function fsBlocked(){flash('Full screen isn\'t allowed in this embedded view. Open the game on its own page (mbyrtus-maker.github.io/DriftgateBeyond) to play full screen.',true)}
 function fsLabel(){const b=$('bFull');if(b)b.innerHTML=fsEl()?'Exit full <kbd>F11</kbd>':'Full <kbd>F11</kbd>';setTimeout(()=>{resize();if(!$('map').hidden)drawMap()},60)}
 document.addEventListener('fullscreenchange',fsLabel);document.addEventListener('webkitfullscreenchange',fsLabel);
 $('bFull').addEventListener('click',e=>{e.currentTarget.blur();toggleFull()});$('bHelp').addEventListener('click',()=>toggleSheet('help'));
@@ -6975,7 +6975,7 @@ function serialize(){const o=W;W=LW;syncPlayer();W=o;if(NET.host)netSyncPilots()
 function save(){if(!S||NET.on||S.training)return;try{localStorage.setItem(SAVE_KEY,JSON.stringify(serialize()))}catch(e){}}
 function loadSave(){try{const t=localStorage.getItem(SAVE_KEY);if(!t)return null;const o=JSON.parse(t);return o&&o.v===2&&o.player?o:null}catch(e){return null}}
 function startWith(state){
-  migrate(state);if(S.vbPend){S.vbPend=0;if(!S.training&&!NET.cl){const lg=loadLegacy(),vb=lg.vb;if(vb){delete lg.vb;try{localStorage.setItem('driftgate.legacy',JSON.stringify(lg))}catch(e){}devLedger(()=>{S.player.credits+=vb.cr||0;inv.addAll(S.player.vault,vb.items||{})});
+  migrate(state);if(S.vbPend){S.vbPend=0;if(!S.training&&!NET.cl){const lg=loadLegacy(),vb=lg.vb;if(vb){delete lg.vb;try{localStorage.setItem('dgbeyond.legacy',JSON.stringify(lg))}catch(e){}devLedger(()=>{S.player.credits+=vb.cr||0;inv.addAll(S.player.vault,vb.items||{})});
     feed(`★★ Victory bonus from the last galaxy${vb.side&&DOCTRINE[vb.side]?` (for serving the ${DOCTRINE[vb.side].name})`:''}: +${fmt(vb.cr||0)} cr, and ${Object.entries(vb.items||{}).map(([i,c])=>c+' '+ITEMS[i].name).join(', ')} in your vault.`,'good')}}}
   if(S.player.rack===undefined)S.player.rack=0;if(!S.player.wpn)S.player.wpn='kinetic';running=true;$('start').hidden=true;$('hud').hidden=false;showTouch();
   enterSector(S.player.sector);
@@ -7034,7 +7034,7 @@ $('bNext').addEventListener('click',()=>{if(NET.host){mpNewGalaxy();return}if(NE
 // that galaxy). Records live on this device, keyed by callsign. In multiplayer the host decides who earned a point and tells
 // each pilot's device. Perks are permanent but small; anything a perk adds at the start of a galaxy is added before that
 // galaxy's ledger baseline, and every pay bonus comes out of a faction treasury.
-const LEG_KEY='driftgate.legend',LEG_MIN=1800,LEG_LV=[1,2,4,6,9,12,16,20,25,30],
+const LEG_KEY='dgbeyond.legend',LEG_MIN=1800,LEG_LV=[1,2,4,6,9,12,16,20,25,30],
   LEG_TITLES=['Pathfinder','Freighter','Prospector','Veteran','Heroic Pilot','Ace','Commander','Paragon','Champion','Legendary Ace'],
   LEG_PERKS=['Scout’s instinct: in a Scout or Advanced Scout, beacons flip in 7 s instead of 10, and beacon bounties pay 20% more.',
     'Freight licence: hauler hulls get 10% more hold, the full-hold handling penalty is cut by a third, and hauling Orders pay 10% more.',
@@ -7275,11 +7275,11 @@ function trPickHtml(){const n=t=>trPlan(t).length;return`<div class="trh2">Fligh
 $('bTrain').addEventListener('click',()=>{const el=$('trPick');if(!el.hidden){el.hidden=true;return}el.innerHTML=trPickHtml();el.hidden=false});
 $('trPick').addEventListener('click',e=>{const b=e.target.closest('[data-trk]');if(!b)return;const k=b.dataset.trk;if(k==='x'){$('trPick').hidden=true;return}trainStart(k)});
 // first meetings: a one-time tip (per device) the first time a pilot flies into Bloom space or is jammed, pointing to the lesson
-function firstTip(key,msg){if(S&&S.training)return;let seen={};try{seen=JSON.parse(localStorage.getItem('driftgate.tips')||'{}')||{}}catch(e){}if(seen[key])return;seen[key]=1;try{localStorage.setItem('driftgate.tips',JSON.stringify(seen))}catch(e){}feed(msg,'warn');flash(msg)}
+function firstTip(key,msg){if(S&&S.training)return;let seen={};try{seen=JSON.parse(localStorage.getItem('dgbeyond.tips')||'{}')||{}}catch(e){}if(seen[key])return;seen[key]=1;try{localStorage.setItem('dgbeyond.tips',JSON.stringify(seen))}catch(e){}feed(msg,'warn');flash(msg)}
 function firstTips(){if(!W||!W.player||S.player.docked)return;const p=W.player;
   if(sectorOwner(W.sid)==='brood')firstTip('brood','First time in Bloom space: the factions can’t hurt each other here, shields recharge slower, and Brood hits leave spores that eat your hull. Kill Seeders and burn Bloom Nodes for bounties. Training → Combat course covers the Brood.');
   if((p.jam||0)>0)firstTip('jam','You’re being jammed: Unbound pirates fill a jam bar once your shields are down, then hook your cargo. Keep your shields up or break away with the afterburner while the bar drains.')}
-$('bLaunch').addEventListener('click',()=>{const cs=cleanCall($('mpName').value);$('mpName').value=cs;if(cs.length<2){$('ssum').innerHTML='<b style="color:var(--danger)">Choose a callsign first (step 1).</b>';$('mpName').focus();return}if(selFac==='pirate'&&!NET.cl&&!unbLegendOK(cs)){$('ssum').innerHTML='<b style="color:var(--danger)">The Unbound need a Legend point on this callsign.</b>';return}if(!NET.on)MP.name=cs;try{localStorage.setItem('driftgate.mpname',cs)}catch(e){}
+$('bLaunch').addEventListener('click',()=>{const cs=cleanCall($('mpName').value);$('mpName').value=cs;if(cs.length<2){$('ssum').innerHTML='<b style="color:var(--danger)">Choose a callsign first (step 1).</b>';$('mpName').focus();return}if(selFac==='pirate'&&!NET.cl&&!unbLegendOK(cs)){$('ssum').innerHTML='<b style="color:var(--danger)">The Unbound need a Legend point on this callsign.</b>';return}if(!NET.on)MP.name=cs;try{localStorage.setItem('dgbeyond.mpname',cs)}catch(e){}
   {const code=($('mpCode').value||'').trim();if(!NET.on&&mpSlug(code)&&mpOK()&&!$('mpBox').hidden){auInit();auApply();MP.autoLaunch={fac:selFac,cls:launchCls()};mpJoin();return}}
   if(NET.on){auInit();auApply();mpLaunch(selFac,launchCls());return}auInit();auApply();FEED.length=0;newGame(selFac,launchCls(),cs);S.player.name=cs;if(selFac==='pirate'){S.unb=1;unbP();S.player.cls=launchCls()}startWith(S);feed(`Welcome aboard, ${cs}, ${selFac==='pirate'?'captain of the Unbound':'pilot of the '+FAC(selFac).name}. Your vault holds a few plates and conduit: check Ship → Systems for your first upgrade.`,'info');feed('Launch with E. Steer with the mouse, thrust with W. In a mining ship, R targets a rock, F fires a charge onto a fault point and '+kb('det')+' detonates; fly into the chunks to scoop them.','info');save()});
 $('bContinue').addEventListener('click',()=>{auInit();auApply();const s=loadSave();if(s){FEED.length=0;startWith(s);feed('Welcome back, pilot.','info')}});
@@ -7292,7 +7292,7 @@ $('bContinue').addEventListener('click',()=>{auInit();auApply();const s=loadSave
 // trigger state 20 times a second. Trades, docking, jumps and missile launches are requests the host carries out.
 // Every pilot's browser keeps the latest galaxy checkpoint, so anyone can host the next session, and if the host leaves
 // mid-session the next browser takes over from the last checkpoint. With nobody online the galaxy simply waits.
-const MP_HOME='https://mbyrtus-maker.github.io/Driftgate/';
+const MP_HOME='https://mbyrtus-maker.github.io/DriftgateBeyond/';
 const MPV=1,MP={st:'off',code:'',name:'',pid:'',hostId:'',myId:'',sig:null,sigCfg:null,ice:null,links:{},host:null,cl:{},inp:{},rp:{},
   seenEv:new Set(),snT:0,syT:0,prT:0,ckT:0,uT:0,since:0,ckpt:null,hostPid:null,roster:[],mid:0,pend:[],needPilot:false,elect:0,ckMeta:null};
 const rid=n=>{let s='';const a='abcdefghijkmnpqrstuvwxyz23456789';for(let i=0;i<n;i++)s+=a[Math.floor(Math.random()*a.length)];return s};
@@ -7306,10 +7306,10 @@ const mpSlug=c=>String(c||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,24)
 function mpConfig(){const q=new URLSearchParams(location.search);let c={host:'0.peerjs.com',port:443,path:'/',key:'peerjs',secure:true};
   const sg=q.get('sig');if(sg){try{const u=new URL(sg);c={host:u.hostname,port:+u.port||(u.protocol==='wss:'?443:80),path:u.pathname.endsWith('/')?u.pathname:u.pathname+'/',key:q.get('key')||'peerjs',secure:u.protocol==='wss:'}}catch(e){}}
   MP.sigCfg=c;MP.mqURLs=(q.get('mqtt')||'wss://broker.emqx.io:8084/mqtt,wss://broker.hivemq.com:8884/mqtt').split(',').filter(Boolean);MP.ice=q.get('ice')==='none'?[]:[{urls:'stun:stun.l.google.com:19302'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}];
-  try{MP.pid=localStorage.getItem('driftgate.pid')||'';if(!MP.pid){MP.pid=rid(12);localStorage.setItem('driftgate.pid',MP.pid)}}catch(e){MP.pid=MP.pid||rid(12)}
+  try{MP.pid=localStorage.getItem('dgbeyond.pid')||'';if(!MP.pid){MP.pid=rid(12);localStorage.setItem('dgbeyond.pid',MP.pid)}}catch(e){MP.pid=MP.pid||rid(12)}
   if(q.get('pid'))MP.pid=q.get('pid')}
 const mpOK=()=>typeof RTCPeerConnection!=='undefined'&&typeof WebSocket!=='undefined';
-const ckKey=()=>'driftgate.mp.'+mpSlug(MP.code);
+const ckKey=()=>'dgbeyond.mp.'+mpSlug(MP.code);
 function mpStatus(t,bad){const el=$('mpStat');if(el){el.innerHTML=t;el.style.color=bad?'var(--danger)':''}}
 
 // ---- backup relay: a tiny MQTT 3.1.1 client over WebSocket. Each browser listens on a topic named after its id;
@@ -7325,13 +7325,13 @@ function mqttOpen(url){let ws;try{ws=new WebSocket(url,'mqtt')}catch(e){return n
   ws.onopen=()=>{ws.send(pkt(0x10,[...str('MQTT'),4,2,0,60,...str('dg'+rid(14))]))};
   ws.onmessage=e=>{const d=new Uint8Array(e.data);let i=0;while(i<d.length){const t=d[i]>>4,qos=(d[i]>>1)&3;let m=1,len=0,j=i+1,b;do{b=d[j++];len+=(b&127)*m;m*=128}while(b&128&&j<d.length);const body=d.subarray(j,j+len);
     if(t===2){api.ok=true;for(const x of api.q)ws.send(x);api.q=[];clearInterval(api.pi);api.pi=setInterval(()=>{if(ws.readyState===1)ws.send(new Uint8Array([0xC0,0]))},25000)}
-    else if(t===3){const tl=(body[0]<<8)|body[1],topic=dec.decode(body.subarray(2,2+tl));let msg;try{msg=JSON.parse(dec.decode(body.subarray(2+tl+(qos?2:0))))}catch(er){msg=null}if(msg&&msg.dst===MP.myId&&topic==='driftgate1/'+MP.myId)sigMsg(msg)}
+    else if(t===3){const tl=(body[0]<<8)|body[1],topic=dec.decode(body.subarray(2,2+tl));let msg;try{msg=JSON.parse(dec.decode(body.subarray(2+tl+(qos?2:0))))}catch(er){msg=null}if(msg&&msg.dst===MP.myId&&topic==='dgbeyond1/'+MP.myId)sigMsg(msg)}
     i=j+len}};
   ws.onclose=()=>{api.ok=false;clearInterval(api.pi);if(!api.dead&&NET.on)setTimeout(()=>{if(NET.on&&MP.mq&&MP.mq.includes(api)){const n=mqttOpen(url);if(n){for(const t of api.subs)n.sub(t);MP.mq[MP.mq.indexOf(api)]=n}}},5000)};
   return api}
 function mqStart(){if(MP.mq&&MP.mq.length)return;MP.mq=MP.mqURLs.map(mqttOpen).filter(Boolean)}
-function mqInbox(){for(const q of MP.mq||[])q.sub('driftgate1/'+MP.myId)}
-function sigSend(o){if(MP.sig)MP.sig.send(o);const m=JSON.stringify({...o,src:MP.myId});for(const q of MP.mq||[])q.pub('driftgate1/'+o.dst,m)}
+function mqInbox(){for(const q of MP.mq||[])q.sub('dgbeyond1/'+MP.myId)}
+function sigSend(o){if(MP.sig)MP.sig.send(o);const m=JSON.stringify({...o,src:MP.myId});for(const q of MP.mq||[])q.pub('dgbeyond1/'+o.dst,m)}
 // ---- matchmaking socket (speaks the PeerJS server protocol: it only relays offers, answers and candidates)
 function sigOpen(id){return new Promise(res=>{let done=false;const c=MP.sigCfg;let ws;
   try{ws=new WebSocket(`${c.secure?'wss':'ws'}://${c.host}:${c.port}${c.path}peerjs?key=${encodeURIComponent(c.key)}&id=${encodeURIComponent(id)}&token=${rid(10)}&version=1.5.4`)}catch(e){res({err:'Could not reach the matchmaking server.'});return}
@@ -7385,14 +7385,14 @@ function linkDown(L){if(L.downDone)return;L.downDone=true;const quiet=L.quiet;li
 async function mpJoin(){if(!mpOK()){mpStatus('This browser cannot do peer-to-peer connections.',true);return}
   MP.name=cleanCall($('mpName').value);$('mpName').value=MP.name;MP.code=($('mpCode').value||'').trim().slice(0,24);
   if(MP.name.length<2){mpStatus('Choose a callsign first (step 1, at least 2 letters).',true);$('mpName').focus();return}if(!mpSlug(MP.code)){mpStatus('Enter a galaxy code (letters and numbers).',true);return}
-  try{localStorage.setItem('driftgate.mpname',MP.name);localStorage.setItem('driftgate.mpcode',MP.code)}catch(e){}
-  MP.hostId='driftgate1-'+mpSlug(MP.code)+'-host';mqStart();$('bMp').disabled=true;mpStatus('Contacting the matchmaking server…');
+  try{localStorage.setItem('dgbeyond.mpname',MP.name);localStorage.setItem('dgbeyond.mpcode',MP.code)}catch(e){}
+  MP.hostId='dgbeyond1-'+mpSlug(MP.code)+'-host';mqStart();$('bMp').disabled=true;mpStatus('Contacting the matchmaking server…');
   try{const t=localStorage.getItem(ckKey());if(t){const ck=JSON.parse(t);MP.ckpt=ck;MP.ckMeta={gid:ck.gid,T:ck.T}}}catch(e){}
   await mpElect(true)}
 async function mpElect(first){if(MP.sig){MP.sig.close();MP.sig=null}
   const r=await sigOpen(MP.hostId);
   if(r.ok){MP.sig=r;MP.myId=MP.hostId;mqInbox();hostBegin(first);return}
-  if(r.taken){const me='driftgate1-'+mpSlug(MP.code)+'-'+MP.pid.slice(0,8)+'-'+rid(4);const r2=await sigOpen(me);
+  if(r.taken){const me='dgbeyond1-'+mpSlug(MP.code)+'-'+MP.pid.slice(0,8)+'-'+rid(4);const r2=await sigOpen(me);
     if(!r2.ok){mpFail(r2.err||'Could not register with the matchmaking server.');return}
     MP.sig=r2;MP.myId=me;mqInbox();NET.on=true;NET.cl=true;NET.host=false;NET.me=MP.pid;MP.st='connecting';holdLock();
 
@@ -7410,7 +7410,7 @@ function clientDial(n){MP.host=mkLink(MP.hostId,true);const L=MP.host;clearTimeo
 function mpFail(msg){mpStatus(esc(msg)+(/github\.io$|^localhost$|^127\./.test(location.hostname)?' Check your connection and try again.':` Multiplayer runs from <a href="${MP_HOME}" target="_blank" rel="noopener" style="color:var(--amber)">${MP_HOME.replace('https://','')}</a>.`),true);$('bMp').disabled=false;NET.on=false;NET.cl=false;NET.host=false;MP.st='off'}
 
 // ---- hosting
-function holdLock(){try{if(MP.lockHeld||!navigator.locks)return;MP.lockHeld=true;navigator.locks.request('driftgate-tab-'+rid(8),()=>new Promise(r=>{MP.lockRel=r}))}catch(e){}}
+function holdLock(){try{if(MP.lockHeld||!navigator.locks)return;MP.lockHeld=true;navigator.locks.request('dgbeyond-tab-'+rid(8),()=>new Promise(r=>{MP.lockRel=r}))}catch(e){}}
 function hostBegin(first){holdLock();NET.on=true;NET.host=true;NET.cl=false;NET.me=MP.pid;MP.since=performance.now();MP.st='host';MP.hostPid=MP.pid;
   if(first){
     if(MP.ckpt&&MP.ckpt.S){mpAdoptState(MP.ckpt.S)}
@@ -7767,7 +7767,7 @@ async function hostGone(){if(MP.elect)return;MP.elect=1;const banner=$('netBanne
   for(let tries=0;tries<20&&NET.on;tries++){await new Promise(r=>setTimeout(r,300+Math.random()*1200+tries*400));
     if(MP.sig){MP.sig.close();MP.sig=null}const r=await sigOpen(MP.hostId);
     if(r.ok){MP.sig=r;MP.myId=MP.hostId;mqInbox();takeOver();break}
-    if(r.taken){const me='driftgate1-'+mpSlug(MP.code)+'-'+MP.pid.slice(0,8)+'-'+rid(4);const r2=await sigOpen(me);if(!r2.ok)continue;MP.sig=r2;MP.myId=me;mqInbox();
+    if(r.taken){const me='dgbeyond1-'+mpSlug(MP.code)+'-'+MP.pid.slice(0,8)+'-'+rid(4);const r2=await sigOpen(me);if(!r2.ok)continue;MP.sig=r2;MP.myId=me;mqInbox();
       const L=MP.host=mkLink(MP.hostId,true);const ok=await new Promise(res=>{const t0=performance.now(),iv=setInterval(()=>{if(L.open){clearInterval(iv);res(true)}else if(L.dead||performance.now()-t0>12000){clearInterval(iv);res(false)}},200)});
       if(ok)break;linkClose(L,true);MP.host=null}}
   MP.elect=0;if(banner)banner.hidden=true}
@@ -7958,7 +7958,7 @@ addEventListener('resize',()=>{if($('win')&&!$('win').hidden&&$('dbMap'))dbDrawM
 // a big bounty, and remember: who killed whom carries over between galaxies on this device.
 // an ace's price starts above a carrier's (the biggest bounty in the game) and grows 600 with every pilot it kills, to ACE_CAP
 const ACE_BOUNTY=3500,ACE_CAP=8400;const aceBase=side=>Math.round(ACE_BOUNTY*(side==='pirate'?PIRATE_MUL:1));
-const ACE_KEY='driftgate.aces.v1',ACE_HEAT=10,ACE_BACK=900,ACE_HUNT=300,ACE_MIN_T=480;
+const ACE_KEY='dgbeyond.aces.v1',ACE_HEAT=10,ACE_BACK=900,ACE_HUNT=300,ACE_MIN_T=480;
 const ACE_NAMES={halcyon:[['Seren Vale','Lantern'],['Imre Castell','Gilt'],['Odile Marchetti','Ledger'],['Aurel Faine','Tithe'],['Cassia Lund','Halo'],['Pell Ostrander','Mint']],
   varkesh:[['Kallo Vire','Ironjaw'],['Teodor Raskin','Anvil'],['Mirela Dusk','Hound'],['Brannoc Teague','Rampart'],['Ysa Korbel','Spike'],['Gorran Ultz','Siegebell']],
   ostrova:[['Ysolde Ahn','Psalm'],['Brother Quill','Censer'],['Nadia Orlov','Vesper'],['Ilya Merrow','Rosary'],['Sister Tamsin','Lumen'],['Oren Valk','Hymn']],
@@ -8050,7 +8050,7 @@ const LORE=['Gatewright’s log: the rings were never ours. We found them alread
   'Ostrova psalm, fourth verse: the dark between the gates is not empty, it is listening for the drift to settle.',
   'Med-bay note: the pilots who hug the rocks too long start to hear the ore. Rotate them out.',
   'Final entry, carrier Meridian: we jumped blind. The gate took us somewhere it thought we should be.'];
-const LORE_KEY='driftgate.lore.v1';
+const LORE_KEY='dgbeyond.lore.v1';
 function anomSects(){return SECTOR_DEFS.filter(d=>d.kind==='void').map(d=>d.id)}
 function anomsIn(sid){return(S.anoms&&S.anoms[sid])||[]}
 function anomPos(sid){const gs=GATES[sid];for(let k=0;k<30;k++){const p=randPos(700*SPACE,2600*SPACE);if(gs.some(g=>d3(g,p)<1200))continue;if(S.stations[sid]&&d3(S.stations[sid],p)<1500)continue;return p}return randPos(900*SPACE,2200*SPACE)}
@@ -9341,8 +9341,8 @@ function boot(data){
   try{initGL();genMeshes()}catch(e){$('glErr').hidden=false;$('glErr').textContent='WebGL failed to start: '+e.message;return}
   resize();buildSectorScene(null);auApply();
   try{const d=new Date(document.lastModified);if(/github\.io$/.test(location.hostname)&&!isNaN(d))$('ver').textContent='Game updated '+d.toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+'. If you are missing something new, reload with Ctrl+Shift+R (Cmd+Shift+R on Mac).'}catch(e){}
-  try{const bc=new BroadcastChannel('driftgate');MP.bc=bc;bc.onmessage=e=>{const m=e.data||{};if(m.t==='hello'&&running)bc.postMessage({t:'here',code:NET.on?MP.code:'',host:NET.host});if(m.t==='here'&&!running){const el=$('ver');if(el){el.style.opacity=1;el.style.color='var(--amber)';el.textContent=`Driftgate is already open in another tab of this browser${m.code?` (${m.host?'hosting':'in'} galaxy “${m.code}”)`:''}. Close that tab first, or use it instead: two tabs in one browser share the same pilot.`}}};bc.postMessage({t:'hello'})}catch(e){}
-  mpConfig();{const q=new URLSearchParams(location.search);let n='',c='';try{n=localStorage.getItem('driftgate.mpname')||'';c=localStorage.getItem('driftgate.mpcode')||''}catch(e){}$('mpName').value=q.get('name')||n;$('mpCode').value=q.get('galaxy')||c;showInvite();if(q.get('galaxy')&&!q.get('auto'))mpStatus(`You've been invited to the galaxy <b>${esc(q.get('galaxy'))}</b>. Choose a callsign, faction and ship, then press <b>Launch</b> to join your friends.`);if((window.claude||!mpOK())&&!q.get('sig')){$('mpBox').hidden=false;$('mpBox').querySelector('.mprow').hidden=true;mpStatus(`Multiplayer runs from the shareable copy at <a href="${MP_HOME}" target="_blank" rel="noopener" style="color:var(--amber)">${MP_HOME.replace('https://','')}</a>${window.claude?' (this preview can\'t open peer-to-peer connections)':' (this browser can\'t open peer-to-peer connections)'}. Open it there, press Create a galaxy for friends, and send your friends the invite link.`)}if(q.get('auto')&&mpOK())setTimeout(mpJoin,50)}
+  try{const bc=new BroadcastChannel('dgbeyond');MP.bc=bc;bc.onmessage=e=>{const m=e.data||{};if(m.t==='hello'&&running)bc.postMessage({t:'here',code:NET.on?MP.code:'',host:NET.host});if(m.t==='here'&&!running){const el=$('ver');if(el){el.style.opacity=1;el.style.color='var(--amber)';el.textContent=`Driftgate is already open in another tab of this browser${m.code?` (${m.host?'hosting':'in'} galaxy “${m.code}”)`:''}. Close that tab first, or use it instead: two tabs in one browser share the same pilot.`}}};bc.postMessage({t:'hello'})}catch(e){}
+  mpConfig();{const q=new URLSearchParams(location.search);let n='',c='';try{n=localStorage.getItem('dgbeyond.mpname')||'';c=localStorage.getItem('dgbeyond.mpcode')||''}catch(e){}$('mpName').value=q.get('name')||n;$('mpCode').value=q.get('galaxy')||c;showInvite();if(q.get('galaxy')&&!q.get('auto'))mpStatus(`You've been invited to the galaxy <b>${esc(q.get('galaxy'))}</b>. Choose a callsign, faction and ship, then press <b>Launch</b> to join your friends.`);if((window.claude||!mpOK())&&!q.get('sig')){$('mpBox').hidden=false;$('mpBox').querySelector('.mprow').hidden=true;mpStatus(`Multiplayer runs from the shareable copy at <a href="${MP_HOME}" target="_blank" rel="noopener" style="color:var(--amber)">${MP_HOME.replace('https://','')}</a>${window.claude?' (this preview can\'t open peer-to-peer connections)':' (this browser can\'t open peer-to-peer connections)'}. Open it there, press Create a galaxy for friends, and send your friends the invite link.`)}if(q.get('auto')&&mpOK())setTimeout(mpJoin,50)}
   const saved=data&&data.save;
   if(saved&&saved.v===2)startWith(saved);else showStart();
   requestAnimationFrame(frame);

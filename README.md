@@ -1,8 +1,12 @@
-# Driftgate
+# Driftgate Beyond
+
+A new game in the Driftgate universe, forked from Driftgate 1 at v255 (Nov 2026; Driftgate 1 lives on in `mbyrtus-maker/driftgate`, frozen on the branch `driftgate1-v255`). It starts as Driftgate 1's code with its own identity: its own saves and settings (`dgbeyond.*` in browser storage), its own multiplayer rooms (`dgbeyond1-…`, so Beyond crews never meet Driftgate 1 crews) and its own title. Design for Beyond: see `BEYOND_DESIGN.md`.
+
+## Driftgate 1, as forked
 
 A 3D space game you play in the browser: three rival factions and an alien Brood fight over fifteen star systems in a closed economy where every plate, coil and crystal was mined from a rock that already existed. Mine, haul, trade, upgrade your ship, claim outposts, and fly with up to three friends.
 
-**Play:** https://mbyrtus-maker.github.io/Driftgate/
+**Play:** https://mbyrtus-maker.github.io/DriftgateBeyond/ (once GitHub Pages is turned on for this repository)
 
 ## Playing with friends
 

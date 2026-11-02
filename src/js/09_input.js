@@ -19,7 +19,7 @@ const KEY_ACTS=[
  ['Screens',[['map','KeyM','Galaxy map'],['help','KeyH','This manual'],['cam','KeyV','Chase or cockpit camera'],['sound','KeyN','Sound: all on, music off, muted'],['touch','Backquote','Show or hide touch buttons']]]];
 const KEY_FIXED=[['Mouse','Steer: the further from the centre ring, the harder you turn'],['Arrows','Pitch and yaw without the mouse'],['Shift','Afterburner'],['Click','Target a ship, or a row in Contacts'],['Wheel','Chase camera distance'],['Esc','Close a screen; in flight, free the mouse cursor (the ship holds its heading). Esc again to steer'],['F11','Full screen']];
 const KEY_DEF={};for(const[,L]of KEY_ACTS)for(const[id,code]of L)KEY_DEF[id]=code;
-let KEYB={};try{KEYB=JSON.parse(localStorage.getItem('driftgate.keys')||'{}')||{}}catch(e){KEYB={}}
+let KEYB={};try{KEYB=JSON.parse(localStorage.getItem('dgbeyond.keys')||'{}')||{}}catch(e){KEYB={}}
 let KEY_P2D={},KEY_AWAY=new Set();
 function keyRemap(){KEY_P2D={};KEY_AWAY=new Set();for(const id in KEYB){const d=KEY_DEF[id],ph=KEYB[id];if(!d||!ph||ph===d)continue;KEY_P2D[ph]=d;KEY_AWAY.add(d)}for(const ph in KEY_P2D)KEY_AWAY.delete(ph)}
 keyRemap();
@@ -35,7 +35,7 @@ function keyListHtml(){let h='';for(const[g,L]of KEY_ACTS){h+=`<div class="h3" s
   h+=`<div class="h3" style="margin-top:12px">Fixed</div><div class="keys">${KEY_FIXED.map(([k,t])=>`<kbd>${k}</kbd><span>${t}</span>`).join('')}</div>`;
   if(Object.keys(KEYB).length)h+=`<p style="margin-top:8px"><button class="btn sm" type="button" data-rebind="__reset">Reset all keys</button></p>`;return h}
 function keyListRender(){const el=$('keyList');if(el)el.innerHTML=keyListHtml()}
-function keySave(){try{localStorage.setItem('driftgate.keys',JSON.stringify(KEYB))}catch(e){}keyRemap();keyListRender()}
+function keySave(){try{localStorage.setItem('dgbeyond.keys',JSON.stringify(KEYB))}catch(e){}keyRemap();keyListRender()}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-rebind]');if(!b)return;const id=b.dataset.rebind;
   if(id==='__reset'){KEYB={};keyWait=null;keySave();flash('All keys are back to their defaults.');return}keyWait=keyWait===id?null:id;keyListRender()});
 // while waiting for a new key, the next key press binds it (Esc cancels); a key another action uses is swapped onto that action
@@ -118,9 +118,9 @@ document.querySelectorAll('#touch button').forEach(b=>{const k=b.dataset.t;
   b.addEventListener('pointerdown',e=>{e.preventDefault();b.classList.add('on');if(k==='act'){actPress()}else if(k==='tgt')cycleHostile();else if(k==='msl')fireMissile();else if(k==='flare')playerFlares();else if(k==='wpn')setWeapon(S.player.wpn==='laser'?'kinetic':'laser');else touch[k]=true});
   const up=()=>{b.classList.remove('on');if(!['act','tgt','msl','flare','wpn'].includes(k))touch[k]=false};b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up)});
 // the touch buttons can be switched off with ` (remembered on this device)
-let touchOff=false;try{touchOff=localStorage.getItem('dg_touchOff')==='1'}catch(e){}
+let touchOff=false;try{touchOff=localStorage.getItem('dgb_touchOff')==='1'}catch(e){}
 function showTouch(){$('touch').hidden=!coarse||!running||touchOff}
-function toggleTouch(){touchOff=!touchOff;try{localStorage.setItem('dg_touchOff',touchOff?'1':'0')}catch(e){}showTouch();flash(touchOff?'Touch buttons hidden. Press ` to show them again.':coarse?'Touch buttons shown. Press ` to hide them.':'Touch buttons on: they appear when you use a touch screen. Press ` to switch them off.')}
+function toggleTouch(){touchOff=!touchOff;try{localStorage.setItem('dgb_touchOff',touchOff?'1':'0')}catch(e){}showTouch();flash(touchOff?'Touch buttons hidden. Press ` to show them again.':coarse?'Touch buttons shown. Press ` to hide them.':'Touch buttons on: they appear when you use a touch screen. Press ` to switch them off.')}
 
 function targetables(){const out=[];if(!W)return out;for(const e of W.ents){if(e.type==='ship'&&!e.isPlayer&&e.alive){if(seenShip(e))out.push({kind:'ship',ref:e})}else if(e.type==='outpost')out.push({kind:'outpost',ref:e});else if(e.type==='station')out.push({kind:'station',ref:e});else if(e.type==='gate')out.push({kind:'gate',ref:e});else if(e.type==='works')out.push({kind:'works',ref:e})}
   const s=S.sectors[W.sid];for(const a of s.ast)out.push({kind:'ast',ref:a});for(const c of s.crates)out.push({kind:'crate',ref:c});for(const x of wptsIn(s))out.push({kind:'wpt',ref:x});if(W.stationEnt&&!out.some(t=>t.ref===W.stationEnt))out.push({kind:'station',ref:W.stationEnt});if(W.outpostEnt&&!out.some(t=>t.ref===W.outpostEnt))out.push({kind:'outpost',ref:W.outpostEnt});if(S.beacons&&S.beacons[W.sid])out.push({kind:'beacon',ref:S.beacons[W.sid]});return out}

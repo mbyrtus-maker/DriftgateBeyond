@@ -429,7 +429,7 @@ function fsEl(){return document.fullscreenElement||document.webkitFullscreenElem
 function toggleFull(){try{if(fsEl()){(document.exitFullscreen||document.webkitExitFullscreen).call(document);return}
   const el=document.documentElement,rq=el.requestFullscreen||el.webkitRequestFullscreen;if(!rq||document.fullscreenEnabled===false){fsBlocked();return}
   const pr=rq.call(el,{navigationUI:'hide'});if(pr&&pr.catch)pr.catch(fsBlocked)}catch(e){fsBlocked()}}
-function fsBlocked(){flash('Full screen isn\'t allowed in this embedded view. Open the game on its own page (mbyrtus-maker.github.io/Driftgate) to play full screen.',true)}
+function fsBlocked(){flash('Full screen isn\'t allowed in this embedded view. Open the game on its own page (mbyrtus-maker.github.io/DriftgateBeyond) to play full screen.',true)}
 function fsLabel(){const b=$('bFull');if(b)b.innerHTML=fsEl()?'Exit full <kbd>F11</kbd>':'Full <kbd>F11</kbd>';setTimeout(()=>{resize();if(!$('map').hidden)drawMap()},60)}
 document.addEventListener('fullscreenchange',fsLabel);document.addEventListener('webkitfullscreenchange',fsLabel);
 $('bFull').addEventListener('click',e=>{e.currentTarget.blur();toggleFull()});$('bHelp').addEventListener('click',()=>toggleSheet('help'));

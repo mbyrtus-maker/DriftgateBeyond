@@ -555,7 +555,7 @@ function campGoal(){const n=controlCounts();for(const f of FAC_IDS){const P=camp
 const VIC_BONUS={cr:CAMP_GOAL,items:{lattice:2,core:1}};
 function vicServed(k,side){return FAC_IDS.includes(side)&&!!(S.plans&&S.plans[side]&&S.plans[side].crew[k]>0)}
 function vicLine(side){return`★★ Victory bonus for serving the ${DOCTRINE[side].name}: ${fmt(VIC_BONUS.cr)} cr, ${VIC_BONUS.items.lattice} Crystal Lattice and ${VIC_BONUS.items.core} Resonance Core. They're waiting in your vault in the next galaxy.`}
-function vicBank(side){try{const lg=loadLegacy();lg.vb={cr:(lg.vb&&lg.vb.cr||0)+VIC_BONUS.cr,items:{...VIC_BONUS.items},side};localStorage.setItem('driftgate.legacy',JSON.stringify(lg))}catch(e){}const el=$('winV');if(el){el.textContent=vicLine(side);el.hidden=false}}
+function vicBank(side){try{const lg=loadLegacy();lg.vb={cr:(lg.vb&&lg.vb.cr||0)+VIC_BONUS.cr,items:{...VIC_BONUS.items},side};localStorage.setItem('dgbeyond.legacy',JSON.stringify(lg))}catch(e){}const el=$('winV');if(el){el.textContent=vicLine(side);el.hidden=false}}
 // ---- the pilot's side: sign on (P), set a course, deliver at the docks
 // ---- strategy orders: beside its supply drive, command posts an intel and a combat order for the same target, and answers threats
 // as they come (a counter-attack when its ground is hit, a hunt for an enemy capital ship nearby, a Brood purge). Each order succeeds

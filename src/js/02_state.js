@@ -101,7 +101,7 @@ let WORLDS={},LW=null,MUTE=false,CTX=null;
 const NET={on:false,host:false,cl:false,me:null};
 function inW(w,fn){if(!w)return;const o=W;W=w;try{return fn()}finally{W=o}}
 function liveIn(sid){const w=WORLDS[sid];return w&&!(w===LW&&w.dead)?w:null}
-const SAVE_KEY='driftgate.save.v2';
+const SAVE_KEY='dgbeyond.save.v1';
 const FEED=[];
 function oreTotal(a){let t=0;for(const k in a.ore)t+=a.ore[k];return t}
 function mainOre(a){let b=null,m=0;for(const k in a.ore)if(a.ore[k]>m){m=a.ore[k];b=k}return b}

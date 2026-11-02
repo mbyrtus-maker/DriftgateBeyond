@@ -97,7 +97,7 @@ addEventListener('resize',()=>{if($('win')&&!$('win').hidden&&$('dbMap'))dbDrawM
 // a big bounty, and remember: who killed whom carries over between galaxies on this device.
 // an ace's price starts above a carrier's (the biggest bounty in the game) and grows 600 with every pilot it kills, to ACE_CAP
 const ACE_BOUNTY=3500,ACE_CAP=8400;const aceBase=side=>Math.round(ACE_BOUNTY*(side==='pirate'?PIRATE_MUL:1));
-const ACE_KEY='driftgate.aces.v1',ACE_HEAT=10,ACE_BACK=900,ACE_HUNT=300,ACE_MIN_T=480;
+const ACE_KEY='dgbeyond.aces.v1',ACE_HEAT=10,ACE_BACK=900,ACE_HUNT=300,ACE_MIN_T=480;
 const ACE_NAMES={halcyon:[['Seren Vale','Lantern'],['Imre Castell','Gilt'],['Odile Marchetti','Ledger'],['Aurel Faine','Tithe'],['Cassia Lund','Halo'],['Pell Ostrander','Mint']],
   varkesh:[['Kallo Vire','Ironjaw'],['Teodor Raskin','Anvil'],['Mirela Dusk','Hound'],['Brannoc Teague','Rampart'],['Ysa Korbel','Spike'],['Gorran Ultz','Siegebell']],
   ostrova:[['Ysolde Ahn','Psalm'],['Brother Quill','Censer'],['Nadia Orlov','Vesper'],['Ilya Merrow','Rosary'],['Sister Tamsin','Lumen'],['Oren Valk','Hymn']],
@@ -189,7 +189,7 @@ const LORE=['Gatewright’s log: the rings were never ours. We found them alread
   'Ostrova psalm, fourth verse: the dark between the gates is not empty, it is listening for the drift to settle.',
   'Med-bay note: the pilots who hug the rocks too long start to hear the ore. Rotate them out.',
   'Final entry, carrier Meridian: we jumped blind. The gate took us somewhere it thought we should be.'];
-const LORE_KEY='driftgate.lore.v1';
+const LORE_KEY='dgbeyond.lore.v1';
 function anomSects(){return SECTOR_DEFS.filter(d=>d.kind==='void').map(d=>d.id)}
 function anomsIn(sid){return(S.anoms&&S.anoms[sid])||[]}
 function anomPos(sid){const gs=GATES[sid];for(let k=0;k<30;k++){const p=randPos(700*SPACE,2600*SPACE);if(gs.some(g=>d3(g,p)<1200))continue;if(S.stations[sid]&&d3(S.stations[sid],p)<1500)continue;return p}return randPos(900*SPACE,2200*SPACE)}

@@ -5,7 +5,7 @@ function serialize(){const o=W;W=LW;syncPlayer();W=o;if(NET.host)netSyncPilots()
 function save(){if(!S||NET.on||S.training)return;try{localStorage.setItem(SAVE_KEY,JSON.stringify(serialize()))}catch(e){}}
 function loadSave(){try{const t=localStorage.getItem(SAVE_KEY);if(!t)return null;const o=JSON.parse(t);return o&&o.v===2&&o.player?o:null}catch(e){return null}}
 function startWith(state){
-  migrate(state);if(S.vbPend){S.vbPend=0;if(!S.training&&!NET.cl){const lg=loadLegacy(),vb=lg.vb;if(vb){delete lg.vb;try{localStorage.setItem('driftgate.legacy',JSON.stringify(lg))}catch(e){}devLedger(()=>{S.player.credits+=vb.cr||0;inv.addAll(S.player.vault,vb.items||{})});
+  migrate(state);if(S.vbPend){S.vbPend=0;if(!S.training&&!NET.cl){const lg=loadLegacy(),vb=lg.vb;if(vb){delete lg.vb;try{localStorage.setItem('dgbeyond.legacy',JSON.stringify(lg))}catch(e){}devLedger(()=>{S.player.credits+=vb.cr||0;inv.addAll(S.player.vault,vb.items||{})});
     feed(`★★ Victory bonus from the last galaxy${vb.side&&DOCTRINE[vb.side]?` (for serving the ${DOCTRINE[vb.side].name})`:''}: +${fmt(vb.cr||0)} cr, and ${Object.entries(vb.items||{}).map(([i,c])=>c+' '+ITEMS[i].name).join(', ')} in your vault.`,'good')}}}
   if(S.player.rack===undefined)S.player.rack=0;if(!S.player.wpn)S.player.wpn='kinetic';running=true;$('start').hidden=true;$('hud').hidden=false;showTouch();
   enterSector(S.player.sector);
@@ -64,7 +64,7 @@ $('bNext').addEventListener('click',()=>{if(NET.host){mpNewGalaxy();return}if(NE
 // that galaxy). Records live on this device, keyed by callsign. In multiplayer the host decides who earned a point and tells
 // each pilot's device. Perks are permanent but small; anything a perk adds at the start of a galaxy is added before that
 // galaxy's ledger baseline, and every pay bonus comes out of a faction treasury.
-const LEG_KEY='driftgate.legend',LEG_MIN=1800,LEG_LV=[1,2,4,6,9,12,16,20,25,30],
+const LEG_KEY='dgbeyond.legend',LEG_MIN=1800,LEG_LV=[1,2,4,6,9,12,16,20,25,30],
   LEG_TITLES=['Pathfinder','Freighter','Prospector','Veteran','Heroic Pilot','Ace','Commander','Paragon','Champion','Legendary Ace'],
   LEG_PERKS=['Scout’s instinct: in a Scout or Advanced Scout, beacons flip in 7 s instead of 10, and beacon bounties pay 20% more.',
     'Freight licence: hauler hulls get 10% more hold, the full-hold handling penalty is cut by a third, and hauling Orders pay 10% more.',
@@ -305,11 +305,11 @@ function trPickHtml(){const n=t=>trPlan(t).length;return`<div class="trh2">Fligh
 $('bTrain').addEventListener('click',()=>{const el=$('trPick');if(!el.hidden){el.hidden=true;return}el.innerHTML=trPickHtml();el.hidden=false});
 $('trPick').addEventListener('click',e=>{const b=e.target.closest('[data-trk]');if(!b)return;const k=b.dataset.trk;if(k==='x'){$('trPick').hidden=true;return}trainStart(k)});
 // first meetings: a one-time tip (per device) the first time a pilot flies into Bloom space or is jammed, pointing to the lesson
-function firstTip(key,msg){if(S&&S.training)return;let seen={};try{seen=JSON.parse(localStorage.getItem('driftgate.tips')||'{}')||{}}catch(e){}if(seen[key])return;seen[key]=1;try{localStorage.setItem('driftgate.tips',JSON.stringify(seen))}catch(e){}feed(msg,'warn');flash(msg)}
+function firstTip(key,msg){if(S&&S.training)return;let seen={};try{seen=JSON.parse(localStorage.getItem('dgbeyond.tips')||'{}')||{}}catch(e){}if(seen[key])return;seen[key]=1;try{localStorage.setItem('dgbeyond.tips',JSON.stringify(seen))}catch(e){}feed(msg,'warn');flash(msg)}
 function firstTips(){if(!W||!W.player||S.player.docked)return;const p=W.player;
   if(sectorOwner(W.sid)==='brood')firstTip('brood','First time in Bloom space: the factions can’t hurt each other here, shields recharge slower, and Brood hits leave spores that eat your hull. Kill Seeders and burn Bloom Nodes for bounties. Training → Combat course covers the Brood.');
   if((p.jam||0)>0)firstTip('jam','You’re being jammed: Unbound pirates fill a jam bar once your shields are down, then hook your cargo. Keep your shields up or break away with the afterburner while the bar drains.')}
-$('bLaunch').addEventListener('click',()=>{const cs=cleanCall($('mpName').value);$('mpName').value=cs;if(cs.length<2){$('ssum').innerHTML='<b style="color:var(--danger)">Choose a callsign first (step 1).</b>';$('mpName').focus();return}if(selFac==='pirate'&&!NET.cl&&!unbLegendOK(cs)){$('ssum').innerHTML='<b style="color:var(--danger)">The Unbound need a Legend point on this callsign.</b>';return}if(!NET.on)MP.name=cs;try{localStorage.setItem('driftgate.mpname',cs)}catch(e){}
+$('bLaunch').addEventListener('click',()=>{const cs=cleanCall($('mpName').value);$('mpName').value=cs;if(cs.length<2){$('ssum').innerHTML='<b style="color:var(--danger)">Choose a callsign first (step 1).</b>';$('mpName').focus();return}if(selFac==='pirate'&&!NET.cl&&!unbLegendOK(cs)){$('ssum').innerHTML='<b style="color:var(--danger)">The Unbound need a Legend point on this callsign.</b>';return}if(!NET.on)MP.name=cs;try{localStorage.setItem('dgbeyond.mpname',cs)}catch(e){}
   {const code=($('mpCode').value||'').trim();if(!NET.on&&mpSlug(code)&&mpOK()&&!$('mpBox').hidden){auInit();auApply();MP.autoLaunch={fac:selFac,cls:launchCls()};mpJoin();return}}
   if(NET.on){auInit();auApply();mpLaunch(selFac,launchCls());return}auInit();auApply();FEED.length=0;newGame(selFac,launchCls(),cs);S.player.name=cs;if(selFac==='pirate'){S.unb=1;unbP();S.player.cls=launchCls()}startWith(S);feed(`Welcome aboard, ${cs}, ${selFac==='pirate'?'captain of the Unbound':'pilot of the '+FAC(selFac).name}. Your vault holds a few plates and conduit: check Ship → Systems for your first upgrade.`,'info');feed('Launch with E. Steer with the mouse, thrust with W. In a mining ship, R targets a rock, F fires a charge onto a fault point and '+kb('det')+' detonates; fly into the chunks to scoop them.','info');save()});
 $('bContinue').addEventListener('click',()=>{auInit();auApply();const s=loadSave();if(s){FEED.length=0;startWith(s);feed('Welcome back, pilot.','info')}});
