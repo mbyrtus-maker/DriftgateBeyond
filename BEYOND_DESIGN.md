@@ -395,15 +395,15 @@ A player faction's leader is its founder: AI leaders send it proposals and deman
 |---|---|---|---|---|
 | Trade pact | Relation Neutral or better, and each is short of goods the other has in surplus | Mercantile | Cheaper trade, merchants run between them | + |
 | Aid convoy | A Friendly or Allied faction is under siege or starved | Cautious, Patient | Goods sent by real convoy (raidable) | + |
-| Alliance proposal | Relation above +60 and a shared threat (a faction nearing two-thirds, or the Brood spreading) | Patient, Cautious | Formal alliance if the other accepts | + large |
-| Border dispute | Both factions build or hold depots in neighbouring systems | Ambitious | A demand to withdraw; announced with a deadline | − small |
+| Alliance proposal | Relation above +60 and a shared threat (a faction nearing two-thirds, or the Brood spreading) | Patient, Cautious, Honourable (never Isolationist) | Formal alliance if the other accepts | + large |
+| Border dispute | Both factions build or hold depots in neighbouring systems | Ambitious, Industrious, Isolationist | A demand to withdraw; announced with a deadline | − small |
 | Embargo | Relation Hostile, or the other undercut its markets or raided its trade | Mercantile, Vengeful | Trade between them stops | − |
 | Proxy work | A rival (or even an ally) is getting ahead | Scheming | Deniable contractor jobs posted against it | none, unless exposed |
 | Exposure | A proxy job is traced (more likely if many run, or a sworn pilot does it) | (anyone exposed) | The victim learns who posted it | − large |
-| Reprisal | A large negative from the other (a siege, a capture, repeated convoy raids) | Vengeful | A strike or raid back at the offender | − |
+| Reprisal | A large negative from the other (a siege, a capture, repeated convoy raids) | Vengeful, Ruthless | A strike or raid back at the offender | − |
 | Declaration of war | Relation below −50 and an unanswered wrong, or a rival leading in systems | Ambitious, Vengeful | Formal war: campaigns and sieges begin | − large |
-| Ceasefire offer | War-weary: heavy losses, a low treasury, or the Brood pressing both | Cautious, Mercantile | Offer of peace; holds if the other is also weary | + |
-| Betrayal | Allied, but the ally nears two-thirds or is rich and weak | Ambitious, Scheming | Alliance broken; telegraphed by cooling relations first | − very large |
+| Ceasefire offer | War-weary: heavy losses, a low treasury, or the Brood pressing both | Cautious, Mercantile, Honourable | Offer of peace; holds if the other is also weary | + |
+| Betrayal | Allied, but the ally nears two-thirds or is rich and weak | Ambitious, Scheming, Opportunist | Alliance broken; telegraphed by cooling relations first | − very large |
 | Containment front | The Brood holds enough systems | Everyone | Driftgate 1's Containment Accord: all unite against the Brood | + between all |
 | Bounty on a pilot | A contractor badly hurts the faction | Vengeful | A public bounty on that pilot (affects standing, not the ledger) | none |
 | Succession | The leader is killed, its core station falls, a long losing war, a betrayal by an ally, or an exposed scheme | (any) | A new leader whose traits come from the faction's history (below) | partial reset, or a new grudge |
@@ -421,6 +421,11 @@ A player faction's leader is its founder: AI leaders send it proposals and deman
 | Ravaged by the Brood | Zealous: puts containment above everything |
 | Hurt by an exposed proxy campaign | Scheming: answers in kind |
 | Long peace and full treasuries | Patient or Mercantile |
+| Long peace with treaties kept on both sides | Honourable |
+| Its stations razed, or its leader killed by treachery | Ruthless |
+| Short of goods and parts after a long war | Industrious |
+| Lost a war fought far from home | Isolationist |
+| A neighbour weakened by the Brood or a long war | Opportunist |
 
 **AI pilots fly like their leader** (decided 2 Nov 2026). Every AI pilot of a power (fighters, escorts, miners, haulers, scouts, capitals) behaves the way its current leader's traits lean, so a faction's character shows in how its ships fight and work, not only in the events feed. A leader has two traits, so pilots blend both.
 
@@ -435,11 +440,17 @@ A player faction's leader is its founder: AI leaders send it proposals and deman
 | Wary (successor) | Keep their distance from allied ships; patrols scan more often |
 | Loyal (successor) | Answer allies' distress calls; guard allied convoys |
 | Zealous (successor) | Put the Brood above every other target; push into Brood space |
+| Honourable | Never fire on disabled or fleeing ships; accept surrender; rescue downed pilots; keep to treaties (and post no proxy work) |
+| Ruthless | Finish off disabled ships; go for miners, haulers and convoys first; raze bases rather than capture them |
+| Industrious | Guard miners and constructors first; build depots and outposts; avoid wars while building up |
+| Isolationist | Stay in home space and hold the borders; never answer allies' calls outside it; refuse alliances |
+| Opportunist | Strike whoever is weakest right now; join fights already under way as a third party; loot wrecks; switch targets fast |
 
 - **A new leader changes the fleet.** After a succession, pilots shift to the new leader's style as new orders go out, so a war-weary Cautious successor's ships really do start breaking off.
 - **Aces and a leader's own escort** fly the same way, more skilfully.
 - **Checked by simulation** with the leaders (stage 2): trait behaviour moves faction strength, so it goes through the war checks.
-- **Proposal:** your own AI pilots follow a **doctrine** you set for your company, two traits from the same list, so a founder's faction has a character too.
+- **Your faction's traits:** when you **declare your faction**, you pick its two traits from the whole list (decided 2 Nov 2026), and your AI pilots fly by them from then on, so a founder's faction has a character too. Before you declare, your company's AI pilots fly a plain, balanced style.
+- **Five more traits** (decided 2 Nov 2026): Honourable, Ruthless, Industrious, Isolationist and Opportunist join the list, for leaders, successors and founders alike.
 
 **Distress calls in Brood space are answered by every faction** (decided 2 Nov 2026). A distress call sent from a system the Brood holds brings nearby pilots of every power, whatever their relations, even at war; while answering they fight only the Brood.
 
