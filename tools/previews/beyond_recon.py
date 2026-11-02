@@ -41,7 +41,7 @@ def lark():      # scout: a slim needle with a long sensor boom forward, a small
         plate(M,[(sx*.05,.08,-.55),(sx*.16,.28,-.78),(sx*.16,.28,-.84),(sx*.05,.07,-.8)],.018,ACC,.95)
     limpets(M,(0,-.1,-.1))
     M.vent((0,0,-.82),.06)
-    return finish(M,1.9,1.0)
+    return finish(M,2.1,1.08)
 def skylark():   # advanced scout: a larger lens body carrying a big radome on twin pylons, limpet pods under the wings, twin tails
     M=Mesh(82)
     loft(M,[(-1.0,LENS(.12,.1)),(-.5,LENS(.2,.16)),(.3,LENS(.18,.15)),(.75,LENS(.07,.07,-.01))],lens_role)
@@ -74,8 +74,8 @@ def harrier():   # heavy bomber: a long clean lens hull, tandem canopies, a forw
     for z in (.62,.3):M.blob((0,.19,z),.095,GLASS,sub=2,squash=(.9,.75,1.6),noise=0)                                # tandem canopies: two seats
     turret(M,(0,.2,-1.0),.1)                                                                                         # rear turret
     for sx in (1,-1):
-        plate(M,[(sx*.24,.0,-.05),(sx*1.08,-.03,.38),(sx*1.03,-.03,.24),(sx*.24,.0,-.6)],.04,LIGHT)                  # forward-swept wing
-        M.blob((sx*1.06,-.03,.31),.045,WIN,sub=1,noise=0)
+        plate(M,[(sx*.24,.0,.05),(sx*1.38,-.04,.55),(sx*1.32,-.04,.36),(sx*.24,.0,-.7)],.045,LIGHT)                  # forward-swept wing, larger
+        M.blob((sx*1.35,-.04,.46),.05,WIN,sub=1,noise=0)
         loft(M,[(-.55,[(a+sx*.6,b-.14) for a,b in LENS(.04,.04)]),(-.35,[(a+sx*.6,b-.14) for a,b in LENS(.09,.08)]),(.25,[(a+sx*.6,b-.14) for a,b in LENS(.09,.08)]),(.45,[(a+sx*.6,b-.14) for a,b in LENS(.03,.03)])],(MID,.95))   # torpedo pod under the wing
         torpedo(M,(sx*.6,-.25,-.25),.65,.045)
         plate(M,[(sx*.13,.16,-.68),(sx*.24,.4,-.96),(sx*.24,.4,-1.03),(sx*.13,.15,-.99)],.025,ACC,.95)
@@ -162,7 +162,7 @@ def obelisk():   # bomber: the Sentinel's single-seat cousin: a spire with cryst
     for sx in (1,-1):plate(M,[(sx*.13,-.03,.3),(sx*.42,-.08,.05),(sx*.4,-.08,-.12),(sx*.13,-.03,-.2)],.022,WIN,.85)  # crystal fins
     vee_tail(M,-.72,.42)
     M.vent((0,0,-1.02),.06)
-    return finish(M,2.4,1.0)
+    return finish(M,2.65,1.18)
 def vee_tail(M,z0,span):
     # two tail fins set 45 degrees either side of the fuselage's top
     for a in (PI/4,3*PI/4):
@@ -186,7 +186,7 @@ def sentinel():  # heavy bomber: a spire with tandem seats, a gun pod on the aft
         torpedo(M,(sx*.36,-.18,-.4),.8,.05,LIGHT)                                                                      # torpedo lances
     vee_tail(M,-.82,.52)
     M.vent((0,0,-1.22),.06)
-    return finish(M,2.9,1.0)
+    return finish(M,2.95,1.15)
 def oracle():    # advanced scout: a spire with a great sensor dish set between two rings crossed in an X, crystal nodes, limpet launchers, a beacon device
     M=Mesh(102)
     loft(M,[(-1.0,DIA(.05,.05)),(-.55,DIA(.13,.12)),(.35,DIA(.13,.12)),(.75,DIA(.04,.04))],SP)
@@ -201,7 +201,7 @@ def oracle():    # advanced scout: a spire with a great sensor dish set between 
     box(M,(0,-.14,.35),(.08,.05,.16),ACC)                                                                              # beacon device
     M.blob((0,.12,.5),.06,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
     M.vent((0,0,-1.02),.05)
-    return finish(M,2.3,1.0)
+    return finish(M,2.45,1.18)
 RECON=[('halcyon','Halcyon Accord',[('Lark','Scout',lark),('Skylark','Advanced scout',skylark),('Condor','Bomber',condor),('Harrier','Heavy bomber',harrier)]),
        ('varkesh','Varkesh Dominion',[('Jackal','Scout',jackal),('Wolfhound','Advanced scout',wolfhound),('Maul','Bomber',maul),('Warhound','Heavy bomber',warhound)]),
        ('ostrova','Ostrova Collective',[('Seer','Scout',seer),('Oracle','Advanced scout',oracle),('Obelisk','Bomber',obelisk),('Sentinel','Heavy bomber',sentinel)])]
