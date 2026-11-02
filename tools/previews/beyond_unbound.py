@@ -48,21 +48,25 @@ def canopy(M,c,r,sq=(1,.75,1.6)):M.blob(tuple(c),r,GLASS,sub=2,squash=sq,noise=0
 # ------------------------------------------------------------------ hulls
 def raider():
     # light: an asymmetric twin-body with an off-centre cockpit. A long Ostrova faceted boom to port carries the drive and the tail;
-    # a short stolen Halcyon cockpit pod with its canopy sits out on the wing to starboard; a thick Varkesh wing slab joins them, with
-    # guns slung under it; a Halcyon tailplane on the boom side only; an Ostrova crystal radar fin on the boom; ram spikes
+    # a short stolen Halcyon cockpit pod with its canopy and a Varkesh engine behind it sits out to starboard; one large swept
+    # Varkesh wing runs through both, with guns slung under it; a Halcyon tailplane on the boom side only; an Ostrova crystal radar fin on the boom; ram spikes
     M=Mesh(401);bx=-.32;cx=.42
     ost_spire(M,[(-1.15,.07,.07),(-.95,.13,.12),(.5,.13,.12),(.95,.07,.07),(1.1,.015,.015)],dx=bx)                  # Ostrova boom
     for z in (-.55,.15):ring(M,(bx,0,z),.14,.012,ACC,seg=16,sides=4)
     M.vent((bx,0,-1.16),.075)
     hal_pod(M,[(-.42,.06,.06),(-.25,.15,.14),(.45,.16,.14),(.78,.08,.07),(.92,.02,.02)],dx=cx,dy=.02)             # Halcyon cockpit pod, off centre
-    canopy(M,(cx,.15,.25),.12,(1,.75,1.8));M.vent((cx,.02,-.43),.05)
-    loft(M,[(z,[(x,y*(1 if y>0 else .8)) for x,y in [(1.05,0),(.6,.045),(-.95,.045),(-1.2,0),(-.95,-.04),(.6,-.04)]]) for z in (-.32,.22)],dark_hex)   # Varkesh wing slab
-    loft(M,[(-.36,[(1.08,0),(.6,.05),(-.95,.05),(-1.24,0),(-.95,-.045),(.6,-.045)]),(-.32,[(1.08,0),(.6,.05),(-.95,.05),(-1.24,0),(-.95,-.045),(.6,-.045)])],(ACC,.85),cap0=False,cap1=False)
+    canopy(M,(cx,.15,.25),.12,(1,.75,1.8))
+    var_slab(M,[(-1.05,.1,.09),(-.75,.13,.12),(-.42,.12,.11)],dx=cx,dy=.02);ring(M,(cx,.02,-.43),.135,.012,ACC,seg=16,sides=4)   # engine behind the cockpit
+    M.vent((cx,.02,-1.06),.08)
+    for sx in (1,-1):                                                                                             # one large swept Varkesh wing through both bodies
+        P=[(0,0,.32),(sx*1.45,-.02,-.48),(sx*1.45,-.02,-.78),(0,0,-.45)]
+        plate(M,P,.07,MID,.8)
+        tube(M,[(0,.0,.32),(sx*1.45,-.02,-.48)],[.03,.025],ACC,1.0,5,cap0=False,cap1=False)
+        M.blob((sx*1.45,-.02,-.63),.04,WIN,sub=1,noise=0)
     for x in (.0,.15):var_gun(M,(x,-.08,.2),.5,.028)                                                               # guns under the wing
     hal_wing(M,(bx+.08,0,-.95),(bx-.55,.02,-1.15),.22,node=False)                                                  # tailplane on the boom side only
     plate(M,[(bx,.1,-.8),(bx,.1,-1.1),(bx,.36,-1.12),(bx,.3,-.92)],.02,LIGHT,1.0)                                    # tail fin
     crystal(M,-.75,-.35,.04,.05,bx,.18)                                                                             # crystal radar fin on the boom
-    for p_ in ((1.05,0,-.05),(-1.2,0,-.05)):M.blob(p_,.035,WIN,sub=1,noise=0)
     patch(M,(-.5,.05,0),.18,.22);patch(M,(.7,.05,-.1),.14,.18)
     spikes(M,[(bx,-.04,1.0),(cx,-.05,.82)],L=.12)
     return finish(M,2.0,1.0)

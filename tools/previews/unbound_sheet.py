@@ -8,7 +8,7 @@ from PIL import Image,ImageDraw,ImageFont
 out=sys.argv[1] if len(sys.argv)>1 else 'beyond_unbound.png'
 V=[('3/4 front',math.radians(-36),math.radians(22)),('side',math.radians(-90),0.0),('top',0.0,math.radians(89)),('3/4 rear',math.radians(-145),math.radians(20))]
 rows=[(n,c,fn) for _,_,ships in UNBOUND for n,c,fn in ships]
-NOTES={'Raider':'Ostrova boom with drive and tail · Halcyon cockpit pod off centre to starboard · Varkesh wing slab and guns · crystal radar fin',
+NOTES={'Raider':'Ostrova boom with drive and tail · off-centre Halcyon cockpit pod · Varkesh engine behind it · one large swept Varkesh wing · crystal fin',
        'Skiff':'Ostrova spire hull · Halcyon radome and forward-swept wings · Varkesh square drives strapped on · jammer rods',
        'Corsair':'Varkesh chisel body and chin guns · Halcyon drive section · four Halcyon wings in an X · Ostrova nose ring and jammer halo',
        'Plunderer':'Halcyon cockpit pod · Varkesh spine · mismatched holds · crystal-clad boom engine on top · Ostrova crystal pontoon below',
