@@ -180,6 +180,12 @@ Smuggling is a way to make money outside the law, with its own parts. Names are 
 - **Surrender:** the goods are confiscated into that power's stores (the ledger stays exact), a fine, and a small standing hit.
 - **Run:** you keep the goods, but that power turns hostile to you for a while and posts a bounty on you.
 
+**Heat** (decided 2 Nov 2026). Each power keeps a heat level on you, separate from standing: how hard its patrols are looking for you right now. Getting caught, a refused bribe, running from a scan, and taking cargo from its ships all raise it. While it is up, its patrols scan you more often and with less warning, and after a run it is what keeps that power hostile and the bounty open. Heat cools off on its own over time; standing only takes the lasting hits (the fine and the surrender hit above). The HUD and the Black market tab show your heat with each power as a word (Cool, Warm, Hot, Burning), with no numbers.
+
+**Lairs are a smuggler's base** (decided 2 Nov 2026):
+- **Heat cools faster** while you lie low at one of your Lairs (proposal: three times as fast while docked there).
+- **Stolen goods are laundered there:** cargo stored in a Lair's stash loses its stolen tag (proposal: after a short spell in the stash, longer for more tonnes), so it sells and is carried as ordinary goods afterwards. Only the stolen tag comes off: embargo goods and cash-only contraband stay contraband, since what makes them illegal is what they are, not whose they were. The goods themselves never change, so the ledger is unchanged.
+
 **The Black market tab** (on the Company screen, decided 2 Nov 2026) is where smuggling is run as a business. **Request** black-market work from your contacts (fixers at the freeports, quiet buyers at the powers' stations): smuggling runs, contraband buys and sells, Riftstone hauls, each priced by supply and demand, with embargo premiums showing. **Assign** each run to yourself, to one of your AI pilots (whose ship's hidden cargo container sets how much it can hide), or to a contractor, and follow the runs in progress: where they are, which patrols are near, and what each run was caught for or paid.
 
 **Where it sells: everywhere that wants it,** by supply and demand. Each market's demand sets the price, whether the goods are legal there or not; an embargo or a ban pushes demand and price up where the goods are scarce. Powers and freeports may post smuggling runs as jobs (deniable proxy work, 11c).
@@ -199,7 +205,7 @@ Players have several things to spend money and materials on, in this order, each
 #### Lair (from Driftgate 1's Unbound Lair)
 - **Building:** a Rigger kit (proposal: 1 Depot Frame + 20 plate) set into a large asteroid in any system with no station.
 - **Hidden** until a scout of a hostile power comes within range (AI scouts find Lairs, as in Driftgate 1).
-- **Level 1:** stash (200 t), repairs and rearming.
+- **Level 1:** stash (200 t), repairs and rearming. **Lie low** (heat cools faster while you are docked) and **launder** stolen goods in the stash (section 6b).
 - **Level 2:** your own workshop (components, parts, upgrades and payload with no fee), a forge (lattice, core), a bigger stash, and a spare berth to keep a second ship.
 - One Lair per system.
 
