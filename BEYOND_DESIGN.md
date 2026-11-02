@@ -188,9 +188,9 @@ Players have several things to spend money and materials on, in this order, each
 - **Building:** upgrade a Depot (proposal: Capital Keels, Depot Frames and Compact Seals).
 - **Your choice of look:** an asteroid station, built into the rock like Driftgate 1's Scrapheart Haven, or a standard station like the factions' own. Purely cosmetic: both have the same stats, levels and upgrades.
 - **A station counts for the system**: owning it gives you the system, as Driftgate 1's `sectorOwner` does for faction stations. This is the road to winning the galaxy (section 11).
-- **Levels 1–5 come from external buildings.** Each level adds a building set around the station: the shipyard, external storage, defence platforms and so on. You see your station grow, and an attacker can target its buildings one at a time.
+- **Levels 1–5 come from external buildings.** Each new level lets you add **one building of your choice** around the station: shipyard, external storage, defence platform, hangar, forge, market wing and so on. Five levels, five buildings, so no two stations are the same. You see your station grow, and an attacker can target its buildings one at a time.
 - **The shipyard** is one of these buildings: it builds hulls for you and your AI.
-- **Capital ships** are built at the yard (proposal: escorts from Station level 3, carriers from level 5).
+- **Capital ships** are built at the yard (proposal: escorts once the station is level 3, carriers at level 5, in both cases with a yard among its buildings).
 
 ### 8. Your AI: pilots, ships and upkeep
 - **From the Depot on,** you hire AI pilots and build or buy them ships. They fly for you: mining, hauling between your bases, guarding, escorting your convoys, patrolling, raiding.
@@ -231,11 +231,12 @@ These reuse what Driftgate 1 has where they can: the station's task tabs, the Jo
 ### 11. Declaring a faction
 - **The only requirement is a Station.** Once you own one base at Station level, you can declare.
 - **Losing your last Station ends it.** A declared faction that loses its last Station falls back into a company: it is no longer a contender, but keeps its Lairs, Depots, ships and AI. Win back or build a Station and you can declare again.
-- **Once declared,** you're a contender: you can win the galaxy (below), the three powers treat you as a rival, and the truce-against-the-leader rule applies to you. Your standings with them drop to a war footing.
+- **Once declared,** you're a contender: you can win the galaxy (below), the three powers treat you as a rival, and the truce against whoever starts the two-thirds timer applies to you too. Your standings with them drop to a war footing.
 - **Your faction runs on Driftgate 1's strategic AI,** steered by your orders on the strategic map and the jobs you post.
 
 #### Winning the galaxy
 - **Two-thirds of the galaxy wins.** Any faction (the three powers, the Brood, or a declared contractor faction) that controls two-thirds of the systems (20 of 29) starts a 10-minute timer. Hold it to the end and it wins.
+- **The others unite when the timer starts.** As in Driftgate 1, the rest of the factions call a truce and turn on whoever has started the two-thirds timer; the truce breaks if the timer stops.
 - **No other time limit.** There is no deadline and no tie-break count: a galaxy runs until someone wins. (Driftgate 1's 7 systems for 20 minutes and its 2-hour deadline go.)
 
 ### 12. The war around you
@@ -268,13 +269,11 @@ Their signature hulls survive as house-brand hulls built with Partner standing: 
 - **The war is checked by simulation.** New target for AI-only galaxies: the Brood about 20%, the three factions sharing the rest evenly (about 27% each). Until the Brood change is built, Driftgate 1's target in CLAUDE.md still applies.
 
 ### Decided in review (2 Nov 2026)
-Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is credits plus goods · your own brand from Depot level · Brood about 20% · Rating only goes up · a choice of three starting freeports · faction careers become job bonuses and the signature hulls survive · scouting returns as intel, with scout hulls (Rating 2 and 4, not a starter) the only hulls for beacon devices and limpets · a beacon flip earns a fee and standing · your brand's trait is a net-zero point system · Unbound designs are pirates' only · Station levels come from external buildings · freeport yards roll a random set of faction designs; house-brand hulls only at their faction's station · AI wages go to the Compact · two-thirds of the galaxy for 10 minutes wins, with no deadline · flares stay on energy, drones restock at dock · only factions (and the Unbound and Brood) design hulls; freeports build faction designs · Lair 2 levels, Depot 3, Station 5 · makers' names kept for now · declaring needs only a Station · losing your last Station drops you back to a company · asteroid or standard station look.
+Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is credits plus goods · your own brand from Depot level · Brood about 20% · Rating only goes up · a choice of three starting freeports · faction careers become job bonuses and the signature hulls survive · scouting returns as intel, with scout hulls (Rating 2 and 4, not a starter) the only hulls for beacon devices and limpets · a beacon flip earns a fee and standing · your brand's trait is a net-zero point system · Unbound designs are pirates' only · Station levels come from external buildings · freeport yards roll a random set of faction designs; house-brand hulls only at their faction's station · AI wages go to the Compact · two-thirds of the galaxy for 10 minutes wins, with no deadline, and the others unite once the timer starts · you choose one external building per station level · flares stay on energy, drones restock at dock · only factions (and the Unbound and Brood) design hulls; freeports build faction designs · Lair 2 levels, Depot 3, Station 5 · makers' names kept for now · declaring needs only a Station · losing your last Station drops you back to a company · asteroid or standard station look.
 
 ### Open questions
 1. **Legacy across galaxies** (deferred). What does a callsign carry from one galaxy to the next?
 2. **Lair, Depot, Station costs.** All numbers are guesses to tune.
-3. **Station buildings.** Which external buildings are there, in what order, and do you choose which one each level adds?
-4. **The truce against the leader.** Driftgate 1's factions ally against whoever nears the win. Should they still, now against whoever nears two-thirds?
 
 ### Proposed build order (once the design is agreed)
 1. **Cut the faction tie:** start at a chosen freeport with three equipped starters; standing with every power; docking and hostility from standing; pay from the issuer; faction job bonuses.
