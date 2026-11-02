@@ -276,18 +276,18 @@ def lumen():     # medium miner: a central spire cockpit forward with mining len
     M.vent((0,0,-1.02),.06)
     lights(M,[(.1,-.1,.98),(-.1,-.1,.98)])
     return finish(M,2.6)
-def delve():     # heavy miner: a great drill spire with a lens ring at its prow; four crystal ore holds set in one big halo round it
+def delve():     # heavy miner: a great drill spire with a lens ring at its prow; four crystal ore holds held by two halos, one at their fronts, one at their backs
     M=Mesh(73)
     loft(M,[(-1.25,DIA(.1,.1)),(-.8,DIA(.22,.22)),(.6,DIA(.2,.2)),(.95,DIA(.12,.12))],SP)                          # core spire
     tube(M,[(0,0,.95),(0,0,1.15)],[.14,.12],LIGHT,1.0,8);drill(M,(0,0,1.15),.75,.14,MID)
     ring(M,(0,0,1.0),.42,.035,ACC,seg=24,sides=5)
     for k in range(6):a=k*PI/3;lens_head(M,(math.cos(a)*.42,math.sin(a)*.42,1.05),.06)
     R=.95
-    ring(M,(0,0,-.2),R,.05,ACC,seg=40,sides=6)
+    for z in (-.8,.3):ring(M,(0,0,z),R,.05,ACC,seg=40,sides=6)                                               # front and back halos
     for k in range(4):
         a=PI/4+k*PI/2;dx,dy=math.cos(a)*R,math.sin(a)*R
         crystal(M,-1.0,.55,.26,.26,dx,dy)                                                                            # crystal ore hold set in the halo
-        tube(M,[(math.cos(a)*.2,math.sin(a)*.2,-.2),(math.cos(a)*.75,math.sin(a)*.75,-.2)],[.035,.035],LIGHT,.9,5)
+        for z in (-.8,.3):tube(M,[(math.cos(a)*.2,math.sin(a)*.2,z),(math.cos(a)*.75,math.sin(a)*.75,z)],[.035,.035],LIGHT,.9,5)
         plate(M,[(math.cos(a)*.18,math.sin(a)*.18,-.8),(math.cos(a)*.5,math.sin(a)*.5,-1.1),(math.cos(a)*.46,math.sin(a)*.46,-1.2),(math.cos(a)*.15,math.sin(a)*.15,-1.15)],.03,MID)
     M.blob((0,.24,.45),.1,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
     M.vent((0,0,-1.27),.09)
