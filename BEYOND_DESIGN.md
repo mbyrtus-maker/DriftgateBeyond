@@ -215,6 +215,12 @@ Players have several things to spend money and materials on, in this order, each
 | **Allegiance** | Your standing with every power (the three factions, the Compact, each player faction), its band and what it opens; the relations between the factions themselves (at war, truce, allied, neutral), so you can see how a job for one lands with the others; each leader and their recent decisions. Declare or renounce allegiance here; a founder answers other factions' proposals here. |
 | **Strategic map** | The galaxy map, zoomable into a sector to see your bases, AI ships and the threats there, and give orders to your AI in that sector. |
 
+**Bidding on posted jobs (decided 2 Nov 2026).** The pay for a job you post is a bid against the **galactic mean**: what that kind of job pays across the galaxy, for its distance and risk. Three presets:
+- **Low:** the floor; the job is picked up slower (a longer wait before anyone arrives).
+- **Medium:** the mean; normal arrival time.
+- **Fast:** higher pay; the job is taken and done sooner.
+- **Mins and maxes:** you can't bid below Low, and there is a maximum; between them you can set an exact figure. Proposal: Low 75% of the mean, Fast 140%, the maximum 200%, all tuning numbers. Pilots who can take a job (contractors, other factions' pilots) weigh its pay against the mean, so the higher the bid, the sooner one signs on. Your own AI pilots are paid wages, so a job posted only to them needs no bid.
+
 These reuse what Driftgate 1 has where they can: the station's task tabs, the Jobs board, the galaxy map and its sector panel.
 
 **Where they live (decided 2 Nov 2026).** Driftgate 1 has no in-game menu: docked screens have five tabs (Overview, Trade, Jobs, Ship, Station, keys 1–5), and M opens the galaxy map.
