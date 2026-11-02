@@ -213,7 +213,7 @@ def wisp():
     return M
 
 # ------------------------------------------------------------------ Ostrova Vigil: heavy fighter (a tuning fork: a broad crystal-veined body, twin forward prongs
-# holding a focus crystal, and a halo standing upright round the hull like a gyroscope)
+# holding a focus crystal, and two halos crossed in an X round the hull)
 def vigil():
     M=Mesh(39)
     loft(M,[(-1.15,DIA(.08,.06)),(-.75,DIA(.3,.18)),(-.1,DIA(.36,.22)),(.4,DIA(.3,.18)),(.62,DIA(.2,.12))],lambda i,j:((LIGHT,1.0) if j in (0,1) else (MID,.92)))   # broad faceted body
@@ -226,16 +226,19 @@ def vigil():
     star=lambda w,h:[(math.cos(a)*(w if k%2==0 else w*.6),math.sin(a)*(h if k%2==0 else h*.6)) for k,a in enumerate(np.linspace(0,2*math.pi,10,endpoint=False))]
     loft(M,[(1.05,star(.01,.01)),(1.22,star(.1,.1)),(1.4,star(.01,.01))],lambda i,j:((WIN,1.0) if j%2 else (GLASS,1.0)))   # the focus crystal between the prongs
     for sx in (1,-1):M.tube([(sx*.17,0,1.22),(sx*.09,0,1.22)],[.012,.012],5,lambda i,j,n,p:(ACC,1.0),cap0=False,cap1=False)
-    def vring(c,R,r,role,sides=6,seg=32):
-        pts=[np.array(c,float)+[0,math.cos(a)*R,math.sin(a)*R] for a in np.linspace(0,2*math.pi,seg+1)]
+    def xring(c,R,r,role,th,sides=6,seg=32):
+        # a halo that contains the hull axis, tilted th about it; two at +-45 deg make an X seen from the nose
+        u=np.array([math.sin(th),math.cos(th),0.0])
+        pts=[np.array(c,float)+u*math.cos(a)*R+np.array([0,0,math.sin(a)*R]) for a in np.linspace(0,2*math.pi,seg+1)]
         M.tube(pts,[r]*len(pts),sides,lambda i,j,n,p:(role,1.0),cap0=False,cap1=False)
-    vring((0,0,-.25),.62,.04,ACC);vring((0,0,-.25),.55,.013,WIN,sides=4)                                              # the upright halo
-    for a in (0,math.pi/2,math.pi,3*math.pi/2):M.blob((0,math.cos(a)*.62,-.25+math.sin(a)*.62),.06,GLASS,sub=1,noise=0)
-    for sx in (1,-1):M.tube([(sx*.02,0,-.25),(sx*.02,.0,-.25)],[.01,.01],4,lambda i,j,n,p:(DARK,1.0),cap0=False,cap1=False)
-    M.tube([(0,.2,-.25),(0,.6,-.25)],[.025,.025],6,lambda i,j,n,p:(LIGHT,.9),cap0=False,cap1=False)                    # spoke from body to halo, above
-    M.tube([(0,-.2,-.25),(0,-.6,-.25)],[.025,.025],6,lambda i,j,n,p:(LIGHT,.9),cap0=False,cap1=False)                  # and below
+        return u
+    for th in (math.pi/4,-math.pi/4):                                                                             # two halos crossed in an X
+        u=xring((0,0,-.25),.62,.035,ACC,th);xring((0,0,-.25),.55,.012,WIN,th,sides=4)
+        for sg in (1,-1):
+            M.blob(tuple(np.array([0,0,-.25])+u*sg*.62),.06,GLASS,sub=1,noise=0)                                  # crystal node at each tip of the X
+            M.tube([u*sg*.2+[0,0,-.25],u*sg*.6+[0,0,-.25]],[.022,.022],6,lambda i,j,n,p:(LIGHT,.9),cap0=False,cap1=False)   # spoke from the body
     M.blob((0,.24,.25),.1,GLASS,sub=2,squash=(.9,.6,2.0),noise=0)                                                       # canopy
-    M.blob((0,.68,-.25),.1,MID,sub=2,squash=(1,.35,1),noise=0);ring(M,(0,.72,-.25),.1,.014,ACC,seg=18,sides=5,axis='y') # sensor dish atop the halo
+    M.blob((0,.3,-.45),.09,MID,sub=2,squash=(1,.35,1),noise=0);ring(M,(0,.33,-.45),.09,.013,ACC,seg=18,sides=5,axis='y')  # sensor dish on the back
     return M
 
 FAMILY=[('halcyon','Halcyon Accord',[('Swift','Light',swift),('Kite','Medium',kite),('Osprey','Heavy',osprey)]),
