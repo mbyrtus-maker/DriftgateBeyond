@@ -270,7 +270,7 @@ def lumen():     # medium miner: a central spire cockpit forward with mining len
         M.tube(pts,[.045]*len(pts),6,lambda i,j,n,p:(ACC,1.0),cap0=False,cap1=False)                                # crossed rings
         for sg in (1,-1):
             tip=np.array([0,0,-.5])+u*sg*.78
-            crystal(M,-.85,-.15,.17,.17,tip[0],tip[1])                                                                # crystal hold set in the ring
+            crystal(M,-1.25,.25,.17,.17,tip[0],tip[1])                                                                # crystal hold set in the ring, stretched from its front to its back
             tube(M,[u*sg*.2+[0,0,-.5],u*sg*.6+[0,0,-.5]],[.025,.025],LIGHT,.9,5,cap0=False,cap1=False)
     for k in range(3):a=PI/2+k*2*PI/3;plate(M,[(math.cos(a)*.15,math.sin(a)*.15,-.8),(math.cos(a)*.42,math.sin(a)*.42,-1.05),(math.cos(a)*.38,math.sin(a)*.38,-1.13),(math.cos(a)*.12,math.sin(a)*.12,-1.07)],.025,MID)
     M.vent((0,0,-1.02),.06)
