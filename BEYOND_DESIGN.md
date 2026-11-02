@@ -167,6 +167,7 @@ Players have several things to spend money and materials on, in this order, each
 
 #### Station
 - **Building:** upgrade a Depot (proposal: Capital Keels, Depot Frames and Compact Seals).
+- **Your choice of look:** an asteroid station, built into the rock like Driftgate 1's Scrapheart Haven, or a standard station like the factions' own. Purely cosmetic: both have the same stats, levels and upgrades.
 - **A station counts for the system**: owning it gives you the system, as Driftgate 1's `sectorOwner` does for faction stations. This is the road to the 7-system win.
 - **A shipyard:** builds hulls for you and your AI.
 - **Levels 1–3, plus station upgrades** (defence, shields, armour, hangar, production, docks).
