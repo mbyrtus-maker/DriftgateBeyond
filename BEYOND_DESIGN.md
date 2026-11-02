@@ -208,7 +208,7 @@ These reuse what Driftgate 1 has where they can: the station's task tabs, the Jo
 - **Across galaxies (replaces Legend).** Legend can't carry over as it is, because one pilot can now own a faction. Proposal: a light **Legacy** record per callsign (bases built, factions declared, galaxies won), giving titles and at most a small head start, never a base or a fleet.
 
 ### 11. Declaring a faction
-- **When your holdings are big enough** (proposal: three stations, each holding its system, and a capital in service), you can declare.
+- **The only requirement is a Station.** Once you own one base at Station level, you can declare.
 - **Once declared,** you're a contender: you win by holding 7 systems for 20 minutes, the three powers treat you as a rival, and the truce-against-the-leader rule applies to you. Your standings with them drop to a war footing.
 - **Your faction runs on Driftgate 1's strategic AI,** steered by your orders on the strategic map and the jobs you post.
 
@@ -240,7 +240,7 @@ These reuse what Driftgate 1 has where they can: the station's task tabs, the Jo
 5. **AI upkeep.** Credits only, or credits plus goods (fuel, repairs, payload)? Who receives wages: the Compact, as drafted?
 6. **Lair, Depot, Station costs and levels.** The numbers above are guesses; three levels each?
 7. **Brood.** What win rate and how much more presence?
-8. **Declaring.** What threshold, and can a declared faction collapse back into a company?
+8. **Losing a faction.** Can a declared faction fall back into a company, for example if it loses its last Station?
 9. **Rating loss.** Does Rating only go up, or can failure and deaths lower it?
 10. **Legacy across galaxies.** Titles only, or a small head start?
 11. **Galaxy length.** Is 8–12 hours of play the right target? Should the 7-system win scale up?
