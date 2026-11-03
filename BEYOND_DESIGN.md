@@ -1426,6 +1426,7 @@ Three new screens on the "Driftgate Beyond screens" canvas (https://claude.ai/ar
 
 ### War check after the 3 Nov features (neutral leaders, 600 galaxies, 16 h)
 Varkesh 28%, Brood 24%, Ostrova 24%, Halcyon 23%, nobody 1%. Before these features it was Ostrova 28, Halcyon 27, Varkesh 24, Brood 20. The spread is a little wider than run-to-run noise (about ±2 to 3 points); the Brood are 4 points over the 20% target. No retune yet.
+- **Retune (user, 3 Nov):** ease Varkesh's edge in unwatched battles a little: `FACTIONS.varkesh.tough` 1.14 → 1.10. War check pending.
 
 ### Proposal: the minimal pass over every screen (mockups, 3 Nov 2026, being reviewed)
 The canvas's "Minimal pass" rows hold a minimal version of every screen; the originals stay beside them.
