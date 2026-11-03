@@ -534,7 +534,7 @@ A new map, not Driftgate 1's, built on the same rules: **no two gate lines cross
 
 | Need | Covered? |
 |---|---|
-| Unique hulls: 13 classes × 3 factions, three capitals each, the Unbound set and the Brood destroyer | **Designed and approved** as previews (below); not in the model pack yet. Not yet designed: constructors, pickets and drones |
+| Unique hulls: 13 classes × 3 factions, three capitals each, the Unbound set and the Brood destroyer | **Designed and approved** as previews (below); not in the model pack yet. Constructors and drones designed and approved too (support sheet) |
 | Lair, Depot, Station (standard and asteroid look) | **Designed and approved** (below) |
 | Station external buildings | **Designed and approved:** the six buildings |
 | Faction stations and depots, the freeport, Scrapheart Haven | **Designed and approved** (below) |
