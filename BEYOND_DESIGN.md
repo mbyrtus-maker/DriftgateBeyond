@@ -1219,3 +1219,8 @@ Driftgate 1 v255 removed its frigates, but their code paths survive everywhere a
 - **How long:** median 6 hours (quartiles 3.8 h and 9.4 h). Powers win at a median of about 4–5 hours; the Brood wins late (median 9.4 hours), after the powers have fought each other down. Ten Brood wins came in galaxies where the powers never went to war.
 - About 9 wars per galaxy; no errors in any game.
 - **Against the working targets** (Brood about 20%, a galaxy won in 8–12 hours): the Brood is high, Halcyon strong, Varkesh weak, and power wins come early. No tuning yet: the targets aren't settled.
+
+### Balance tuning toward the new target (2 Nov 2026, in progress)
+- **Target (from the user):** the Brood about 20%, each power about 25%, no winner about 5%.
+- **A fix first:** a station's extraction each tick was rounded to whole units, so `BAL.ext` moved the balance in steps (Halcyon's depots went from 2 units to 1 at a mining rate of about 0.536, swinging its wins from 36% to 14%). Extraction now rounds up or down at random (`sRound`), so its average is the exact rate.
+- **Runs so far** (no players, 16-hour cap): with the fix and the old rates, Halcyon 39%, Brood 23%, Ostrova 21%, Varkesh 12%, none 5%. Best so far, 600 galaxies with mining rates Halcyon 0.52, Varkesh 2.1, Ostrova 0.86 and a weaker Brood ramp ([[1,.4],[5,.78],[12,1.45]]): Ostrova 26%, Brood 25%, Varkesh 24%, Halcyon 22%, none 3%. Varkesh needs the most help: its Ambitious, Vengeful leader keeps it at war with both other powers. The numbers aren't in the game yet.
