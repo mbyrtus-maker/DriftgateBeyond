@@ -17,7 +17,7 @@ The war goes on, but you no longer fight in it as a soldier. You are an independ
 
 | Keep from Driftgate 1 | Change | Drop |
 |---|---|---|
-| Flight, drift by mass, gates, docking | Pilot welded to one faction → **standing** with every power, work for anyone | **Unbound pirate mode** (the start card, crew galaxies, Scrapheart Haven works) |
+| Flight, drift by mass, gates, docking | Pilot welded to one faction → **standing** with every power, work for anyone | **Unbound pirate mode** (the start card, crew galaxies, most of Scrapheart Haven's works; its rum bar and market stay open to contractors, section 12) |
 | Combat feel, shields, sub-targets, capitals and bridges | Pay from your faction's treasury → paid by **whoever issued the job** | **Legend levels** as they are (reworked, see section 10a) |
 | Blast charges, salvage, hauling, convoys | Blast rig only → **mining lasers back** alongside charges, both in a mining hull's weapon slots | Mk I–III as one shared ladder (replaced by grades) |
 | The three factions, their AI war, campaigns, depots, sieges | One Weapons system for gun and laser together → **separate parts in weapon slots**; slot count varies by ship | Scout hulls as a starter |
@@ -186,7 +186,7 @@ Smuggling is a way to make money outside the law, with its own parts. Names are 
 - **Heat cools faster** while you lie low at one of your Lairs (proposal: three times as fast while docked there).
 - **Stolen goods are laundered there:** cargo stored in a Lair's stash loses its stolen tag (proposal: after a short spell in the stash, longer for more tonnes), so it sells and is carried as ordinary goods afterwards. Only the stolen tag comes off: embargo goods and cash-only contraband stay contraband, since what makes them illegal is what they are, not whose they were. The goods themselves never change, so the ledger is unchanged.
 
-**The Black market tab** (on the Company screen, decided 2 Nov 2026) is where smuggling is run as a business. **Request** black-market work from your contacts (fixers at the freeports, quiet buyers at the powers' stations): smuggling runs, contraband buys and sells, Riftstone hauls, each priced by supply and demand, with embargo premiums showing. **Black-market work pays by the heat it would bring if you are caught** (decided 2 Nov 2026): every offer is rated **None, Light, Heavy or Severe** with the power whose heat it raises (running embargo goods into the embargoing power's core systems is Severe; buying contraband at a freeport is None), and the pay rises with the rating on top of the goods' market value (proposal: +0%, +25%, +50%, +75%). You can filter offers by it. If caught, the job's heat lands on whoever ran it: half of it if a bribe works, all of it on surrender, double if you run. **Assign** each run to yourself, to one of your AI pilots (whose ship's hidden cargo container sets how much it can hide), or to a contractor, and follow the runs in progress: where they are, which patrols are near, and what each run was caught for or paid.
+**The Black market tab** (on the Company screen, decided 2 Nov 2026) is where smuggling is run as a business. **Request** black-market work from your contacts (fixers at the freeports, quiet buyers at the powers' stations, and the Rusty Tankard's rumours once you have been to Scrapheart Haven, section 12): smuggling runs, contraband buys and sells, Riftstone hauls, each priced by supply and demand, with embargo premiums showing. **Black-market work pays by the heat it would bring if you are caught** (decided 2 Nov 2026): every offer is rated **None, Light, Heavy or Severe** with the power whose heat it raises (running embargo goods into the embargoing power's core systems is Severe; buying contraband at a freeport is None), and the pay rises with the rating on top of the goods' market value (proposal: +0%, +25%, +50%, +75%). You can filter offers by it. If caught, the job's heat lands on whoever ran it: half of it if a bribe works, all of it on surrender, double if you run. **Assign** each run to yourself, to one of your AI pilots (whose ship's hidden cargo container sets how much it can hide), or to a contractor, and follow the runs in progress: where they are, which patrols are near, and what each run was caught for or paid.
 
 **Where it sells: everywhere that wants it,** by supply and demand. Each market's demand sets the price, whether the goods are legal there or not; an embargo or a ban pushes demand and price up where the goods are scarce. Powers and freeports may post smuggling runs as jobs (deniable proxy work, 11c).
 
@@ -472,7 +472,7 @@ A player faction's leader is its founder: AI leaders send it proposals and deman
 
 #### Winning the galaxy
 - **Two-thirds of the galaxy wins.** Any faction (the three powers, the Brood, or a declared contractor faction) that controls two-thirds of the systems starts a 10-minute timer. Hold it to the end and it wins.
-- **Freeports can't be captured and don't count** (decided 2 Nov 2026): the freeport systems are left out of the count, so two-thirds is of the systems that can be held (with 29 systems and 3 freeports, 18 of 26; the exact number follows the galaxy).
+- **Freeports can't be captured and don't count** (decided 2 Nov 2026): the freeport systems are left out of the count, so two-thirds is of the systems that can be held (on the new map, 40 systems less the 3 freeports and the Wrack, whose haven can't be destroyed: 24 of 36; the exact number follows the galaxy).
 - **The others unite when the timer starts.** As in Driftgate 1, the rest of the factions call a truce and turn on whoever has started the two-thirds timer; the truce breaks if the timer stops.
 - **No other time limit.** There is no deadline and no tie-break count: a galaxy runs until someone wins. (Driftgate 1's 7 systems for 20 minutes and its 2-hour deadline go.)
 
@@ -483,7 +483,12 @@ A player faction's leader is its founder: AI leaders send it proposals and deman
   - **They hold no systems.** They ambush and they build **Lairs** (hidden asteroid bases like a contractor's) to raid from.
   - **They have no economy but plunder.** Everything they have, they took: goods, payload and hulls come from raids, ambushes and wrecks, so the ledger stays exact.
   - **They fly only their six designs** (Raider, Skiff, Corsair, Plunderer, Wrecker, Ravager).
-  - **Scrapheart Haven is their one main station, one per galaxy.** It can be **deactivated** (knocked out for a while) but **never destroyed**.
+  - **Scrapheart Haven is their one main station, one per galaxy,** in the Wrack, out in deep space (12b). It can be **deactivated** (knocked out for a while) but **never destroyed**.
+  - **Jammers and hooks, as in Driftgate 1** (decided 2 Nov 2026). Unbound guns fire jam rounds that knock shields down and then fill the target's **Jam bar**; at a full bar the ship goes dark (no thrust, guns, shields or radar, and it can't jump) for a window by size, and an Unbound ship within 150 m runs its **cargo hook** (8 t/s, most valuable first) until the window closes. Shock harpoons (35% of the bar, stretching the hook to 400 m), jamming torpedoes (Plunderer and Wrecker; the only way to jam a capital, turret by turret), one disable per ship then 60 s hardened, and the being-jammed effects all carry over. What they hook is plunder: it goes into the Unbound's stores, tagged stolen from whoever owned it. Jammers and hooks stay **Unbound only:** contractors can't fit them. Driftgate 1's anti-jam parts (Faraday plating, fast-reboot reactor, snap-back emitter, sealed hold) become makers' products, so a convoy runner can buy protection.
+  - **Bigger holds** (decided 2 Nov 2026): Unbound hulls are built to carry plunder, about half again the matching faction hull's hold. Proposal from Driftgate 1's holds: Skiff 50 t (was 35), Raider 60 t (40), Corsair 100 t (70), Plunderer 160 t (110), Wrecker 60 t, and the Ravager a 400 t plunder hold.
+  - **You can dock at Scrapheart Haven** (decided 2 Nov 2026). The haven is open ground: its guns and the Unbound in the Wrack hold fire on any ship that comes in without firing on them (proposal: attack an Unbound ship in the Wrack and the haven bars you for an hour). Out in the lanes the Unbound still hunt you. No power's patrols scan there, so it is the one dock where contraband is never a risk.
+    - **The rum bar** (the Rusty Tankard, from Driftgate 1) sells **rumours, which are black-market jobs:** smuggling runs, contraband buys and sells, Riftstone hauls, and word of rich convoys and wrecks, priced by the heat they'd bring (6b). Once you have drunk there, the Tankard is a contact on your Company screen's Black market tab, so you can take its rumours from anywhere.
+    - **The market** buys and sells **regular goods and black-market goods alike,** at supply-and-demand prices, with no questions about the stolen tag. It trades from the Unbound's plundered stores and pays from their plundered credits, so the ledger stays exact: selling there feeds the pirates.
 - **The Freeport Compact stays neutral,** the marketplace of last resort and the independent makers' home.
 
 ### 12a. Faction job bonuses (from Driftgate 1's careers)
@@ -493,6 +498,16 @@ Each faction pays contractors a bonus on the work it cares most about, out of it
 - **Ostrova:** intel work (beacon flips, pings, limpets, discoveries) and escorts.
 
 Their signature hulls survive as house-brand hulls built with Partner standing: the Gannet (Halcyon), the Bombard (Varkesh) and the Vesper (Ostrova).
+
+### 12b. The galaxy map (draft for review, 2 Nov 2026)
+A new map, not Driftgate 1's, built on the same rules: **no two gate lines cross and no line runs past another system.** Preview: `tools/previews/beyond_map.png`, from `tools/previews/beyond_map.py`, which also runs the checks (planar, clear of other systems, freeports' exits, every system reachable). Names are placeholders.
+
+- **Deep space is the middle of the galaxy.** **The Bloom sits at its centre,** with gates to all five systems of an inner deep ring (Glass Shallows, Corona Deep, Lantern Deep, Ashen Expanse, Umbral Deep), and an outer deep ring of six (Gloam Deep, Mournwater, Thornmere, **the Wrack** with Scrapheart Haven, Sunken Reach, Blackwater Rift). Eleven deep systems: aurorite, anomalies, Riftstone and the Brood, far from any power's guns. Each ring is linked round, so the Brood and the Unbound move freely through it.
+- **Open space is the doors to deep space.** A ring of twelve around it alternates the powers' frontiers, the three forges and six quiet systems (Dusk Lanes, Fathom's Edge, Quietwater Sound, Hushfall, Coldlight Void, Brinewell). Only the quiet systems have gates into deep space, so every route in passes through open space.
+- **The three powers sit at even distances from the Bloom:** Varkesh to the north-east, Ostrova to the south, Halcyon to the north-west, each a core on the outer ring with its frontier inside it. Each forge lies between two powers' frontiers: Kestrel Drift (Halcyon and Varkesh), Cinder Reach (Varkesh and Ostrova), The Shoal (Ostrova and Halcyon). Hollow Verge, the relay, sits by Ostrova.
+- **Freeports have exactly two exits each,** one into the open-space ring and one to the edge: Mirrorwater (Coldlight Void, Pale Reach) near Halcyon, Coldwater Drift (Quietwater Sound, Saltmoor) near Ostrova, Ember Wake (Dusk Lanes, Rook's Hollow) between Varkesh and Ostrova.
+- **More open space:** 40 systems (Driftgate 1: 29), 18 of them open space (15 quiet systems and the 3 freeports, against Driftgate 1's 14), with quiet systems out to all four corners. **No dead ends:** every system has at least two gates.
+- **Rebalance.** The Bloom moves from the edge (one gate, Driftgate 1) to the centre with five, so the Brood reaches every power. That suits the stronger Brood (about 20%, section 12), but the faction mining and Brood knobs are retuned with the war check when the map is built.
 
 ### 13. Multiplayer: rival companies
 - **Each pilot runs their own company.** Friends can partner (post jobs for each other, share convoys) or compete.
@@ -566,6 +581,7 @@ Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is cre
 10. **Depots:** markets, hiring and building AI with upkeep; the Economy and Job creation screens.
 11. **Stations and their buildings;** capital ships built at your stations.
 12. **Strategic map** with sector zoom and orders.
+12b. **The new galaxy map** (12b): deep space at the centre with the Bloom and the Wrack, the open-space ring, two-exit freeports; Scrapheart docking with the rum bar and market; the Unbound's jammers, hooks and bigger holds; retuned with the war check.
 13. **Declaring a faction;** player factions in the ledger and leaders' proposals to founders; slower war pacing; a stronger Brood (about 20%); war checks for the new balance.
 14. **Legend rework and Conqueror's spoils, multiplayer rivalries, training rewrite.**
 
