@@ -8,10 +8,11 @@ def pol(ang,r,c=(.5,.5)):
     t=math.radians(ang);return (round(c[0]+r*math.cos(t),3),round(c[1]+r*math.sin(t),3))
 def sy(name,ang,r,kind,own=None):
     x,y=pol(ang,r);return (name,x,y,kind,own)
-# Deep space is the middle of the galaxy: the Bloom at its centre, an inner ring of five deep systems, and an outer ring of six
-# with the Wrack (Scrapheart Haven) among them. Deep space is reached only through open space.
+# Deep space is the middle of the galaxy: the Bloom at its centre, an inner ring of five deep systems, and on its rim the Wrack
+# (Scrapheart Haven), two more deep systems and the three freeports. Each freeport has one gate into deep space and one into
+# open space, so any route between freeports crosses deep space.
 # Around it, a ring of twelve: the three frontiers, the three forges, and six quiet systems that are the doors to deep space.
-# Outside, the three cores, the three freeports (two exits each), the relay, and more quiet space out to the corners.
+# Outside, the three cores, the relay, and more quiet space out to the corners.
 R1,R2,R3,R4=.12,.22,.34,.46
 S = {
  'bl':("The Bloom",.5,.5,'hive','brood'),
@@ -20,11 +21,11 @@ S = {
  'ld':sy("Lantern Deep",54,R1,'deep'),
  'ae':sy("Ashen Expanse",126,R1,'deep'),
  'ud':sy("Umbral Deep",198,R1,'deep'),
- 'gd':sy("Gloam Deep",0,R2,'deep'),
+ 'ew':sy("Ember Wake",0,R2,'freeport','freeport'),
  'mn':sy("Mournwater",60,R2,'deep'),
- 'tm':sy("Thornmere",120,R2,'deep'),
+ 'cw':sy("Coldwater Drift",120,R2,'freeport','freeport'),
  'wr':sy("The Wrack",180,R2,'den','pirate'),
- 'sk':sy("Sunken Reach",240,R2,'deep'),
+ 'mw':sy("Mirrorwater",240,R2,'freeport','freeport'),
  'br':sy("Blackwater Rift",300,R2,'deep'),
  'vm':sy("Sundered Marches",330,R3,'frontier','varkesh'),
  'dl':sy("Dusk Lanes",0,R3,'void'),
@@ -39,15 +40,15 @@ S = {
  'ke':sy("Kestrel Drift",270,R3,'contested'),
  'bw':sy("Brinewell",300,R3,'void'),
  'vb':sy("Varkesh Hold",330,R4,'core','varkesh'),
- 'ew':sy("Ember Wake",0,R4,'freeport','freeport'),
+ 'gd':sy("Gloam Shelf",0,R4,'void'),
  'rh':sy("Rook's Hollow",30,R4,'void'),
  'ho':sy("Hollow Verge",60,R4,'hub'),
  'os':sy("Ostrova Spire",90,R4,'core','ostrova'),
- 'cw':sy("Coldwater Drift",120,R4,'freeport','freeport'),
+ 'tm':sy("Thornmere",120,R4,'void'),
  'gw':sy("Greywater Shelf",150,R4,'void'),
  'dm':sy("Driftmoor",180,R4,'void'),
  'hp':sy("Halcyon Prime",210,R4,'core','halcyon'),
- 'mw':sy("Mirrorwater",240,R4,'freeport','freeport'),
+ 'sk':sy("Sunken Reach",240,R4,'void'),
  'sf':sy("Starless Fold",270,R4,'void'),
  'av':sy("Ashwind Void",300,R4,'void'),
  'pr':("Pale Reach",.05,.05,'void',None),
@@ -56,10 +57,10 @@ S = {
  'll':("Lastlight Shoals",.95,.95,'void',None),
 }
 L = """bl-gs bl-cd bl-ld bl-ae bl-ud gs-cd cd-ld ld-ae ae-ud ud-gs
-gd-cd mn-ld tm-ae wr-ud sk-gs br-gs gd-mn mn-tm tm-wr wr-sk sk-br br-gd
-dl-gd fh-mn qs-tm hu-wr cv-sk bw-br
+ew-cd cw-ae mw-gs ew-dl cw-qs mw-cv
+mn-ld wr-ud br-gs fh-mn hu-wr bw-br
 vm-dl dl-ci ci-fh fh-of of-qs qs-sh sh-hu hu-hr hr-cv cv-ke ke-bw bw-vm
-vb-vm os-of hp-hr ew-dl ew-rh cw-qs cw-sm mw-cv mw-pr
+vb-vm os-of hp-hr gd-dl gd-rh tm-qs tm-sm sk-cv sk-pr
 rh-ci rh-ho ho-of ho-os os-ll ll-rh gw-sh gw-dm dm-hp gw-sm hp-pr sf-ke sf-av av-bw av-vb vb-ih ih-av dm-hu""".split()
 L = [tuple(e.split('-')) for e in L]
 
