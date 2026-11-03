@@ -1278,3 +1278,8 @@ Today each power's AI mines at its own hidden rate (Halcyon 0.53, Varkesh 1.75, 
 - **The Brood ramp** trimmed to [[1,.31],[5,.6],[12,1.15]] to stay at 20%.
 - **Results (600 galaxies each):** neutral leaders: Ostrova 28%, Halcyon 27%, Varkesh 24%, Brood 20%, none 1%. Rolled leaders: Varkesh 27%, Halcyon 26%, Ostrova 24%, Brood 21%, none 2%.
 - **Tests:** quick checks of hull and speed (a Varkesh Medium Hauler 425 hull and 183 m/s against Halcyon's 299 and 203), self-repair (213 to 230 hull in 10 s), the Allegiance table, and the load, start screen, relations, designs, loadout, ship, destroyers and jobs tests.
+
+### Lairs: laundering takes time (3 Nov 2026)
+- Lying low (heat cools three times as fast while docked at your Lair) and laundering were built in stage 9; the stage 7b "not yet" list was out of date.
+- **New file `16za_launder.js`:** as the design says, laundering now takes a spell instead of being instant. Stolen goods put in a Lair's stash keep their tag for 60 s plus 5 s a tonne (10 t of Iridium: 1 min 50 s). Taken out early, they come out still tagged; when the spell ends the tag is gone and you're told. The dock header shows what's still being laundered. Only tags move, never goods.
+- **Tests:** `lairs.py` now also covers goods taken out early (still tagged) and the spell ending.
