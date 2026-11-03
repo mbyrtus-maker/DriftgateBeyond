@@ -1707,3 +1707,11 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - **Two lessons now match today's changes:**
   - **The laser:** point at the rock and hold F; the beam finds the ring, and its spot fills as each tonne comes free.
   - **Charges:** put the sight on a fault point until it turns green and reads ON POINT.
+
+### The mining laser: one beam, and a reward for precision (3 Nov 2026)
+- **The user's report:** the scoop beam showed at the same time as the mining laser. Also asked for a faster yield when the laser is held on the ring.
+- **One beam:** the laser no longer marks the rock as being scooped (`p.mlRock` in place of `p.mining`), so the old drill/scoop beam isn't drawn beside it. The scoop beam still shows when you scoop chunks and clouds.
+- **Precision pays:**
+  - Held right on the ring yourself, the laser cuts **twice as fast**: "ON THE RING · ×2", about 0.7 t a second on a Light Miner.
+  - Swung onto the ring by the beam's 25° help, it cuts at the base rate ("CUTTING").
+  - In a check of 20 seconds each: 13 t on the ring, 6 t assisted.

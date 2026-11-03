@@ -124,15 +124,15 @@ function mlCut(e,P,a,dt,sec,show){const need=LOAD.ml.e*dt;if(e.energy<need)retur
 function mlSay(e,P,r){const T={energy:'Mining laser: not enough reactor energy.',aim:`Mining laser: point at the rock, within ${LOAD.ml.range} m.`,ring:'Mining laser: hold the beam on the ring (the green band).',full:'Hold is full. Dock to unload.',done:'The rock is cut through: nothing left in it.'};if(T[r])ldSay(e,T[r],r!=='ring'&&r!=='aim')}
 // F with the mining laser picked: scoop chunks and clouds as before, otherwise cut the targeted rock along its ring
 {const o=blPilotUpdate;blPilotUpdate=function(p,P,st,sec,dt){if(!loadOn()||!blHull(P.cls)||mtoolOf(P)!=='mlaser')return o.apply(this,arguments);
-  const hold=!!(keys.KeyF||mouse.r||touch.mine);p.blHeld=hold;p.mining=null;p.mlA=0;
+  const hold=!!(keys.KeyF||mouse.r||touch.mine);p.blHeld=hold;p.mining=null;p.mlRock=null;p.mlA=0;
   {const ch=!NET.cl&&chunkAt(p,sec);if(ch){p.mining=ch;p.mining0=ch;blCollect(p,P,ch,dt,sec)}}
   const cl=hold?blCloudNear(p,sec):null;if(cl){p.mining=cl;if(!NET.cl&&cl!==p.mining0)blCollect(p,P,cl,dt,sec);p.mining0=null;return}p.mining0=null;if(!hold)return;
   const a=W.tgt&&W.tgt.kind==='ast'&&validTgt(W.tgt)?W.tgt.ref:null;if(!a){ldSay(p,'Mining laser: target a rock (R), then hold F with its ring under your nose.');return}
   if(!ringOK(a)){ldSay(p,'This rock\'s ring is broken: a blast cracked it. Switch to charges ('+kb('mtool')+') or find another rock.',true);return}
-  p.mining=a;p.mlA=a.id;mlSay(p,P,mlCut(p,P,a,dt,sec,NET.cl))}}
+  p.mlRock=a;p.mlA=a.id;mlSay(p,P,mlCut(p,P,a,dt,sec,NET.cl))}}
 // a guest's mining laser: the host cuts for it from the rock id in its input
 {const o=netWorld;netWorld=function(dt){o.apply(this,arguments);if(!loadOn())return;const now=performance.now(),sec=S.sectors[W.sid];
-  for(const e of W.ents){if(!e.rp||!e.alive)continue;const u=MP.inp[e.rp],P=S.pilots[e.rp];if(!u||!P||!u.ml||now-u.at>600||!fitN(P,'mlaser'))continue;const a=sec.ast.find(x=>x.id===u.ml);if(!ringOK(a))continue;e.mining=a;mlSay(e,P,mlCut(e,P,a,dt,sec))}}}
+  for(const e of W.ents){if(!e.rp||!e.alive)continue;const u=MP.inp[e.rp],P=S.pilots[e.rp];if(!u||!P||!u.ml||now-u.at>600||!fitN(P,'mlaser'))continue;const a=sec.ast.find(x=>x.id===u.ml);if(!ringOK(a))continue;e.mlRock=a;mlSay(e,P,mlCut(e,P,a,dt,sec))}}}
 // a blast breaks the ring of every rock it cracks
 {const o=blDetonate;blDetonate=function(P,e){const s=S.sectors[W.sid],k=blKey(P),ids=new Set((s.charges||[]).filter(c=>c.o===k&&!c.wp).map(c=>c.a));const r=o.apply(this,arguments);for(const a of s.ast)if(ids.has(a.id))a.noRing=1;return r}}
 function mtoolToggle(){const P=S.player,t=mtools(P);if(!loadOn()||!t.length){flash('No mining tools fitted.',true);return}if(t.length<2){flash(`${WPN[t[0]].name} is your only mining tool.`);return}
