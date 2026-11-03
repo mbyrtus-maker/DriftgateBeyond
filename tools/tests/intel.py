@@ -21,12 +21,12 @@ async def main():
     print('ledger',await ev(LED))
     print('claim jobs',await ev("(()=>{dockTab='jobs';renderDock();const L=JOBS_LAST.filter(j=>String(j.id).startsWith('cl:'));return JSON.stringify({n:L.length,first:L.slice(0,3).map(j=>j.title+' · '+j.pay+' · '+j.where)})})()"))
     # a claim completed with a Halcyon beacon (the claim fee from Halcyon's treasury, standing up, the outpost Halcyon's)
-    print('claim',await ev("""(()=>{const P=S.player;const o=Object.values(S.outposts).find(x=>!x.owner);if(!o)return 'no unclaimed outpost';if(!P.cargo.bc_halcyon){inv.take(P.vault,'bc_halcyon',1);inv.add(P.cargo,'bc_halcyon',1)}
+    print('claim',await ev("""(()=>{const P=S.player;const o=Object.values(S.outposts).find(x=>!x.owner);if(!o)return 'no unclaimed outpost';if(!P.cargo.bc_halcyon){inv.take(P.vault,'bc_halcyon',1);inv.add(P.cargo,'bc_halcyon',1)}fitDo(dockCtx(),P,'u:0:bc_halcyon');
       P.job={by:'halcyon',kind:'fight',id:`cl:${o.id}:halcyon`,at:S.T};const c0=P.credits,t0=S.econ.treasury.halcyon,s0=standOf('halcyon');fbClaim(o,'halcyon','me');
-      return JSON.stringify({outpost:o.name,owner:o.owner,got:P.credits-c0,fromHalcyon:t0-S.econ.treasury.halcyon,stand:+(standOf('halcyon')-s0).toFixed(2),beacon:P.cargo.bc_halcyon||0,job:P.job})})()"""))
+      return JSON.stringify({outpost:o.name,owner:o.owner,got:P.credits-c0,fromHalcyon:t0-S.econ.treasury.halcyon,stand:+(standOf('halcyon')-s0).toFixed(2),beacon:P.cargo.bc_halcyon||0,fitted:fitOf(P).ui,job:P.job})})()"""))
     print('ledger',await ev(LED))
     # a claim in the ring, in flight: an interceptor with a beacon sitting in an unclaimed outpost's ring
-    print('ring setup',await ev("""(()=>{const P=S.player;const o=Object.values(S.outposts).find(x=>!x.owner&&!outLock(x.sector));if(!o)return 'none';devLedger(()=>inv.add(P.cargo,'bc_ostrova',1));exitSector();P.sector=o.sector;P.docked=null;enterSector(o.sector);
+    print('ring setup',await ev("""(()=>{const P=S.player;const o=Object.values(S.outposts).find(x=>!x.owner&&!outLock(x.sector));if(!o)return 'none';devLedger(()=>{const F=fitOf(P);F.u[0]='claim';F.ui[0]='bc_ostrova';F.ug[0]=1});exitSector();P.sector=o.sector;P.docked=null;enterSector(o.sector);
       const OE=W.outpostEnt;if(!OE)return 'no outpost entity';const e=W.player;e.x=OE.x+150;e.y=OE.y;e.z=OE.z;e.vx=e.vy=e.vz=0;window._O=o;for(const x of W.ents)if(x.npc&&x.type==='ship'&&d3(x,OE)<900)x.alive=false;return JSON.stringify({outpost:o.name,sector:o.sector,held:fbHeld(P,o)})})()"""))
     for i in range(70):
       await pg.wait_for_timeout(1000)

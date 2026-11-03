@@ -62,5 +62,6 @@ js/16zr_mapside.js
 js/16zs_start2.js
 js/16zt_fees.js
 js/16zu_cscan.js
+js/16zv_claimfit.js
 js/17_main.js
 end.html

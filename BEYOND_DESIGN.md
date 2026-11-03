@@ -1652,3 +1652,14 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - If no spot near its system is free, the name goes a little further out with a thin line to its system.
   - A freeport's "FREEPORT" tag sits on the line above its name.
 - **Smaller windows:** systems and names scale down with the map, to about two thirds of their size at most.
+
+### Claim Beacons are fitted parts (3 Nov 2026)
+- **The user's report:**
+  - You couldn't equip or buy a power's Claim Beacon: the new Market tiles had dropped the "Claim Beacons" section.
+  - Asked for: (a) a beacon takes a utility slot; (b) you fit it on the Loadout screen; (c) you buy a specific power's beacon, in its colour.
+- **As built** (`16zv_claimfit.js`):
+  - **The beacon is a utility part:** a power's Claim Beacon (Halcyon, Varkesh, Ostrova) carries that power's colour on the utility icon. It fits fighters and bombers only (as before), it has no grades, and it claims only while fitted (in a hold it's just cargo).
+  - **Fitting:** on the Loadout, pick a utility slot. Its "Fit instead" list offers the beacons you have, and "Buy & fit" for each power this station sells beacons for (every power at a freeport, its own at a power's station), at 450 cr.
+  - **Claiming:** hold a fitted beacon in an unclaimed or breached outpost's ring (as before). The claim uses the beacon up and leaves the slot empty: fit your landing kit back.
+  - **Buying:** the Market's tiles list the Claim Beacons sold here, one per power, with what you have and which is fitted. The job board's claim jobs say to fit one.
+- **Tests:** `claimfit.py`.
