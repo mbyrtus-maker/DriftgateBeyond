@@ -179,6 +179,23 @@ table.t td.r,table.t th.r{text-align:right}
 table.t td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
 .act{display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap}
 .sw{display:inline-block;width:9px;height:9px;margin-right:8px;vertical-align:baseline;transform:rotate(45deg)}
+.gi{vertical-align:-2px;margin-right:6px;flex:none}
+.lab{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.ldwrap{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:22px}.ldl{min-width:0}.ldr{border-left:1px solid var(--line);padding-left:20px;min-width:0}
+.ldhead{display:flex;gap:10px;align-items:baseline;margin-bottom:6px}.ldhead b{font-family:var(--f-disp,'Big Shoulders Display',sans-serif);letter-spacing:.08em;text-transform:uppercase;font-size:18px}
+.ldmap{display:flex;justify-content:center;overflow:hidden}.ldslot{position:absolute;width:142px;box-sizing:border-box;background:transparent;border:0;border-bottom:1px solid #232d45;padding:3px 2px;text-align:left;color:var(--ivory,#ece4cf);font:inherit;font-size:12.5px;cursor:pointer;display:flex;flex-direction:column;gap:3px}
+.ldslot.on{border-bottom-color:var(--amber,#f0b24a)}.ldsn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ldsysrow{display:flex;gap:18px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:8px}.ldsys{background:transparent;border:0;border-bottom:1px solid transparent;padding:4px 0;color:var(--ivory,#ece4cf);font:inherit;font-size:12px;cursor:pointer;display:flex;flex-direction:column;gap:3px;text-align:left}.ldsys.on{border-bottom-color:var(--amber,#f0b24a)}
+.ldname{display:flex;gap:10px;align-items:center;margin:4px 0}.ldname b{font-family:var(--f-disp,'Big Shoulders Display',sans-serif);letter-spacing:.06em;text-transform:uppercase;font-size:20px}
+.ldbox{border-top:1px solid var(--line);padding-top:8px;margin-top:6px}.ldopt{display:flex;gap:8px;align-items:center;border-bottom:1px solid rgba(35,45,69,.55);padding:6px 0;font-size:13px}
+.mkbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.mkhold{display:flex;width:160px;height:6px;background:#161e30}
+.mkf{background:transparent;border:0;color:var(--dim);font-family:var(--f-disp,'Big Shoulders Display',sans-serif);font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;padding:4px 2px}.mkf.on{color:var(--ivory,#ece4cf);border-bottom:1px solid var(--amber,#f0b24a)}
+.mkwrap{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px}.mktiles{display:flex;flex-wrap:wrap;column-gap:18px;row-gap:10px;align-content:flex-start;min-width:0}.mkgrp{display:flex;flex-direction:column;gap:6px}.mkrow{display:flex;flex-wrap:wrap;gap:8px;max-width:640px}
+.mkt{width:150px;box-sizing:border-box;background:#111a2e;border:1px solid #232d45;padding:7px 8px;display:flex;flex-direction:column;gap:5px;text-align:left;color:var(--ivory,#ece4cf);font:inherit;font-size:12.5px;cursor:pointer}.mkt.on{border-color:var(--amber,#f0b24a);background:#17213a}
+.mktt{display:flex;gap:8px;align-items:center}.mktt b{font-weight:600}.mkm{display:block;height:3px;background:#0a0f1d}.mkm i{display:block;height:100%}
+.mkdet{border-left:1px solid var(--line);padding-left:18px;min-width:0}.mkpx{display:flex;gap:18px;margin-bottom:8px;font-size:12px;color:var(--dim)}.mkpx b{display:block;font-size:17px;color:var(--ivory,#ece4cf)}.mkbest{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid rgba(35,45,69,.55)}
+.ldsysdetail{grid-template-columns:1fr!important;border-bottom:0!important}
+
 .iname{white-space:nowrap}
 .mass{font-family:var(--f-mono);font-size:11px;color:var(--faint);margin-left:6px}
 .req{display:inline-flex;gap:4px;align-items:center;font-family:var(--f-mono);font-size:11.5px;padding:2px 6px;border:1px solid var(--line-hi);margin:2px 4px 2px 0;white-space:nowrap}
@@ -11496,6 +11513,189 @@ function riftSwap(k,srcs){const c=comp(k),s=comp('riftshard');takeFrom({riftshar
   if(!n&&!has.length)return h;h+=`<div class="h3" style="margin-top:14px">Rift Shards</div><p class="note" style="margin:0 0 6px">A Rift Shard fed into a part's upgrade leaves a random trait (most often a strength; taking the part out loses it). At a workshop, a shard also stands in for one missing component. You have ${n}.</p>`;
   for(const r of rows){const R=F.rt&&F.rt[r[0]+r[1]],q=pupQuote(c,P,`${r[0]}:${r[1]}`),nm=ITEMS[PART[r[2]]]?ITEMS[PART[r[2]]].name:r[2];if(!R&&!q)continue;
     h+=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:3px 0"><span class="note" style="margin:0;min-width:160px">${esc(nm)} · grade ${r[3]}</span>${R?`<span class="req ok">${esc(trText(R.tr))}</span>`:''}${q&&n?`<button class="btn sm" type="button" data-act="pupr" data-arg="${r[0]}:${r[1]}" ${haveIn(q.r,srcs)&&P.credits>=q.fee?'':'disabled'}>To grade ${q.t} with a Rift Shard</button>`:''}</div>`}}catch(err){console.error(err)}return h}}
+
+//@src 16zj_icons.js
+// ============================================================ goods icons and colours (Beyond screens pass, 3 Nov 2026)
+// Every good shows a shape by kind and a colour (user, 3 Nov): ore a hexagon in its own colour; components a square in the
+// colour of the most valuable ore they contain; weapons a dart in reds; utility parts a plus in yellows; missiles and torpedoes
+// a rocket and charges an octagon in magentas; machine-gun rounds a bullet; cash-only contraband a violet diamond.
+// sw(k), the old diamond swatch, now draws the icon; chip() gains it too.
+const GI_SH={ore:'15,2 26,9 27,21 16,28 4,22 3,9',comp:'5,5 25,5 25,25 5,25',wpn:'15,2 24,26 15,20 6,26',util:'11,3 19,3 19,11 27,11 27,19 19,19 19,27 11,27 11,19 3,19 3,11 11,11',
+  msl:'15,2 19,9 19,22 23,28 7,28 11,22 11,9',chg:'10,3 20,3 27,10 27,20 20,27 10,27 3,20 3,10',rnd:'15,2 19,8 19,28 11,28 11,8',con:'15,3 27,15 15,27 3,15'};
+const GI_PART={gun:'#ff6b6b',laser:'#ff9aa8',missile:'#ff8a7a',torpedo:'#ff8a7a',charge:'#e2505f',mlaser:'#ff7f6b',jammer:'#c44a6a',cargo:'#f5e663',scanner:'#f5e663',land:'#fff09a',hide:'#d9c43a',hook:'#d9c43a',bdev:'#f5e663',lrack:'#f5e663'};
+const GI_C={};
+function giKind(k){const I=ITEMS[k]||{};if(RAWS.includes(k)||k==='rift')return'ore';if(I.cash)return'con';if(I.part)return WPN[I.part]?'wpn':'util';if(MUNITIONS.has(k))return'msl';if(k==='ammo'||k==='rounds')return'rnd';if(k==='charges'||k==='chg')return'chg';return'comp'}
+function giCol(k){if(GI_C[k])return GI_C[k];const I=ITEMS[k]||{},kd=giKind(k);let c=I.col||'#8c91a5';
+  if(kd==='comp'){try{const v=comp(k);let best=null,bv=-1;for(const e of RAWS)if(v[e]>0&&ITEMS[e].base>bv){bv=ITEMS[e].base;best=e}if(best)c=ITEMS[best].col}catch(e){}}
+  else if(kd==='wpn'||kd==='util')c=GI_PART[I.part]||c;else if(kd==='msl')c='#ff6fcf';else if(kd==='chg')c='#d65aa8';else if(kd==='rnd')c='#e86ac0';else if(kd==='con'&&k!=='rift')c='#b07cff';
+  return GI_C[k]=c}
+function gIcon(k,sz){sz=sz||13;const c=giCol(k),p=GI_SH[giKind(k)];return`<svg class="gi" width="${sz}" height="${sz}" viewBox="0 0 30 30" aria-hidden="true"><polygon points="${p}" fill="${c}33" stroke="${c}" stroke-width="2.5"/></svg>`}
+sw=function(k){return ITEMS[k]?gIcon(k):''};
+{const o=chip;chip=function(k,need,have){const r=o.apply(this,arguments);return ITEMS[k]?r.replace(/^(<span class="req [^"]*">)/,'$1'+gIcon(k,11)):r}}
+
+//@src 16zk_hangar.js
+// ============================================================ the Hangar (Beyond screens pass, 3 Nov 2026)
+// The per-station Vault is the Hangar: it holds your cargo and the ships you aren't flying, at that station. One sub-tab under
+// Ship holds both (the old Vault and Hangar tabs merged). Berths: 2 at a freeport or a power's station, more at your own Depot
+// (one more per hangar module) or Station (one more with a hangar building). Free hulls are never berthed (as before). Ships
+// berthed elsewhere are listed with where they are; fly them from there. Ship here works for contractors too: a Compact
+// freighter brings up to 120 t from another hangar (60 cr + 2 cr a tonne a jump), and can be raided on the way.
+// Ledger: unchanged (only goods' and ships' places change).
+const HG={berths:2};
+function hgKey(P){return vaultKey(P)}
+function hgBerths(P,key){key=key||hgKey(P);const R=key&&S.stations[key];let n=HG.berths;if(R&&R.owner==='player'&&(R.pid||'me')===pkeyOf(P)){n+=((devOf(R).hangar)||0);if(R.pst&&(R.bld||[]).includes('hangar'))n+=2}return n}
+function hgTag(P){const k=hgKey(P);for(const r of P.ships||[])if(r.at==null)r.at=k}
+function hgHere(P){const k=hgKey(P);hgTag(P);return(P.ships||[]).filter(r=>r.at===k)}
+// actions on berthed ships see only the ships berthed here; indices are into that list
+function hgSwap(P,fn){const k=hgKey(P);hgTag(P);const all=P.ships||[],here=all.filter(r=>r.at===k),else_=all.filter(r=>r.at!==k);P.ships=here;try{return fn()}finally{for(const r of P.ships)r.at=k;P.ships=else_.concat(P.ships)}}
+{const o=dockAction;dockAction=function(act,arg){const P=S.player;if(!S.unb&&['bstore','bfly','bsell','bupg'].includes(act)){
+    if(act==='bstore'&&hgHere(P).length>=hgBerths(P)){dockErr=`This hangar has ${hgBerths(P)} berths, all taken: fly or sell a ship first.`;return}
+    return hgSwap(P,()=>o.apply(this,arguments))}
+  if(act==='shipv'&&!S.unb&&!P.sworn){dockErr=hgShipOrder(P,arg);return}
+  return o.apply(this,arguments)}}
+// the berth count shown where the old bay count was
+{const o=shipsCount;shipsCount=function(P){return S&&!S.unb&&P===S.player&&P.docked?hgHere(P).length:o.apply(this,arguments)}}
+// ---- Ship here, for contractors (Compact freighters)
+{const o=shipQuote;shipQuote=function(P,k){const r=o.apply(this,arguments);if(r||S.unb||P.sworn)return r;
+  const to=vaultKey(P),src=P.vaults&&P.vaults[k],sid=vaultSid(k);if(!to||!src||!sid||k===to)return null;if(!vaultOpen(k,P))return{why:vaultWhy(k,P)};
+  const load=shipPick(src),m=invMass(load);if(!m)return null;const j=HOP[sid][P.sector]||0;return{load,m,j,fee:shipFee(m,j),all:m>=invMass(src)}}}
+function hgShipOrder(P,k){const q=shipQuote(P,k);if(!q||q.why)return q&&q.why?`Can't ship from there: ${q.why}.`:'Nothing to ship.';if(P.credits<q.fee)return`Shipping costs ${fmt(q.fee)} cr.`;
+  const src=P.vaults[k];for(const i in q.load)inv.take(src,i,q.load[i]);if(!invMass(src))delete P.vaults[k];payFrom(P,'neutral',q.fee);
+  const t=haulSend('neutral',vaultSid(k),P.sector,q.load,'ship:'+S.nextId,`${P.name||'a pilot'}'s goods`,null);if(!t){inv.addAll(src,q.load);return'No route.'}t.own={k:pkey(),to:vaultKey(P),from:k};
+  return`✓ A Compact freighter is bringing ${fmt(q.m)} t from ${vaultName(k)} (${q.j} jump${q.j===1?'':'s'}) for ${fmt(q.fee)} cr.${q.all?'':' That was a full load: order again for the rest.'} It can be raided on the way; pilots can escort it from Jobs.`}
+// ---- one Hangar sub-tab under Ship: cargo, ships berthed here, ships elsewhere, other hangars
+DOCK_TOP[1][2]=DOCK_TOP[1][2].filter(k=>k!=='storage');{const i=DOCK_TOP[3][2].indexOf('bay');DOCK_TOP[3][2].splice(i>=0?i:2,i>=0?1:0,'storage')}
+// a hangar is where your vault was: the old "Vault" checks still hold
+{const o=renderDock;renderDock=function(){const P=S.player;if(!S||S.unb||!P||!P.docked||dockTab!=='storage')return hgWords(o.apply(this,arguments));
+  const c=dockCtx();if(!c||c.storage!==P.vault)return hgWords(o.apply(this,arguments));
+  let bay='';try{dockTab='bay';o.apply(this,arguments);if(dockTab==='bay')bay=$('dBody').innerHTML}catch(e){}dockTab='storage';const r=o.apply(this,arguments);
+  const here=hgHere(P),far=(P.ships||[]).filter(x=>x.at&&x.at!==hgKey(P)),HN=k=>esc((FAC(P.faction)||{hulls:{}}).hulls[k]||CLASSES[k].name);
+  let h=`<div class="h3">Ships berthed here · ${here.length} / ${hgBerths(P)}</div>`+(bay?`<div class="hgbay">${bay}</div>`:'');
+  if(far.length)h+=`<p class="note" style="margin:6px 0 14px">Berthed elsewhere: ${far.map(x=>`${HN(x.cls)} at ${esc(vaultName(x.at))}`).join(' · ')}. Fly them from there.</p>`;
+  h+=`<div class="h3" style="margin-top:18px">Cargo</div>`;$('dBody').insertAdjacentHTML('afterbegin',h);hgWords();return r}}
+// the bay view inside the Hangar drops its own intro and the "In the bay" heading (the berth heading replaces them)
+function hgWords(r){try{const B=$('dBody');if(!B)return r;for(const el of B.querySelectorAll('.hgbay > p.note:first-child'))el.remove();
+  const tw=document.createTreeWalker(B,NodeFilter.SHOW_TEXT);const L=[];while(tw.nextNode())L.push(tw.currentNode);
+  for(const n of L){const t=n.nodeValue;if(!/[Vv]ault|In the bay|the bay|Store this ship in the bay/.test(t))continue;n.nodeValue=t.replace(/Store this ship in the bay/g,'Berth this ship here').replace(/In the bay · \d+ \/ \d+/g,'Your other ships here').replace(/\bthe bay\b/g,'the hangar').replace(/\bvaults\b/g,'hangars').replace(/\bVaults\b/g,'Hangars').replace(/\bvault\b/g,'hangar').replace(/\bVault\b/g,'Hangar')}
+  const M=$('dMeta');if(M)for(const d of M.querySelectorAll('div'))if(d.firstChild&&d.firstChild.nodeType===3&&d.firstChild.nodeValue==='Vault')d.firstChild.nodeValue='Hangar';
+  const E=$('dErr');if(E&&E.textContent)E.textContent=E.textContent.replace(/\bvaults\b/g,'hangars').replace(/\bvault\b/g,'hangar').replace(/\bVault\b/g,'Hangar').replace(/\bthe bay\b/g,'the hangar').replace(/ \(\d+\/3\)/g,'');
+  const T=$('dTabs');if(T)for(const b of T.querySelectorAll('button')){if(/^Vault/.test(b.textContent))b.firstChild&&(b.firstChild.nodeValue=b.firstChild.nodeValue.replace('Vault','Hangar'))}}catch(e){}return r}
+{const o=feed;feed=function(msg){if(typeof msg==='string'&&S&&!S.unb)arguments[0]=msg.replace(/\bvaults\b/g,'hangars').replace(/\bvault\b/g,'hangar').replace(/\bVault\b/g,'Hangar');return o.apply(this,arguments)}}
+
+//@src 16zl_loadout2.js
+// ============================================================ the Loadout screen (Beyond screens pass, 3 Nov 2026)
+// Ship → Loadout (was Systems): a top-down schematic of your ship with every weapon and utility slot labelled around it
+// (its part, icon and grade pips) and a strip of its systems below. Click a slot or a system; the panel on the right shows it:
+//   - a part: its trait (maker's, your brand's, a Rift Shard's), its grade, the next upgrade with what you have of each
+//     component (red when short) and the fee, Upgrade or Upgrade with a Rift Shard, Take out (to your hangar or store), and
+//     Fit instead: every part that fits that slot, with where it is (hold, hangar) or its price here;
+//   - a system: its grade, what it gives, the next grade's components (with what you're missing), the fee, To Grade N,
+//     Aurora tuning and its variant, exactly as the old Systems tab offered them.
+// Below the systems: ammunition, missiles and charges, and Rearm. The ship's stats stay in the header line.
+// The old Loadout block in the Shipyard tab goes (it lives here now).
+let ldSel='sys:engine';
+const LD_EFF={gun:'+10% damage a grade',laser:'+10% damage a grade',missile:'one more missile a grade',torpedo:'one more torpedo a grade',charge:'one more charge a grade',mlaser:'+15% cutting rate a grade',cargo:'+5% hold a grade',scanner:'+20% reach a grade',land:'one grade only',hide:'+4 t hidden a grade',bdev:'one more beacon device a grade',lrack:'one more limpet a grade'};
+function ldShape(cls){if(blHull(cls))return'M0,-120 L40,-96 L52,40 L36,110 L-36,110 L-52,40 L-40,-96 Z M-52,-10 L-96,0 L-96,50 L-52,52 Z M52,-10 L96,0 L96,50 L52,52 Z';
+  if(isHaulCls(cls))return'M0,-130 L36,-104 L40,110 L-40,110 L-36,-104 Z M-40,-60 L-92,-56 L-92,70 L-40,74 Z M40,-60 L92,-56 L92,70 L40,74 Z';
+  return'M0,-150 L18,-80 L26,-20 L110,20 L150,34 L150,56 L110,58 L34,66 L28,110 L50,136 L0,128 L-50,136 L-28,110 L-34,66 L-110,58 L-150,56 L-150,34 L-110,20 L-26,-20 L-18,-80 Z'}
+function ldPips(n,big){let s='';for(let i=1;i<=5;i++)s+=`<i style="display:inline-block;width:${big?14:9}px;height:${big?5:3}px;margin-right:2px;background:${i<=n?'var(--amber,#f0b24a)':'#232d45'}"></i>`;return s}
+function ldSlotHtml(c,P,g,i){const F=fitOf(P),kind=(g==='w'?F.w:F.u)[i],gr=((g==='w'?F.g:F.ug)[i])||1,srcs=[P.cargo,c.storage||P.vault];
+  let h=`<div class="lab">${g==='w'?'Weapon':'Utility'} ${i+1}</div>`;
+  if(kind){const id=((g==='w'?F.wi:F.ui)||[])[i]||PART[kind],I=ITEMS[id],rt=F.rt&&F.rt[g+i];
+    h+=`<div class="ldname">${gIcon(id,24)}<b>${esc(I.name)}</b></div><div class="note" style="margin:4px 0">${esc(I.trTxt||'Standard part.')}${rt?` <span style="color:#ff7ad8">Rift: ${esc(trText(rt.tr))}</span>`:''}</div>
+      <div style="margin:6px 0 12px">${ldPips(gr,1)} <span class="note">grade ${gr} · ${esc((WPN[kind]||UTIL[kind]||{}).desc||'')}</span></div>`;
+    const q=pupQuote(c,P,`${g}:${i}`);if(q){const ok=haveIn(q.r,srcs)&&P.credits>=q.fee,short=Object.keys(q.r).filter(k=>countIn(k,srcs)<q.r[k]);
+      h+=`<div class="ldbox"><div class="lab">To grade ${q.t}</div><div class="note" style="margin:2px 0 6px">${esc(LD_EFF[kind]||'')}</div><div>${Object.keys(q.r).map(k=>chip(k,q.r[k],countIn(k,srcs))).join('')}</div>
+        <div class="note" style="margin:6px 0;color:${short.length?'var(--danger)':'var(--ok,#7ad9a7)'}">${short.length?'Missing: '+short.map(k=>`${q.r[k]-countIn(k,srcs)} ${esc(ITEMS[k].name)}`).join(', '):'You have everything it needs.'}${q.fee?` · fee ${fmt(q.fee)} cr`:''}</div>
+        <div class="act"><button class="btn pri" data-act="pup" data-arg="${g}:${i}" ${ok?'':'disabled'}>Upgrade${q.fee?' · '+fmt(q.fee)+' cr':''}</button>${countIn('riftshard',srcs)?`<button class="btn" data-act="pupr" data-arg="${g}:${i}" ${ok?'':'disabled'} style="color:#ff7ad8;border-color:#ff7ad8">With a Rift Shard</button>`:''}${short.length&&c.market?`<button class="btn" data-act="tab" data-arg="market">Buy what's missing ›</button>`:''}</div></div>`}
+    h+=`<div class="act" style="margin:10px 0"><button class="btn" data-act="fit" data-arg="${g}:${i}:">Take out → ${esc(String(c.storageName||'Vault').toLowerCase()==='vault'?'hangar':String(c.storageName).toLowerCase())}</button></div>`}
+  else h+=`<div class="ldname"><b style="color:var(--dim)">Empty slot</b></div>`;
+  const kinds=g==='w'?Object.keys(WPN).filter(k=>wpnOK(P.cls,k,i)):Object.keys(UTIL).filter(k=>!['bdev','lrack'].includes(k)||isScoutCls(P.cls));
+  const cur=kind?(((g==='w'?F.wi:F.ui)||[])[i]||PART[kind]):null;let rows='';
+  for(const k of kinds)for(const it of partItems(k)){if(it===cur)continue;const have=countIn(it,srcs),mk=c.market&&(c.market[it]||0)>0?mBuy(c,it):0;if(it!==PART[k]&&!have&&!mk)continue;
+    rows+=`<div class="ldopt">${gIcon(it,15)}<span style="flex:1;min-width:0"><span>${esc(ITEMS[it].name)}</span><br><span class="mass" style="margin:0">${esc(ITEMS[it].trTxt||'standard')} · ${have?`${have} on hand`:mk?`${fmt(mk)} cr here`:'none here'}</span></span><button class="btn sm" data-act="fit" data-arg="${g}:${i}:${it}" ${have||mk&&P.credits>=mk?'':'disabled'}>${have?'Fit':'Buy & fit'}</button></div>`}
+  if(rows)h+=`<div class="lab" style="margin-top:12px">Fit instead</div>${rows}`;return h}
+function ldLeft(c,P){const F=fitOf(P),W0=640,H0=380,cx=W0/2,cy=H0/2-10,st=W.player&&W.player.st;
+  const nW=F.w.length,nU=F.u.length,slots=[];
+  F.w.forEach((k,i)=>{const side=i%2?1:-1,row=Math.floor(i/2),ny=Math.ceil(nW/2);slots.push({g:'w',i,x:side<0?8:W0-150,y:30+row*(H0-150)/Math.max(1,ny-1||1),ax:cx+side*(40+row*18),ay:cy-60+row*40})});
+  F.u.forEach((k,i)=>{slots.push({g:'u',i,x:W0/2-75*nU+i*150+8,y:H0-58,ax:cx+(i-(nU-1)/2)*24,ay:cy+90})});
+  let svg=`<svg width="${W0}" height="${H0}" viewBox="0 0 ${W0} ${H0}" aria-hidden="true" style="position:absolute;inset:0"><path d="${ldShape(P.cls)}" transform="translate(${cx} ${cy}) scale(.95)" fill="#0f1729" stroke="${sideCol(P.faction)||'#4fd8d0'}" stroke-width="1.6"/>`;
+  let btns='';for(const s of slots){const on=ldSel===`${s.g}:${s.i}`,kind=(s.g==='w'?F.w:F.u)[s.i],gr=((s.g==='w'?F.g:F.ug)[s.i])||1,id=kind?(((s.g==='w'?F.wi:F.ui)||[])[s.i]||PART[kind]):null;
+    svg+=`<line x1="${s.ax}" y1="${s.ay}" x2="${s.x+71}" y2="${s.y>H0/2?s.y:s.y+44}" stroke="${on?'#f0b24a':'#2b3a52'}"/><circle cx="${s.ax}" cy="${s.ay}" r="3.5" fill="${on?'#f0b24a':'#2b3a52'}"/>`;
+    btns+=`<button class="ldslot${on?' on':''}" type="button" data-act="ldsel" data-arg="${s.g}:${s.i}" style="left:${s.x}px;top:${s.y}px"><span class="lab" style="font-size:10px">${s.g==='w'?'Weapon':'Utility'} ${s.i+1}</span><span class="ldsn">${id?gIcon(id,13)+esc(ITEMS[id].name):'<span style="color:var(--dim)">empty</span>'}</span><span>${id?ldPips(gr):''}</span></button>`}
+  svg+=`</svg>`;
+  let sys='';for(const sl of SLOTS){if(sl.id==='drill'&&!blHull(P.cls))continue;const t=P.tiers[sl.id]||1,on=ldSel==='sys:'+sl.id;sys+=`<button class="ldsys${on?' on':''}" type="button" data-act="ldsel" data-arg="sys:${sl.id}"><span class="lab" style="font-size:10px">${esc(sl.name)}</span><span>${ldPips(t)}${(P.tune||{})[sl.id]?' '+'✦'.repeat(P.tune[sl.id]):''}</span></button>`}
+  const q=rearmQuote(P),t=isTorpHull(P.cls),rows=[ammoCap(P)?`Rounds ${fmt(P.ammo||0)} / ${fmt(ammoCap(P))}`:'',pRack(P)?`${t?'Torpedoes':'Missiles'} ${P.rack||0} / ${pRack(P)}`:'',blCap(P)?`Charges ${P.blN||0} / ${blCap(P)}`:''].filter(Boolean);
+  return`<div class="ldhead"><b>${esc((FAC(P.faction)||{hulls:{}}).hulls[P.cls]||CLASSES[P.cls].name)}</b> <span class="note" style="margin:0">${esc(CLASSES[P.cls].name)} · ${F.w.length} weapon, ${F.u.length} utility${st?` · ${Math.round(st.maxSpd)} m/s · ${Math.round(st.sCap)} shield · ${Math.round(st.hull)} hull · ${st.cargo} t`:''}</span></div>
+    <div class="ldmap"><div style="position:relative;width:${W0}px;height:${H0}px">${svg}${btns}</div></div>
+    <div class="ldsysrow">${sys}</div>
+    <div class="act" style="margin-top:8px;align-items:center"><button class="btn" data-act="rearm" ${q.n&&(!c.wallet||P.credits>0)?'':'disabled'}>Rearm${q.n?` · ${fmt(q.tot)} cr`:''}</button><span class="note" style="margin:0 0 0 8px">${rows.join(' · ')||'No payload weapons fitted.'}</span></div>`}
+{const o=loadoutHtml;loadoutHtml=function(c,P){return S&&!S.unb&&!S.training?'':o.apply(this,arguments)}}
+{const o=dockClick;dockClick=function(act,arg){if(act==='ldsel'){ldSel=arg;renderDock();return}return o.apply(this,arguments)}}
+{const o=renderDock;renderDock=function(){const r=o.apply(this,arguments);try{
+  const T=$('dTabs');if(T&&!S.unb)for(const b of T.querySelectorAll('button[data-arg="upg"]:not(.mtab)'))if(b.firstChild&&b.firstChild.nodeType===3)b.firstChild.nodeValue='Loadout';
+  if(dockTab!=='upg'||S.unb||S.training||!loadOn())return r;const c=dockCtx(),P=S.player,B=$('dBody');if(!c||!B)return r;
+  const slotEls=[...B.querySelectorAll('.slots > *')],intro=B.querySelector('.grid2 .note');
+  const F=fitOf(P);if(ldSel.startsWith('w:')&&!(+ldSel.slice(2)<F.w.length))ldSel='sys:engine';if(ldSel.startsWith('u:')&&!(+ldSel.slice(2)<F.u.length))ldSel='sys:engine';
+  let right='';if(ldSel.startsWith('sys:')){const id=ldSel.slice(4),sl=SLOT[id];right=`<div class="lab">System</div><div class="ldname"><b>${esc(sl?sl.name:id)}</b></div><div class="note" style="margin:4px 0 10px">Built into the hull and upgraded in place: it never comes out, and it carries over with the ship in your hangar.</div><div id="ldSysHost"></div>`}
+  else{const[g,i]=ldSel.split(':');right=ldSlotHtml(c,P,g,+i)}
+  const host=document.createElement('div');host.className='ldwrap';host.innerHTML=`<div class="ldl">${ldLeft(c,P)}</div><div class="ldr">${right}</div>`;
+  if(ldSel.startsWith('sys:')){const idx=SLOTS.findIndex(s=>s.id===ldSel.slice(4)),el=slotEls[idx];const H=host.querySelector('#ldSysHost');if(el&&H){H.appendChild(el);el.classList.add('ldsysdetail')}if(intro&&H){const n=document.createElement('div');n.className='note';n.style.marginTop='14px';n.innerHTML=intro.innerHTML;H.appendChild(n)}}
+  B.innerHTML='';B.appendChild(host)}catch(err){console.error(err)}return r}}
+
+//@src 16zm_market2.js
+// ============================================================ the graphical market (Beyond screens pass, 3 Nov 2026)
+// Trade → Market shows tiles grouped as Ore, Components, Weapons, Utility parts and Payload (a filter for each), each with
+// its icon, price here, a stock meter and a mark (▲ wanted here, ▼ oversupplied). Your hold is a coloured bar on top. Pick a
+// tile: buy, sell and galaxy-average prices (from your scans), the price here while you've watched it, a quantity slider with
+// Buy and Sell, Load and Store against your hangar, and the best places to sell from your scans. "Table" shows the old list
+// (every button it had, Claim Beacons included); the makers' works and salvage sales stay underneath.
+let mkSel=null,mkFilter='all',mkView='tiles',mkQty=1;
+function mkGroup(k){const g=giKind(k);return g==='msl'||g==='chg'||g==='rnd'?'pay':g==='con'?'ore':g}
+const MK_GN={ore:'Ore',comp:'Components',wpn:'Weapons',util:'Utility parts',pay:'Payload'};
+// prices seen here, while docked (a minute apart, 30 readings)
+function mkWatch(){const P=S.player;if(!P||!P.docked||S.unb)return;let c;try{c=dockCtx()}catch(e){return}if(!c||!c.market)return;const key=P.sector;P.pxh=P.pxh||{};const H=P.pxh[key]=P.pxh[key]||{T:0,p:{}};if(S.T-H.T<60)return;H.T=S.T;
+  for(const k of Object.keys(c.market)){if(!(c.market[k]>0)||!ITEMS[k])continue;const a=H.p[k]=H.p[k]||[];a.push(mSell(c,k));if(a.length>30)a.shift()}}
+{const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{mkWatch()}catch(e){}return r}}
+function mkScan(P,k){const I=P.pintel||{},L=[];for(const sid in I){const x=I[sid];if(x&&x.s&&x.s[k]>0)L.push({sid,s:x.s[k],T:x.T})}return L}
+function mkHtml(c,P){const st=c.market,srcs=[P.cargo,c.storage],p=W.player,cap=p.st.cargo,used=invMass(P.cargo);
+  const items=ITEM_ORDER.filter(k=>k!=='beacon'&&!String(k).startsWith('bc_')&&!MUNITIONS.has(k)&&ITEMS[k]&&((st[k]||0)>0||countIn(k,srcs)>0));
+  if(!mkSel||!items.includes(mkSel))mkSel=items[0]||null;
+  let bar='';for(const k of Object.keys(P.cargo)){const m=(P.cargo[k]||0)*mass(k);if(m>0)bar+=`<i title="${esc(ITEMS[k].name)} ${P.cargo[k]}" style="display:block;height:100%;width:${m/cap*100}%;background:${giCol(k)};margin-right:1px"></i>`}
+  let h=`<div class="mkbar"><span class="lab">Hold</span><span class="mkhold">${bar}</span><span class="note" style="margin:0">${used} / ${cap} t</span><span style="flex:1"></span>`;
+  h+=['all','ore','comp','wpn','util','pay'].map(g=>`<button class="mkf${mkFilter===g?' on':''}" type="button" data-act="mkf" data-arg="${g}">${g==='all'?'All':MK_GN[g]}</button>`).join('')+`<button class="mkf" type="button" data-act="mkview" data-arg="table" style="margin-left:14px">Table</button></div>`;
+  h+=`<div class="mkwrap"><div class="mktiles">`;
+  for(const g of['ore','comp','wpn','util','pay']){if(mkFilter!=='all'&&mkFilter!==g)continue;const L=items.filter(k=>mkGroup(k)===g);if(!L.length)continue;
+    h+=`<div class="mkgrp"><div class="lab">${MK_GN[g]}</div><div class="mkrow">`;
+    for(const k of L){const dm=demandOf(mR(c),k),stk=st[k]||0,on=k===mkSel,tgt=Math.max(1,stockTarget(k)),r=stk/tgt;
+      h+=`<button class="mkt${on?' on':''}" type="button" data-act="mksel" data-arg="${k}"><span class="mktt">${gIcon(k,22)}<span><b>${esc(ITEMS[k].name)}</b><br><span class="mono amber">${fmt(mBuy(c,k))}</span>${dm==='high'?' <span style="color:#7ad9a7">▲</span>':dm==='low'?' <span style="color:#ff9a4a">▼</span>':''}</span></span>
+        <span class="mkm"><i style="width:${Math.min(100,Math.round(r*50))}%;background:${dm==='high'?'#7ad9a7':dm==='low'?'#ff9a4a':'#5a647c'}"></i></span><span class="mass" style="margin:0">${stk} in stock · you ${countIn(k,srcs)||'·'}</span></button>`}
+    h+=`</div></div>`}
+  if(!items.length)h+=`<div class="empty">Nothing in stock.</div>`;
+  h+=`</div><div class="mkdet">`;
+  if(mkSel){const k=mkSel,b=mBuy(c,k),s=mSell(c,k),sc=mkScan(P,k),avg=sc.length?Math.round(sc.reduce((a,x)=>a+x.s,0)/sc.length):null,stk=st[k]||0,hold=P.cargo[k]||0,hv=c.storage[k]||0,have=hold+hv;
+    const room=Math.max(0,Math.floor((cap-used)/mass(k))),maxQ=Math.max(1,stk,have);mkQty=Math.min(Math.max(1,mkQty),maxQ);
+    const H=(P.pxh&&P.pxh[P.sector]&&P.pxh[P.sector].p[k])||[];let spark='';if(H.length>1){const lo=Math.min(...H,avg||Infinity)*.95,hi=Math.max(...H,avg||0)*1.05,Y=v=>Math.round(48-(v-lo)/Math.max(1,hi-lo)*44);
+      spark=`<svg width="320" height="52" viewBox="0 0 320 52" role="img" aria-label="Price here"><polyline points="${H.map((v,i)=>Math.round(i*320/(H.length-1))+','+Y(v)).join(' ')}" fill="none" stroke="#f0b24a" stroke-width="1.6"/>${avg?`<line x1="0" x2="320" y1="${Y(avg)}" y2="${Y(avg)}" stroke="#36435f" stroke-dasharray="3 4"/>`:''}</svg>`}
+    const best=sc.filter(x=>x.sid!==P.sector).sort((a,b2)=>b2.s-a.s).slice(0,3);
+    h+=`<div class="ldname">${gIcon(k,30)}<b>${esc(ITEMS[k].name)}</b></div><div class="note" style="margin:0 0 10px">${mass(k)} t · ${stk} in stock · you carry ${hold}, ${hv} in your ${esc(c.storageName==='Vault'?'hangar':c.storageName.toLowerCase())}${ITEMS[k].trTxt?' · '+esc(ITEMS[k].trTxt):''}</div>
+      <div class="mkpx"><span>Buy<b class="mono">${fmt(b)}</b></span><span>Sell<b class="mono">${fmt(s)}</b></span><span>Galaxy<b class="mono" style="color:var(--dim)">${avg?fmt(avg):'—'}</b></span></div>
+      ${spark?`${spark}<div class="note" style="margin:0 0 10px">Price here while you've watched${avg?' · dashed: the galaxy average from your scans':''}</div>`:`<div class="note" style="margin:6px 0 10px">Stay docked a while to see how the price moves.</div>`}
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="lab">Quantity</span><b class="mono">${mkQty}</b></div>
+      <input type="range" id="mkQ" min="1" max="${maxQ}" value="${mkQty}" aria-label="Quantity" style="width:100%;accent-color:#f0b24a">
+      <div class="act" style="margin:8px 0"><button class="btn pri" data-act="buy" data-arg="${k}:${mkQty}" ${!(stk>0)||P.credits<b?'disabled':''}>Buy ${mkQty} · ${fmt(b*mkQty)} cr</button><button class="btn" data-act="sell" data-arg="${k}:${Math.min(mkQty,have)}" ${have<1?'disabled':''}>Sell ${Math.min(mkQty,have)} · ${fmt(s*Math.min(mkQty,have))} cr</button></div>
+      <div class="act" style="margin-bottom:12px"><button class="btn sm" data-act="buy" data-arg="${k}:fill" ${!(stk>0)||P.credits<b||room<1?'disabled':''}>Fill hold</button><button class="btn sm" data-act="sell" data-arg="${k}:all" ${have<1?'disabled':''}>Sell all</button>${hold?`<button class="btn sm" data-act="mv" data-arg="${k}:in:all">Store all</button>`:''}${hv?`<button class="btn sm" data-act="mv" data-arg="${k}:out:all">Load to hold</button>`:''}</div>
+      <div class="lab">Sells best at (your scans)</div>${best.length?best.map(x=>`<div class="mkbest"><span>${esc(S.stations[x.sid]?S.stations[x.sid].name:DEF[x.sid].name)} <span class="mass" style="margin:0">${HOP[P.sector][x.sid]??'?'} jumps · ${fmtT(Math.max(0,S.T-x.T))} ago</span></span><span class="mono" style="color:${x.s>s?'#7ad9a7':'inherit'}">${fmt(x.s)}</span></div>`).join(''):`<div class="note">No other prices scanned yet.</div>`}`}
+  h+=`</div></div>`;return h}
+{const o=renderDock;renderDock=function(){const r=o.apply(this,arguments);try{if(dockTab!=='market'||S.unb||mkView!=='tiles')return r;const c=dockCtx(),P=S.player,B=$('dBody');if(!c||!c.market||!B)return r;
+  const keep=[];let seen=false;for(const el of B.children){if(/Makers' works here/.test(el.textContent||'')&&el.classList.contains('h3'))seen=true;if(seen)keep.push(el)}
+  const salv=[...B.querySelectorAll('p.note')].filter(n=>/aren't traded/.test(n.textContent));const salvAct=salv.length?salv[0].nextElementSibling:null;
+  const host=document.createElement('div');host.innerHTML=mkHtml(c,P);const tailBox=document.createElement('div');tailBox.style.marginTop='18px';
+  for(const el of keep)tailBox.appendChild(el);if(salv[0]){tailBox.appendChild(salv[0]);if(salvAct)tailBox.appendChild(salvAct)}
+  B.innerHTML='';B.appendChild(host);B.appendChild(tailBox);const q=$('mkQ');if(q){q.addEventListener('change',e=>{mkQty=+e.target.value;renderDock()});q.addEventListener('input',e=>{const l=q.previousElementSibling&&q.previousElementSibling.querySelector('b');if(l)l.textContent=e.target.value})}}catch(err){console.error(err)}return r}}
+{const o=dockClick;dockClick=function(act,arg){if(act==='mksel'){mkSel=arg;mkQty=1;renderDock();return}if(act==='mkf'){mkFilter=arg;renderDock();return}if(act==='mkview'){mkView=arg;renderDock();return}return o.apply(this,arguments)}}
+// the table view gets a way back
+{const o=renderDock;renderDock=function(){const r=o.apply(this,arguments);try{if(dockTab==='market'&&!S.unb&&mkView==='table'){const B=$('dBody');if(B)B.insertAdjacentHTML('afterbegin',`<div class="act" style="margin-bottom:8px"><button class="btn sm" data-act="mkview" data-arg="tiles">Tiles view</button></div>`)}}catch(e){}return r}}
 
 //@src 17_main.js
 // ============================================================ main loop

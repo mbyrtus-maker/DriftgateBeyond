@@ -1443,3 +1443,45 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - **User review (3 Nov):**
   - Loadout and Hangar keep their original (fuller) layouts; their minimal versions were dropped.
   - Title screen: the order is Callsign, Legend (collapsed), Freeport and Ship (both expanded). On the right, a picture of the chosen freeport with the chosen ship; in the game these are the live 3D models.
+
+### Screens pass: as built, part 1 (3 Nov 2026)
+- **Goods icons and colours** (`16zj_icons.js`): every good in the dock's lists, chips and swatches carries the agreed shape and colour, through `gIcon(k)`.
+  - Components take the colour of the most valuable ore in them.
+  - Weapons are reds, utility parts yellows, payload magentas, cash-only contraband a violet diamond.
+- **The Hangar** (`16zk_hangar.js`): the Vault is called the Hangar everywhere it shows, and one Ship → Hangar sub-tab holds both:
+  - **ships berthed here:** Fly this ship, Sell, upgrade while berthed, and berth the one you're flying;
+  - your cargo (store and load);
+  - ships berthed elsewhere;
+  - your other hangars, with **Ship here**.
+
+  The rules:
+  - Berths are per station: 2 at a freeport or a power's station; at your own Depot, one more per hangar module; at your own Station, two more with a hangar building.
+  - Old saves' berthed ships are placed where you next dock.
+  - Contractors can use Ship here: a Compact freighter (`haulSend('neutral', …)`) brings up to 120 t for 60 cr + 2 cr a tonne a jump, and can be raided.
+- **Loadout** (`16zl_loadout2.js`): Ship → Loadout (was Systems) is the agreed screen. It shows:
+  - a top-down schematic (fighter, miner or hauler outline) with every weapon and utility slot around it, each showing its part icon, name and grade pips;
+  - the systems strip below, with pips and Aurora ✦;
+  - Rearm and the payload counts.
+
+  Picking a part opens its panel:
+  - the trait (including a Rift Shard's);
+  - the next upgrade, with chips showing what you have, a "Missing:" line and the fee;
+  - Upgrade and With a Rift Shard;
+  - Buy what's missing (to the market);
+  - Take out;
+  - every part that fits, with where it is or its price ("Fit" / "Buy & fit").
+
+  Picking a system shows its full old Systems row (grade, components, fee, To Grade, Attune, variants) and the upgrade note. The Shipyard tab's old loadout block is gone, since it lives here now.
+- **Graphical market** (`16zm_market2.js`): Trade → Market shows the agreed design:
+  - tiles in groups (Ore, Components, Weapons, Utility parts, Payload), with a filter for each;
+  - each tile has an icon, the buy price, a ▲ / ▼ mark, a stock meter, the stock and what you hold;
+  - your hold as a coloured bar.
+
+  Picking a tile opens the detail panel:
+  - buy, sell and galaxy-average prices (the average from your scans);
+  - the price here as you've watched it (one reading a minute while docked);
+  - a quantity slider, Buy and Sell;
+  - Fill hold, Sell all, Store all and Load to hold;
+  - the best places to sell, from your scans.
+
+  "Table" switches back to the old list, with every button it had (Claim Beacons included). The makers' works and salvage sales stay underneath.

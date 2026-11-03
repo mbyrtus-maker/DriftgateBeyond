@@ -50,5 +50,9 @@ js/16zf_posted.js
 js/16zg_brand.js
 js/16zh_zoom.js
 js/16zi_small.js
+js/16zj_icons.js
+js/16zk_hangar.js
+js/16zl_loadout2.js
+js/16zm_market2.js
 js/17_main.js
 end.html
