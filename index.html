@@ -11245,6 +11245,136 @@ function bmHtml(P){const rc={None:'var(--dim)',Light:'#f0d070',Heavy:'#ff9a4a',S
   for(const r of past)h+=`<tr><td class="iname">${esc(r.name)}</td><td colspan="2" style="color:${r.state==='paid'?'var(--ok,#7ad9a7)':'var(--danger)'}">${r.x.n} ${esc(ITEMS[r.x.item].name)}: ${esc(r.msg)}</td><td class="r note">${fmtT(Math.max(0,S.T-r.done))} ago</td></tr>`;
   if(!P.run&&!live.length&&!past.length)h+=`<tr><td class="note">No runs yet.</td></tr>`;return h+`</tbody></table></div>`}
 
+//@src 16zf_posted.js
+// ============================================================ posting jobs to other pilots, with bidding (Beyond section 9, 3 Nov 2026)
+// The Post jobs tab gains jobs for pilots who aren't yours: the Compact's contractors and the pilots of the powers that deal
+// with you (in multiplayer, the other players too). Four kinds, each for one of your depots:
+//   Supply: bring N of a good to the depot (the taker buys it at the nearest market that has it, at your expense);
+//   Haul:   sell N of a good from the depot's store at the nearest market that deals with you (the proceeds are yours);
+//   Mine:   cut N t of ore from the depot's system into its store;
+//   Guard:  stand guard over the depot for 20 minutes (its guns +50%).
+// The fee is a bid against the galactic mean for that kind of job, its distance and risk: Low (75%, the floor) waits longest
+// for a taker, Medium (the mean) normal, Fast (140%) soonest; you can't bid above 200%. The wait before an AI pilot signs on
+// is 3 minutes × (mean ÷ bid)². In multiplayer another player can do a Supply job first: dock at the depot with the goods.
+// The fee is paid on completion to whoever did it (the Compact, the power whose pilot it was, or the player); goods only move.
+const PJB={kinds:{supply:'Supply',haul:'Haul',mine:'Mine',guard:'Guard'},bids:{low:.75,medium:1,fast:1.4},max:2,wait:180,guardT:1200,guardK:.5,max_open:6,run:[90,40]};
+function pjMean(kind,R,item,n){const prem=pjPrem();if(kind==='guard')return Math.round(900*(1+.5*pjThreat(R)));if(kind==='mine')return Math.max(120,Math.round(n*4*prem*1.4));
+  const v=baseValue(item)*n,h=pjHops(R,item,kind);return Math.max(150,Math.round(v*prem*(.5+.12*h)+mass(item)*n*1.5))}
+// the premium the powers' and the Compact's own jobs pay over the goods' value, across the galaxy now
+function pjPrem(){const L=(S.contracts||[]).filter(k=>k.item&&ITEMS[k.item]&&k.n>0);if(!L.length)return .8;let a=0;for(const k of L)a+=clamp(k.reward/(baseValue(k.item)*k.n)-1,.2,2);return clamp(a/L.length,.3,1.5)}
+function pjThreat(R){const fs=FAC_IDS.filter(f=>(HOP[R.sid]||{})[FAC_HOME(f)]!=null&&HOP[R.sid][FAC_HOME(f)]<=3).length;return fs+((S.stations[R.sid]&&broodHeld&&NEIGH[R.sid].some(s=>broodHeld(s)))?1:0)}
+function pjSrc(R,item,kind,P){let best=null,bh=99;const deal=kind==='haul'?depTraders(P):[...depTraders(P),'neutral'];for(const id in S.stations){const D=S.stations[id];if(!D||D===R||!deal.includes(D.owner))continue;if(kind==='supply'&&(mkStock(D)[item]||0)<1)continue;const h=HOP[R.sid]&&HOP[R.sid][id];if(h!=null&&h<bh){bh=h;best=D}}return best?{D:best,h:bh}:null}
+function pjHops(R,item,kind){const s=pjSrc(R,item,kind,S.player);return s?s.h:4}
+function pjList(){return S.pj=S.pj||[]}
+function pjPost(P,arg){const[sid,kind,item,nS,bidS]=String(arg).split(':'),R=S.stations[sid],n=Math.max(1,Math.min(500,+nS||0));if(!R||R.owner!=='player'||(R.pid||'me')!==pkeyOf(P))return'Not your depot.';if(!PJB.kinds[kind])return'No such job.';
+  if(kind!=='guard'&&kind!=='mine'&&!ITEMS[item])return'Pick a good.';const k=pkeyOf(P);if(pjList().filter(j=>j.pid===k&&j.state!=='done').length>=PJB.max_open)return`You have ${PJB.max_open} jobs posted already.`;
+  if(kind==='haul'&&(R.stock[item]||0)<n)return`The store has only ${R.stock[item]||0} ${ITEMS[item].name}.`;if(kind==='mine'&&!S.sectors[sid].ast.some(a=>!a.rift&&!a.comet&&oreTotal(a)>0))return'No rock left in that system.';
+  const mean=pjMean(kind,R,item,n),bid=PJB.bids[bidS]?Math.round(mean*PJB.bids[bidS]):Math.round(clamp(+bidS||0,mean*PJB.bids.low,mean*PJB.max));if(P.credits<bid)return`The fee is ${fmt(bid)} cr: you have ${fmt(P.credits)} cr.`;
+  const j={id:S.nextId++,pid:k,sid,kind,item:kind==='guard'?null:kind==='mine'?'ore':item,n:kind==='guard'?0:n,mean,bid,posted:S.T,claimAt:S.T+PJB.wait*Math.pow(mean/bid,2),state:'open'};pjList().push(j);
+  return`✓ Posted: ${pjTitle(j)} for ${fmt(bid)} cr (${Math.round(bid/mean*100)}% of the galactic mean of ${fmt(mean)} cr). A taker should sign on in about ${fmtT(j.claimAt-S.T)}.`}
+function pjTitle(j){const R=S.stations[j.sid],nm=R?R.name:DEF[j.sid].name;return j.kind==='supply'?`Bring ${j.n} ${ITEMS[j.item].name} to ${nm}`:j.kind==='haul'?`Sell ${j.n} ${ITEMS[j.item].name} from ${nm}`:j.kind==='mine'?`Mine ${j.n} t of ore for ${nm}`:`Guard ${nm} for ${PJB.guardT/60} minutes`}
+// AI takers sign on when the wait is over, then do the job abstractly
+function pjTick(){if(NET.cl||!S||S.unb)return;for(const j of pjList()){const R=S.stations[j.sid],P=xPilotOfKey(j.pid);if(j.state==='done')continue;
+    if(!R||R.owner!=='player'||!P){j.state='done';j.msg='cancelled: the depot is gone';continue}
+    if(j.state==='open'&&S.T>=j.claimAt){const fs=depTraders(P),by=Math.random()<.5||!fs.length?'neutral':pick(fs);j.by=by;j.who=by==='neutral'?'a Compact contractor':`${/^[AEIOU]/.test(FACTIONS[by].short)?'an':'a'} ${FACTIONS[by].short} pilot`;j.state='taken';
+      const h=j.kind==='guard'?0:j.kind==='mine'?1:pjHops(R,j.item,j.kind);j.due=S.T+(j.kind==='guard'?PJB.guardT:PJB.run[0]+PJB.run[1]*h);keyFeed(j.pid,`📋 ${j.who} took your job: ${pjTitle(j)}.`,'info')}
+    else if(j.state==='taken'&&S.T>=j.due)pjFinish(j,R,P)}
+  const done=pjList().filter(j=>j.state==='done');if(done.length>30)S.pj=pjList().filter(j=>j.state!=='done'||done.indexOf(j)>=done.length-30)}
+function pjFinish(j,R,P){let note='';
+  if(j.kind==='supply'){const s=pjSrc(R,j.item,'supply',P);let n=0;if(s){const mk=mkStock(s.D),pr=Math.ceil(stPrice(s.D,j.item));n=Math.min(j.n,mk[j.item]||0,Math.floor(P.credits/pr));if(n>0){inv.take(mk,j.item,n);inv.add(R.stock,j.item,n);payFrom(P,s.D.owner,n*pr);eco(R,'jobs',-n*pr,`${n} ${ITEMS[j.item].name} bought at ${s.D.name}`)}}note=` ${n} of ${j.n} brought in`}
+  if(j.kind==='haul'){const s=pjSrc(R,j.item,'haul',P);let n=0,got=0;if(s){const mk=mkStock(s.D),f=s.D.owner,pr=Math.max(1,Math.floor(stPrice(s.D,j.item)*.95));n=Math.min(j.n,R.stock[j.item]||0,Math.floor((S.econ.treasury[f]||0)/pr));if(n>0){inv.take(R.stock,j.item,n);inv.add(mk,j.item,n);got=payTo(P,f,n*pr);eco(R,'jobs',got,`${n} ${ITEMS[j.item].name} sold at ${s.D.name}`)}}note=` ${n} sold for ${fmt(got)} cr`}
+  if(j.kind==='mine'){const s=S.sectors[j.sid];let want=j.n,got=0;for(const a of s.ast.filter(x=>!x.rift&&!x.comet&&oreTotal(x)>0)){if(want<=0)break;while(want>0&&oreTotal(a)>0){const q=mainOre(a);inv.take(a.ore,q,1);inv.add(R.stock,q,1);want--;got++}if(oreTotal(a)<=0)removeAst(s,a)}note=` ${got} t cut`}
+  const fee=payFrom(P,j.by,Math.min(j.bid,P.credits));eco(R,'jobs',-fee,`${j.who}'s fee`);j.state='done';j.paid=fee;j.msg=`done by ${j.who}:${note}${note?',':''} paid ${fmt(fee)} cr`;keyFeed(j.pid,`📋 ${pjTitle(j)}: ${j.msg}.`,'good')}
+{const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{pjTick()}catch(err){console.error(err)}return r}}
+// a guarded depot's guns
+{const o=depGunK;depGunK=function(SE,t){const v=o.apply(this,arguments);const R=SE&&SE.rec;if(R&&R.owner==='player'&&pjList().some(j=>j.sid===R.sid&&j.kind==='guard'&&j.state==='taken'))return v*(1+PJB.guardK);return v}}
+// in multiplayer, another player can do a Supply job: dock at the depot with the goods
+{const o=jobsList;jobsList=function(c,P,srcs){const out=o.apply(this,arguments);try{if(S.unb||!c||c.kind!=='station')return out;const me=pkeyOf(P);
+  for(const j of pjList().filter(j=>j.kind==='supply'&&j.state==='open'&&j.pid!==me&&j.sid===P.sector)){const O=xPilotOfKey(j.pid),have=Math.min(j.n,P.cargo[j.item]||0);
+    out.push({id:'pj:'+j.id,by:'player',sid:j.sid,ty:'haul',title:`${esc((O&&O.name)||'A contractor')} posts: ${j.n} ${esc(ITEMS[j.item].name)}`,sub:have?`You can deliver ${have} now`:`You carry none`,ok:have>0,hops:0,where:'here',payN:j.bid,pay:`${fmt(j.bid)} cr`,btn:have?['pjdo',j.id,`Deliver ${have} · +${fmt(Math.round(j.bid*have/j.n))} cr`]:null,
+      detail:()=>`<p class="note" style="margin:0">A job posted by another company: the goods go into its depot's store and it pays its bid.</p>`})}}catch(err){console.error(err)}return out}}
+function pjDo(P,id){const j=pjList().find(x=>String(x.id)===String(id)&&x.state==='open'&&x.kind==='supply');if(!j)return'That job is gone.';const R=S.stations[j.sid],O=xPilotOfKey(j.pid);if(!R||P.sector!==j.sid||P.docked!=='station')return'Dock at that depot.';
+  const n=Math.min(j.n,P.cargo[j.item]||0);if(!n)return`You carry no ${ITEMS[j.item].name}.`;const fee=Math.min(Math.round(j.bid*n/j.n),O.credits);inv.take(P.cargo,j.item,n);inv.add(R.stock,j.item,n);
+  let got=0;if(O!==P){got=payFrom(O,'neutral',fee);payTo(P,'neutral',got)}eco(R,'jobs',-got,`${P.name||'a contractor'} brought ${n} ${ITEMS[j.item].name}`);
+  j.n-=n;j.bid-=Math.round(j.bid*n/(j.n+n));if(j.n<=0){j.state='done';j.who=P.name||'a contractor';j.paid=got;j.msg=`done by ${j.who}: paid ${fmt(got)} cr`}keyFeed(j.pid,`📋 ${P.name||'A contractor'} brought ${n} ${ITEMS[j.item].name} to ${R.name}: −${fmt(got)} cr.`,'info');return`✓ Delivered ${n} ${ITEMS[j.item].name}: +${fmt(got)} cr.`}
+function pjCancel(P,id){const j=pjList().find(x=>String(x.id)===String(id)&&x.pid===pkeyOf(P)&&x.state==='open');if(!j)return'Only an open job can be withdrawn.';j.state='done';j.msg='withdrawn';return'✓ Job withdrawn.'}
+{const o=dockAction;dockAction=function(act,arg){const P=S.player;if(act==='pjpost'){dockErr=pjPost(P,arg);return}if(act==='pjdo'){dockErr=pjDo(P,arg);return}if(act==='pjcancel'){dockErr=pjCancel(P,arg);return}return o.apply(this,arguments)}}
+// ---- the Post jobs tab: a form per depot, the bids, and your posted jobs
+let pjForm={kind:'supply',item:'plate',n:20,bid:'medium'};
+{const o=coClick;coClick=function(act,arg){if(act==='pjf'){const[k,v]=String(arg).split(':');pjForm[k]=k==='n'?Math.max(1,(pjForm.n||0)+(+v)):v;renderCompany();return}
+  if(['pjpost','pjcancel'].includes(act)){if(NET.cl){netSend({t:'act',act,arg});coErr='Working…';renderCompany();return}dockAction(act,arg);coErr=dockErr;renderCompany();return}return o.apply(this,arguments)}}
+{const o=crewsHtml;crewsHtml=function(P){let h=o.apply(this,arguments);try{h+=pjHtml(P)}catch(err){console.error(err)}return h}}
+function pjHtml(P){const D=myDepots(P);let h=`<div class="h3" style="margin-top:18px">Jobs for other pilots</div><p class="note" style="margin:0 0 8px">Post work to the Compact's contractors and the pilots of the powers that deal with you (and, in multiplayer, the other players). The fee is your bid against the galactic mean for that job: Low (75%) waits longest for a taker, Fast (140%) the least; it's paid when the job is done.</p>`;
+  if(!D.length)return h+'<div class="note">Posting jobs needs a Depot.</div>';const F=pjForm,goods=['fe','cu','ir','au','nu','xc','plate','wire','coil','lattice','frame'].filter(k=>ITEMS[k]);
+  h+=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">${Object.entries(PJB.kinds).map(([k,n])=>`<button class="btn sm${F.kind===k?' pri':''}" type="button" data-co="pjf" data-arg="kind:${k}">${n}</button>`).join('')}</div>`;
+  if(F.kind==='supply'||F.kind==='haul')h+=`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">${goods.map(k=>`<button class="btn sm${F.item===k?' pri':''}" type="button" data-co="pjf" data-arg="item:${k}">${esc(ITEMS[k].name)}</button>`).join('')}</div>`;
+  if(F.kind!=='guard')h+=`<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px"><span class="note" style="margin:0">${F.kind==='mine'?'Tonnes':'Amount'}:</span>${[-10,-1].map(d=>`<button class="btn sm" type="button" data-co="pjf" data-arg="n:${d}">${d}</button>`).join('')}<b>${F.n}</b>${[1,10].map(d=>`<button class="btn sm" type="button" data-co="pjf" data-arg="n:${d}">+${d}</button>`).join('')}</div>`;
+  h+=`<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px"><span class="note" style="margin:0">Bid:</span>${Object.keys(PJB.bids).map(b=>`<button class="btn sm${F.bid===b?' pri':''}" type="button" data-co="pjf" data-arg="bid:${b}">${b[0].toUpperCase()+b.slice(1)} · ${Math.round(PJB.bids[b]*100)}%</button>`).join('')}</div>`;
+  h+=`<div class="tblw"><table class="t"><tbody>${D.map(R=>{const mean=pjMean(F.kind,R,F.item,F.n),bid=Math.round(mean*(PJB.bids[F.bid]||1));return`<tr><td class="iname">${esc(R.name)}</td><td class="note">galactic mean ${fmt(mean)} cr · wait about ${fmtT(PJB.wait*Math.pow(mean/bid,2))}</td><td><button class="btn sm pri" type="button" data-co="pjpost" data-arg="${R.sid}:${F.kind}:${F.item}:${F.n}:${F.bid}" ${P.credits>=bid?'':'disabled'}>Post · ${fmt(bid)} cr</button></td></tr>`}).join('')}</tbody></table></div>`;
+  const k=pkeyOf(P),L=pjList().filter(j=>j.pid===k).slice(-12).reverse();
+  if(L.length)h+=`<div class="tblw" style="margin-top:8px"><table class="t"><thead><tr><th>Posted</th><th>Status</th><th class="r">Fee</th><th></th></tr></thead><tbody>${L.map(j=>`<tr><td class="iname" style="white-space:normal">${esc(pjTitle(j))}</td><td style="white-space:normal">${j.state==='open'?`waiting for a taker (${fmtT(Math.max(0,j.claimAt-S.T))})`:j.state==='taken'?`${esc(j.who)} on it · ${fmtT(Math.max(0,j.due-S.T))}`:esc(j.msg||'done')}</td><td class="r num">${fmt(j.state==='done'&&j.paid!=null?j.paid:j.bid)} cr</td><td>${j.state==='open'?`<button class="btn sm" type="button" data-co="pjcancel" data-arg="${j.id}">Withdraw</button>`:''}</td></tr>`).join('')}</tbody></table></div>`;
+  return h}
+
+//@src 16zg_brand.js
+// ============================================================ your own brand, from Depot level (Beyond section 3, 3 Nov 2026)
+// You name your company when you have a Depot, and shape its trait with points: for each kind of part, each strength you
+// buy costs points and each weakness you take pays them back, netting to zero, so a brand is a shape, not a free gain.
+// Parts built at your Depot's or Station's workshop carry the company's name and that trait, and sell on your market like
+// any maker's (a Lair's workshop still builds standard parts). The first shape is free; reshaping costs 1,500 cr (to the
+// Compact) and reshapes every part of your brand, fitted or stored.
+// Items: four fixed brand slots (one per pilot of a galaxy), bp<N>_<kind>, with the standard part's recipe, so the ledger
+// is untouched; the name and the trait are read live from S.brands[N].
+const BR={slots:4,range:3,respec:1500,
+  step:{gun:{dmg:[.04,1,1],ammo:[.08,1,1],speed:[.01,1,1]},laser:{dmg:[.04,1,1],e:[.05,-1,1],speed:[.01,1,1]},missile:{mag:[1,1,2],lock:[.05,-1,1]},torpedo:{mag:[1,1,2],lock:[.05,-1,1]},
+    charge:{mag:[1,1,2],speed:[.01,1,1]},mlaser:{ml:[.05,1,1],e:[.05,-1,1]},cargo:{cargo:[.03,1,1],speed:[.01,1,1]},scanner:{scan:[.1,1,1],speed:[.01,1,1]}}};
+const BR_KINDS=Object.keys(BR.step);
+function brOf(N){return S&&S.brands&&S.brands[N]||null}
+function brTr(N,k){const B=brOf(N),g=B&&B.pts&&B.pts[k],St=BR.step[k],out={};if(!g||!St)return out;for(const t in g){const s=St[t];if(!s||!g[t])continue;out[t]=Math.round(g[t]*s[0]*s[1]*1000)/1000}return out}
+function brName(N){const B=brOf(N);return B&&B.name||'Company'}
+for(let N=0;N<BR.slots;N++)for(const k of BR_KINDS){const id=`bp${N}_${k}`,base=(WPN[k]||UTIL[k]).name;
+  ITEMS[id]={recipe:{...PART_RC[k]},col:PART_COL[k],part:k,brand:N,get name(){return`${brName(N)} ${base.replace(/^./,x=>x.toLowerCase())}`},get tr(){return brTr(N,k)},get trTxt(){const t=trText(brTr(N,k));return t?`${brName(N)} (your brand): ${t}.`:`${brName(N)}: standard.`}};
+  ITEM_ORDER.push(id);(MK_ITEMS[k]=MK_ITEMS[k]||[]).push(id)}
+// a pilot's brand slot (given with the first depot)
+function brSlot(P,make){const k=pkeyOf(P);S.brandOf=S.brandOf||{};if(S.brandOf[k]!=null)return S.brandOf[k];if(!make)return null;const used=new Set(Object.values(S.brandOf));for(let N=0;N<BR.slots;N++)if(!used.has(N)){S.brandOf[k]=N;S.brands=S.brands||{};S.brands[N]={name:`${P.name||'Pilot'}'s Works`,pts:{},set:0};return N}return null}
+function brCost(pts){let c=0;for(const k in pts)for(const t in pts[k]){const s=BR.step[k]&&BR.step[k][t];if(s)c+=pts[k][t]*s[2]}return c}
+function brBudget(N){const B=brOf(N);return(B&&B.bonus)||0}
+// shaping: arg is "name|kind:trait=steps,trait=steps;kind:…" (the name URI-encoded)
+function brSave(P,arg){if(!myDepots(P).length)return'Your brand begins with your first Depot.';const N=brSlot(P,true);if(N==null)return'No brand slot free in this galaxy.';const B=brOf(N);
+  const[nmE,spec]=String(arg).split('|'),name=decodeURIComponent(nmE||'').replace(/[<>]/g,'').trim().slice(0,24)||B.name,pts={};
+  for(const part of String(spec||'').split(';')){if(!part)continue;const[k,rest]=part.split(':');if(!BR.step[k])continue;for(const kv of String(rest||'').split(',')){const[t,v]=kv.split('=');const n=Math.round(+v||0);if(!BR.step[k][t]||!n)continue;(pts[k]=pts[k]||{})[t]=clamp(n,-BR.range,BR.range)}}
+  for(const k in pts){if(brCost({[k]:pts[k]})>brBudget(N))return`${(WPN[k]||UTIL[k]).name}: the strengths cost more points than the weaknesses pay back.`}
+  const same=JSON.stringify(pts)===JSON.stringify(B.pts||{});if(!same&&B.set){if(P.credits<BR.respec)return`Reshaping your brand costs ${fmt(BR.respec)} cr.`;payFrom(P,'neutral',BR.respec)}
+  B.name=name;if(!same){B.pts=pts;B.set=(B.set||0)+1}return`✓ ${name}${same?' renamed':`${/s$/i.test(name)?"'":"'s"} brand ${B.set>1?'reshaped':'set'}`}.`}
+// built at your own Depot's or Station's workshop: your brand
+{const o=dockAction;dockAction=function(act,arg){if(act==='brsave'){dockErr=brSave(S.player,arg);return}
+  if(act==='make'&&!S.unb){const P=S.player,R=P.docked==='station'&&S.stations[P.sector],k=String(arg).split(':')[0],I=ITEMS[k];
+    if(R&&R.owner==='player'&&(R.pid||'me')===pkeyOf(P)&&I&&I.part&&k===PART[I.part]&&BR.step[I.part]){const N=brSlot(P,true),st=R.stock,n0=st[k]||0;const r=o.apply(this,arguments);const made=(st[k]||0)-n0;
+      if(N!=null&&made>0){inv.take(st,k,made);inv.add(st,`bp${N}_${I.part}`,made);dockErr=`✓ Built ${made} ${ITEMS[`bp${N}_${I.part}`].name}.`}return r}}
+  return o.apply(this,arguments)}}
+{const o=coClick;coClick=function(act,arg){if(act==='brstep'){const[k,t,d]=String(arg).split(':');brDraftGet();const g=(brDraft.pts[k]=brDraft.pts[k]||{});g[t]=clamp((g[t]||0)+(+d),-BR.range,BR.range);renderCompany();return}
+  if(act==='brsave'){const nm=(document.getElementById('brName')||{}).value||'';brDraftGet();const spec=Object.keys(brDraft.pts).map(k=>`${k}:${Object.keys(brDraft.pts[k]).filter(t=>brDraft.pts[k][t]).map(t=>`${t}=${brDraft.pts[k][t]}`).join(',')}`).join(';');const a=`${encodeURIComponent(nm)}|${spec}`;
+    if(NET.cl){netSend({t:'act',act,arg:a});coErr='Working…';renderCompany();return}dockAction(act,a);coErr=dockErr;brDraft=null;renderCompany();return}
+  if(act==='brreset'){brDraft=null;renderCompany();return}return o.apply(this,arguments)}}
+let brDraft=null;
+function brDraftGet(){if(!brDraft){const N=brSlot(S.player),B=N!=null&&brOf(N);brDraft={pts:JSON.parse(JSON.stringify((B&&B.pts)||{}))}}return brDraft}
+// ---- the Holdings tab: your brand
+{const o=holdingsHtml;holdingsHtml=function(P){let h=o.apply(this,arguments);try{h+=brHtml(P)}catch(err){console.error(err)}return h}}
+function brHtml(P){let h=`<div class="h3" style="margin-top:16px">Your brand</div>`;if(!myDepots(P).length)return h+`<p class="note" style="margin:0">Your brand begins with your first Depot: parts built at its workshop carry your company's name and trait.</p>`;
+  const N=brSlot(P),B=N!=null?brOf(N):null,D=brDraftGet(),bud=N!=null?brBudget(N):0;
+  h+=`<p class="note" style="margin:0 0 8px">Parts built at your Depot's or Station's workshop carry your company's name and its trait, and sell on your market like any maker's. For each kind of part, every strength costs points and every weakness pays them back: the points must net to zero${bud?` (your brand has ${bud} extra)`:''}. The first shape is free; reshaping costs ${fmt(BR.respec)} cr and reshapes every part of your brand.</p>`;
+  h+=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><span class="note" style="margin:0">Company name</span><input id="brName" maxlength="24" value="${esc((B&&B.name)||`${P.name||'Pilot'}'s Works`)}" style="background:var(--bg2,#111);color:inherit;border:1px solid var(--line);padding:4px 8px;font:inherit"></div>`;
+  h+=`<div class="tblw"><table class="t"><thead><tr><th>Part</th><th>Trait</th><th class="r">Points</th></tr></thead><tbody>`;
+  for(const k of BR_KINDS){const g=D.pts[k]||{},c=brCost({[k]:g}),St=BR.step[k];
+    h+=`<tr><td class="iname">${esc((WPN[k]||UTIL[k]).name)}</td><td style="white-space:normal">${Object.keys(St).map(t=>{const v=g[t]||0,eff=v*St[t][0]*St[t][1];const lab=t==='mag'?`${eff>0?'+':''}${eff} ${TR_TXT[t]}`:`${eff>0?'+':eff<0?'−':'±'}${Math.round(Math.abs(eff)*100)}% ${TR_TXT[t]}`;
+      return`<span style="display:inline-flex;gap:3px;align-items:center;margin-right:10px"><button class="btn sm" type="button" data-co="brstep" data-arg="${k}:${t}:-1" ${v<=-BR.range?'disabled':''}>−</button><span style="min-width:120px;text-align:center;color:${v>0?'var(--ok,#7ad9a7)':v<0?'var(--danger)':'var(--dim)'}">${lab}</span><button class="btn sm" type="button" data-co="brstep" data-arg="${k}:${t}:1" ${v>=BR.range?'disabled':''}>+</button></span>`}).join('')}</td>
+      <td class="r num" style="color:${c>bud?'var(--danger)':'inherit'}">${c>0?'+':''}${c}</td></tr>`}
+  const bad=BR_KINDS.some(k=>brCost({[k]:D.pts[k]||{}})>bud),same=JSON.stringify(D.pts)===JSON.stringify((B&&B.pts)||{});
+  h+=`</tbody></table></div><div class="act" style="margin-top:8px"><button class="btn pri" type="button" data-co="brsave" ${bad?'disabled':''}>${same?'Save name':B&&B.set?`Reshape · ${fmt(BR.respec)} cr`:'Set the brand'}</button><button class="btn" type="button" data-co="brreset">Undo changes</button>${bad?`<span class="note" style="color:var(--danger);margin:0">Some strengths aren't paid for by weaknesses.</span>`:''}</div>`;
+  return h}
+// the Company screen redraws every second: keep what's being typed in the name box
+{const o=renderCompany;renderCompany=function(){const a=document.activeElement,keep=a&&a.id==='brName'?{v:a.value,s:a.selectionStart,e:a.selectionEnd}:null;const r=o.apply(this,arguments);
+  if(keep){const b=document.getElementById('brName');if(b){b.value=keep.v;b.focus();try{b.setSelectionRange(keep.s,keep.e)}catch(e){}}}return r}}
+
 //@src 17_main.js
 // ============================================================ main loop
 let last=performance.now(),hudT=0,saveT=0,mapT=0;

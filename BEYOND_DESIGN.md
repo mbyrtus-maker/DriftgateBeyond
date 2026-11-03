@@ -1337,3 +1337,25 @@ Today each power's AI mines at its own hidden rate (Halcyon 0.53, Varkesh 1.75, 
 - **Runs:** yours, your crews' and your contractors' in progress (which jump they're on, when they're due, your heat with the power at the other end) and the last results (paid or caught, and for what).
 - Buys, quiet buys and fences are dealt in person: the button sets your course to the contact or deals when you're docked there.
 - Goods only move (a run's load is counted in the ledger while it's under way). **Test:** `blackmarket.py`.
+
+### Posting jobs to other pilots, with bidding: as built (3 Nov 2026)
+- **New file `16zf_posted.js`;** the Post jobs tab gains **Jobs for other pilots**, below your crews. Four kinds, for any of your depots:
+  - **Supply:** bring N of a good to the depot. The taker buys it at the nearest market that has it, at your expense, as far as your credits go.
+  - **Haul:** sell N of a good from the depot's store at the nearest market that deals with you. The proceeds are yours.
+  - **Mine:** cut N t of ore from the depot's system into its store.
+  - **Guard:** stand guard over the depot for 20 minutes (its guns +50%).
+- **The galactic mean** for a job is worked out live: the premium the powers' and the Compact's own jobs pay over their goods' value across the galaxy now, times the goods' value, scaled by the distance to the nearest market (Supply, Haul); by the tonnes (Mine); or by how many powers' homes are within three jumps and whether the Brood are next door (Guard).
+- **Bids:** Low 75% (the floor), Medium 100%, Fast 140%; an exact figure can't go above 200%. The wait before an AI taker signs on is 3 minutes × (mean ÷ bid)²: Low about 5:20, Medium 3:00, Fast 1:32. The taker is a Compact contractor or a pilot of a power that deals with you, and does the job in 1.5 minutes plus 40 s a jump. The fee goes to the Compact or that power when it's done. Up to six jobs open at once; an open job can be withdrawn.
+- **In multiplayer** another player can do an open Supply job first: it shows in their dock's Jobs list at your depot, and delivering pays them your bid pro rata.
+- Depot spending shows on the Economy tab under "jobs". Goods only move. **Test:** `postjobs.py`.
+
+### Your own brand: as built (3 Nov 2026)
+- **New file `16zg_brand.js`;** a **Your brand** section on the Holdings tab once you have a Depot.
+- **Company name:** you name your company there (24 characters; it starts as "<your name>'s Works"). Picking its colour is not built yet.
+- **The trait, with points:** for each kind of part (machine gun, laser, missile, torpedo and charge launchers, mining laser, cargo module, scanner), each trait can be set from −3 to +3 steps. Strengths cost points and weaknesses pay them back, and each kind's points must net to zero (or to a bonus, which the Legend can give later). Steps:
+  - damage ±4%, rounds ±8%, energy draw ∓5%, lock time ∓5%, cutting rate ±5%, hold ±3%, scanner reach ±10%, top speed ±1%;
+  - one more or one fewer missile, torpedo or charge per launcher, at 2 points a step.
+  - The first shape is free; reshaping costs 1,500 cr (to the Compact) and reshapes every part of your brand you have, fitted or stored. Renaming is free.
+- **Built at your Depot's or Station's workshop,** a standard part comes out as your brand's ("Kestrel Works machine gun"), with your trait, and sells on your market like any maker's. A Lair's workshop and other stations' still build standard parts. Fitted, a brand part works through the makers' trait code (stage 7), so a brand is a shape and not a free gain.
+- **Items:** four fixed brand slots per galaxy (one for each pilot), `bp<N>_<kind>`, with the standard part's recipe, so the ledger is untouched. Their name and trait are read live from `S.brands`.
+- **Test:** `brand.py`.
