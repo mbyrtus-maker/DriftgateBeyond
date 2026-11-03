@@ -49,5 +49,6 @@ js/16ze_blackmarket.js
 js/16zf_posted.js
 js/16zg_brand.js
 js/16zh_zoom.js
+js/16zi_small.js
 js/17_main.js
 end.html

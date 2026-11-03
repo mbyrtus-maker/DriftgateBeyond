@@ -40,6 +40,7 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 | postjobs.py | Beyond: jobs posted to other pilots: the galactic mean and the bids (wait times, the 200% cap), Supply, Haul, Mine and Guard done by AI takers and paid, a job withdrawn, another player delivering, the tab, ledger exact |
 | brand.py | Beyond: your own brand: none without a Depot, name and points netting to zero (an unpaid strength refused), a gun built at your Depot carrying the brand and its trait, fitted damage, reshaping for credits, the tab, ledger exact |
 | zoom.py | Beyond: the strategic map zoomed into a system (button, wheel, the Galaxy box, drawn full size), a capital on patrol sweeping its route, one escorting you, Guard here clearing both |
+| smallitems.py | Beyond: rigs and racks on scouts only, flips and limpets by grade and restocked on docking, a comet sold to the Compact, embargo contraband by origin, a Rift Shard standing in and leaving a trait, ledger exact |
 | start_screen.py | the Training button stands out without moving the other buttons |
 | keys.py | key list, rebinding with swap, saved bindings, the keys strip |
 | brood_ui.py | Brood HUD chip, alerts at 5/6/7 systems, map meter |

@@ -1368,3 +1368,21 @@ Today each power's AI mines at its own hidden rate (Halcyon 0.53, Varkesh 1.75, 
   - Guard here and Come here clear either.
 - **Fix:** a contractor's capitals now take their owner's own yard as their base. The base lookup assumed a sworn pilot, and an unsworn pilot's capital broke the capital tick.
 - **Test:** `zoom.py`.
+
+### The smaller items (3 Nov 2026)
+- **New file `16zi_small.js`.**
+- **Beacon rigs and limpet racks are fitted parts** (utility slots, scout hulls only, built at any workshop, stocked at the freeports and at Ostrova's core).
+  - A beacon rig holds one beacon device a grade, and a limpet rack one limpet a grade. Both are restocked whenever you dock.
+  - With no rig you can't flip beacons, and with no rack you carry no limpets.
+  - Scouts get a third utility slot and the Advanced Scout a fourth. A new pilot's Scout comes with a scanner, a rig and a rack; an Advanced Scout adds a landing kit.
+- **Comets and derelicts sold as intel to the Compact:**
+  - Fly within 2.5 km of one (3.5 km with a scanner) to log it.
+  - Sell the find at any freeport while it lasts, from the dock's Jobs list. A comet pays 3 cr a tonne of its ore (at least 150); a derelict pays a fifth of its cargo's value (at least 120).
+  - You can still work it yourself.
+- **Embargo contraband by origin:**
+  - Goods bought at a power's market carry its origin, a tag like the stolen tag that shrinks as the goods leave your hold and vault.
+  - While two powers have an embargo running, each one's goods are contraband in the other's space: Heavy heat (30) if a scan finds them.
+- **The Rift Shard as a wild card:**
+  - At a workshop, a Rift Shard stands in for one missing component of a recipe. The rift pulls that component's makings out of the outer drift, so it only works while the drift holds them, and the shard's Riftstone goes into the drift; the ledger stays exact.
+  - Fed into a part's upgrade (Loadout → Rift Shards), it leaves the part a random trait: a strength 65% of the time (one or two steps of the brand table), a one-step weakness otherwise. Taking the part out or changing hulls loses the trait.
+- **Tests:** `smallitems.py`. `intel.py` and `limpet.py` now fit a rig and a rack to their scouts.
