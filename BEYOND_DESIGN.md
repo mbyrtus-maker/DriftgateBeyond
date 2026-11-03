@@ -1423,3 +1423,6 @@ Three new screens on the "Driftgate Beyond screens" canvas (https://claude.ai/ar
   - **Sell hull** takes the parts and hold off into the hangar first.
   - Free hulls are never berthed.
   - Proposal: 2 berths at a freeport or a power's station, more at your own Depot or Station with its hangar building.
+
+### War check after the 3 Nov features (neutral leaders, 600 galaxies, 16 h)
+Varkesh 28%, Brood 24%, Ostrova 24%, Halcyon 23%, nobody 1%. Before these features it was Ostrova 28, Halcyon 27, Varkesh 24, Brood 20. The spread is a little wider than run-to-run noise (about ±2 to 3 points); the Brood are 4 points over the 20% target. No retune yet.
