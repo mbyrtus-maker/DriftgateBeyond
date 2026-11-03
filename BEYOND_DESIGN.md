@@ -1426,3 +1426,17 @@ Three new screens on the "Driftgate Beyond screens" canvas (https://claude.ai/ar
 
 ### War check after the 3 Nov features (neutral leaders, 600 galaxies, 16 h)
 Varkesh 28%, Brood 24%, Ostrova 24%, Halcyon 23%, nobody 1%. Before these features it was Ostrova 28, Halcyon 27, Varkesh 24, Brood 20. The spread is a little wider than run-to-run noise (about ±2 to 3 points); the Brood are 4 points over the 20% target. No retune yet.
+
+### Proposal: the minimal pass over every screen (mockups, 3 Nov 2026, being reviewed)
+The canvas's "Minimal pass" rows hold a minimal version of every screen; the originals stay beside them.
+- **Screens:** title, Company (Allegiance, Holdings, Economy, Jobs, Black market), docked (Jobs, Trade, Ship → Loadout, Ship → Hangar), and the sector map.
+- **The pattern:**
+  - a quiet list on the left (icon, name, one status as a dot and a word, one number);
+  - everything else for the picked row in a detail panel on the right;
+  - no boxes, one amber button per screen, secondary actions as text links;
+  - alert lines only when something needs you;
+  - levels as pips, forms as numbered steps;
+  - a slim header (company or station, credits, rating or hold, upkeep).
+- **Tabs merged:** the Company screen's Post jobs and Faction jobs become one Jobs tab (All · Your pilots · Posted out · Faction jobs); the Ship tab's Systems sub-tab folds into Loadout.
+- **Checked against the originals:** each one's buttons, inputs and readouts were listed and placed in the minimal version.
+- **Kind icons for jobs:** mine is an ore hexagon, haul a component square, guard a shield, intel a triangle, hunt a dart.
