@@ -46,6 +46,7 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 | fees.py | Beyond: your base's fees: defaults, limits, trade volume at steep and cheap prices, docking fee income and thinner traffic, visiting pilots' services, posted-job waits, the Holdings Fees panel; ledger exact |
 | cscan.py | Beyond: the cargo scanner: none without the part, rough then exact readings, out of range, Unbound built-in, hidden containers, heat in a power's own space, freeport stock; ledger exact |
 | claimfit.py | Beyond: Claim Beacons as fitted parts: Market tiles per power in its colour, buy, Loadout Fit and Buy & fit, refused on a miner, hold-only beacons don't claim, fitted ones do and are used up; ledger exact |
+| corps.py | Beyond: every item has a maker: the makers' lines with plain parts, no unbranded parts on the makers' markets, every slot covered at a freeport, the works build plain parts, made-by labels in the Market; ledger exact |
 | start_screen.py | the Training button stands out without moving the other buttons |
 | keys.py | key list, rebinding with swap, saved bindings, the keys strip |
 | brood_ui.py | Brood HUD chip, alerts at 5/6/7 systems, map meter |

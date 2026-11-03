@@ -1724,3 +1724,21 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 ### Claim Beacons say they're single use (3 Nov 2026)
 - **The user's ask:** note that a Claim Beacon is a single-use item.
 - Everywhere it's described, it now reads **Single use (ammo: 1)**: the part's description and trait line on the Loadout, the Buy & fit rows, and the Market's beacon tiles and their heading.
+
+### Every item has a maker (3 Nov 2026)
+- **The user's ask:** every item except ore and parts you craft yourself should be tied to a corporation.
+- **The user's choices:**
+  - Markets sell only corporations' parts.
+  - Components and payload carry a made-by label, with no traits.
+- **As built** (`16zy_corps.js`):
+  - **Parts:**
+    - Each power's core station and each freeport sells only its two makers' parts.
+    - Each maker now has a **plain line** (no trait, "standard") beside its trait parts, for every slot it covers.
+    - A slot no local maker covered goes to one of them: weapons and mining tools to the arms maker, utility parts to the other. Every slot is covered at every maker's market.
+    - The lines: Halcyon (Corvane Yards, Brightline Emitters), Varkesh (Hold Foundry, Marchgun Ordnance), Ostrova (Spirewright, Archive Dynamics), Mirrorwater (Quicksilver Hullworks, Mirrorwater Arms), Coldwater (Coldwater Prospecting, Coldwater Refit), Ember Wake (Ember Wake Drives, Wakefire Munitions).
+    - The works build the whole line, plain parts included.
+    - Standard parts already on those markets became the local makers' plain parts (same recipe, so the ledger is unchanged; done once for existing galaxies).
+    - The unbranded standard part now only comes from a workshop ("Unbranded: built in a workshop, by you or another pilot"). Your own brand's parts stay yours.
+  - **Components and payload:** the Market's detail shows who makes them, a power's or freeport's first maker for components and its second for payload ("Made by Quicksilver Hullworks · here"), with the maker in the tile's tooltip. They stay one item each in the economy.
+- **Left out:** ore, contraband, Scrapheart's salvage, and your own depots' and stations' markets (your own brand covers those).
+- **Tests:** `corps.py`.
