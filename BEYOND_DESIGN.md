@@ -1580,3 +1580,32 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - ten minutes of the galaxy run forward.
 - Anything that makes goods moves the ledger baseline, and guests' requests run on the host.
 - **Test:** `dev_beyond.py`.
+
+### Your base's fees (agreed 3 Nov 2026)
+- **The user's choices:** you set your own fees at a Depot or Station you own: **market prices, a services fee and a docking fee**. Each is a stepper between a minimum and a maximum, and all of them **start at the galaxy default**. Fees change **traffic only**: how many traders and pilots come, never your standing. No transit toll.
+- **The settings, per base:**
+
+  | Fee | Range | Default | Who pays it |
+  |---|---|---|---|
+  | Your sell price | 80–130% of the market price | 100% | the powers' traders buying from you |
+  | Your buy offer | 80–120% of the market price | 100% | you, to the traders selling to you |
+  | Services | 50–200% of the standard rate | 100% | visiting pilots who repair and rearm |
+  | Docking | 0–100 cr a visit | 0 cr | every trader and visiting pilot, as they dock |
+
+- **How traffic answers:**
+  - **Traders** (the powers that deal with you, every minute or so):
+    - visits fall 7% for every 10 cr of docking fee (0 cr: as now; 100 cr: under a third as often). At about 25 cr the fee's income makes up for the trade it turns away; above that it pays only when your store is thin;
+    - each visit's lot shrinks 22% per 10% of price above the default (130%: about a third), and grows the same below it, up to 1.4 times;
+    - your buy offer works the other way round;
+    - each visit pays the docking fee from its power's treasury.
+  - **Visiting pilots** (new): Compact contractors and the pilots of the powers that deal with you stop now and then to repair and rearm, about six an hour at the defaults (a Station draws half as many again). Each pays 60–180 cr of services (scaled by your services fee) and the docking fee, from the Compact's or its power's treasury.
+    - Every 10% of services fee above the default sends 8% fewer of them, down to a fifth at 200%; every 10% below draws 8% more, up to 1.4 times at 50%.
+    - The docking fee thins them as it does traders.
+  - **Takers for the jobs you post** at that base wait longer the higher its docking fee (twice as long at 100 cr).
+  - The trade-off: steep prices earn more on each unit but sell far fewer, so they suit a base with little to sell. Cheap prices move a big store fast.
+- **Where it shows:**
+  - **Holdings,** in a base's detail: **Fees**, with − and + for each fee, its default, and what it does to traffic now ("traders: about 40 visits an hour, 60 at the defaults").
+  - **Economy,** with lines for docking and services income.
+  - **The map's side panel** shows any contractor base's fees.
+- **Ledger:** only credits move: from the powers' and the Compact's treasuries to you, as trade already does.
+- **Not yet:** other players docking at your base in multiplayer. A visitor's view of someone else's base (its market at the owner's prices, repairs at the owner's services fee, the docking fee as you dock) doesn't exist yet; until it does, the fees reach other players only through the AI traffic above.
