@@ -13,8 +13,8 @@ def sy(name,ang,r,kind,own=None):
 # both lead into the deep-space rim: every route to a freeport crosses deep space.
 # Around that, a ring of twelve: the three frontiers, the three forges, and six quiet systems that are the doors to deep space.
 # Outside, the three cores, the relay, and more quiet space out to the corners.
-R1,R2,RF,R3,R4=.10,.20,.29,.37,.47
-DISC=.245
+R1,R2,RF,R3,R4=.09,.25,.33,.40,.48
+DISC=.29
 S = {
  'bl':("The Bloom",.5,.5,'hive','brood'),
  'gs':sy("Glass Shallows",270,R1,'deep'),
@@ -26,7 +26,9 @@ S = {
  'mn':sy("Mournwater",60,R2,'deep'),
  'tm':sy("Thornmere",120,R2,'deep'),
  'rm':sy("Rustmere",180,R2,'deep'),
- 'wr':sy("The Wrack",162,.16,'den','pirate'),
+ 'wr':sy("The Wrack",153,.15,'den','pirate'),
+ 'bg':sy("Bilgewater",136,.215,'deep'),
+ 'sr':sy("Scuttle Rift",168,.215,'deep'),
  'sk':sy("Sunken Reach",240,R2,'deep'),
  'br':sy("Blackwater Rift",300,R2,'deep'),
  'ew':sy("Ember Wake",30,RF,'freeport','freeport'),
@@ -62,7 +64,7 @@ S = {
  'll':("Lastlight Shoals",.95,.95,'void',None),
 }
 L = """bl-gs bl-cd bl-ld bl-ae bl-ud gs-cd cd-ld ld-ae ae-ud ud-gs
-gd-cd mn-ld tm-ae rm-ud sk-gs br-gs gd-mn mn-tm rm-sk sk-br br-gd wr-ae wr-ud
+gd-cd mn-ld tm-ae rm-ud sk-gs br-gs gd-mn mn-tm rm-sk sk-br br-gd wr-ud wr-bg wr-sr bg-tm sr-rm
 ew-gd ew-mn cw-tm cw-rm mw-sk mw-br
 dl-gd fh-mn qs-tm hu-rm cv-sk bw-br
 vm-dl dl-ci ci-fh fh-of of-qs qs-sh sh-hu hu-hr hr-cv cv-ke ke-bw bw-vm
