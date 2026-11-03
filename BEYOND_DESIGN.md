@@ -1521,6 +1521,7 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - Views: Offers and Runs, with a heat filter and **+ Request work** (fixers, quiet buyers, the Tankard once met).
   - An offer's detail: heat if caught (and with whom), pay, from and to, then **who runs it**: you, each crew with its hold and its chance of being caught, or a Compact contractor (your 25% cut). Deals show Buy, Sell or Set course.
   - A run's detail: its progress or result, and the pay.
+- **Phone width:** the Company sheet fits the screen; its tabs scroll sideways, and the list sits above the detail.
 - **Tests:** `company2.py` is new. `blackmarket.py`, `declare.py` and `stations.py` read the new screens.
 
 ### Screens pass: the docked Jobs board (3 Nov 2026)
