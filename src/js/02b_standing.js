@@ -32,7 +32,7 @@ function intelSide(P,x){P=P||S.player;return P.sworn?x===P.sworn:FAC_IDS.include
 function pilotHostile(P,x){P=P||S.player;if(!x||x==='player')return false;if(P.sworn)return hostile(P.sworn,x);if(x==='brood'||x==='pirate')return true;if(P.aggro&&P.aggro[x]>S.T)return true;if(x==='neutral')return false;return standOf(x,P)<STAND.hostile}
 // can this pilot dock and trade at a station of this owner: sworn pilots at their faction's and the freeports (as in Driftgate 1);
 // a contractor anywhere it stands Neutral or better (the freeports by its Compact standing)
-function tradeOK(P,owner){P=P||S.player;if(owner==='player')return true;if(P.sworn)return owner===P.sworn||owner==='neutral';if(owner!=='neutral'&&!FAC_IDS.includes(owner))return false;return standOf(owner,P)>=STAND.dock}
+function tradeOK(P,owner){P=P||S.player;if(owner==='player')return true;if(P.sworn)return owner===P.sworn||owner==='neutral'||(FAC_IDS.includes(P.sworn)&&FAC_IDS.includes(owner)&&!!(pairOf(P.sworn,owner)||{}).ally);if(owner!=='neutral'&&!FAC_IDS.includes(owner))return false;return standOf(owner,P)>=STAND.dock}
 // who pays a pilot's containment work (Seeder spotting, Brood kills with no job running): their sworn faction, or for a
 // contractor the power they stand best with (containment pays every contractor)
 function containPayer(P){P=P||S.player;if(!P||S.unb)return null;if(P.sworn)return FAC_IDS.includes(P.sworn)?P.sworn:null;let b=FAC_IDS[0],bv=-1e9;for(const f of FAC_IDS){const v=standOf(f,P);if(v>bv){bv=v;b=f}}return b}

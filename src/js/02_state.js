@@ -87,7 +87,9 @@ function jamFx(c){const p=W.player;if(!p)return;const f=jamFrac(p),dark=jamDark(
 function hostile(a,b){if(!a||!b||a===b)return false;if(S&&S.unb&&(a==='player'||b==='player')){const o=a==='player'?b:a;if(o==='pirate'||o==='neutral')return false;if(o==='brood')return true;if(FAC_IDS.includes(o))return!unbCover(o)}if((a==='brood'&&b==='pirate')||(a==='pirate'&&b==='brood'))return false;if(!STRAT&&W&&W.truce&&isFacSide(a)&&isFacSide(b))return false;
   // an independent contractor (Beyond): the Brood and the Unbound always, a power only below -50 standing, the Compact never
   if((a==='player'||b==='player')&&S&&S.player&&!S.player.sworn)return pilotHostile(S.player,a==='player'?b:a);if(a==='neutral'||b==='neutral'){const o=a==='neutral'?b:a;return o==='pirate'||o==='brood'}const pf=S.player.sworn;if(pf&&((a==='player'&&b===pf)||(b==='player'&&a===pf)))return false;
-  const C=S.coal;if(C){const A=a==='player'?pf:a,B=b==='player'?pf:b;if(A&&B&&A!==B&&C.mem.includes(A)&&C.mem.includes(B))return false}return true}
+  const C=S.coal;if(C){const A=a==='player'?pf:a,B=b==='player'?pf:b;if(A&&B&&A!==B&&C.mem.includes(A)&&C.mem.includes(B))return false}
+  // Beyond: between two powers, ships fight only when their relation is Hostile or War (or a truce is turned on a leader)
+  {const A=a==='player'?pf:a,B=b==='player'?pf:b;if(REL.on&&S&&S.rel&&A&&B&&A!==B&&FAC_IDS.includes(A)&&FAC_IDS.includes(B))return relHostile(A,B)}return true}
 
 // ============================================================ state
 let S=null,W=null,running=false;

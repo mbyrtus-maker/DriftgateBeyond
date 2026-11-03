@@ -11,7 +11,7 @@ WORKERS=int(sys.argv[5]) if len(sys.argv)>5 else 2;OUT=sys.argv[6] if len(sys.ar
 SETUP=r"""(()=>{window._fs={won:null};galaxyWon=function(s,how){_fs.won=[Math.round(S.T/60),s,how||'hold'];S.won=s};
  window._fsGame=function(maxT,keep){if(!keep){FEED.length=0;for(const k of Object.keys(WORLDS))delete WORLDS[k];W=null;newGame(__PFN__,launchCls(),'Tester',__PP__);S.player.name='Tester';if(__PF__==='pirate'){S.unb=1;unbP();S.player.cls='raider'}startWith(S)}running=false;exitSector();W=null;_fs.won=null;const peak={};
   while(S.T<maxT&&!_fs.won){S.T+=10;strategicTick();updateEvents();if(S.T%600===0){const n=controlCounts();for(const k in n)peak[k]=Math.max(peak[k]||0,n[k])}}
-  return JSON.stringify({won:_fs.won||[Math.round(S.T/60),'none','unfinished'],peak})};
+  return JSON.stringify({won:_fs.won||[Math.round(S.T/60),'none','unfinished'],peak,rs:typeof relStats==='function'?relStats():null})};
  window._fsStart=function(keep){if(!keep){FEED.length=0;for(const k of Object.keys(WORLDS))delete WORLDS[k];W=null;newGame(__PFN__,launchCls(),'Tester',__PP__);S.player.name='Tester';if(__PF__==='pirate'){S.unb=1;unbP();S.player.cls='raider'}startWith(S)}running=false;exitSector();W=null;_fs.won=null;window._pk={};return 1};
  window._fsChunk=function(maxT,n){for(let i=0;i<n&&S.T<maxT&&!_fs.won;i++){S.T+=10;strategicTick();updateEvents()}const c=controlCounts();for(const k in c)_pk[k]=Math.max(_pk[k]||0,c[k]);return(_fs.won||S.T>=maxT)?JSON.stringify({won:_fs.won||[Math.round(S.T/60),'none','unfinished'],peak:_pk}):''};return 1})()"""
 import os

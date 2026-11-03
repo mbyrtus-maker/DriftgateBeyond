@@ -463,10 +463,10 @@ function nearestOwnStation(f,sid){let b=null,bh=99;for(const id in S.stations){c
 function campTargets(f){const terr=territory(f),D=DOCTRINE[f],C=S.coal,out=[];
   for(const d of SECTOR_DEFS){if(d.kind==='void'||terr.has(d.id)||!NEIGH[d.id].some(n=>terr.has(n)))continue;
     const R=S.stations[d.id],oid=OUT_BY_SECTOR[d.id],o=oid?S.outposts[oid]:null,ow=sideNorm(sectorOwner(d.id));
-    if(R&&(R.kind==='core'||R.kind==='hive'))continue;if(R&&!hostile(f,R.owner))continue;if(ow&&ow!==f&&ow!=='pirate'&&!hostile(f,ow))continue;
+    if(R&&(R.kind==='core'||R.kind==='hive'))continue;if(R&&!fightsAt(f,R.owner))continue;if(ow&&ow!==f&&ow!=='pirate'&&!fightsAt(f,ow))continue;
     let s;
     if(R)s={kind:'take',st:d.id,w:D.w.depot*(R.owner==='brood'?1.5:1)};
-    else if(o&&sideNorm(o.owner)!==f&&!(d.home&&d.home!==f)&&(!o.owner||hostile(f,sideNorm(o.owner))||o.owner==='pirate'))s={kind:'take',out:oid,w:(o.owner?1.2:D.w.neutral)*(D.w[o.type]||1)};
+    else if(o&&sideNorm(o.owner)!==f&&!(d.home&&d.home!==f)&&(!o.owner||fightsAt(f,sideNorm(o.owner))||o.owner==='pirate'))s={kind:'take',out:oid,w:(o.owner?1.2:D.w.neutral)*(D.w[o.type]||1)};
     else if(canBuildIn(d.id,f)&&!S.events.some(e=>e.type==='build'&&e.sector===d.id))s={kind:'build',w:D.w.build};
     else continue;
     if(d.ores&&d.ores.nu&&(S.econ.stock[f].nu||0)<64)s.w*=1.8;

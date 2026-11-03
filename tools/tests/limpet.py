@@ -13,7 +13,7 @@ async def main():
     await pg.goto(GAME+'?name=Tester&sworn=halcyon',wait_until='domcontentloaded');await pg.wait_for_function('window.__dg&&__dg.ev("MDL.ready")',timeout=60000)
     await pg.evaluate("document.getElementById('mpName').value='Tester'");await pg.evaluate("document.getElementById('bLaunch').click()");await pg.wait_for_timeout(1500)
     ev=lambda c:pg.evaluate('c=>__dg.ev(c)',c)
-    print('setup',await ev("""(()=>{if(S.player.docked)undock();S.player.cls='scout';refreshPlayerStats();const foe=FAC_IDS.find(f=>hostile(S.player.faction,f));
+    print('setup',await ev("""(()=>{if(S.player.docked)undock();S.player.cls='scout';refreshPlayerStats();const foe='varkesh';relInit();S.rel.halcyon.varkesh=S.rel.varkesh.halcyon=-60;Object.assign(pairOf('halcyon','varkesh'),{war:true,warT:S.T});
       const t=makeEscort(foe,W.sid,{});t.dummy=true;const E=W.ents.find(x=>x.tok===t);const p=W.player;qRot(p.q,0,0,1,_f);E.x=p.x+_f.x*900;E.y=p.y;E.z=p.z+_f.z*900;
       W.tgt={kind:'ship',ref:E};window._E=E;window._foe=foe;hudUpdate();return JSON.stringify({foe,r:E.st.radius,surf:Math.round(lpSurf(E,p)),chip:limpetChip(),strip:document.getElementById('hKeysNow').innerText.replace(/\\n/g,' ')})})()"""))
     # fly past: hold F while closing at speed; progress keeps while in range

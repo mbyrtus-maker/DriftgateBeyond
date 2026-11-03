@@ -358,12 +358,12 @@ function planOffensive(f){if(FACTIONS[f]&&f!=='brood'&&campBusy(f)){S.ai[f].next
   const adjOf=sec=>terr.has(sec)||NEIGH[sec].some(n=>terr.has(n)),hopTo=sec=>{let m=9;for(const t of terr)m=Math.min(m,HOP[t][sec]);return m},bw=sec=>{const h=hopTo(sec);return h<=1?1.6:h===2?1.1:h===3?.7:.4};
   // the Brood hunts the strong: targets held by the faction with the most systems weigh up to 1.5x, the weakest down to 0.6x
   const bcc=f==='brood'?controlCounts():null,bmx=bcc?Math.max(1,...FAC_IDS.map(k=>bcc[k]||0)):1,bstr=ow=>!bcc||!FAC_IDS.includes(sideNorm(ow))?1:.6+.9*(bcc[sideNorm(ow)]||0)/bmx;
-  for(const id in S.outposts){const o=S.outposts[id];if(o.owner===f||busy.has(id)||outLockBars(o.sector,f))continue;let w;
+  for(const id in S.outposts){const o=S.outposts[id];if(o.owner===f||busy.has(id)||outLockBars(o.sector,f))continue;if(isPow(f)&&o.owner&&isPow(sideNorm(o.owner))&&!warWith(f,o.owner))continue;let w;
     if(f==='pirate'&&o.owner==='brood')continue;if(f==='pirate'){if(id!=='wrack'&&!o.owner&&!RAID.pirHold)continue;w=id==='wrack'?6:o.owner==='player'?2.2:1}
     else if(f==='brood'){if(o.owner==='pirate')continue;w=(o.owner?1.6*bstr(o.owner):2.2)*bw(o.sector)}
     else{w=!o.owner?3:o.owner==='player'?2:o.owner==='brood'?3.4:o.owner==='pirate'?(id==='wrack'?.8:2):1.4;w*=adjOf(o.sector)?1.6:.3}
     c.push([{out:id},w])}
-  for(const sid in S.stations){const R=S.stations[sid];if(R.owner===f||(R.owner==='neutral'&&f!=='brood')||busy.has('st:'+sid)||R.kind==='hive'||!hostile(f,R.owner))continue;const adj=adjOf(sid);let w=0;
+  for(const sid in S.stations){const R=S.stations[sid];if(R.owner===f||(R.owner==='neutral'&&f!=='brood')||busy.has('st:'+sid)||R.kind==='hive'||!fightsAt(f,R.owner))continue;const adj=adjOf(sid);let w=0;
     if(f==='brood')w=R.kind==='core'?(adj?.5*bstr(R.owner):0):R.kind==='free'?1.8*bw(sid):2.6*bw(sid)*bstr(R.owner);
     else if(R.kind==='depot'){if(f==='pirate')w=R.owner==='player'?1.4:DEF[sid].home?0:.5;else w=(R.owner==='brood'?BAL.antiBrood:R.owner==='player'?1.2:DEF[sid].home?.15:.9)*(adj?1.4:.2)}
     if(w>0)c.push([{st:sid},w])}
@@ -371,6 +371,7 @@ function planOffensive(f){if(FACTIONS[f]&&f!=='brood'&&campBusy(f)){S.ai[f].next
     if(C.mem.includes(f)){for(const x of c){const ow=own(x);x[1]*=ow===C.lead?1+3.5*BAL.coal:C.mem.includes(ow)?0:1}}
     else if(f===C.lead){for(const x of c){const sec=x[0].st||S.outposts[x[0].out].sector;if(!adjOf(sec))x[1]*=.15}S.ai[f].next+=35}
     for(let i=c.length-1;i>=0;i--)if(c[i][1]<=0)c.splice(i,1)}}
+  {const F=S.ai[f]&&S.ai[f].focus;if(F&&S.T<F.until)for(const x of c){const ow=sideNorm(x[0].st?S.stations[x[0].st].owner:S.outposts[x[0].out].owner);if(ow===F.on)x[1]*=3}}
   if(!c.length)return;if(FACTIONS[f]&&f!=='brood'){const see=covOf(f);for(const x of c){const sec=x[0].st||S.outposts[x[0].out].sector;if(see.has(sec))x[1]*=1.4}}
   const pk=wpickArr(c),isSt=!!pk.st,Rr=isSt?S.stations[pk.st]:null,o=isSt?null:S.outposts[pk.out];
   const lvl=isSt?(Rr.kind==='core'?4:2):o.level,sector=isSt?pk.st:o.sector,owner=isSt?Rr.owner:o.owner,name=isSt?Rr.name:o.name;
@@ -425,7 +426,7 @@ function raidBounty(t){return Math.round((invValue(t.load||{})*.85+400)/10)*10}
 function weHtml(f){const b=Math.round(weBonus(f)*100);return` War effort: <b>${b?'+'+b+'%':'none'}</b> in battles fought out of sight${b?'':''} (pilots earn it with Orders, supply drives, campaign moves, beacon flips and kills; it fades over about 20 minutes).`}
 function resolveAbstract(ev){
   if(ev.st){resolveSiege(ev);return}
-  const o=S.outposts[ev.target],s=S.sectors[o.sector];if(o.owner&&!hostile(ev.att,o.owner)){finishOffensive(ev);return}
+  const o=S.outposts[ev.target],s=S.sectors[o.sector];if(o.owner&&!fightsAt(ev.att,o.owner)){finishOffensive(ev);return}
   const att=invValue(ev.force)*clsF(ev.cls);let def=o.owner?300+o.level*260:120,dforce=null;
   if(FACTIONS[o.owner]){dforce={};const fl=S.econ.fleet[o.owner],warned=covOf(o.owner,true).has(o.sector);for(let i=0;i<(warned?3:2);i++){const ld=loadout('patrol',factionTier(o.owner));if(takeFrom(ld,[fl,S.econ.stock[o.owner]]))inv.addAll(dforce,ld)}def+=invValue(dforce)}
   const win=Math.random()<att*weMul(ev.att)/(att*weMul(ev.att)+def*1.1*(o.owner?weMul(o.owner):1));
@@ -436,7 +437,7 @@ function resolveAbstract(ev){
   else{o.shield=oStats(o).sMax;if(prev==='player')feed(`Your ${o.name} held off the ${sideAdj(ev.att)} attack.`,'good');else if(covered(o.sector)||prev===S.player.sworn)feed(`${o.name} repelled ${art(sideAdj(ev.att)).toLowerCase()} ${sideAdj(ev.att)} assault.`,'news')}
   finishOffensive(ev);
 }
-function resolveSiege(ev){const Rr=S.stations[ev.st],s=S.sectors[ev.sector];if(!Rr||!hostile(ev.att,Rr.owner)){finishOffensive(ev);return}
+function resolveSiege(ev){const Rr=S.stations[ev.st],s=S.sectors[ev.sector];if(!Rr||!fightsAt(ev.att,Rr.owner)){finishOffensive(ev);return}
   const att=invValue(ev.force)*clsF(ev.cls);let def=(Rr.kind==='core'?2600:Rr.kind==='free'?2000:Rr.fwd?800:1300)*(1+.2*(devOf(Rr).def+devOf(Rr).armor)+.1*(devOf(Rr).hangar||0)),dforce=null;
   if(FACTIONS[Rr.owner]){dforce={};const fl=S.econ.fleet[Rr.owner],warned=covOf(Rr.owner,true).has(ev.sector);for(let i=0;i<(Rr.kind==='core'?3:2)+(warned?1:0);i++){const ld=loadout('patrol',factionTier(Rr.owner));if(takeFrom(ld,[fl,S.econ.stock[Rr.owner]]))inv.addAll(dforce,ld)}def+=invValue(dforce)}
   const hgN=(Rr.hg||[]).length;if(hgN)def+=Rr.hg.reduce((a,h)=>a+invValue(h.load),0)*.6;   // hangar fighters scramble to defend their depot

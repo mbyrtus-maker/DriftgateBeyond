@@ -49,7 +49,7 @@ addEventListener('pointermove',e=>{if(e.pointerType==='mouse')touchLast=false},{
 addEventListener('keydown',e=>{touchLast=false;if(e.code==='F11'){e.preventDefault();toggleFull();return}
   if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT'))return;
   // docked: 1–5 pick the station screen's tabs
-  if(S&&S.player&&S.player.docked&&!$('dock').hidden&&/^Digit[1-5]$/.test(e.code)&&!e.ctrlKey&&!e.altKey&&!e.metaKey){e.preventDefault();dockTop(+e.code.slice(5)-1);return}
+  if(S&&S.player&&S.player.docked&&!$('dock').hidden&&/^Digit[1-6]$/.test(e.code)&&!e.ctrlKey&&!e.altKey&&!e.metaKey){e.preventDefault();dockTop(+e.code.slice(5)-1);return}
   if(running&&/^Digit[1-6]$/.test(e.code)&&!e.ctrlKey&&!e.altKey&&!e.metaKey){if(commsOpen()){e.preventDefault();{const kc=keyOf(e.code);if(kc)keys[kc]=true}if(e.repeat)return;commsPick(String(+e.code.slice(5)-1));return}if(W&&W.bridge&&W.bridge.panel&&+e.code.slice(5)<=FC_TABS.length){e.preventDefault();W.bridge.panel=fcTabs(W.bridge.f.tok)[+e.code.slice(5)-1][0];renderConsole(true);return}}
   const c=keyOf(e.code);if(running)auInit();if(!c)return;
   if(c==='KeyD'&&e.ctrlKey&&e.altKey&&running){e.preventDefault();devToggle();devCredits();return}

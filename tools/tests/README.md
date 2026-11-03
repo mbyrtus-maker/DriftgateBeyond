@@ -13,6 +13,7 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 |---|---|
 | load.py | the game loads with no page errors |
 | standing.py | Beyond stage 1: freeport start unsworn, standing bands, hostility and docking by standing, bounty payers, jobs by issuer, attacking costs standing and draws aggro, drift, respawn at the freeport, ledger, a minute of flight |
+| relations.py | Beyond stage 2: relation bands and hostility, war declared on its trigger, ceasefire, border demand, succession, Allegiance tab, a leader shot down and succeeded, an hour of strategy |
 | start_screen.py | the Training button stands out without moving the other buttons |
 | keys.py | key list, rebinding with swap, saved bindings, the keys strip |
 | brood_ui.py | Brood HUD chip, alerts at 5/6/7 systems, map meter |
