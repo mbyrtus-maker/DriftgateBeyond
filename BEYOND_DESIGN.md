@@ -1212,3 +1212,10 @@ Driftgate 1 v255 removed its frigates, but their code paths survive everywhere a
   - A station's Overview crashed when a freeport request could be delivered there (found by training section 2).
   - The job board's "Switch to a … here · free" button offered paid hulls as free; it now shows the price (a Lark at a freeport is 1,350 cr).
 - **Multiplayer:** the five faked-link tests and a new one, `mp_beyond.py`, for Beyond's late additions seen and used by a guest.
+
+### Win check without players (2 Nov 2026)
+- `PPORT=mw python3 tools/fastsim.py FILE 300 16 - 2 OUT.json`: 300 strategic-only galaxies, the player idle at a freeport, capped at 16 hours, on the build with destroyers, the Ravager and no sloops.
+- **Who wins:** Halcyon 36%, the Brood 34%, Ostrova 15%, Varkesh 10%, no winner within 16 hours 5%.
+- **How long:** median 6 hours (quartiles 3.8 h and 9.4 h). Powers win at a median of about 4–5 hours; the Brood wins late (median 9.4 hours), after the powers have fought each other down. Ten Brood wins came in galaxies where the powers never went to war.
+- About 9 wars per galaxy; no errors in any game.
+- **Against the working targets** (Brood about 20%, a galaxy won in 8–12 hours): the Brood is high, Halcyon strong, Varkesh weak, and power wins come early. No tuning yet: the targets aren't settled.
