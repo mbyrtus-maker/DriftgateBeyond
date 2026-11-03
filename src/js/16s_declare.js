@@ -5,7 +5,7 @@
 // applies to you too: lead, and the three powers turn on you together. Losing your last Station ends the faction (you keep
 // your company). The powers' leaders send a founder proposals: an alliance when they think well of you, a demand for tribute
 // when they don't. Wars come slower than Driftgate 1's. The Brood starts slow and grows with every system it holds.
-const DECL={propEvery:600,tribute:2000,allyStand:40,demandStand:-20,brood:[[1,.37],[5,.73],[12,1.37]],hiveAt:4};
+const DECL={propEvery:600,tribute:2000,allyStand:40,demandStand:-20,brood:[[1,.31],[5,.6],[12,1.15]],hiveAt:4};
 REL.leadCool=[240,480];REL.pairCool=450;
 function myStations(P){return myDepots(P).filter(R=>R.pst)}
 function declOK(P){return!P.sworn&&!P.decl&&myStations(P).length>0&&!S.unb}
@@ -34,8 +34,8 @@ function propAnswer(P,id,yes){const x=(P.props||[]).find(y=>String(y.id)===Strin
     for(const x of P.props||[])d+=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0"><span>${x.k==='ally'?`✉ ${esc(lName(x.f))} proposes an alliance`:`✉ ${esc(lName(x.f))} demands ${fmt(x.amt)} cr tribute`} · ${fmtT(Math.max(0,x.until-S.T))}</span><button class="btn sm" type="button" data-co="prop" data-arg="${x.id}:y">${x.k==='ally'?'Accept':'Pay'}</button><button class="btn sm" type="button" data-co="prop" data-arg="${x.id}:n">${x.k==='ally'?'Decline':'Refuse'}</button></div>`}
   else d+=`<p class="note" style="margin:0 0 8px">Owning a Station lets you declare your own faction and contend for the galaxy: ${VIC_NEED} systems held for ${Math.round(WIN_TIME/60)} minutes wins.</p><button class="btn${declOK(P)?' pri':''}" type="button" data-co="declare" ${declOK(P)?'':'disabled'}>Declare your faction</button>`;
   return h+d}}
-// ---- the Brood grows with what it holds: one strength scale from the systems it holds (0.37 with the Bloom alone, 0.73 at
-// five, 1.37 at twelve or more; tuned 3 Nov 2026), and its Hive Ships come out from four systems
+// ---- the Brood grows with what it holds: one strength scale from the systems it holds (0.31 with the Bloom alone, 0.6 at
+// five, 1.15 at twelve or more; tuned 3 Nov 2026 with the powers' perks), and its Hive Ships come out from four systems
 const BR0={brBuild:BAL.brBuild,brOff:BAL.brOff,brGraze:BAL.brGraze,hiveRegrow:BAL.hiveRegrow,brLevT:BAL.brLevT};
 function broodK(n){const T=DECL.brood;if(n<=T[0][0])return T[0][1];for(let i=1;i<T.length;i++)if(n<=T[i][0]){const[a,ka]=T[i-1],[b,kb]=T[i];return ka+(kb-ka)*(n-a)/(b-a)}return T[T.length-1][1]}
 function broodRamp(){const n=controlCounts().brood||0,k=broodK(n);S.broodK=k;BAL.brBuild=BR0.brBuild*k;BAL.brOff=BR0.brOff*k;BAL.brGraze=BR0.brGraze*k;BAL.hiveRegrow=BR0.hiveRegrow/k;BAL.brLevT=n>=DECL.hiveAt?Math.min(BR0.brLevT,S.T):1e12}

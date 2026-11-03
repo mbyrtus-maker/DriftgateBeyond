@@ -281,7 +281,7 @@ const force={};takeFrom(EC,[st]);inv.addAll(force,EC);S.events.push({id:S.nextId
       if(isCar(t)&&BAL2.on){carStrikeOff(t,sid)}else if(!WORLDS[sid]){const k=isEsc(t)?.7:isCar(t)?wingPower(t)/5:1;if(isCar(t)&&Math.random()<.03)wingLoseN(t,S.sectors[sid]);
         offReboot(Rs);if(Rs.shield>0){Rs.shield=Math.max(0,Rs.shield-700*k*(BAL2.on?BAL2.escK[stLvRef(Rs)]||1:1));if(Rs.shield<=0&&BAL2.on)Rs.shRb=S.T+20}else{Rs.hull-=rnd(320,420)*k*(BAL2.on?BAL2.escK[stLvRef(Rs)]||1:1);wkAbstractHit(sid,t.side,.3)}
         if(Rs.hull<=0){if(Rs.kind==='depot'){if(Rs.owner!=='brood'&&t.side!=='brood'){const g=garrison(Rs),n=capLoads(sid,t.side);if(n>=g){useLoads(sid,t.side,g,Rs);captureDepot(sid,t.side)}else if(n>0||fOwn(t))Rs.hull=1;else razeStation(sid,t.side)}else razeStation(sid,t.side)}else if(Rs.kind==='free')razeStation(sid,'brood');else Rs.hull=1}}}
-    if(hit){t.fightT=S.T;t.hull-=hit;if(t.hull<=0)killFrigateToken(t,'in battle')}else t.hull=Math.min(capHullMax(t),t.hull+capHullMax(t)*.03)}
+    if(hit){t.fightT=S.T;t.hull-=hit/toughK(t.side);if(t.hull<=0)killFrigateToken(t,'in battle')}else t.hull=Math.min(capHullMax(t),t.hull+capHullMax(t)*.03)}
   // outposts: a capital carrying an assault load takes an unguarded hostile outpost after a minute
   for(const t of S.frigates){const own=t.side==='player'?'player':t.side;if(!(aAvail(t)>0)||frigatesIn(t.sector).some(o=>hostE(t.side,o))){t.hold=0;continue}
     const oid=OUT_BY_SECTOR[t.sector],o=oid&&S.outposts[oid];if(!o||!o.owner||!hostile(t.side,o.owner)||(own==='player'&&!!S.player.sworn&&o.owner===S.player.sworn)||outLockBars(t.sector,own)){t.hold=0;continue}t.hold=(t.hold||0)+1;
@@ -427,14 +427,17 @@ function cvIntercept(t,from){const P=(t.path||[]).slice(t.leg);if(!P.length)retu
   return P.slice().sort((a,b)=>(HOP[from][a]??99)-(HOP[from][b]??99)||(a===t.to)-(b===t.to))[0]}
 function raidBounty(t){return Math.round((invValue(t.load||{})*.85+400)/10)*10}
 function weHtml(f){const b=Math.round(weBonus(f)*100);return` War effort: <b>${b?'+'+b+'%':'none'}</b> in battles fought out of sight${b?'':''} (pilots earn it with Orders, supply drives, campaign moves, beacon flips and kills; it fades over about 20 minutes).`}
+// Beyond: a power whose hulls are tougher (Varkesh) fights that much harder, and loses that much less, in battles nobody is
+// watching, as it does in the open (FACTIONS[f].tough)
+function toughK(f){return(FACTIONS[f]&&FACTIONS[f].tough)||1}
 function resolveAbstract(ev){
   if(ev.st){resolveSiege(ev);return}
   const o=S.outposts[ev.target],s=S.sectors[o.sector];if(o.owner&&!fightsAt(ev.att,o.owner)){finishOffensive(ev);return}
   const att=invValue(ev.force)*clsF(ev.cls);let def=o.owner?300+o.level*260:120,dforce=null;
   if(FACTIONS[o.owner]){dforce={};const fl=S.econ.fleet[o.owner],warned=covOf(o.owner,true).has(o.sector);for(let i=0;i<(warned?3:2);i++){const ld=loadout('patrol',factionTier(o.owner));if(takeFrom(ld,[fl,S.econ.stock[o.owner]]))inv.addAll(dforce,ld)}def+=invValue(dforce)}
-  const win=Math.random()<att*weMul(ev.att)/(att*weMul(ev.att)+def*1.1*(o.owner?weMul(o.owner):1));
-  loseInv(ev.force,win?rnd(.15,.4):rnd(.45,.8),s);
-  if(dforce){loseInv(dforce,win?rnd(.5,.9):rnd(.2,.45),s);inv.addAll(S.econ.fleet[o.owner],dforce)}
+  const win=Math.random()<att*weMul(ev.att)*toughK(ev.att)/(att*weMul(ev.att)*toughK(ev.att)+def*1.1*(o.owner?weMul(o.owner)*toughK(o.owner):1));
+  loseInv(ev.force,(win?rnd(.15,.4):rnd(.45,.8))/toughK(ev.att),s);
+  if(dforce){loseInv(dforce,(win?rnd(.5,.9):rnd(.2,.45))/toughK(o.owner),s);inv.addAll(S.econ.fleet[o.owner],dforce)}
   const prev=o.owner;
   if(win)capture(o,ev.att);
   else{o.shield=oStats(o).sMax;if(prev==='player')feed(`Your ${o.name} held off the ${sideAdj(ev.att)} attack.`,'good');else if(covered(o.sector)||prev===S.player.sworn)feed(`${o.name} repelled ${art(sideAdj(ev.att)).toLowerCase()} ${sideAdj(ev.att)} assault.`,'news')}
@@ -444,10 +447,10 @@ function resolveSiege(ev){const Rr=S.stations[ev.st],s=S.sectors[ev.sector];if(!
   const att=invValue(ev.force)*clsF(ev.cls);let def=(Rr.kind==='core'?2600:Rr.kind==='free'?2000:Rr.fwd?800:1300)*(1+.2*(devOf(Rr).def+devOf(Rr).armor)+.1*(devOf(Rr).hangar||0)),dforce=null;
   if(FACTIONS[Rr.owner]){dforce={};const fl=S.econ.fleet[Rr.owner],warned=covOf(Rr.owner,true).has(ev.sector);for(let i=0;i<(Rr.kind==='core'?3:2)+(warned?1:0);i++){const ld=loadout('patrol',factionTier(Rr.owner));if(takeFrom(ld,[fl,S.econ.stock[Rr.owner]]))inv.addAll(dforce,ld)}def+=invValue(dforce)}
   const hgN=(Rr.hg||[]).length;if(hgN)def+=Rr.hg.reduce((a,h)=>a+invValue(h.load),0)*.6;   // hangar fighters scramble to defend their depot
-  const tor=ev.force.torpedo||0,win=Math.random()<att*weMul(ev.att)/(att*weMul(ev.att)+def*1.15*weMul(Rr.owner))*Math.min(1,tor/8),loud=friendSide(Rr.owner)||covered(ev.sector);
+  const tor=ev.force.torpedo||0,win=Math.random()<att*weMul(ev.att)*toughK(ev.att)/(att*weMul(ev.att)*toughK(ev.att)+def*1.15*weMul(Rr.owner)*toughK(Rr.owner))*Math.min(1,tor/8),loud=friendSide(Rr.owner)||covered(ev.sector);
   if(hgN){const lf=win?rnd(.6,.95):rnd(.15,.4);Rr.hg=Rr.hg.filter(h=>{if(Math.random()<lf){toDebris(s,h.load);return false}return true})}
-  loseInv(ev.force,win?rnd(.2,.45):rnd(.45,.8),s);
-  if(dforce){loseInv(dforce,win?rnd(.5,.9):rnd(.2,.45),s);inv.addAll(S.econ.fleet[Rr.owner],dforce)}
+  loseInv(ev.force,(win?rnd(.2,.45):rnd(.45,.8))/toughK(ev.att),s);
+  if(dforce){loseInv(dforce,(win?rnd(.5,.9):rnd(.2,.45))/toughK(Rr.owner),s);inv.addAll(S.econ.fleet[Rr.owner],dforce)}
   if(win){const g=garrison(Rr),need={};for(const k in ASSAULT_LD)need[k]=ASSAULT_LD[k]*g;if(Rr.kind==='depot'&&ev.att!=='brood'&&ev.att!=='pirate'&&Rr.owner!=='brood'&&haveIn(need,[ev.force])){for(let i=0;i<g;i++)if(Math.random()<ASSAULT.depotLoss){const got={};takeFrom(ASSAULT_LD,[ev.force]);inv.addAll(got,ASSAULT_LD);toDebris(s,got)}captureDepot(ev.st,ev.att)}else if(Rr.kind==='depot'&&ev.att!=='brood'&&Rr.owner!=='brood'&&capLoads(ev.st,ev.att)>=g){useLoads(ev.st,ev.att,g,Rr);captureDepot(ev.st,ev.att)}else if(Rr.kind==='depot'||Rr.kind==='free')razeStation(ev.st,ev.att);else{wkAbstractHit(ev.st,ev.att,.6);const st=S.econ.stock[Rr.owner]||{},got={};for(const k in st){const m=Math.floor(st[k]*.1);if(m>0)got[k]=inv.take(st,k,m)}inv.addAll(S.econ.stock[ev.att]||S.econ.stock.pirate,got);Rr.hull=Math.max(1,Rr.hull*.4);
       if(loud)feed(`${Rr.name} was battered by ${ev.att==='brood'?'the Brood':sideName(ev.att)}: ${invMass(got)} t of stores ${ev.att==='brood'?'devoured':'carried off'}.`,friendSide(Rr.owner)?'bad':'warn')}}
   else if(loud)feed(`${Rr.name} held off ${ev.att==='brood'?'a Brood swarm':art(sideAdj(ev.att)).toLowerCase()+' '+sideAdj(ev.att)+' assault'}.`,friendSide(Rr.owner)?'good':'news');

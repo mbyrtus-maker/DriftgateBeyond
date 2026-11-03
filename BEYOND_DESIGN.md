@@ -1267,3 +1267,14 @@ Today each power's AI mines at its own hidden rate (Halcyon 0.53, Varkesh 1.75, 
 - **Neutral leaders (900 galaxies across two runs):** Halcyon 26%, Varkesh 25%, Ostrova 25%, Brood 22%, none 1%.
 - **With rolled leaders (600 galaxies):** Halcyon 28%, Ostrova 28%, Varkesh 21%, Brood 21%, none 2%.
 - If adopted, the perks would be shown on the start screen and in each power's description, and the Brood's ramp trimmed slightly to bring it back to 20%.
+
+### Balance through perks: as built (3 Nov 2026)
+- **The user's choice:** balance through perks, with Varkesh's perk as tougher ships: more hull, its reactor penalty changed to a speed penalty, and hulls that repair themselves slowly (in place of the proposed Deep Bore).
+- **Every power mines at the same rate** (`BAL.ext` 1.0 each). The hidden rates are gone.
+- **Halcyon, Trade Charter** (kept, scaled down): prospectors on 5% of chances when ore is short (was 50%), bulk freeport buying on 2% of ticks (was 8%). Ships: shields +12%, hull −12% (unchanged).
+- **Varkesh, Dominion hulls** (new): hull +25%, speed and thrust −10% (the old −12% reactor is gone); every Varkesh-built ship regains 0.4% of its hull a second (capitals 0.12%) from 8 s after its last hit, and its capitals repair off-screen too. In battles nobody watches it fights 14% harder and loses 14% less (`FACTIONS.varkesh.tough`), so the perk counts in the AI's war as it does in the open. A pilot flying a Varkesh design line gets the self-repair too; the fighter designs keep their own approved numbers.
+- **Ostrova, Archive fleet** (unchanged): a third escort, carriers 8% cheaper, scouts that survive more. Ships: reactor +12%, shields −12%.
+- **Shown in the game:** the Allegiance tab has a new "The powers" table with each power's perks.
+- **The Brood ramp** trimmed to [[1,.31],[5,.6],[12,1.15]] to stay at 20%.
+- **Results (600 galaxies each):** neutral leaders: Ostrova 28%, Halcyon 27%, Varkesh 24%, Brood 20%, none 1%. Rolled leaders: Varkesh 27%, Halcyon 26%, Ostrova 24%, Brood 21%, none 2%.
+- **Tests:** quick checks of hull and speed (a Varkesh Medium Hauler 425 hull and 183 m/s against Halcyon's 299 and 203), self-repair (213 to 230 hull in 10 s), the Allegiance table, and the load, start screen, relations, designs, loadout, ship, destroyers and jobs tests.

@@ -771,9 +771,9 @@ function fortRecipe(L){const r={plate:3*L,wire:2*L};if(L>=3)r.coil=2*(L-2);if(L>
 // ============================================================ factions & ships
 const FAC_IDS=['halcyon','varkesh','ostrova'];
 const FACTIONS={
-  halcyon:{name:'Halcyon Accord',short:'Halcyon',col:'#4fd8d0',fill:'#0b2527',trait:{shield:1.12,hull:.88},traitText:'Shields +12% · Hull −12%',blurb:'Chartered merchant houses. Their emitters run hot and their frames run light.',hulls:{gunboat:'Harrier',interceptor:'Swift',striker:'Kite',heavy:'Osprey',bomber:'Condor',prospector:'Plover',freighter:'Albatross',drone:'Aegis Drone',skiff:'Wren',frigate:'Sovereign',picket:'Sparrow',dredger:'Heron',courier:'Tern',bulker:'Pelican',constructor:'Architect',scout:'Lark',scout2:'Skylark',wraith:'Wraith'},station:'Lumen Exchange',depot:'Tessellate Depot',shot:'pulse'},
-  varkesh:{name:'Varkesh Dominion',short:'Varkesh',col:'#ff7a3d',fill:'#2a130a',trait:{hull:1.12,energy:.88},traitText:'Hull +12% · Reactor −12%',blurb:'A garrison state. Thick plating, hungry guns, short tempers.',hulls:{gunboat:'Warhound',interceptor:'Fang',striker:'Talon',heavy:'Halberd',bomber:'Maul',prospector:'Gouge',freighter:'Bulwark',drone:'Ward Drone',skiff:'Pick',frigate:'Bastille',picket:'Spur',dredger:'Sledge',courier:'Runner',bulker:'Rampart',constructor:'Foundry',scout:'Jackal',scout2:'Wolfhound',wraith:'Wraith'},station:'Ardent Bastion',depot:'Marches Depot',shot:'slug'},
-  ostrova:{name:'Ostrova Collective',short:'Ostrova',col:'#b893ff',fill:'#1b1430',trait:{energy:1.12,shield:.88},traitText:'Reactor +12% · Shields −12%',blurb:'Archivists and drive-mystics. Deep reactors, patient pilots.',hulls:{gunboat:'Sentinel',interceptor:'Mote',striker:'Wisp',heavy:'Vigil',bomber:'Obelisk',prospector:'Lumen',freighter:'Cairn',drone:'Halo Drone',skiff:'Glim',frigate:'Cathedral',picket:'Glint',dredger:'Delve',courier:'Drift',bulker:'Monolith',constructor:'Loom',scout:'Seer',scout2:'Oracle',wraith:'Wraith'},station:'Spire Archive',depot:'Veil Depot',shot:'lance'},
+  halcyon:{name:'Halcyon Accord',short:'Halcyon',col:'#4fd8d0',fill:'#0b2527',trait:{shield:1.12,hull:.88},traitText:'Shields +12% · Hull −12% · Trade Charter: hires Freeport prospectors when its ore runs short, and at times buys in bulk from the freeports at a discount',blurb:'Chartered merchant houses. Their emitters run hot and their frames run light.',hulls:{gunboat:'Harrier',interceptor:'Swift',striker:'Kite',heavy:'Osprey',bomber:'Condor',prospector:'Plover',freighter:'Albatross',drone:'Aegis Drone',skiff:'Wren',frigate:'Sovereign',picket:'Sparrow',dredger:'Heron',courier:'Tern',bulker:'Pelican',constructor:'Architect',scout:'Lark',scout2:'Skylark',wraith:'Wraith'},station:'Lumen Exchange',depot:'Tessellate Depot',shot:'pulse'},
+  varkesh:{name:'Varkesh Dominion',short:'Varkesh',col:'#ff7a3d',fill:'#2a130a',trait:{hull:1.25,speed:.9},tough:1.14,traitText:'Hull +25% · Speed −10% · Hulls repair themselves slowly',blurb:'A garrison state. Thick plating, hungry guns, short tempers.',hulls:{gunboat:'Warhound',interceptor:'Fang',striker:'Talon',heavy:'Halberd',bomber:'Maul',prospector:'Gouge',freighter:'Bulwark',drone:'Ward Drone',skiff:'Pick',frigate:'Bastille',picket:'Spur',dredger:'Sledge',courier:'Runner',bulker:'Rampart',constructor:'Foundry',scout:'Jackal',scout2:'Wolfhound',wraith:'Wraith'},station:'Ardent Bastion',depot:'Marches Depot',shot:'slug'},
+  ostrova:{name:'Ostrova Collective',short:'Ostrova',col:'#b893ff',fill:'#1b1430',trait:{energy:1.12,shield:.88},traitText:'Reactor +12% · Shields −12% · Archive fleet: a third escort, carriers 8% cheaper, scouts that survive more',blurb:'Archivists and drive-mystics. Deep reactors, patient pilots.',hulls:{gunboat:'Sentinel',interceptor:'Mote',striker:'Wisp',heavy:'Vigil',bomber:'Obelisk',prospector:'Lumen',freighter:'Cairn',drone:'Halo Drone',skiff:'Glim',frigate:'Cathedral',picket:'Glint',dredger:'Delve',courier:'Drift',bulker:'Monolith',constructor:'Loom',scout:'Seer',scout2:'Oracle',wraith:'Wraith'},station:'Spire Archive',depot:'Veil Depot',shot:'lance'},
 };
 FACTIONS.brood={name:'The Vael Brood',short:'Brood',col:'#9be35a',fill:'#14200c',trait:{hull:1.5,shield:.6,energy:1.1},traitText:'Hull +50% and regrows · Shields −40%',blurb:'Something grown, not built. It eats ore, and it eats stations.',
   hulls:{overgrowth:'Overgrowth',mite:'Mite',interceptor:'Skitter',striker:'Thresher',heavy:'Carapace',bomber:'Sporemaw',prospector:'Grazer',freighter:'Gorger',drone:'Mite',skiff:'Nibbler',frigate:'Leviathan',escort:'Prowler',picket:'Spawnling',dredger:'Devourer',courier:'Crawler',bulker:'Bloater',constructor:'Seeder',scout:'Watcher',scout2:'Stalker'},station:'Bloom Heart',depot:'Bloom Node',shot:'spore',bio:true};
@@ -1180,7 +1180,7 @@ function mkH(cls,t){const v=MK_HULL[cls];if(v==null)return(CLASSES[cls]&&CLASSES
 function shipStatsBase(fac,cls,T){
   const t=s=>typeof T==='number'?T:T[s];
   const C=CLASSES[cls],F=(FACTIONS[fac]&&FACTIONS[fac].trait)||{},tr=k=>F[k]||1,c=s=>mkL(t(s))*mkH(cls,t(s));   // C.mkK evens out how much each hull gains per Mk
-  return{thrust:225*SPEED_K*(C.acc||1)*(1+.16*(t('engine')-1)),maxSpd:285*SPEED_K*C.speed*(1+.11*(t('engine')-1)),turn:C.turn*(1+.06*(t('engine')-1)),
+  return{thrust:225*SPEED_K*(C.acc||1)*(1+.16*(t('engine')-1))*tr('speed'),maxSpd:285*SPEED_K*C.speed*(1+.11*(t('engine')-1))*tr('speed'),turn:C.turn*(1+.06*(t('engine')-1)),
     eCap:110*(1+.25*c('power'))*tr('energy'),eRegen:22*(1+.22*c('power'))*tr('energy'),
     sCap:172*C.shield*(1+.32*c('shield'))*tr('shield'),hull:2*C.hull*(1+.22*c('armor'))*tr('hull'),dr:.05*c('armor'),
     dmg:8*C.weapon*(1+.26*c('weapon')),rof:5.5,shotCost:3.2*(1+.12*c('weapon')),
@@ -1363,7 +1363,7 @@ function oresNoNu(d){if(!d.ores.nu)return d.ores;const o={...d.ores};delete o.nu
 const STN={fdepot:{sMax:1200,hMax:2500,tur:2,dmg:11,range:1200},free:{sMax:3600,hMax:10000,tur:6,dmg:16,range:1500},core:{sMax:3200,hMax:9000,tur:6,dmg:15,range:1500},depot:{sMax:2000,hMax:4000,tur:4,dmg:12,range:1300},hive:{sMax:4200,hMax:14000,tur:6,dmg:18,range:1600}};
 // balance levers, tuned by simulation so each of the four powers (the Brood included) wins about a quarter of galaxies
 // (tuned for the 2-hour deadline and the 20-minute hold over 18 rounds of simulated galaxies)
-const BAL={carFab:14,carAsk:30,hiveRegrow:240,aiEff:.7,brBuild:1.15,brOff:.55,brLevT:3300,brN:2,brHive:4,antiBrood:1.9,halProsp:.5,halImp:.08,brGraze:2.7,coal:.35,devGap:1,ext:{halcyon:.53,varkesh:1.75,ostrova:.95}};   // ext: each faction's station mining rate (Beyond: tuned 3 Nov 2026 with neutral leaders)
+const BAL={carFab:14,carAsk:30,hiveRegrow:240,aiEff:.7,brBuild:1.15,brOff:.55,brLevT:3300,brN:2,brHive:4,antiBrood:1.9,halProsp:.05,halImp:.02,brGraze:2.7,coal:.35,devGap:1,ext:{halcyon:1,varkesh:1,ostrova:1}};   // ext: each faction's station mining rate (Beyond: tuned 3 Nov 2026 with neutral leaders)
 const CAP_GATE=2700;   // faction carriers and escorts launch from minute 45 at the earliest (a build may start once it would finish by then)
 function capGateOK(f,dur){return f==='brood'||f==='pirate'||S.T+(dur||0)>=CAP_GATE}
 const CAP_SEAL={yard:2,carrier:3,escort:1},sealed=f=>f!=='brood'&&f!=='pirate',withSeal=(C,f,n)=>sealed(f)?{...C,seal:n}:C;
@@ -2243,7 +2243,7 @@ const force={};takeFrom(EC,[st]);inv.addAll(force,EC);S.events.push({id:S.nextId
       if(isCar(t)&&BAL2.on){carStrikeOff(t,sid)}else if(!WORLDS[sid]){const k=isEsc(t)?.7:isCar(t)?wingPower(t)/5:1;if(isCar(t)&&Math.random()<.03)wingLoseN(t,S.sectors[sid]);
         offReboot(Rs);if(Rs.shield>0){Rs.shield=Math.max(0,Rs.shield-700*k*(BAL2.on?BAL2.escK[stLvRef(Rs)]||1:1));if(Rs.shield<=0&&BAL2.on)Rs.shRb=S.T+20}else{Rs.hull-=rnd(320,420)*k*(BAL2.on?BAL2.escK[stLvRef(Rs)]||1:1);wkAbstractHit(sid,t.side,.3)}
         if(Rs.hull<=0){if(Rs.kind==='depot'){if(Rs.owner!=='brood'&&t.side!=='brood'){const g=garrison(Rs),n=capLoads(sid,t.side);if(n>=g){useLoads(sid,t.side,g,Rs);captureDepot(sid,t.side)}else if(n>0||fOwn(t))Rs.hull=1;else razeStation(sid,t.side)}else razeStation(sid,t.side)}else if(Rs.kind==='free')razeStation(sid,'brood');else Rs.hull=1}}}
-    if(hit){t.fightT=S.T;t.hull-=hit;if(t.hull<=0)killFrigateToken(t,'in battle')}else t.hull=Math.min(capHullMax(t),t.hull+capHullMax(t)*.03)}
+    if(hit){t.fightT=S.T;t.hull-=hit/toughK(t.side);if(t.hull<=0)killFrigateToken(t,'in battle')}else t.hull=Math.min(capHullMax(t),t.hull+capHullMax(t)*.03)}
   // outposts: a capital carrying an assault load takes an unguarded hostile outpost after a minute
   for(const t of S.frigates){const own=t.side==='player'?'player':t.side;if(!(aAvail(t)>0)||frigatesIn(t.sector).some(o=>hostE(t.side,o))){t.hold=0;continue}
     const oid=OUT_BY_SECTOR[t.sector],o=oid&&S.outposts[oid];if(!o||!o.owner||!hostile(t.side,o.owner)||(own==='player'&&!!S.player.sworn&&o.owner===S.player.sworn)||outLockBars(t.sector,own)){t.hold=0;continue}t.hold=(t.hold||0)+1;
@@ -2389,14 +2389,17 @@ function cvIntercept(t,from){const P=(t.path||[]).slice(t.leg);if(!P.length)retu
   return P.slice().sort((a,b)=>(HOP[from][a]??99)-(HOP[from][b]??99)||(a===t.to)-(b===t.to))[0]}
 function raidBounty(t){return Math.round((invValue(t.load||{})*.85+400)/10)*10}
 function weHtml(f){const b=Math.round(weBonus(f)*100);return` War effort: <b>${b?'+'+b+'%':'none'}</b> in battles fought out of sight${b?'':''} (pilots earn it with Orders, supply drives, campaign moves, beacon flips and kills; it fades over about 20 minutes).`}
+// Beyond: a power whose hulls are tougher (Varkesh) fights that much harder, and loses that much less, in battles nobody is
+// watching, as it does in the open (FACTIONS[f].tough)
+function toughK(f){return(FACTIONS[f]&&FACTIONS[f].tough)||1}
 function resolveAbstract(ev){
   if(ev.st){resolveSiege(ev);return}
   const o=S.outposts[ev.target],s=S.sectors[o.sector];if(o.owner&&!fightsAt(ev.att,o.owner)){finishOffensive(ev);return}
   const att=invValue(ev.force)*clsF(ev.cls);let def=o.owner?300+o.level*260:120,dforce=null;
   if(FACTIONS[o.owner]){dforce={};const fl=S.econ.fleet[o.owner],warned=covOf(o.owner,true).has(o.sector);for(let i=0;i<(warned?3:2);i++){const ld=loadout('patrol',factionTier(o.owner));if(takeFrom(ld,[fl,S.econ.stock[o.owner]]))inv.addAll(dforce,ld)}def+=invValue(dforce)}
-  const win=Math.random()<att*weMul(ev.att)/(att*weMul(ev.att)+def*1.1*(o.owner?weMul(o.owner):1));
-  loseInv(ev.force,win?rnd(.15,.4):rnd(.45,.8),s);
-  if(dforce){loseInv(dforce,win?rnd(.5,.9):rnd(.2,.45),s);inv.addAll(S.econ.fleet[o.owner],dforce)}
+  const win=Math.random()<att*weMul(ev.att)*toughK(ev.att)/(att*weMul(ev.att)*toughK(ev.att)+def*1.1*(o.owner?weMul(o.owner)*toughK(o.owner):1));
+  loseInv(ev.force,(win?rnd(.15,.4):rnd(.45,.8))/toughK(ev.att),s);
+  if(dforce){loseInv(dforce,(win?rnd(.5,.9):rnd(.2,.45))/toughK(o.owner),s);inv.addAll(S.econ.fleet[o.owner],dforce)}
   const prev=o.owner;
   if(win)capture(o,ev.att);
   else{o.shield=oStats(o).sMax;if(prev==='player')feed(`Your ${o.name} held off the ${sideAdj(ev.att)} attack.`,'good');else if(covered(o.sector)||prev===S.player.sworn)feed(`${o.name} repelled ${art(sideAdj(ev.att)).toLowerCase()} ${sideAdj(ev.att)} assault.`,'news')}
@@ -2406,10 +2409,10 @@ function resolveSiege(ev){const Rr=S.stations[ev.st],s=S.sectors[ev.sector];if(!
   const att=invValue(ev.force)*clsF(ev.cls);let def=(Rr.kind==='core'?2600:Rr.kind==='free'?2000:Rr.fwd?800:1300)*(1+.2*(devOf(Rr).def+devOf(Rr).armor)+.1*(devOf(Rr).hangar||0)),dforce=null;
   if(FACTIONS[Rr.owner]){dforce={};const fl=S.econ.fleet[Rr.owner],warned=covOf(Rr.owner,true).has(ev.sector);for(let i=0;i<(Rr.kind==='core'?3:2)+(warned?1:0);i++){const ld=loadout('patrol',factionTier(Rr.owner));if(takeFrom(ld,[fl,S.econ.stock[Rr.owner]]))inv.addAll(dforce,ld)}def+=invValue(dforce)}
   const hgN=(Rr.hg||[]).length;if(hgN)def+=Rr.hg.reduce((a,h)=>a+invValue(h.load),0)*.6;   // hangar fighters scramble to defend their depot
-  const tor=ev.force.torpedo||0,win=Math.random()<att*weMul(ev.att)/(att*weMul(ev.att)+def*1.15*weMul(Rr.owner))*Math.min(1,tor/8),loud=friendSide(Rr.owner)||covered(ev.sector);
+  const tor=ev.force.torpedo||0,win=Math.random()<att*weMul(ev.att)*toughK(ev.att)/(att*weMul(ev.att)*toughK(ev.att)+def*1.15*weMul(Rr.owner)*toughK(Rr.owner))*Math.min(1,tor/8),loud=friendSide(Rr.owner)||covered(ev.sector);
   if(hgN){const lf=win?rnd(.6,.95):rnd(.15,.4);Rr.hg=Rr.hg.filter(h=>{if(Math.random()<lf){toDebris(s,h.load);return false}return true})}
-  loseInv(ev.force,win?rnd(.2,.45):rnd(.45,.8),s);
-  if(dforce){loseInv(dforce,win?rnd(.5,.9):rnd(.2,.45),s);inv.addAll(S.econ.fleet[Rr.owner],dforce)}
+  loseInv(ev.force,(win?rnd(.2,.45):rnd(.45,.8))/toughK(ev.att),s);
+  if(dforce){loseInv(dforce,(win?rnd(.5,.9):rnd(.2,.45))/toughK(Rr.owner),s);inv.addAll(S.econ.fleet[Rr.owner],dforce)}
   if(win){const g=garrison(Rr),need={};for(const k in ASSAULT_LD)need[k]=ASSAULT_LD[k]*g;if(Rr.kind==='depot'&&ev.att!=='brood'&&ev.att!=='pirate'&&Rr.owner!=='brood'&&haveIn(need,[ev.force])){for(let i=0;i<g;i++)if(Math.random()<ASSAULT.depotLoss){const got={};takeFrom(ASSAULT_LD,[ev.force]);inv.addAll(got,ASSAULT_LD);toDebris(s,got)}captureDepot(ev.st,ev.att)}else if(Rr.kind==='depot'&&ev.att!=='brood'&&Rr.owner!=='brood'&&capLoads(ev.st,ev.att)>=g){useLoads(ev.st,ev.att,g,Rr);captureDepot(ev.st,ev.att)}else if(Rr.kind==='depot'||Rr.kind==='free')razeStation(ev.st,ev.att);else{wkAbstractHit(ev.st,ev.att,.6);const st=S.econ.stock[Rr.owner]||{},got={};for(const k in st){const m=Math.floor(st[k]*.1);if(m>0)got[k]=inv.take(st,k,m)}inv.addAll(S.econ.stock[ev.att]||S.econ.stock.pirate,got);Rr.hull=Math.max(1,Rr.hull*.4);
       if(loud)feed(`${Rr.name} was battered by ${ev.att==='brood'?'the Brood':sideName(ev.att)}: ${invMass(got)} t of stores ${ev.att==='brood'?'devoured':'carried off'}.`,friendSide(Rr.owner)?'bad':'warn')}}
   else if(loud)feed(`${Rr.name} held off ${ev.att==='brood'?'a Brood swarm':art(sideAdj(ev.att)).toLowerCase()+' '+sideAdj(ev.att)+' assault'}.`,friendSide(Rr.owner)?'good':'news');
@@ -9439,6 +9442,14 @@ const DRIFT={ref:90,exp:.75,min:.25};
 function shipDriftMass(e){const P=S.player,C=CLASSES[P.cls]||{};let m=0;for(const k in P.cargo||{})m+=mass(k)*P.cargo[k];return(C.hull||100)+m}
 function driftLat(e){return clamp(Math.pow(DRIFT.ref/shipDriftMass(e),DRIFT.exp),DRIFT.min,1)}
 {const o=handling;handling=function(e){const h=o.apply(this,arguments);if(!e||!e.isPlayer||!S||!S.player)return h;return Object.assign({},h,{lat:driftLat(e)})}}
+// ---- Varkesh hulls repair themselves slowly (Beyond, 3 Nov 2026): every Varkesh-built ship (its AI ships, and a pilot flying a
+// Varkesh design line) regains hull a few seconds after it was last hit; capitals more slowly, and off-screen too
+const VK_REGEN={k:.004,cap:.0012,delay:8};
+function vkRegen(e){return e&&e.type==='ship'&&e.alive&&e.fac==='varkesh'&&e.side!=='pirate'&&e.side!=='brood'}
+{const o=worldUpdate;worldUpdate=function(dt){const r=o.apply(this,arguments);try{if(W&&!NET.cl)for(const e of W.ents){if(!vkRegen(e)||W.t-e.lastHit<VK_REGEN.delay||!e.st||e.hull>=e.st.hull)continue;
+  e.hull=Math.min(e.st.hull,e.hull+e.st.hull*(e.role==='frigate'?VK_REGEN.cap:VK_REGEN.k)*dt)}}catch(err){}return r}}
+{const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{if(!NET.cl)for(const t of S.frigates||[]){if(t.live||t.side!=='varkesh'||!(t.hull>0))continue;const mx=capHullMax(t);if(t.hull<mx&&S.T-(t.fightT||-1e9)>VK_REGEN.delay*4)t.hull=Math.min(mx,t.hull+mx*VK_REGEN.cap*10)}}catch(err){}return r}}
+
 
 //@src 16g_leaders.js
 // ============================================================ relations between the powers, and their leaders (Beyond stage 2)
@@ -9622,6 +9633,7 @@ function allegianceHtml(P){relInit();let h='';
   h+=`<div class="h3">Your standing</div><div class="tblw"><table class="t"><tbody>${STAND_POW.map(f=>{const v=standOf(f,P),pct=Math.round((v+100)/2);return`<tr><td style="width:120px"><b style="color:${sideCol(f)}">${esc(sideName(f))}</b></td><td><div style="height:6px;background:rgba(255,255,255,.08);position:relative;max-width:320px"><i style="position:absolute;left:0;top:0;bottom:0;width:${pct}%;background:${standCol(v)}"></i><i style="position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:rgba(236,228,207,.4)"></i></div></td><td style="width:100px;color:${standCol(v)}">${standName(v)}</td></tr>`}).join('')}</tbody></table></div>`;
   if(P.sworn)h+=`<p class="note">You fly for ${esc(FAC(P.sworn).name)}.</p>`;
   h+=`<div class="h3" style="margin-top:16px">Between the powers</div><div class="tblw"><table class="t"><thead><tr><th></th>${FAC_IDS.map(f=>`<th style="color:${sideCol(f)}">${esc(FAC(f).short)}</th>`).join('')}</tr></thead><tbody>${FAC_IDS.map(a=>`<tr><td style="color:${sideCol(a)}"><b>${esc(FAC(a).short)}</b></td>${FAC_IDS.map(b=>{if(a===b)return'<td class="r" style="color:var(--faint)">·</td>';const bd=relBandOf(a,b),P2=pairOf(a,b),tags=[P2.pact?'pact':'',P2.emb?'embargo':''].filter(Boolean).join(', ');return`<td><b style="color:${REL_BANDS[bd][1]}">${REL_BANDS[bd][0]}</b>${tags?`<span class="mass">${tags}</span>`:''}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>`;
+  h+=`<div class="h3" style="margin-top:16px">The powers</div><div class="tblw"><table class="t"><tbody>${FAC_IDS.map(f=>`<tr><td style="color:${sideCol(f)};width:120px"><b>${esc(FAC(f).short)}</b></td><td>${String(FAC(f).traitText||'').split('<br>').map(esc).join('<br>')}</td></tr>`).join('')}</tbody></table></div>`;
   h+=`<div class="h3" style="margin-top:16px">Leaders</div><div class="tblw"><table class="t"><tbody>${FAC_IDS.map(f=>{const L=leaderOf(f);return`<tr><td style="color:${sideCol(f)};width:120px"><b>${esc(FAC(f).short)}</b></td><td>${esc(L.title)} ${esc(L.name)}${L.n>1?` <span class="mass">${ordinal(L.n)} of the line</span>`:''}</td><td>${L.traits.map(esc).join(' · ')}</td><td class="r" style="color:var(--dim)">${L.ship&&!L.ship.alive?'not flying':L.ship?`in ${esc(DEF[L.ship.sid].name)}`:''}</td></tr>`}).join('')}</tbody></table></div>`;
   const C=(S.chron||[]).slice(-14).reverse();h+=`<div class="h3" style="margin-top:16px">Chronicle</div>`+(C.length?`<div class="log">${C.map(x=>`<div><b>${fmtT(x.T)}</b>${esc(x.msg)}</div>`).join('')}</div>`:'<div class="empty">Nothing yet: the powers are watching each other.</div>');
   return h}
@@ -10447,7 +10459,7 @@ function wrPeace(P){return!!P&&!P.sworn&&!(P.aggro&&P.aggro.pirate>S.T)}
 // applies to you too: lead, and the three powers turn on you together. Losing your last Station ends the faction (you keep
 // your company). The powers' leaders send a founder proposals: an alliance when they think well of you, a demand for tribute
 // when they don't. Wars come slower than Driftgate 1's. The Brood starts slow and grows with every system it holds.
-const DECL={propEvery:600,tribute:2000,allyStand:40,demandStand:-20,brood:[[1,.37],[5,.73],[12,1.37]],hiveAt:4};
+const DECL={propEvery:600,tribute:2000,allyStand:40,demandStand:-20,brood:[[1,.31],[5,.6],[12,1.15]],hiveAt:4};
 REL.leadCool=[240,480];REL.pairCool=450;
 function myStations(P){return myDepots(P).filter(R=>R.pst)}
 function declOK(P){return!P.sworn&&!P.decl&&myStations(P).length>0&&!S.unb}
@@ -10476,8 +10488,8 @@ function propAnswer(P,id,yes){const x=(P.props||[]).find(y=>String(y.id)===Strin
     for(const x of P.props||[])d+=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0"><span>${x.k==='ally'?`✉ ${esc(lName(x.f))} proposes an alliance`:`✉ ${esc(lName(x.f))} demands ${fmt(x.amt)} cr tribute`} · ${fmtT(Math.max(0,x.until-S.T))}</span><button class="btn sm" type="button" data-co="prop" data-arg="${x.id}:y">${x.k==='ally'?'Accept':'Pay'}</button><button class="btn sm" type="button" data-co="prop" data-arg="${x.id}:n">${x.k==='ally'?'Decline':'Refuse'}</button></div>`}
   else d+=`<p class="note" style="margin:0 0 8px">Owning a Station lets you declare your own faction and contend for the galaxy: ${VIC_NEED} systems held for ${Math.round(WIN_TIME/60)} minutes wins.</p><button class="btn${declOK(P)?' pri':''}" type="button" data-co="declare" ${declOK(P)?'':'disabled'}>Declare your faction</button>`;
   return h+d}}
-// ---- the Brood grows with what it holds: one strength scale from the systems it holds (0.37 with the Bloom alone, 0.73 at
-// five, 1.37 at twelve or more; tuned 3 Nov 2026), and its Hive Ships come out from four systems
+// ---- the Brood grows with what it holds: one strength scale from the systems it holds (0.31 with the Bloom alone, 0.6 at
+// five, 1.15 at twelve or more; tuned 3 Nov 2026 with the powers' perks), and its Hive Ships come out from four systems
 const BR0={brBuild:BAL.brBuild,brOff:BAL.brOff,brGraze:BAL.brGraze,hiveRegrow:BAL.hiveRegrow,brLevT:BAL.brLevT};
 function broodK(n){const T=DECL.brood;if(n<=T[0][0])return T[0][1];for(let i=1;i<T.length;i++)if(n<=T[i][0]){const[a,ka]=T[i-1],[b,kb]=T[i];return ka+(kb-ka)*(n-a)/(b-a)}return T[T.length-1][1]}
 function broodRamp(){const n=controlCounts().brood||0,k=broodK(n);S.broodK=k;BAL.brBuild=BR0.brBuild*k;BAL.brOff=BR0.brOff*k;BAL.brGraze=BR0.brGraze*k;BAL.hiveRegrow=BR0.hiveRegrow/k;BAL.brLevT=n>=DECL.hiveAt?Math.min(BR0.brLevT,S.T):1e12}

@@ -246,3 +246,11 @@ const DRIFT={ref:90,exp:.75,min:.25};
 function shipDriftMass(e){const P=S.player,C=CLASSES[P.cls]||{};let m=0;for(const k in P.cargo||{})m+=mass(k)*P.cargo[k];return(C.hull||100)+m}
 function driftLat(e){return clamp(Math.pow(DRIFT.ref/shipDriftMass(e),DRIFT.exp),DRIFT.min,1)}
 {const o=handling;handling=function(e){const h=o.apply(this,arguments);if(!e||!e.isPlayer||!S||!S.player)return h;return Object.assign({},h,{lat:driftLat(e)})}}
+// ---- Varkesh hulls repair themselves slowly (Beyond, 3 Nov 2026): every Varkesh-built ship (its AI ships, and a pilot flying a
+// Varkesh design line) regains hull a few seconds after it was last hit; capitals more slowly, and off-screen too
+const VK_REGEN={k:.004,cap:.0012,delay:8};
+function vkRegen(e){return e&&e.type==='ship'&&e.alive&&e.fac==='varkesh'&&e.side!=='pirate'&&e.side!=='brood'}
+{const o=worldUpdate;worldUpdate=function(dt){const r=o.apply(this,arguments);try{if(W&&!NET.cl)for(const e of W.ents){if(!vkRegen(e)||W.t-e.lastHit<VK_REGEN.delay||!e.st||e.hull>=e.st.hull)continue;
+  e.hull=Math.min(e.st.hull,e.hull+e.st.hull*(e.role==='frigate'?VK_REGEN.cap:VK_REGEN.k)*dt)}}catch(err){}return r}}
+{const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{if(!NET.cl)for(const t of S.frigates||[]){if(t.live||t.side!=='varkesh'||!(t.hull>0))continue;const mx=capHullMax(t);if(t.hull<mx&&S.T-(t.fightT||-1e9)>VK_REGEN.delay*4)t.hull=Math.min(mx,t.hull+mx*VK_REGEN.cap*10)}}catch(err){}return r}}
+
