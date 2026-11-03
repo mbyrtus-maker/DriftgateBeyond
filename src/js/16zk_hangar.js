@@ -46,3 +46,7 @@ function hgWords(r){try{const B=$('dBody');if(!B)return r;for(const el of B.quer
   const E=$('dErr');if(E&&E.textContent)E.textContent=E.textContent.replace(/\bvaults\b/g,'hangars').replace(/\bvault\b/g,'hangar').replace(/\bVault\b/g,'Hangar').replace(/\bthe bay\b/g,'the hangar').replace(/ \(\d+\/3\)/g,'');
   const T=$('dTabs');if(T)for(const b of T.querySelectorAll('button')){if(/^Vault/.test(b.textContent))b.firstChild&&(b.firstChild.nodeValue=b.firstChild.nodeValue.replace('Vault','Hangar'))}}catch(e){}return r}
 {const o=feed;feed=function(msg){if(typeof msg==='string'&&S&&!S.unb)arguments[0]=msg.replace(/\bvaults\b/g,'hangars').replace(/\bvault\b/g,'hangar').replace(/\bVault\b/g,'Hangar');return o.apply(this,arguments)}}
+// Ship opens on the Loadout (user, 3 Nov 2026): it leads the Ship group, and the Ship tab always opens there
+{const g=DOCK_TOP.find(x=>x[0]==='ship');if(g){g[2]=['upg',...g[2].filter(k=>k!=='upg')]}}
+{const o=dockTop;dockTop=function(i){try{const T=DOCK_TOP[i];if(T&&T[0]==='ship'&&!S.unb)dockSubMem.ship='upg'}catch(e){}return o.apply(this,arguments)}}
+{const o=renderDock;renderDock=function(){const r=o.apply(this,arguments);try{if(S&&!S.unb){const g=DOCK_TOP.find(x=>x[0]==='ship');for(const b of document.querySelectorAll('#dTabs .mtab'))if(b.getAttribute('aria-selected')!=='true'&&g[2].includes(b.dataset.arg)&&g[2].includes('upg')&&dockG.some(x=>x[0]==='ship'&&x[2].some(t=>t[0]==='upg')))b.dataset.arg='upg'}}catch(e){}return r}}

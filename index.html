@@ -5666,7 +5666,7 @@ function structUpdate(dt){
       if(e.isPlayer&&!S.unb){const fb=fbHeld(S.player,o);if(fb&&beaconCls(S.player.cls)){claim.add(fb);fbBy[fb]='me';continue}}
       if(e.rp&&!S.unb){const R=S.pilots[e.rp],fb=R&&fbHeld(R,o);if(fb&&beaconCls(R.cls)){claim.add(fb);fbBy[fb]=e.rp;continue}}
       if(e.isPlayer){if(!S.unb&&(S.player.cargo.beacon||0)>0&&beaconCls(S.player.cls)&&o.owner!=='player'&&o.owner!==S.player.sworn)claim.add('player');else if(o.owner==='player')block=true;else noBeacon=true}
-      else if(e.rp){const R=S.pilots[e.rp];if(R&&(R.cargo.beacon||0)>0&&beaconCls(R.cls)&&o.owner!==e.side){claim.add(e.side);rpClaim[e.side]=e.rp}else if(o.owner===e.side)block=true;else if(W.t-(e.capMsgT||-9)>6){e.capMsgT=W.t;netMsg(e.rp,'flash',o.owner?'Defenses down. You need a Claim Beacon in your hold to take it.':'Unclaimed outpost. Carry a Claim Beacon into the ring to claim it.')}}
+      else if(e.rp){const R=S.pilots[e.rp];if(R&&(R.cargo.beacon||0)>0&&beaconCls(R.cls)&&o.owner!==e.side){claim.add(e.side);rpClaim[e.side]=e.rp}else if(o.owner===e.side)block=true;else if(W.t-(e.capMsgT||-9)>6){e.capMsgT=W.t;netMsg(e.rp,'flash',cbWhy(R,o))}}
       else if(e.role==='strike'&&e.side!==o.owner)claim.add(e.side);
       if(o.owner&&e.side===o.owner&&!e.isPlayer)block=true;}
     {const lk=outLock(o.sector);if(lk)for(const c of[...claim])if(sideNorm(c)!==sideNorm(lk)){claim.delete(c);if(c==='player'&&W.t-(W.capMsgT||-9)>6){flash(`The ${sideName(sideNorm(lk))} station in this system holds ${o.name}: take the station first.`,true);W.capMsgT=W.t}}}
@@ -5675,7 +5675,7 @@ function structUpdate(dt){
       if(o.cap.p>=1&&fbBy[c]){fbClaim(o,c,fbBy[c])}else if(o.cap.p>=1){if(c==='player'){inv.take(S.player.cargo,'beacon',1);const v=invVec({beacon:1});for(const e of RAWS)o.fort[e]+=v[e]}else if(rpClaim[c]){const RC=S.pilots[rpClaim[c]];inv.take(RC.cargo,'beacon',1);const v=invVec({beacon:1});for(const e of RAWS)o.fort[e]+=v[e];runAs(rpClaim[c],()=>feed(`You claimed ${o.name} for the ${FACTIONS[c].name}.`,'good'))}capture(o,c)}}
     else if(claim.size>1){if(W.t-W.capMsgT>4&&claim.has('player')){flash('Claim contested. Clear hostiles from the ring.',true);W.capMsgT=W.t}}
     else o.cap.p=Math.max(0,o.cap.p-dt*.15);
-    if(noBeacon&&W.t-W.capMsgT>6){flash(o.owner?'Defenses down. You need a Claim Beacon in your hold to take it.':'Unclaimed outpost. Carry a Claim Beacon into the ring to claim it.');W.capMsgT=W.t}
+    if(noBeacon&&W.t-W.capMsgT>6){flash(cbWhy(S.player,o));W.capMsgT=W.t}
   }else o.cap.p=Math.max(0,o.cap.p-dt*.3);
 }
 function shotsUpdate(dt){
@@ -11650,6 +11650,10 @@ function hgWords(r){try{const B=$('dBody');if(!B)return r;for(const el of B.quer
   const E=$('dErr');if(E&&E.textContent)E.textContent=E.textContent.replace(/\bvaults\b/g,'hangars').replace(/\bvault\b/g,'hangar').replace(/\bVault\b/g,'Hangar').replace(/\bthe bay\b/g,'the hangar').replace(/ \(\d+\/3\)/g,'');
   const T=$('dTabs');if(T)for(const b of T.querySelectorAll('button')){if(/^Vault/.test(b.textContent))b.firstChild&&(b.firstChild.nodeValue=b.firstChild.nodeValue.replace('Vault','Hangar'))}}catch(e){}return r}
 {const o=feed;feed=function(msg){if(typeof msg==='string'&&S&&!S.unb)arguments[0]=msg.replace(/\bvaults\b/g,'hangars').replace(/\bvault\b/g,'hangar').replace(/\bVault\b/g,'Hangar');return o.apply(this,arguments)}}
+// Ship opens on the Loadout (user, 3 Nov 2026): it leads the Ship group, and the Ship tab always opens there
+{const g=DOCK_TOP.find(x=>x[0]==='ship');if(g){g[2]=['upg',...g[2].filter(k=>k!=='upg')]}}
+{const o=dockTop;dockTop=function(i){try{const T=DOCK_TOP[i];if(T&&T[0]==='ship'&&!S.unb)dockSubMem.ship='upg'}catch(e){}return o.apply(this,arguments)}}
+{const o=renderDock;renderDock=function(){const r=o.apply(this,arguments);try{if(S&&!S.unb){const g=DOCK_TOP.find(x=>x[0]==='ship');for(const b of document.querySelectorAll('#dTabs .mtab'))if(b.getAttribute('aria-selected')!=='true'&&g[2].includes(b.dataset.arg)&&g[2].includes('upg')&&dockG.some(x=>x[0]==='ship'&&x[2].some(t=>t[0]==='upg')))b.dataset.arg='upg'}}catch(e){}return r}}
 
 //@src 16zl_loadout2.js
 // ============================================================ the Loadout screen (Beyond screens pass, 3 Nov 2026)
@@ -12294,6 +12298,11 @@ fbHeld=function(P,o){for(const x of cbFitted(P))if(o.owner!==x.f)return x.f;retu
 // the job board says where the beacon goes
 {const o=jobsList;jobsList=function(c,P,srcs){const out=o.apply(this,arguments);try{for(const j of out)if(String(j.id).startsWith('cl:')){if(!beaconCls(P.cls))j.need='Needs a fighter or bomber with a Claim Beacon fitted';else{const f=String(j.id).split(':')[2];if(!cbFitted(P).some(x=>x.f===f))j.sub+=` · fit a ${FACTIONS[f].short} beacon (Loadout)`}}}catch(e){}return out}}
 {const o=fbBuy;fbBuy=function(c,P,f){const r=o.apply(this,arguments);return typeof r==='string'?r.replace(/Carry it into an unclaimed or breached outpost's ring in a fighter or bomber and hold there/,"Fit it in a utility slot on the Loadout (fighters and bombers), then hold it in an unclaimed or breached outpost's ring"):r}}
+// why you can't claim this outpost from its ring, in words that match the fitted beacons (it used to ask for one in the hold)
+function cbWhy(P,o){const own=o.owner?(FACTIONS[o.owner]?FACTIONS[o.owner].short:sideName(o.owner)):null,pre=o.owner?'Defenses down. ':'Unclaimed outpost. ';if(!P)return pre+'Fit a Claim Beacon (Loadout) to claim it.';
+  const fit=cbFitted(P);if(fit.length){if(!beaconCls(P.cls))return pre+'Claim Beacons work only on fighters and bombers: switch hulls to claim it.';if(fit.every(x=>x.f===o.owner))return`${o.name} is already ${own}'s: your beacon claims for ${own} too.`}
+  const hold=FAC_IDS.filter(f=>countIn('bc_'+f,[P.cargo,P.vault||{}])>0);if(hold.length)return pre+`Your ${hold.map(f=>FACTIONS[f].short).join(' and ')} Claim Beacon is in your hold, not fitted: fit it in a utility slot (Loadout) to claim.`;
+  return pre+'Fit a Claim Beacon in a utility slot (buy one at a freeport or a power\'s station, then Loadout) to claim it.'}
 
 //@src 16zw_ports.js
 // ============================================================ docking ports you can see (Beyond, 3 Nov 2026)

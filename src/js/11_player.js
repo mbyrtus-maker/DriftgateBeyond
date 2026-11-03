@@ -348,7 +348,7 @@ function structUpdate(dt){
       if(e.isPlayer&&!S.unb){const fb=fbHeld(S.player,o);if(fb&&beaconCls(S.player.cls)){claim.add(fb);fbBy[fb]='me';continue}}
       if(e.rp&&!S.unb){const R=S.pilots[e.rp],fb=R&&fbHeld(R,o);if(fb&&beaconCls(R.cls)){claim.add(fb);fbBy[fb]=e.rp;continue}}
       if(e.isPlayer){if(!S.unb&&(S.player.cargo.beacon||0)>0&&beaconCls(S.player.cls)&&o.owner!=='player'&&o.owner!==S.player.sworn)claim.add('player');else if(o.owner==='player')block=true;else noBeacon=true}
-      else if(e.rp){const R=S.pilots[e.rp];if(R&&(R.cargo.beacon||0)>0&&beaconCls(R.cls)&&o.owner!==e.side){claim.add(e.side);rpClaim[e.side]=e.rp}else if(o.owner===e.side)block=true;else if(W.t-(e.capMsgT||-9)>6){e.capMsgT=W.t;netMsg(e.rp,'flash',o.owner?'Defenses down. You need a Claim Beacon in your hold to take it.':'Unclaimed outpost. Carry a Claim Beacon into the ring to claim it.')}}
+      else if(e.rp){const R=S.pilots[e.rp];if(R&&(R.cargo.beacon||0)>0&&beaconCls(R.cls)&&o.owner!==e.side){claim.add(e.side);rpClaim[e.side]=e.rp}else if(o.owner===e.side)block=true;else if(W.t-(e.capMsgT||-9)>6){e.capMsgT=W.t;netMsg(e.rp,'flash',cbWhy(R,o))}}
       else if(e.role==='strike'&&e.side!==o.owner)claim.add(e.side);
       if(o.owner&&e.side===o.owner&&!e.isPlayer)block=true;}
     {const lk=outLock(o.sector);if(lk)for(const c of[...claim])if(sideNorm(c)!==sideNorm(lk)){claim.delete(c);if(c==='player'&&W.t-(W.capMsgT||-9)>6){flash(`The ${sideName(sideNorm(lk))} station in this system holds ${o.name}: take the station first.`,true);W.capMsgT=W.t}}}
@@ -357,7 +357,7 @@ function structUpdate(dt){
       if(o.cap.p>=1&&fbBy[c]){fbClaim(o,c,fbBy[c])}else if(o.cap.p>=1){if(c==='player'){inv.take(S.player.cargo,'beacon',1);const v=invVec({beacon:1});for(const e of RAWS)o.fort[e]+=v[e]}else if(rpClaim[c]){const RC=S.pilots[rpClaim[c]];inv.take(RC.cargo,'beacon',1);const v=invVec({beacon:1});for(const e of RAWS)o.fort[e]+=v[e];runAs(rpClaim[c],()=>feed(`You claimed ${o.name} for the ${FACTIONS[c].name}.`,'good'))}capture(o,c)}}
     else if(claim.size>1){if(W.t-W.capMsgT>4&&claim.has('player')){flash('Claim contested. Clear hostiles from the ring.',true);W.capMsgT=W.t}}
     else o.cap.p=Math.max(0,o.cap.p-dt*.15);
-    if(noBeacon&&W.t-W.capMsgT>6){flash(o.owner?'Defenses down. You need a Claim Beacon in your hold to take it.':'Unclaimed outpost. Carry a Claim Beacon into the ring to claim it.');W.capMsgT=W.t}
+    if(noBeacon&&W.t-W.capMsgT>6){flash(cbWhy(S.player,o));W.capMsgT=W.t}
   }else o.cap.p=Math.max(0,o.cap.p-dt*.3);
 }
 function shotsUpdate(dt){

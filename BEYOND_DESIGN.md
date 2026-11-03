@@ -1742,3 +1742,12 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - **Components and payload:** the Market's detail shows who makes them, a power's or freeport's first maker for components and its second for payload ("Made by Quicksilver Hullworks · here"), with the maker in the tile's tooltip. They stay one item each in the economy.
 - **Left out:** ore, contraband, Scrapheart's salvage, and your own depots' and stations' markets (your own brand covers those).
 - **Tests:** `corps.py`.
+
+### Claim messages and the Ship tab (3 Nov 2026)
+- **The user's report:** an outpost's ring said you needed a Claim Beacon in your hold, with one fitted on the Loadout.
+- **The fix:** the ring's messages now match fitted beacons (`cbWhy`):
+  - a beacon in the hold but not fitted: fit it on the Loadout;
+  - a fitted beacon on a hull that can't carry one: fighters and bombers only;
+  - a fitted beacon for the power that already holds the outpost: it's already theirs;
+  - no beacon at all: buy one and fit it.
+- **The Ship tab opens on the Loadout** (user, 3 Nov). Loadout leads the Ship group (Loadout, Shipyard, Hangar, Refits), and the Ship tab always opens there, whatever sub-tab you used last.
