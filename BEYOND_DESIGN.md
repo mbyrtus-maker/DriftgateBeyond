@@ -1440,3 +1440,6 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - **Tabs merged:** the Company screen's Post jobs and Faction jobs become one Jobs tab (All · Your pilots · Posted out · Faction jobs); the Ship tab's Systems sub-tab folds into Loadout.
 - **Checked against the originals:** each one's buttons, inputs and readouts were listed and placed in the minimal version.
 - **Kind icons for jobs:** mine is an ore hexagon, haul a component square, guard a shield, intel a triangle, hunt a dart.
+- **User review (3 Nov):**
+  - Loadout and Hangar keep their original (fuller) layouts; their minimal versions were dropped.
+  - Title screen: the order is Callsign, Legend (collapsed), Freeport and Ship (both expanded). On the right, a picture of the chosen freeport with the chosen ship; in the game these are the live 3D models.
