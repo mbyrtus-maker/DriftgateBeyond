@@ -1,0 +1,84 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Saira+Semi+Condensed:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{--void:#05070d;--deep:#0a0f1d;--sheet:#0c1222;--sheet-2:#111a2e;--line:#232d45;--line-hi:#36435f;--ivory:#ece4cf;--dim:#8c91a5;--faint:#5a647c;--amber:#f0b24a;--danger:#ff5d4f;--ok:#7ad9a7;
+--fd:'Big Shoulders Display','Arial Narrow',sans-serif;--fu:'Saira Semi Condensed','Arial Narrow',sans-serif;--fm:'JetBrains Mono',monospace}
+*{box-sizing:border-box}body{margin:0;background:#05070d;font-family:var(--fu);color:var(--ivory);width:1400px;height:860px;display:flex;align-items:center;justify-content:center}
+.dock{width:1000px;background:var(--sheet);border:1px solid var(--line-hi);box-shadow:0 20px 60px #000a}
+.hd{display:flex;justify-content:space-between;align-items:flex-end;padding:18px 22px 10px}
+.hd h1{margin:0;font-family:var(--fd);font-weight:800;font-size:34px;letter-spacing:.04em;color:var(--amber)}.hd .sub{color:var(--dim);font-size:13px}
+.stats{display:flex;gap:26px;font-size:12px;color:var(--dim)}.stats b{display:block;font-family:var(--fm);font-size:17px;color:var(--ivory)}.stats b.am{color:var(--amber)}
+.tabs{display:flex;gap:28px;padding:0 22px;border-bottom:1px solid var(--line);font-family:var(--fd);font-weight:600;font-size:18px;letter-spacing:.1em;color:var(--dim)}.tabs span{padding:8px 0}.tabs .on{color:var(--ivory);border-bottom:2px solid var(--amber)}
+.sub2{display:flex;gap:24px;padding:8px 22px;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:.12em;color:var(--dim);font-weight:600}.sub2 .on{color:var(--ivory)}
+.body{display:grid;grid-template-columns:1fr 360px;gap:0;height:560px}
+.left{padding:14px 18px;overflow:hidden;border-right:1px solid var(--line)}
+.hold{margin-bottom:14px}.hold .lab{display:flex;justify-content:space-between;font-size:11.5px;color:var(--dim);letter-spacing:.08em;margin-bottom:5px}.hold .lab b{color:var(--danger);font-family:var(--fm)}
+.bar{display:flex;height:14px;background:#0a0f1d;border:1px solid var(--line-hi)}.bar i{display:block;height:100%}.bar .over{background:repeating-linear-gradient(45deg,#ff5d4f55 0 4px,transparent 4px 8px);border-left:1px solid var(--danger)}
+.grp{font-size:11px;letter-spacing:.16em;color:var(--faint);font-weight:600;margin:10px 0 6px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tile{position:relative;background:var(--sheet-2);border:1px solid var(--line);padding:8px 9px 8px;cursor:pointer}
+.tile.sel{border-color:var(--amber);box-shadow:inset 0 0 0 1px var(--amber);background:#17213a}
+.tile .top{display:flex;gap:8px;align-items:center}.tile svg{flex:none}
+.tile .nm{font-weight:600;font-size:13.5px;line-height:1.1}.tile .ms{font-size:10.5px;color:var(--faint)}
+.tile .px{display:flex;justify-content:space-between;margin-top:6px;font-family:var(--fm);font-size:13px}.tile .px span{color:var(--dim);font-size:10px;font-family:var(--fu);letter-spacing:.08em;margin-right:3px}
+.meter{margin-top:6px;height:5px;background:#0a0f1d;position:relative}.meter i{position:absolute;left:0;top:0;bottom:0}
+.badge{position:absolute;top:-7px;right:6px;background:var(--amber);color:#111;font-size:10px;font-weight:700;padding:0 5px;letter-spacing:.04em}
+.dem{font-size:9.5px;letter-spacing:.08em;margin-top:4px;display:flex;justify-content:space-between;color:var(--faint)}.dem .hi{color:var(--amber)}.dem .lo{color:var(--ok)}
+.right{padding:16px 18px;background:#0b1120}
+.big{display:flex;gap:14px;align-items:center}.big h2{margin:0;font-family:var(--fd);font-size:28px;letter-spacing:.04em}.big .ms{color:var(--dim);font-size:12px}
+.sec{margin-top:16px}.sec .t{font-size:11px;letter-spacing:.14em;color:var(--faint);font-weight:600;margin-bottom:6px;display:flex;justify-content:space-between}
+.gauge{position:relative;height:34px}.gauge .trk{position:absolute;left:0;right:0;top:14px;height:6px;background:linear-gradient(90deg,#7ad9a755,#36435f 50%,#ff5d4f55)}
+.mk{position:absolute;top:4px;transform:translateX(-50%);text-align:center;font-family:var(--fm);font-size:10px}.mk:after{content:'';display:block;width:2px;height:16px;margin:2px auto 0;background:currentColor}
+.ends{display:flex;justify-content:space-between;font-size:10.5px;color:var(--faint);margin-top:2px}
+.qty{display:flex;align-items:center;gap:10px;margin-top:6px}.qty input{flex:1;accent-color:var(--amber)}.qty b{font-family:var(--fm);font-size:18px;width:42px;text-align:right}
+.tot{display:flex;justify-content:space-between;margin-top:8px;font-size:12.5px;color:var(--dim)}.tot b{font-family:var(--fm);color:var(--ivory)}
+.btns{display:flex;gap:8px;margin-top:12px}.btn{flex:1;padding:9px 0;text-align:center;border:1px solid var(--line-hi);font-family:var(--fd);font-weight:600;letter-spacing:.12em;font-size:15px}.btn.pri{background:var(--amber);color:#141414;border-color:var(--amber)}.btn.ok{border-color:var(--ok);color:var(--ok)}
+.runs div{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;border-bottom:1px solid #1a2338}.runs b{font-family:var(--fm)}.runs em{font-style:normal;color:var(--faint);font-size:11px;margin-left:6px}
+.ft{display:flex;justify-content:flex-end;gap:12px;padding:10px 22px;border-top:1px solid var(--line)}
+</style></head><body>
+<div class="dock">
+ <div class="hd"><div><h1>MIRRORWATER FREEPORT</h1><div class="sub">Freeport Compact · neutral station · Mirrorwater</div></div>
+  <div class="stats"><div>Credits<b class="am">1,800</b></div><div>Hold<b style="color:var(--danger)">24/14 t</b></div><div>Vault<b>36 t</b></div><div>Freeport treasury<b>150,000</b></div></div></div>
+ <div class="tabs"><span>OVERVIEW</span><span class="on">TRADE</span><span>JOBS</span><span>SHIP</span><span>STATION</span><span>ALLEGIANCE</span></div>
+ <div class="sub2"><span class="on">MARKET</span><span>BEST RUNS</span><span>VAULT</span></div>
+ <div class="body">
+  <div class="left">
+   <div class="hold"><div class="lab"><span>YOUR HOLD · Ferrite 12 t · Alloy Plate 12 t</span><b>24 / 14 t · overloaded</b></div>
+    <div class="bar"><i style="width:50%;background:#bba98d"></i><i style="width:0"></i><i class="over" style="width:50%"></i></div></div>
+   <div id="grids"></div>
+  </div>
+  <div class="right" id="det"></div>
+ </div>
+ <div class="ft"><span class="btn" style="flex:none;padding:8px 18px">SAVE &amp; QUIT</span><span class="btn pri" style="flex:none;padding:8px 18px">LAUNCH</span></div>
+</div>
+<script>
+const I={fe:['Ferrite','#bba98d',1,'ore'],cu:['Cuprite','#e48a5a',1,'ore'],ir:['Iridium','#9cc4ec',1,'ore'],xc:['Xenocrystal','#c99cff',1,'ore'],nu:['Vantium','#c6f25a',1,'ore'],au:['Aurorite','#6ff2cf',1,'ore'],
+ plate:['Alloy Plate','#d6ccb4',3,'part'],wire:['Conduit','#f2a070',3,'part'],coil:['Flux Coil','#acd6ff',8,'part'],lattice:['Crystal Lattice','#d9bbff',8,'part'],core:['Resonance Core','#ffd27a',10,'part']};
+const M={fe:[100,5,4,'lo',12],cu:[100,6,5,'lo',0],ir:[40,19,16,'',0],xc:[10,47,41,'',0],nu:[20,36,31,'',0],au:[0,0,0,'',0],plate:[20,39,34,'hi',4],wire:[20,29,25,'',0],coil:[7,178,157,'hi',0],lattice:[2,277,245,'hi',0],core:[0,0,0,'',0]};
+function icon(k,s){const[,c,,t]=I[k];const id='g'+k+s;
+ if(t==='ore')return`<svg width="${s}" height="${s}" viewBox="0 0 40 40"><defs><radialGradient id="${id}" cx=".35" cy=".3"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".5" stop-color="${c}"/><stop offset="1" stop-color="#000" stop-opacity=".6"/></radialGradient></defs><polygon points="8,14 17,5 30,8 36,19 31,32 18,36 7,28" fill="url(#${id})" stroke="${c}" stroke-width="1.2"/><polyline points="17,5 20,19 36,19 M20,19 18,36" fill="none" stroke="#0006"/><polyline points="20,19 8,14" stroke="#fff3" fill="none"/></svg>`;
+ const G={plate:`<rect x="7" y="22" width="26" height="6" fill="${c}" opacity=".6"/><rect x="9" y="15" width="26" height="6" fill="${c}" opacity=".8"/><rect x="5" y="8" width="26" height="6" fill="${c}"/>`,
+  wire:`<path d="M6 30 C6 8, 18 8, 18 20 S30 32, 34 10" stroke="${c}" stroke-width="4" fill="none"/><circle cx="6" cy="30" r="3" fill="${c}"/><circle cx="34" cy="10" r="3" fill="${c}"/>`,
+  coil:`<rect x="17" y="4" width="6" height="32" fill="#36435f"/>${[8,13,18,23,28].map(y=>`<ellipse cx="20" cy="${y}" rx="11" ry="3.2" fill="none" stroke="${c}" stroke-width="2.4"/>`).join('')}`,
+  lattice:`${[[20,6],[9,13],[31,13],[9,27],[31,27],[20,34],[20,20]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3" fill="${c}"/>`).join('')}<path d="M20 6L9 13L9 27L20 34L31 27L31 13Z M20 6L20 34 M9 13L31 27 M31 13L9 27" stroke="${c}" stroke-width="1.2" fill="none" opacity=".7"/>`,
+  core:`<circle cx="20" cy="20" r="13" fill="${c}" opacity=".25"/><circle cx="20" cy="20" r="8" fill="${c}"/><circle cx="17" cy="17" r="3" fill="#fff" opacity=".7"/>`};
+ return`<svg width="${s}" height="${s}" viewBox="0 0 40 40">${G[k]}</svg>`}
+function tile(k,sel){const[n,c,ms]=I[k],[st,b,s,d,h]=M[k];const lv=Math.min(1,st/100),col=st<10?'#ff5d4f':st<30?'#f0b24a':'#7ad9a7';
+ return`<div class="tile${sel?' sel':''}">${h?`<span class="badge">${h} IN HOLD</span>`:''}<div class="top">${icon(k,34)}<div><div class="nm">${n}</div><div class="ms">${ms} t each</div></div></div>
+ <div class="px"><div><span>BUY</span>${st?b:'—'}</div><div><span>SELL</span>${s||'—'}</div></div>
+ <div class="meter"><i style="width:${lv*100}%;background:${col}"></i></div><div class="dem"><span>${st?st+' in stock':'none in stock'}</span>${d==='hi'?'<span class="hi">▲ HIGH DEMAND</span>':d==='lo'?'<span class="lo">▼ OVERSUPPLIED</span>':''}</div></div>`}
+document.getElementById('grids').innerHTML=`<div class="grp">ORE</div><div class="grid">${['fe','cu','ir','xc','nu','au'].map(k=>tile(k)).join('')}</div><div class="grp">PARTS</div><div class="grid">${['plate','wire','coil','lattice','core'].map(k=>tile(k,k==='coil')).join('')}</div>`;
+const pts=[150,152,149,160,166,171,168,175,180,178];const W=320,H=60,mx=190,mn=140,path=pts.map((v,i)=>`${i?'L':'M'}${(i/(pts.length-1)*W).toFixed(1)} ${(H-(v-mn)/(mx-mn)*H).toFixed(1)}`).join(' ');
+document.getElementById('det').innerHTML=`<div class="big">${icon('coil',64)}<div><h2>FLUX COIL</h2><div class="ms">8 t · part · 2 Conduit + 2 Iridium · 7 in stock · <span style="color:var(--amber)">high demand</span></div></div></div>
+ <div class="sec"><div class="t"><span>PRICE HERE AGAINST THE GALAXY</span><span>your scans</span></div>
+  <div class="gauge"><div class="trk"></div><div class="mk" style="left:12%;color:var(--ok)">121</div><div class="mk" style="left:58%;color:var(--ivory)">157</div><div class="mk" style="left:70%;color:var(--amber)">178</div><div class="mk" style="left:93%;color:var(--danger)">196</div></div>
+  <div class="ends"><span>cheapest · Ember Wake</span><span>sell · buy here</span><span>dearest · Varkesh Hold</span></div></div>
+ <div class="sec"><div class="t"><span>PRICE HERE · LAST 30 MIN</span><span style="color:var(--amber)">▲ 19%</span></div>
+  <svg width="${W}" height="${H+4}"><path d="${path} L${W} ${H} L0 ${H}Z" fill="#f0b24a18"/><path d="${path}" stroke="#f0b24a" stroke-width="2" fill="none"/><circle cx="${W}" cy="${(H-(178-mn)/(mx-mn)*H).toFixed(1)}" r="3.5" fill="#f0b24a"/></svg></div>
+ <div class="sec"><div class="t"><span>QUANTITY</span><span>fits in hold: 0 · vault takes the rest</span></div>
+  <div class="qty"><span style="font-size:12px;color:var(--dim)">SELL</span><input type="range" min="-0" max="7" value="3"><span style="font-size:12px;color:var(--dim)">BUY</span><b>3</b></div>
+  <div class="tot"><span>Buy 3 for</span><b>534 cr</b></div><div class="tot"><span>Hold after</span><b style="color:var(--danger)">24/14 t · +24 t to vault</b></div>
+  <div class="btns"><span class="btn pri">BUY 3</span><span class="btn">FILL HOLD</span><span class="btn ok">SELL ALL</span></div></div>
+ <div class="sec runs"><div class="t"><span>BEST PLACES TO SELL</span><span>from your scans</span></div>
+  <div><span>Varkesh Hold<em>2 jumps · Unwelcome</em></span><b style="color:var(--danger)">196</b></div><div><span>Coldwater Drift<em>3 jumps</em></span><b>181</b></div><div><span>Halcyon Prime<em>4 jumps</em></span><b>170</b></div></div>`;
+</script></body></html>

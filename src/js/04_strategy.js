@@ -296,9 +296,9 @@ function frigOrders(t){let best=t.sector,bs=-1e9;const bro=t.side==='brood',bcc=
     if(frigatesIn(d.id).some(o=>o!==t&&o.side===t.side))sc-=3;
     {const C=S.coal;if(C&&t.side!=='brood'){const ow=sideNorm(sectorOwner(d.id));if(C.mem.includes(t.side)){if(ow===C.lead)sc+=5*BAL.coal;if(frigatesIn(d.id).some(o=>sideNorm(o.side)===C.lead))sc+=4}else if(t.side===C.lead){if(ow===t.side&&frigatesIn(d.id).some(o=>hostE(t.side,o)))sc+=4;if(ow!==t.side)sc-=2.5}}}
     if(sc>bs){bs=sc;best=d.id}}return best}
-const WIN_TIME=1200;   // the 7-system hold: 20 minutes
-function controlCounts(){const n={};for(const d of SECTOR_DEFS){let o=sectorOwner(d.id);if(o==='player')o=S.player.sworn;if(o&&o!=='pirate'&&o!=='neutral')n[o]=(n[o]||0)+1}return n}
-const VIC_NEED=7;   // hold 7 systems for 20 minutes (tested: the hold decides ~43% of galaxies instead of ~16%)
+const WIN_TIME=600;   // Beyond: hold 20 systems for 10 minutes
+function controlCounts(){const n={};for(const d of SECTOR_DEFS){let o=sectorOwner(d.id);if(o==='player')o=S.player.sworn||(S.player.decl?'player':null);if(o&&o!=='pirate'&&o!=='neutral')n[o]=(n[o]||0)+1}return n}
+const VIC_NEED=20;   // Beyond: 20 of the 42 systems that can be held (freeports and the Wrack can't), for WIN_TIME
 // ============================================================ the coalition: when one side nears galaxy control, the other factions call a truce and
 // turn on it. The Brood never joins: it keeps playing for its own dominance, and if the Brood is the one winning, all three factions unite against it.
 // the side a pilot's work counts for: their sworn faction, or the Freeport Compact for an independent contractor
@@ -312,17 +312,17 @@ function coalTick(){const n=controlCounts();let lead=null,best=0;for(const k in 
   if(S.ffa){const F=S.ffa;if((n[F.by]||0)>(n[F.hold]||0)&&(n[F.hold]||0)>=VIC_NEED)return;S.ffa=null;feed((n[F.hold]||0)>=VIC_NEED?`${sideName(F.hold)} is level again at ${n[F.hold]} systems: the truce against it re-forms.`:`${sideName(F.hold)} has dropped to ${n[F.hold]||0} systems: the free-for-all is over.`,'news')}
   if(C&&C.lead!=='brood'&&(n[C.lead]||0)>=VIC_NEED){let by=null;for(const k of FAC_IDS)if(k!==C.lead&&(n[k]||0)>(n[C.lead]||0)&&(!by||n[k]>n[by]))by=k;
     if(by){S.coal=null;S.ffa={by,hold:C.lead,T:S.T};feed(`⚔ ${sideName(by)} has passed ${sideName(C.lead)}, ${n[by]} systems to ${n[C.lead]}: the truce is broken and it's every faction for itself. ${sideName(C.lead)}'s clock keeps running.`,by===pf||C.lead===pf?'warn':'news');return}}
-  if(C){const m=n[C.lead]||0;if(C.lead==='brood'?m<ACCORD_OFF:m<=VIC_NEED-2){S.coal=null;feed(`The truce against ${C.lead==='brood'?'the Brood':FACTIONS[C.lead].short} has collapsed: ${m} systems is no longer a threat. ${coalNames(C.mem)} go back to their own wars.`,'news')}
+  if(C){const m=n[C.lead]||0;if(C.lead==='brood'?m<ACCORD_OFF:m<=VIC_NEED-2){S.coal=null;feed(`The truce against ${C.lead==='brood'?'the Brood':sideName(C.lead)} has collapsed: ${m} systems is no longer a threat. ${coalNames(C.mem)} go back to their own wars.`,'news')}
     else if(C.lead==='brood'||!(lead&&lead!==C.lead&&best>=VIC_NEED&&best>m&&m<VIC_NEED))return}   // the truce stays on its leader while that leader still holds 7
   if(S.victory&&S.victory.side!=='brood'&&(n[S.victory.side]||0)===best)lead=S.victory.side;   // a tie: the truce goes after the side on the clock
   if(!lead||best<VIC_NEED)return;const mem=FAC_IDS.filter(f=>f!==lead);if(!mem.length)return;S.coal={lead,mem,since:S.T};
   if(lead==='brood')feed(`⚠ The Brood holds ${best} systems. ${coalNames(mem)} have set aside their war to stop the Bloom: their fleets hold fire on each other and turn on the Brood.`,'bad');
-  else feed(`${coalNames(mem)} have called a truce to stop ${FACTIONS[lead].name} (${best} of ${VIC_NEED} systems). Their fleets now hold fire on each other and go after ${FACTIONS[lead].short}.${lead===pf?' The galaxy is coming for you.':mem.includes(pf)?` ${FAC(pf).short} is in the truce: their ships won't fire on you and your guns won't touch theirs.`:''}`,lead===pf?'bad':'warn')}
+  else feed(`${coalNames(mem)} have called a truce to stop ${lead==='player'?(S.player.decl||{}).name||'your faction':FACTIONS[lead].name} (${best} of ${VIC_NEED} systems). Their fleets now hold fire on each other and go after ${lead==='player'?'you':FACTIONS[lead].short}.${lead===pf||lead==='player'?' The galaxy is coming for you.':mem.includes(pf)?` ${FAC(pf).short} is in the truce: their ships won't fire on you and your guns won't touch theirs.`:''}`,lead===pf?'bad':'warn')}
 // the deadline: if no one has held 7 systems for 20 minutes by two hours of game time, the faction holding the most systems wins.
 // Ties go to most stations and depots, then most capital ships, then the richest stores.
 // the Brood takes a galaxy only by holding 7 systems, never on the deadline count: it stays aggressive and spreads, and the
 // factions decide the deadline between them
-const TIE_T=7200,TIE_SIDES=()=>[...FAC_IDS];
+const TIE_T=1e12,TIE_SIDES=()=>[...FAC_IDS];   // Beyond: no deadline, a galaxy runs until someone wins
 function tieScore(sd){const n=controlCounts();return[n[sd]||0,Object.values(S.stations).filter(R=>sideNorm(R.owner)===sd&&R.kind!=='hive').length,(S.frigates||[]).filter(t=>sideNorm(t.side)===sd).length,Math.round(invValue(S.econ.stock[sd]||{}))]}
 function tieWinner(){let best=null,bs=null;for(const sd of TIE_SIDES()){const sc=tieScore(sd);if(!bs){best=sd;bs=sc;continue}for(let i=0;i<sc.length;i++){if(sc[i]>bs[i]){best=sd;bs=sc;break}if(sc[i]<bs[i])break}}return best}
 function tieLead(){const w=tieWinner();return w?[w,tieScore(w)[0]]:null}
@@ -348,9 +348,9 @@ function victoryTick(){if(deadlineTick())return;const n=controlCounts(),need=VIC
 function loadLegacy(){try{return JSON.parse(localStorage.getItem('dgbeyond.legacy')||'{}')||{}}catch(e){return{}}}
 function galaxyWon(side,how){{const v=$('winV');if(v)v.hidden=true}if(!NET.cl)legAward(side);if(NET.host)for(const c of readyCl())send(c.L,{t:'won',side,how});const lg=loadLegacy();lg.wins=lg.wins||{};lg.wins[side]=(lg.wins[side]||0)+1;lg.last=side;try{localStorage.setItem('dgbeyond.legacy',JSON.stringify(lg));localStorage.removeItem(SAVE_KEY)}catch(e){}
   S.won=side;hideSheets();const mine=side===S.player.sworn,n=controlCounts()[side]||0;
-  $('winT').textContent=side==='brood'?'The Bloom spreads':mine?'Victory':`${FACTIONS[side].short} rules`;
+  $('winT').textContent=side==='brood'?'The Bloom spreads':mine||side==='player'?'Victory':`${FACTIONS[side].short} rules`;
   const held=how==='tie'?`held the most systems (${n} of ${SECTOR_DEFS.length}) when the two-hour deadline arrived`:`held ${n} of ${SECTOR_DEFS.length} systems for ${Math.round(WIN_TIME/60)} minutes`;
-  $('winP').textContent=side==='brood'?`The Vael Brood ${held}. The galaxy is consumed. No pilot earns a Legend point. A new galaxy waits.`:`The ${FACTIONS[side].name} ${held} and unites the galaxy.${mine?' Your faction won, and you with it.':''} A new galaxy begins: ${FACTIONS[side].short} starts it with a finished capital shipyard and 40% richer stores${mine?', and you start with 4,000 extra credits and a crate of parts':''}.`;
+  $('winP').textContent=side==='brood'?`The Vael Brood ${held}. The galaxy is consumed. No pilot earns a Legend point. A new galaxy waits.`:side==='player'?`${(S.player.decl||{}).name||'Your faction'} ${held} and unites the galaxy under your banner. A new galaxy begins.`:`The ${FACTIONS[side].name} ${held} and unites the galaxy.${mine?' Your faction won, and you with it.':''} A new galaxy begins: ${FACTIONS[side].short} starts it with a finished capital shipyard and 40% richer stores${mine?', and you start with 4,000 extra credits and a crate of parts':''}.`;
   if(S.unb)$('winP').innerHTML=esc($('winP').textContent)+unbDebrief(side);$('winS').textContent=`Galaxies won · ${Object.keys(lg.wins).map(k=>`${sideName(k)} ${lg.wins[k]}`).join(' · ')}`;$('win').hidden=false}
 function broodNear(sid){const t=territory('brood');return t.has(sid)||NEIGH[sid].some(n=>t.has(n))}
 function planOffensive(f){if(FACTIONS[f]&&f!=='brood'&&campBusy(f)){S.ai[f].next=S.T+rnd(30,50);return}

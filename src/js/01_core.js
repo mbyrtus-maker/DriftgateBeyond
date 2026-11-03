@@ -85,12 +85,12 @@ const ITEMS={
   picket:{name:'Picket Kit',recipe:{plate:3,wire:2,coil:1},col:'#e8d8a0'},
   frame:{name:'Depot Frame',recipe:{plate:10,wire:6,coil:3},col:'#c8d2e0'},
   // made only by the Freeport Compact, from goods traders sell it, and bought only at a freeport
-  matrix:{name:'Calibration Matrix',recipe:{wire:2,coil:1,xc:1},fp:true,col:'#7fe3ff'},   // every Mk III upgrade
+  matrix:{name:'Calibration Matrix',recipe:{wire:2,coil:1,xc:1},fp:true,col:'#7fe3ff'},   // every grade 3 upgrade
   seal:{name:'Compact Seal',recipe:{plate:4,coil:2,xc:2},fp:true,col:'#ffb36b'},          // every capital build: shipyard 2, carrier 3, escort 1
 };
 const FP_ONLY=new Set(['matrix','seal']);
 
-// ============================================================ ship upgrade choices: from Mk II each system takes one variant, a real part built from
+// ============================================================ ship upgrade choices: from grade 2 each system takes one variant, a real part built from
 // materials (an item, so the ledger counts it), fitted per ship in tune.vr and free to swap at any dock with Upgrades. A variant buys a
 // strength with a weakness. Fitted variants go down with the ship: half spill into the crate as salvage, the rest is lost as debris.
 const VAR_RECIPE={plate:2,coil:2,lattice:1};
@@ -155,7 +155,7 @@ const SLOTS=[
 ];
 const SLOT={};SLOTS.forEach(s=>SLOT[s.id]=s);
 const UPG={2:{plate:2,wire:2},3:{plate:2,coil:2},4:{coil:2,lattice:2},5:{lattice:1,core:2}};
-function upgRecipe(slot,t){const r={...UPG[t]};if(t===3)r.matrix=1;if((slot==='armor'||slot==='cargo')&&r.wire){r.plate+=r.wire;delete r.wire}if((slot==='weapon'||slot==='power')&&t===3){r.coil=3;r.plate=1}return r}
+function upgRecipe(slot,t){const r={...UPG[t]};if(t>=3)r.matrix=1;if((slot==='armor'||slot==='cargo')&&r.wire){r.plate+=r.wire;delete r.wire}if((slot==='weapon'||slot==='power')&&t===3){r.coil=3;r.plate=1}return r}
 function compInv(slot,t){const o={...SLOT[slot].base};for(let k=2;k<=t;k++){const r=upgRecipe(slot,k);for(const i in r)o[i]=(o[i]||0)+r[i]}return o}
 function fortRecipe(L){const r={plate:3*L,wire:2*L};if(L>=3)r.coil=2*(L-2);if(L>=5)r.lattice=2;return r}
 
@@ -418,7 +418,7 @@ function unbFence(arg){const P=unbP(),[k0,n0]=String(arg).split(':'),keys=k0==='
   for(const k of keys){const n=n0==='all'?(P.cargo[k]||0):Math.min(+n0||1,P.cargo[k]||0);if(!(n>0))continue;const nS=Math.min(n,P.stolen[k]||0);for(const[m,pr]of[[nS,fencePrS(k)],[n-nS,fencePr(k)]]){if(!(m>0))continue;const can=Math.min(m,Math.floor((S.econ.treasury.pirate||0)/pr));if(can<=0)continue;
     inv.take(P.cargo,k,can);inv.add(S.econ.stock.pirate,k,can);{const F=S.econ.fenced=S.econ.fenced||{};F[k]=(F[k]||0)+can}if(m===nS&&P.stolen[k]){P.stolen[k]=Math.max(0,P.stolen[k]-can);if(!P.stolen[k])delete P.stolen[k]}got+=transfer('pirate','player',pr*can);t+=can*mass(k)}}
   if(got)SFX.fence();dockErr=got?`✓ The Fence took ${fmt(t)} t for ${fmt(got)} cr.`:'The Fence has nothing to pay you with right now.'}
-function unbBlackHtml(c,P){let h=`<p class="note" style="margin:0 0 12px">Unbound hulls, paid in credits to the haven. A bought hull goes down with you: you relaunch in a Raider. Trading in a bought hull returns half its price. Mk upgrades cost materials as usual (Upgrades tab).</p><div class="tblw"><table class="t"><thead><tr><th>Hull</th><th class="r">Hull</th><th class="r">Shields</th><th class="r">Hold</th><th class="r">Price</th><th></th></tr></thead><tbody>`;
+function unbBlackHtml(c,P){let h=`<p class="note" style="margin:0 0 12px">Unbound hulls, paid in credits to the haven. A bought hull goes down with you: you relaunch in a Raider. Trading in a bought hull returns half its price. grade upgrades cost materials as usual (Upgrades tab).</p><div class="tblw"><table class="t"><thead><tr><th>Hull</th><th class="r">Hull</th><th class="r">Shields</th><th class="r">Hold</th><th class="r">Price</th><th></th></tr></thead><tbody>`;
   for(const k of UNB_HULLS){const st=shipStats('pirate',k,1),on=P.cls===k,pr=Math.round(UNB_PRICE[k]*(unbWork('chop')>=2?.9:1));h+=`<tr><td class="iname" style="white-space:normal;max-width:420px"><b>${esc(PIRATE.hulls[k])}</b><div class="note" style="margin:2px 0 4px;white-space:normal">${esc(CLASSES[k].desc||'')}</div>${tagsHtml(k)}</td><td class="r num">${Math.round(st.hull)}</td><td class="r num">${Math.round(st.sCap)}</td><td class="r num">${st.cargo} t</td><td class="r num">${pr?fmt(pr)+' cr':'free'}</td><td>${on?'<b>Flying</b>':`<button class="btn sm" data-act="unbhull" data-arg="${k}" ${P.credits+(UNB_PRICE[P.cls]||0)*TRADE_IN>=pr?'':'disabled'}>${pr?'Buy':'Switch'}</button>`}</td></tr>`}
   return h+`</tbody></table></div><p class="note" style="margin-top:10px">Harpoons are your missiles fired in jam mode (4). In jam mode a Plunderer's missile key fires jamming torpedoes (${jtCap()} in the magazine, 40 s reload): the only way to take a capital ship dark, and the key to a faction vault during a lockdown.</p>`+unbVarBuyHtml(P)}
 function unbHull(k){const P=unbP();if(!UNB_HULLS.includes(k)||P.cls===k)return;const hk=unbWork('chop')>=2?.9:1,back=Math.floor((UNB_PRICE[P.cls]||0)*hk*TRADE_IN),pr=Math.round(UNB_PRICE[k]*hk);if(P.credits+back<pr){dockErr=`You need ${fmt(pr)} cr.`;return}if(back>(S.econ.treasury.pirate||0)){dockErr='The haven can’t cover your trade-in right now.';return}
@@ -486,7 +486,7 @@ function unbLaunder(){const P=unbP(),fee=Math.ceil(Object.keys(P.stolen).reduce(
 function captainTick(){const R=unbRT(),P=S.player;if(unbWork('tankard')<3||!W||P.docked||!W.player||(W===LW&&W.dead))return;if(R.capt&&R.capt.alive&&W.ents.includes(R.capt))return;if((P.captT||0)>S.T)return;
   const e=spawnNPC('patrol','pirate');if(!e)return;const p=W.player,o=rdir();e.x=p.x+o.x*300;e.y=p.y+o.y*120;e.z=p.z+o.z*300;e.order={kind:'escort',tgt:p,until:W.t+1e6,slot:0,by:true,pid:curPid()};e.capt=1;R.capt=e;P.captT=S.T+(R.capt0?240:0);R.capt0=1;feed('☠ Your captain falls in on your wing.','good')}
 // ---- mirror variants (black market only) and the Tether cutter
-function unbVarBuyHtml(P){const st=S.econ.stock.pirate;let h=`<div class="h3" style="margin-top:14px">Mirror parts</div><p class="note" style="margin:0 0 8px">Unbound specialists, built in the haven's own shops. They fit at any Mk (Upgrades tab).</p><div class="act" style="flex-wrap:wrap">`;
+function unbVarBuyHtml(P){const st=S.econ.stock.pirate;let h=`<div class="h3" style="margin-top:14px">Mirror parts</div><p class="note" style="margin:0 0 8px">Unbound specialists, built in the haven's own shops. They fit at any grade (Upgrades tab).</p><div class="act" style="flex-wrap:wrap">`;
   for(const id of['scanbaf','jamemit','longharp']){const V=VARIANTS[id],pr=Math.ceil(baseValue('v_'+id)*1.3),have=countIn('v_'+id,[P.cargo,P.vault]);h+=`<button class="btn sm" data-act="unbvar" data-arg="${id}" ${P.credits>=pr&&(haveIn(V.recipe,[st])||(st['v_'+id]||0)>0)?'':'disabled'} title="${esc(V.gain+' · '+V.cost)}">${esc(V.name)} · ${fmt(pr)} cr${have?' · own '+have:''}</button>`}
   return h+`</div>`}
 function unbBuyVar(id){const P=unbP(),V=VARIANTS[id];if(!V||V.spec!=='unb')return;const st=S.econ.stock.pirate,pr=Math.ceil(baseValue('v_'+id)*1.3);if(P.credits<pr){dockErr='Not enough credits.';return}
@@ -563,10 +563,10 @@ function tunedK(e,kind){const t=e.st&&e.st.tuned;if(!t||(kind!=='kinetic'&&kind!
 // a destroyed ship's fitted variants: each one either spills into the crate whole, or breaks up into the system's debris
 function vrLose(P,crate,s){const vr=vrOf(P.tune);for(const sl in vr){const id='v_'+vr[sl];if(!ITEMS[id])continue;if(Math.random()<.5)inv.add(crate,id,1);else toDebris(s,{[id]:1})}if(P.tune)P.tune.vr={}}
 
-// combat Mk curve: how many old-style Mk steps each Mk is worth for hull, shields, armour, guns, energy and missiles, so an
-// upgrade is an edge, not a wall. Same pilot skill, same hull: Mk I beats Mk II about 40% of the time and Mk III about 35%, on
+// combat grade curve: how many old-style grade steps each grade is worth for hull, shields, armour, guns, energy and missiles, so an
+// upgrade is an edge, not a wall. Same pilot skill, same hull: Grade 1 beats grade 2 about 40% of the time and grade 3 about 35%, on
 // every hull: MK_HULL gives heavy hulls (longer fights) a smaller step. Engines, holds, blast rigs and payload reloads keep their full steps.
-let MK_LV=[0,0,0.178,0.36,0.36,0.36],MK_K=1;const MK_HULL={interceptor:0.9,striker:0.76,heavy:[0.8,0.58],bomber:0.93,gunboat:0.87,wraith:0.52,raider:0.72,corsair:0.91,plunderer:0.48};const MK_TOP=3;/* Mk I-III only (IV and V retired); stronger steps so one Mk is worth more than any one variant */let SWARM_K=.35,MSL_K=1;/* swarm micro-missiles were deciding dogfights on their own: now harassment more than a kill */const mkL=t=>MK_LV[clamp(Math.round(t),1,5)]*MK_K;
+let MK_LV=[0,0,0.178,0.36,0.48,0.6],MK_K=1;const MK_HULL={interceptor:0.9,striker:0.76,heavy:[0.8,0.58],bomber:0.93,gunboat:0.87,wraith:0.52,raider:0.72,corsair:0.91,plunderer:0.48};const MK_TOP=5;/* Beyond: grades 1-5 (AI ships stay at grades 1-3); stronger steps so one grade is worth more than any one variant */let SWARM_K=.35,MSL_K=1;/* swarm micro-missiles were deciding dogfights on their own: now harassment more than a kill */const mkL=t=>MK_LV[clamp(Math.round(t),1,5)]*MK_K;
 function mkH(cls,t){const v=MK_HULL[cls];if(v==null)return(CLASSES[cls]&&CLASSES[cls].mkK)||1;return Array.isArray(v)?v[t>=3?1:0]:v}
 function shipStatsBase(fac,cls,T){
   const t=s=>typeof T==='number'?T:T[s];

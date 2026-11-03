@@ -357,7 +357,7 @@ table.t td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white
     <div class="hud" id="hTR">
       <div class="cr"><small>CREDITS</small><span id="hCr">0</span></div>
       <div class="holdline">Hold <b id="hHold">0/0</b></div>
-      <div class="hbtns"><button class="hbtn" id="bSnd" type="button" aria-label="Sound and music" aria-expanded="false">Sound <kbd>N</kbd></button><button class="hbtn" id="bCam" type="button">View <kbd>V</kbd></button><button class="hbtn" id="bMap" type="button">Map <kbd>M</kbd></button><button class="hbtn" id="bFull" type="button" aria-label="Full screen">Full <kbd>F11</kbd></button><button class="hbtn" id="bHelp" type="button" aria-label="Controls and help">?</button><button class="hbtn" id="bInvite" type="button" hidden>Invite</button><button class="hbtn" id="bQuit" type="button" aria-label="Save and quit">Quit</button></div><div class="sndpop" id="sndPop" hidden><div class="sph">Sound</div>
+      <div class="hbtns"><button class="hbtn" id="bSnd" type="button" aria-label="Sound and music" aria-expanded="false">Sound <kbd>N</kbd></button><button class="hbtn" id="bCam" type="button">View <kbd>V</kbd></button><button class="hbtn" id="bMap" type="button">Map <kbd>M</kbd></button><button class="hbtn" id="bCompany" type="button">Company <kbd>0</kbd></button><button class="hbtn" id="bFull" type="button" aria-label="Full screen">Full <kbd>F11</kbd></button><button class="hbtn" id="bHelp" type="button" aria-label="Controls and help">?</button><button class="hbtn" id="bInvite" type="button" hidden>Invite</button><button class="hbtn" id="bQuit" type="button" aria-label="Save and quit">Quit</button></div><div class="sndpop" id="sndPop" hidden><div class="sph">Sound</div>
         <div class="sprow"><label><input type="checkbox" id="sfxOn"> Effects</label><input type="range" id="sfxVol" min="0" max="100" step="5" aria-label="Effects volume"><b id="sfxVolV"></b></div>
         <div class="sprow"><label><input type="checkbox" id="musOn"> Music</label><input type="range" id="musVol" min="0" max="100" step="5" aria-label="Music volume"><b id="musVolV"></b></div>
         <p>Music follows the space you're in: Halcyon, Ostrova, Varkesh, freeports, Brood space and open space. Battle music takes over when shields start taking fire. N cycles all on → muted → effects only.</p></div>
@@ -490,6 +490,15 @@ table.t td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white
     <div class="console">
       <div class="c-head"><div><div class="c-title">Galaxy</div><div class="c-sub">Jumpgate network, territory and the conserved economy. Click a sector for detail.</div></div><button class="btn" data-close="map" type="button">Close <kbd>M</kbd></button></div>
       <div class="mapwrap"><canvas id="mapCv"></canvas><div class="mapside" id="mapSide"></div></div>
+    </div>
+  </section>
+
+  <section class="sheet" id="company" hidden>
+    <div class="console">
+      <div class="c-head"><div><div class="c-title" id="coTitle">Company</div><div class="c-sub" id="coSub"></div></div><button class="btn" data-close="company" type="button">Close <kbd>0</kbd></button></div>
+      <div class="tabs" role="tablist" id="coTabs"></div>
+      <div class="c-body" id="coBody"></div>
+      <div class="c-foot"><div class="err" id="coErr"></div></div>
     </div>
   </section>
 

@@ -310,6 +310,7 @@ function shipMesh(fac,cls){if(cls==='uskiff')cls='scout';else if(cls==='raider')
   if(cls==='escort'&&fac!=='brood'&&!mdlHas('escort'))cls='frigate';if(cls==='wraith')cls='interceptor';
   const key=fac+cls;if(MESH[key])return MESH[key];
   if(fac==='brood'){const bk=BROOD_MDL[cls];if(bk&&mdlHas(bk)){const L=new GB();L.seg([0,0,0],[0,0,0],[0,0,0]);return MESH[key]={hull:mdlMesh(bk,'brood',1),rim:L.upload(true),eng:engFix(bk).map(e=>e.slice()),mdl:true}}}
+  {const d=fac!=='brood'&&designOf(fac,cls);if(d&&d.m&&mdlHas(d.m)){const L=new GB();L.seg([0,0,0],[0,0,0],[0,0,0]);return MESH[key]={hull:mdlMesh(d.m,fac,1),rim:L.upload(true),eng:engFix(d.m).map(e=>e.slice()),mdl:true}}}
   if(fac!=='brood'&&mdlHas(cls)){const L=new GB();L.seg([0,0,0],[0,0,0],[0,0,0]);return MESH[key]={hull:mdlMesh(cls,fac,1),rim:L.upload(true),eng:engFix(cls).map(e=>e.slice()),mdl:true}}
   const fk=fac==='pirate'?'pirate':fac,bc=MESH_BASE[cls]||cls;JR=mulberry(hashStr(key));const g=new GB(),L=new GB(),eng=[];if(!buildShipX(fk,bc,g,L,eng))buildShip(fk,bc,g,L,eng);
   if(bc!==cls){const fc=hexRGB(sideCol(fk)),D=[.3,.32,.36],S2=f=>{f(1);f(-1)};

@@ -1,40 +1,57 @@
 //@src 02_state.js
 // ============================================================ galaxy
 const SECTOR_DEFS=[
-  {id:'hp',name:'Halcyon Prime',x:.14,y:.12,home:'halcyon',kind:'core',ores:{fe:5,cu:5}},
-  {id:'hr',name:'Tessellate Reach',x:.29,y:.3,home:'halcyon',kind:'frontier',ores:{fe:4,cu:3,ir:3}},
-  {id:'vb',name:'Varkesh Hold',x:.86,y:.12,home:'varkesh',kind:'core',ores:{fe:5,cu:5}},
-  {id:'vm',name:'Sundered Marches',x:.71,y:.3,home:'varkesh',kind:'frontier',ores:{fe:4,cu:3,ir:3}},
-  {id:'os',name:'Ostrova Spire',x:.5,y:.94,home:'ostrova',kind:'core',ores:{fe:5,cu:5}},
-  {id:'of',name:'Veil Fringe',x:.5,y:.77,home:'ostrova',kind:'frontier',ores:{fe:4,cu:3,ir:3}},
-  {id:'ke',name:'Kestrel Drift',x:.5,y:.19,kind:'contested',ores:{ir:4,xc:3,fe:2,nu:2}},
-  {id:'sh',name:'The Shoal',x:.27,y:.6,kind:'contested',ores:{cu:4,xc:3,ir:2,nu:2}},
-  {id:'ci',name:'Cinder Reach',x:.73,y:.6,kind:'contested',ores:{fe:4,xc:3,ir:2,nu:2}},
-  {id:'ho',name:'Hollow Verge',x:.5,y:.42,kind:'hub',ores:{fe:3,cu:3,ir:3,nu:3}},
-  {id:'wr',name:'The Wrack',x:.5,y:.6,kind:'den',ores:{xc:4,ir:3,fe:2}},
-  {id:'ae',name:'Ashen Expanse',x:.06,y:.45,kind:'deep',ores:{fe:4,ir:3,xc:2,au:2}},
-  {id:'gs',name:'Glass Shallows',x:.94,y:.45,kind:'deep',ores:{cu:4,ir:3,xc:2,au:2}},
-  {id:'ld',name:'Lantern Deep',x:.24,y:.87,kind:'deep',ores:{fe:3,cu:3,xc:3,au:2}},
-  {id:'bl',name:'The Bloom',x:.5,y:.03,kind:'hive',ores:{fe:3,cu:3,ir:3,xc:2}},
-  // quiet space: thin fields, no outposts, little traffic. Longer, emptier routes between the busy systems
-  {id:'nv',name:'Northgap Void',x:.32,y:.07,kind:'void',ores:{fe:3,ir:2}},
-  {id:'av',name:'Ashwind Void',x:.68,y:.07,kind:'void',ores:{cu:3,ir:2}},
-  {id:'pr',name:'Pale Reach',x:.04,y:.25,kind:'void',ores:{fe:3,cu:2}},
-  {id:'ih',name:'Iron Hush',x:.96,y:.25,kind:'void',ores:{fe:2,ir:3}},
-  {id:'mw',name:'Mirrorwater',x:.37,y:.47,kind:'void',ores:{cu:3,fe:2}},
-  {id:'dl',name:'Dusk Lanes',x:.63,y:.47,kind:'void',ores:{fe:3,cu:2}},
-  {id:'cw',name:'Coldwater Drift',x:.07,y:.72,kind:'void',ores:{ir:3,cu:2}},
-  {id:'ew',name:'Ember Wake',x:.93,y:.72,kind:'void',ores:{fe:3,ir:2}},
-  {id:'sv',name:'Silent Verge',x:.69,y:.85,kind:'void',ores:{cu:3,ir:2}},
-  // more quiet space (Oct 2026): side loops off the busy lanes (the map stays planar: no gate lines cross)
-  {id:'gw',name:'Greywater Shelf',x:.2,y:.7,kind:'void',ores:{fe:3,cu:2}},
-  {id:'rh',name:"Rook's Hollow",x:.8,y:.7,kind:'void',ores:{cu:3,ir:2}},
-  {id:'qs',name:'Quietwater Sound',x:.385,y:.69,kind:'void',ores:{ir:3,fe:2}},
-  {id:'fh',name:"Fathom's Edge",x:.615,y:.69,kind:'void',ores:{fe:3,ir:2}},
-  {id:'ll',name:'Lastlight Shoals',x:.86,y:.9,kind:'void',ores:{cu:3,fe:2}},
+  // Beyond's galaxy (approved 2 Nov 2026, tools/previews/beyond_map.py): deep space at the centre round the Bloom, the Wrack
+  // hidden inside it, the freeports in pockets whose two gates both lead into deep space, then the open ring and the cores (drawn spread out from the centre: radius r becomes .48·(r/.48)^.72, so the crowded inner rings have room)
+  {id:'bl',name:'The Bloom',x:0.5,y:0.5,kind:'hive',ores:{fe:3,cu:3,ir:3,xc:2}},
+  {id:'gs',name:'Glass Shallows',x:0.5,y:0.356,kind:'deep',ores:{cu:4,ir:3,xc:2,au:2}},
+  {id:'cd',name:'Corona Deep',x:0.637,y:0.455,kind:'deep',ores:{fe:4,ir:3,xc:2,au:2}},
+  {id:'ld',name:'Lantern Deep',x:0.585,y:0.617,kind:'deep',ores:{fe:3,cu:3,xc:3,au:2}},
+  {id:'ae',name:'Ashen Expanse',x:0.415,y:0.617,kind:'deep',ores:{fe:4,ir:3,xc:2,au:2}},
+  {id:'ud',name:'Umbral Deep',x:0.363,y:0.455,kind:'deep',ores:{cu:4,ir:3,xc:2,au:2}},
+  {id:'gd',name:'Gloam Deep',x:0.8,y:0.5,kind:'deep',ores:{fe:3,cu:3,xc:3,au:2}},
+  {id:'mn',name:'Mournwater',x:0.65,y:0.76,kind:'deep',ores:{ir:4,xc:3,au:2,fe:2}},
+  {id:'tm',name:'Thornmere',x:0.35,y:0.76,kind:'deep',ores:{cu:3,xc:3,au:3,ir:2}},
+  {id:'rm',name:'Rustmere',x:0.2,y:0.5,kind:'deep',ores:{fe:4,ir:3,xc:2,au:2}},
+  {id:'wr',name:'The Wrack',x:0.315,y:0.594,kind:'den',ores:{xc:4,ir:3,fe:2}},
+  {id:'bg',name:'Bilgewater',x:0.306,y:0.687,kind:'deep',ores:{cu:4,ir:3,xc:2,au:2}},
+  {id:'sr',name:'Scuttle Rift',x:0.237,y:0.556,kind:'deep',ores:{fe:3,cu:3,xc:3,au:2}},
+  {id:'sk',name:'Sunken Reach',x:0.35,y:0.24,kind:'deep',ores:{ir:4,xc:3,au:2,fe:2}},
+  {id:'br',name:'Blackwater Rift',x:0.65,y:0.24,kind:'deep',ores:{cu:3,xc:3,au:3,ir:2}},
+  {id:'ew',name:'Ember Wake',x:0.818,y:0.683,kind:'void',ores:{fe:3,ir:2}},
+  {id:'cw',name:'Coldwater Drift',x:0.182,y:0.683,kind:'void',ores:{ir:3,cu:2}},
+  {id:'mw',name:'Mirrorwater',x:0.5,y:0.133,kind:'void',ores:{cu:3,fe:2}},
+  {id:'vm',name:'Sundered Marches',x:0.864,y:0.289,home:'varkesh',kind:'frontier',ores:{fe:4,cu:3,ir:3}},
+  {id:'dl',name:'Dusk Lanes',x:0.921,y:0.5,kind:'void',ores:{fe:3,cu:2}},
+  {id:'ci',name:'Cinder Reach',x:0.864,y:0.711,kind:'contested',ores:{fe:4,xc:3,ir:2,nu:2}},
+  {id:'fh',name:'Fathom\'s Edge',x:0.711,y:0.864,kind:'void',ores:{fe:3,ir:2}},
+  {id:'of',name:'Veil Fringe',x:0.5,y:0.921,home:'ostrova',kind:'frontier',ores:{fe:4,cu:3,ir:3}},
+  {id:'qs',name:'Quietwater Sound',x:0.289,y:0.864,kind:'void',ores:{ir:3,fe:2}},
+  {id:'sh',name:'The Shoal',x:0.136,y:0.711,kind:'contested',ores:{cu:4,xc:3,ir:2,nu:2}},
+  {id:'hu',name:'Hushfall',x:0.079,y:0.5,kind:'void',ores:{fe:2,ir:3}},
+  {id:'hr',name:'Tessellate Reach',x:0.136,y:0.289,home:'halcyon',kind:'frontier',ores:{fe:4,cu:3,ir:3}},
+  {id:'cv',name:'Coldlight Void',x:0.289,y:0.136,kind:'void',ores:{cu:3,fe:2}},
+  {id:'ke',name:'Kestrel Drift',x:0.5,y:0.079,kind:'contested',ores:{ir:4,xc:3,fe:2,nu:2}},
+  {id:'bw',name:'Brinewell',x:0.711,y:0.136,kind:'void',ores:{fe:3,cu:2}},
+  {id:'vb',name:'Varkesh Hold',x:0.916,y:0.26,home:'varkesh',kind:'core',ores:{fe:5,cu:5}},
+  {id:'sg',name:'Saltglass Verge',x:0.98,y:0.5,kind:'void',ores:{cu:3,ir:2}},
+  {id:'rh',name:'Rook\'s Hollow',x:0.916,y:0.74,kind:'void',ores:{cu:3,ir:2}},
+  {id:'ho',name:'Hollow Verge',x:0.74,y:0.916,kind:'hub',ores:{fe:3,cu:3,ir:3,nu:3}},
+  {id:'os',name:'Ostrova Spire',x:0.5,y:0.98,home:'ostrova',kind:'core',ores:{fe:5,cu:5}},
+  {id:'eb',name:'Ebbwater',x:0.26,y:0.916,kind:'void',ores:{fe:3,ir:2}},
+  {id:'gw',name:'Greywater Shelf',x:0.084,y:0.74,kind:'void',ores:{fe:3,cu:2}},
+  {id:'dm',name:'Driftmoor',x:0.02,y:0.5,kind:'void',ores:{ir:3,cu:2}},
+  {id:'hp',name:'Halcyon Prime',x:0.084,y:0.26,home:'halcyon',kind:'core',ores:{fe:5,cu:5}},
+  {id:'nv',name:'Northgap Void',x:0.26,y:0.084,kind:'void',ores:{fe:3,ir:2}},
+  {id:'sf',name:'Starless Fold',x:0.5,y:0.02,kind:'void',ores:{fe:2,ir:3}},
+  {id:'av',name:'Ashwind Void',x:0.74,y:0.084,kind:'void',ores:{cu:3,ir:2}},
+  {id:'pr',name:'Pale Reach',x:0.084,y:0.084,kind:'void',ores:{fe:3,cu:2}},
+  {id:'ih',name:'Iron Hush',x:0.916,y:0.084,kind:'void',ores:{fe:2,ir:3}},
+  {id:'sm',name:'Saltmoor',x:0.084,y:0.916,kind:'void',ores:{cu:3,fe:2}},
+  {id:'ll',name:'Lastlight Shoals',x:0.916,y:0.916,kind:'void',ores:{cu:3,fe:2}},
 ];
 const DEF={};SECTOR_DEFS.forEach(d=>DEF[d.id]=d);
-const LINKS=[['hp','hr'],['vb','vm'],['os','of'],['hr','ke'],['vm','ke'],['hr','sh'],['vm','ci'],['ke','ho'],['sh','ho'],['ci','ho'],['ho','wr'],['hr','ae'],['sh','ae'],['vm','gs'],['ci','gs'],['of','ld'],['sh','ld'],['ke','bl'],['hp','nv'],['nv','ke'],['vb','av'],['av','ke'],['hp','pr'],['pr','ae'],['vb','ih'],['ih','gs'],['hr','mw'],['mw','ho'],['vm','dl'],['dl','ho'],['ae','cw'],['cw','ld'],['gs','ew'],['ew','sv'],['of','sv'],['ci','sv'],['gw','ae'],['gw','cw'],['gw','sh'],['rh','gs'],['rh','ew'],['rh','ci'],['qs','sh'],['qs','of'],['qs','ld'],['fh','ci'],['fh','of'],['fh','sv'],['ll','sv'],['ll','ew']];
+const LINKS=[['bl','gs'],['bl','cd'],['bl','ld'],['bl','ae'],['bl','ud'],['gs','cd'],['cd','ld'],['ld','ae'],['ae','ud'],['ud','gs'],['gd','cd'],['mn','ld'],['tm','ae'],['rm','ud'],['sk','gs'],['br','gs'],['gd','mn'],['mn','tm'],['rm','sk'],['sk','br'],['br','gd'],['wr','ud'],['wr','bg'],['wr','sr'],['bg','tm'],['sr','rm'],['ew','gd'],['ew','mn'],['cw','tm'],['cw','rm'],['mw','sk'],['mw','br'],['dl','gd'],['fh','mn'],['qs','tm'],['hu','rm'],['cv','sk'],['bw','br'],['vm','dl'],['dl','ci'],['ci','fh'],['fh','of'],['of','qs'],['qs','sh'],['sh','hu'],['hu','hr'],['hr','cv'],['cv','ke'],['ke','bw'],['bw','vm'],['vb','vm'],['os','of'],['hp','hr'],['sg','dl'],['sg','rh'],['eb','qs'],['eb','sm'],['nv','cv'],['nv','pr'],['rh','ci'],['rh','ho'],['ho','of'],['ho','os'],['os','ll'],['ll','rh'],['gw','sh'],['gw','dm'],['dm','hp'],['gw','sm'],['hp','pr'],['sf','ke'],['sf','av'],['av','bw'],['av','vb'],['vb','ih'],['ih','av'],['dm','hu']];
 const NEIGH={};SECTOR_DEFS.forEach(d=>NEIGH[d.id]=[]);LINKS.forEach(([a,b])=>{NEIGH[a].push(b);NEIGH[b].push(a)});
 const SPACE=1.8;// systems are wide: gates, fields, beacons, spawn points, the edge and the radars all scale with this
 const SPREAD=1.2; // spacing rules that don't scale with SPACE (belt gaps, rock spacing, station works rings) are 20% wider too
@@ -336,7 +353,7 @@ const HULL_COST={interceptor:{},striker:{plate:10,wire:8,coil:3},heavy:{plate:20
 const hullFee=(P,k)=>START_HULLS.includes(k)&&P.docked==='station'&&P.sector===pilotHome(P)?0:HULL_FEE;
 // hulls beyond the starters are bought with credits (paid to the station's faction), one ship at a time: lose it and you relaunch in
 // your role's starter hull and buy another; switch away at a shipyard and it's traded in for half its price.
-// The price follows what the frame used to cost in parts. Mk I–V components still cost materials.
+// The price follows what the frame used to cost in parts. Grade 1–5 components still cost materials.
 // set against income in a 2-hour galaxy (engaged play earns roughly 3-8k cr an hour; a rare-ore run can pay 2-5k in one trip):
 // tier-2 hulls take about 20-30 minutes of ordinary play, tier-3 about 45-60, the Heavy Bomber a little more
 const HULL_PRICE_SET={striker:2400,prospector:2100,freighter:2100,heavy:4400,bomber:4800,dredger:4600,bulker:4700,scout2:4000,gunboat:5500};
@@ -351,17 +368,17 @@ const DOCKS_ONLY=[];   // the Heavy Bomber is sold at any core shipyard for cred
 function droneTopUp(P,store,fac,pay){const cap=(CLASSES[P.cls]&&CLASSES[P.cls].drones)||0;P.bay=P.bay||{};let need=cap-(P.bay.drone||0),got=0;if(need<0){inv.add(store||P.vault,'drone',-need);P.bay.drone=cap;return 0}if(need<=0)return 0;
   for(const h of[store,fac&&S.econ.stock[fac],fac&&S.econ.fleet[fac]]){if(!h||need<=0)continue;let want=need;if(pay&&h!==store){const pr=Math.round(baseValue('drone'));want=Math.min(need,Math.floor(P.credits/Math.max(1,pr)))}const n=inv.take(h,'drone',want);if(n){if(pay&&h!==store)transfer('player',fac,n*Math.round(baseValue('drone')));inv.add(P.bay,'drone',n);need-=n;got+=n}}return got}
 // ---- ship bay: up to BAY_MAX stored ships. Upgrades belong to the ship, not the pilot: each stored ship keeps its fitted
-// components (Mk I–V), Aurora tunings, freeport refits and drones, and can be upgraded while it sits in the bay.
+// components (grade 1–5), Aurora tunings, freeport refits and drones, and can be upgraded while it sits in the bay.
 const BAY_MAX=3;
 function baseTiers(){const t={};for(const sl of SLOTS)t[sl.id]=1;return t}
 function baseKit(){const o={};for(const sl of SLOTS)inv.addAll(o,sl.base);return o}
 function shipRec(P){return{paid:P.hullPaid,cls:P.cls,tiers:{...P.tiers},tune:JSON.parse(JSON.stringify(P.tune||{})),bay:{...(P.bay||{})},rack:P.rack|0,swarm:P.swarm||0,hullInv:{...(P.hullInv||{})},stored:S.T}}
 function shipLoad(P,r){P.cls=r.cls;P.hullPaid=r.paid;P.tiers={...baseTiers(),...r.tiers};P.tune=JSON.parse(JSON.stringify(r.tune||{}));P.bay={...(r.bay||{})};P.rack=r.rack|0;P.swarm=r.swarm||0;P.mslT=0;P.swT=0;P.hullInv={...(r.hullInv||{})}}
 function shipBare(R){const t=R.tune||{};return SLOTS.every(sl=>(R.tiers[sl.id]||1)<=1&&!(t[sl.id]>0))&&!Object.keys(t.rf||{}).length&&!Object.keys(t.vr||{}).length}
-// strip a ship back to Mk I: every part above Mk I and the Aurora tunings go into `into` (refits can't be removed and are lost)
+// strip a ship back to grade 1: every part above grade 1 and the Aurora tunings go into `into` (refits can't be removed and are lost)
 function shipStrip(R,into){for(const sl of SLOTS){const t=R.tiers[sl.id]||1;if(t>1){const a=compInv(sl.id,t),b=compInv(sl.id,1);for(const k in a){const n=a[k]-(b[k]||0);if(n>0)inv.add(into,k,n)}R.tiers[sl.id]=1}
     const l=(R.tune||{})[sl.id]||0;if(l){inv.add(into,'tune',tuneItems(l));R.tune[sl.id]=0}}if(R.tune&&R.tune.rf)R.tune.rf={};if(R.tune&&R.tune.vr){inv.addAll(into,vrInv(R));R.tune.vr={}}}
-// a fresh starter frame needs its Mk I components: the station you're docked at supplies them from its own store (with the free
+// a fresh starter frame needs its grade 1 components: the station you're docked at supplies them from its own store (with the free
 // hull), then its faction's warehouse, then your own faction's, then your hold and vault
 function kitSrcs(store,fac,mkt){const P=S.player,pf=FAC_IDS.includes(P.sworn)&&!S.unb?P.sworn:null;return[mkt,fac&&S.econ.stock[fac],fac&&S.econ.fleet[fac],pf&&S.econ.stock[pf],P.cargo,store].filter((x,i,a)=>x&&a.indexOf(x)===i)}
 function issueKit(store,fac,mkt){const k=baseKit(),srcs=kitSrcs(store,fac,mkt);if(!haveIn(k,srcs))return false;takeFrom(k,srcs);return true}
@@ -399,7 +416,7 @@ function broodInit(){S.econ.stock.brood={fe:420,cu:300,ir:160,xc:40,plate:50,wir
 function mkCapMigrate(){const pl=[S.player,...Object.values(S.pilots||{})].filter((P,i,a)=>P&&a.indexOf(P)===i);let n=0;
   for(const P of pl){const to=P.vault||(P.vault={});for(const R of[P,...(P.ships||[])]){if(!R.tiers)continue;for(const sl of SLOTS){const t=R.tiers[sl.id]||1;if(t<=MK_TOP)continue;
     const a=compInv(sl.id,t),b=compInv(sl.id,MK_TOP);for(const k in a){const d=a[k]-(b[k]||0);if(d>0)inv.add(to,k,d)}R.tiers[sl.id]=MK_TOP;n++}}}
-  if(n&&S.player)feed(`Mk IV and V are retired: ${n} system${n>1?'s were':' was'} set to Mk III and the extra parts went into your vault. Build a variant with them in Upgrades.`,'info')}
+  if(n&&S.player)feed(`Grade 4 and V are retired: ${n} system${n>1?'s were':' was'} set to grade 3 and the extra parts went into your vault. Build a variant with them in Upgrades.`,'info')}
 function migrate(st){S=st;for(const P of[S.player,...Object.values(S.pilots||{})])standInit(P);mkCapMigrate();for(const ev of S.events||[])if(ev.type==='wingfly'&&ev.stage!=='done'){const f=sideNorm(ev.side);inv.addAll(S.econ.stock[f]||S.econ.stock.pirate,ev.force||{});ev.force={};ev.stage='done'}if(!S.capV&&S.frigates){S.capV=1;for(const t of S.frigates.slice()){if(isEsc(t)||isCar(t))continue;const h=t.owner&&S.pilots&&S.pilots[t.owner]?S.pilots[t.owner].vault:t.side==='player'?S.player.vault:S.econ.stock[t.side];if(h)inv.addAll(h,t.load);else toDebris(S.sectors[t.sector],t.load);t.load={};S.frigates.splice(S.frigates.indexOf(t),1)}for(const ev of S.events||[])if(ev.type==='frigbuild'&&ev.stage==='building'){const h=S.econ.stock[ev.att]||S.player.vault;inv.addAll(h,ev.force);ev.force={};ev.stage='done'}}for(const P of[S.player,...Object.values(S.pilots||{})])if(P&&P.cls==='constructor')P.cls='courier';fpMigrate();beaconInit();if((S.seamV||0)<2&&S.sectors){S.seamV=2;seamClear()}for(const P of[S.player,...Object.values(S.pilots||{})])if(P&&P.tiers&&!P.tiers.payload)P.tiers.payload=1;magInit(S.player);for(const k in S.pilots||{})magInit(S.pilots[k]);S.frigates=S.frigates||[];for(const t of S.frigates)t.live=false;S.yards=S.yards||{brood:{sector:'bl'}};S.player.hullInv=S.player.hullInv||{};S.player.bay=S.player.bay||{};S.scouts=S.scouts||[];for(const t of S.scouts)t.live=false;for(const e of RAWS)if(S.ledger0.tot[e]===undefined)S.ledger0.tot[e]=0;for(const id in S.sectors){if(S.sectors[id].debris.au===undefined)S.sectors[id].debris.au=0}for(const id in S.outposts){if(S.outposts[id].fort.au===undefined)S.outposts[id].fort.au=0}S.player.tune=S.player.tune||{};for(const id in S.sectors){const sc=S.sectors[id];if(sc.debris.nu===undefined)sc.debris.nu=0}for(const id in S.outposts){const o=S.outposts[id];if(o.fort.nu===undefined)o.fort.nu=0}if(S.drift&&S.drift.nu===undefined)S.drift.nu=0;const L0=ledger();let ch=false;
   for(const d of SECTOR_DEFS)if(!S.sectors[d.id]){S.sectors[d.id]=genSector(d);ch=true}
   if(!S.stations){S.stations={};for(const d of SECTOR_DEFS)if(d.home)makeStation(d.id,d.home,d.kind==='core'?'core':'depot',{x:0,y:0,z:0},d.kind==='core'?{}:{...DEPOT_COST});ch=true}

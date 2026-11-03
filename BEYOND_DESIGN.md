@@ -643,6 +643,8 @@ Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is cre
 13. **Declaring a faction;** player factions in the ledger and leaders' proposals to founders; slower war pacing; a stronger Brood (about 20%); war checks for the new balance.
 14. **Legend rework and Conqueror's spoils, multiplayer rivalries, training rewrite.**
 
+**Parked until the stages are done (2 Nov 2026): a graphical market.** The market tab as tiles with item art (ore rocks, part glyphs), stock meters and demand marks, your hold as a coloured bar, and a detail panel for the picked item: its price here against the galaxy from your scans, its recent price history, a quantity slider, and the best places to sell. First sketch: `tools/previews/market_mockup.html`. Not agreed yet; to be designed with the user after stage 14.
+
 ---
 
 ## Build spec: stages 1 and 2 (approved 2 Nov 2026; stage 1 built, see "Stage 1: as built")
@@ -717,3 +719,334 @@ Today one field, the pilot's `faction`, does two jobs: it picks the **hull desig
 - **Not yet:** leader jobs and proxy work (stage 5), the Dread Pirate (once the Ravager and haven are in, stage 12b), player factions in the ledger (stage 13).
 - **First fast-simulator run** (60 games, 2.2 h, Mirrorwater start): the first war at a median of 35 minutes, 3 of 60 games with no war; about 3.4 wars and 2.1 ceasefires a game; alliances and successions rare. Balance targets are still undecided, so these numbers are recorded, not tuned to.
 - **Tests:** `relations.py` (in the quick suite): bands and hostility, a war declared on its trigger and a ceasefire, a border demand settled, a succession, the Allegiance tab, a leader spawned, shot down and succeeded, an hour of strategy. The fast simulator reports `relStats()`.
+
+### Stage 3: as built (2 Nov 2026)
+- **New file `16h_loadout.js`.** A pilot's ship has weapon and utility slots: `P.fit = {cls, w: [...], u: [...]}`, reset to the hull's default fit when the hull changes. Tunables in `LOAD`; slot counts and default fits in `HULL_SLOTS`.
+- **Slot counts** (the design's starting proposal): Light Fighter 3 weapon + 1 utility; Medium Fighter 4 + 1; Heavy Fighter 5 + 2; Bomber 3 + 1 (the first is its torpedo launcher); Heavy Bomber 4 + 2; Light, Medium and Heavy Miner 2 + 1, 3 + 1, 3 + 2; haulers 1 + 2, 2 + 2, 2 + 2; Scout 2 + 2, Advanced Scout 3 + 2. Mining tools fit only mining hulls, torpedoes only bombers.
+- **Weapons:**
+  - The **machine gun** (key 1) spends a round a shot, 600 rounds per gun, and only 30% of a shot's old energy.
+  - The **laser** (key 2) is limited by the reactor as before.
+  - **Missile and torpedo launchers:** the magazine is sized per launcher and never reloads in flight. A pilot's missiles hit twice as hard.
+  - Each extra gun or laser of a kind adds 20% damage. An unfitted weapon refuses with a message.
+- **Payload is rearmed at a dock.** Docking rearms automatically with whatever the credits cover, and there is a Rearm button in the Ship tab. It is paid to the station owner's treasury (credits stay exact): 0.15 cr a round, 25 a missile, 90 a torpedo, 6 a charge. At your own bases the supplies are bought from the Compact (paid to the freeport treasury).
+- **Mining:**
+  - **Charge launcher:** blast mining as in Driftgate 1. The charges are payload; extra launchers add half a magazine each.
+  - **Mining laser:** every rock has a **ring**, a seam fixed by its seed and drawn on the targeted rock when scanned or close. Hold F with the beam on the ring to cut ore steadily into the hold: 0.17, 0.25 and 0.33 t a second for the Light, Medium and Heavy Miner, +20% per drill Mk. It draws 8 energy a second. Off the ring it only sparks.
+  - **A blast breaks a rock's ring for good,** so each rock is worked one way.
+  - Key 7 switches the mining tool when both are fitted. A guest's laser is cut by the host from the rock id in its input.
+- **Utility parts:**
+  - **Landing kit:** without one, E never offers to land on a rock.
+  - **Cargo module:** +20% hold.
+  - **Scanner:** rock scans reach every rock within 1.5 km and last 40 s.
+- **Refits** were free in stage 3. Stage 4 made parts real items (below).
+- **The HUD gun readout** shows rounds left, and the mining tool on a mining hull.
+- **Unchanged for now:**
+  - AI ships fly as before.
+  - Swarm pods stay a hull feature and still reload on their own.
+  - Flares and drones are as in Driftgate 1.
+  - Training and the Unbound mode keep Driftgate 1's weapons.
+- **Tests:** `loadout.py` (in the quick suite). It covers default fits, slot rules, rounds, refusals, no reload in flight, missile damage, rearm payments, the landing kit, cargo modules, cutting on and off the ring with the ledger exact, a blast breaking the ring, and the Loadout section. `limpet.py` now sets Halcyon and Varkesh at war, since the powers start Neutral.
+
+### Stage 4: as built (2 Nov 2026)
+- **Grades replace Mk.** Ship systems (drive, reactor, shield emitter, weapons, armour, blast rig, cargo hold, payload bay) go from grade 1 to **grade 5** (`MK_TOP` 5). Each grade above 1 takes that grade's components (the old Mk recipes; grades 4 and 5 use Flux Coils, Crystal Lattices and Resonance Cores), and **grades 3 to 5 also need a Calibration Matrix**. Grade 3 has the old Mk III strength; grades 4 and 5 add two more steps (combat curve 0.48 and 0.6). AI ships stay at grades 1 to 3. Every "Mk" in the interface reads "grade".
+- **Parts are items.** The nine slot parts (machine gun, laser, missile launcher, torpedo launcher, mining laser, charge launcher, landing kit, cargo module, scanner) are items with mass, built from components at any workshop (the Fabricate tab), traded on markets and kept in the hold or vault:
+
+  | Part | Recipe |
+  |---|---|
+  | Machine gun | 2 Alloy Plate, 1 Conduit |
+  | Laser | 2 Conduit, 1 Flux Coil |
+  | Missile launcher | 2 Alloy Plate, 2 Conduit |
+  | Torpedo launcher | 3 Alloy Plate, 1 Flux Coil |
+  | Mining laser | 1 Alloy Plate, 1 Conduit, 1 Flux Coil |
+  | Charge launcher | 1 Alloy Plate, 2 Conduit |
+  | Landing kit | 2 Alloy Plate |
+  | Cargo module | 4 Alloy Plate |
+  | Scanner | 1 Conduit, 1 Flux Coil |
+
+- **Fitting:**
+  - The Loadout section fits a part from your hold or storage into a slot. If the market has one and you have none, it buys one.
+  - **Take out** puts a part in storage.
+  - A part that comes out of a slot goes to storage together with the components of its upgrades, so nothing is lost or made.
+- **Upgrading a fitted part:** feed the next grade's components into it in place (with an 8% workshop fee at a power's or a freeport's dock). Each grade above 1 adds:
+  - guns and lasers: +10% damage
+  - machine gun: +25% rounds
+  - missile, torpedo and charge launchers: one more missile, torpedo or charge each
+  - mining laser: +15% cutting rate
+  - cargo module: +5% hold
+  - scanner: +20% reach
+  - Landing kits have one grade.
+- **A new hull** takes your fitted parts across into the slots that take them, in order. What doesn't fit goes to your vault, and empty slots stay empty until you fit something. Fitted parts survive the ship's destruction, like systems do.
+- **The ledger counts fitted parts** with your ship. A pilot's first fit and the stations' first stock of parts are made with the galaxy, before its baseline is taken: freeports stock 3 of every part, and the powers' core stations 2 of each combat and utility part. Makers take over supply in stage 7.
+- **Payload stays bought by the lot** when rearming (credits only, as in stage 3). Building payload from components needs fired payload to go back into debris, so it waits for the makers.
+- **Not yet:**
+  - Your own brand and its trait points (with Depots, stage 10).
+  - Maker parts (stage 7).
+  - Systems as removable parts: drive, reactor, shield and armour stay upgraded in place under Ship → Systems.
+- **Tests:** `loadout.py` also covers the part items, fitting from storage, moving parts to a new hull, a grade upgrade, and the ledger after each step.
+
+### Stage 5: as built (2 Nov 2026)
+- **New file `16i_intel.js`.** Tunables are in `FB`.
+- **Claim Beacons for any power.** Each power has its own beacon item (`bc_halcyon`, `bc_varkesh`, `bc_ostrova`, same recipe and mass as Driftgate 1's).
+  - **Where they're sold:** a power's station sells its own power's beacon; a freeport sells all three. They are bought in the market tab's Claim Beacons section for the usual price, built from the station's plate and conduit, and paid to the seller's treasury.
+  - **How a claim works:** a beacon claims for the power it was bought for, whoever carries it. Hold it in an unclaimed or breached outpost's ring in a fighter or bomber.
+  - **Pay and standing:** the claiming power pays a 400 cr fee from its treasury, and your standing with it rises by 6. The power that held the outpost loses 6. The beacon's materials go into the outpost's fortifications, as before.
+  - **Sworn pilots** still have Driftgate 1's own-faction beacon at their faction's stations.
+- **Claim jobs.** Every power posts up to three: outposts within four jumps that are unclaimed, or held by a power it is at war with (or the Unbound), and not under a station's lock. They pay 1,400 cr for an unclaimed outpost and 2,600 cr for a taken one, on top of the fee, when the claim is made with that power's beacon while the job is selected. A job's row offers that power's beacon when the dock sells it.
+- **Intel work for a power:**
+  - A contractor's scouting goes to one power, chosen in the Jobs tab's "Intel work for" bar (Neutral standing or better). A selected intel job's issuer overrides it. A sworn pilot's always goes to its faction.
+  - **Contractors can now flip beacons and plant limpets** in scouts for that power, paid by it: +3 standing per flip (−3 with the power the beacon was taken from) and +3 per limpet.
+  - **Anomaly scans** are paid by that power.
+  - **Intel jobs listed for contractors:** the powers' beacon missions, and limpets on enemy capital ships within three jumps (paid if the ship is destroyed with the limpet on).
+- **Discoveries out beyond the gates.** Anomalies in quiet space now appear 700 to 1,800 m beyond the system's outermost gate. Any hull with a **scanner** fitted can see and scan them, not only scouts.
+- **Not yet:**
+  - Leader jobs and proxy work (in the faction jobs screen of later stages).
+  - Comets and derelicts sold as intel to the Compact.
+  - The scout hulls' beacon devices and limpet racks as fitted parts. Scouts still flip beacons and carry one limpet as in Driftgate 1, until the scout rework with Rating in stage 8.
+- **Tests:** `intel.py` (in the quick suite). It covers beacons sold by power, buying one, the market section, claim jobs listed, a claim's pay and standing, a claim in the ring in flight, intel routing, a contractor's beacon flip and limpet, scanners seeing anomalies, anomalies placed beyond the gates, and the intel bar, with the ledger checked throughout.
+
+### Stage 6: as built (2 Nov 2026), first wave: the fighters
+- **New file `16j_designs.js`.**
+- **Models:** the nine approved fighter designs are in the model pack as `dz_swift`, `dz_kite`, `dz_osprey`, `dz_fang`, `dz_talon`, `dz_halberd`, `dz_mote`, `dz_wisp` and `dz_vigil`. `tools/build_models.py` packs them straight from `tools/previews/beyond_hulls.py`. `shipMesh` draws a power's design for its fighters, with the faction palette, so AI wings fly their own power's shapes.
+- **Stats:** a design replaces the faction's flat ±12% trait for its class, with multipliers on hull, shield, reactor capacity and recharge, top speed, thrust, turn and size (`DESIGN`):
+
+  | Power | Light | Medium | Heavy |
+  |---|---|---|---|
+  | Halcyon | **Swift** (`dz_swift`): thin hull, strong shields, quick | **Kite** (`dz_kite`): well shielded, lightly built | **Osprey** (`dz_osprey`): shield-heavy, and a scanner in a second utility slot |
+  | Varkesh | **Fang** (`dz_fang`): heavy armour, slower, a hungrier reactor, a fourth weapon slot | **Talon** (`dz_talon`): armoured, a hungry reactor | **Halberd** (`dz_halberd`): a thick-armoured brawler, slow to turn, six weapon slots |
+  | Ostrova | **Mote** (`dz_mote`): a deep reactor, 20% faster locks, weaker shields | **Wisp** (`dz_wisp`): agile, a deep reactor, faster locks | **Vigil** (`dz_vigil`): a deep reactor, faster locks |
+
+  Classes without a design yet (miners, haulers, bombers, scouts, capitals) keep the shared model and the trait.
+- **Duel-balanced:** every pair of designs within a class was run through mirror duels (120 each, grade 1, AI against AI). Every result is between 45% and 55%, except the Swift against the Fang (55–62% over three runs) and the Halberd against the Vigil (54–59%), all within the 60% rule.
+- **Yards:**
+  - **Every freeport now has a yard.** Its fighter designs are rolled for each freeport when the galaxy is made (`S.yardRoll`). A power's core yard builds its own power's designs.
+  - The hull cards show the design's name, and "· Halcyon design" (or Varkesh, or Ostrova) when it isn't your current line.
+  - **Buying a fighter takes the yard's design.** Your design line (`P.faction`) becomes that power's, and your fitted parts move into the new design's slots.
+- **Tests:**
+  - `designs.py` (in the quick suite) covers the models in use, the stats by design, a class without a design keeping the trait, freeport yard rolls, buying a design at a freeport, the Fang's slots, the ship tab's design label and an AI ship's design, with the ledger checked throughout.
+  - The duel harness is `tools/duel_designs.py`.
+
+### Stage 7: as built (2 Nov 2026)
+- **New file `16k_makers.js`.** The twelve makers in `MAKERS` (names still placeholders), each with its home station and its products. Every product is the slot part with the maker's trait (`mp_<maker>_<part>` items, same recipe and mass as the standard part):
+
+  | Maker | Home | Products and trait |
+  |---|---|---|
+  | Teal & Corvane Yards | Halcyon core | cargo module: +6% hold, −1% top speed |
+  | Brightline Emitters | Halcyon core | laser: +10% damage, +10% energy draw |
+  | Hold Foundry | Varkesh core | charge launcher: +1 charge, −1% top speed |
+  | Marchgun Ordnance | Varkesh core | machine gun: +12% damage, −15% rounds; missile launcher: +1 missile, +10% lock time |
+  | Spirewright | Ostrova core | scanner: +25% reach; mining laser: +10% cutting rate, +15% energy draw |
+  | Archive Dynamics | Ostrova core | laser: −15% energy draw, −4% damage |
+  | Mirrorwater Arms | Mirrorwater | machine gun (+10% rounds), laser, missile and torpedo launchers: standard, sold to anyone |
+  | Quicksilver Hullworks | Mirrorwater | cargo module (+3% hold), landing kit |
+  | Coldwater Refit | Coldwater Drift | machine gun and laser (−5% damage), missile launcher; upgrades to grade 3 only |
+  | Coldwater Prospecting | Coldwater Drift | mining laser (+12% rate), charge launcher (+1 charge), scanner (+10% reach) |
+  | Ember Wake Drives | Ember Wake | cargo module: +8% hold, −2% top speed |
+  | Wakefire Munitions | Ember Wake | missile and torpedo launchers: +1 per launcher |
+
+- **The works are real factories.** Every 90 s each maker whose home station is still held by its home power (or is still a freeport) builds one of its products from that station's market components, up to 4 of each on sale. The ledger stays exact, since components become parts. Each maker starts with 2 of each product, made with the galaxy.
+- **A maker's part keeps its maker** when fitted (`P.fit.wi` / `ui`), upgraded, taken out or moved to a new hull. A trait applies to the slots of its kind, averaged; magazine and charge bonuses add per launcher. The Loadout offers makers' parts on hand or on sale at the dock, with the trait in the tooltip. The market tab lists the makers whose works are at that station.
+- **Not yet:**
+  - **Product lines replacing Driftgate 1's variants.** The Systems variants stay as they are.
+  - **AI fleets fitted from their makers' stock.** AI ships still fly without slots, so war doesn't drain the makers yet.
+  - Makers of drives, reactors and shields (Archive Dynamics and Ember Wake Drives make only the slot parts above), which wait for systems becoming removable parts.
+- **Tests:** `makers.py` (in the quick suite). It covers the makers and their homes, product names and traits, the first stock, the works building from components with the ledger exact, Marchgun's damage and rounds, Wakefire's magazine, Coldwater Refit's grade cap, makers kept through a hull change, the market's works list, the Loadout offering makers' parts, and half an hour of works.
+
+### Stage 7b: as built (2 Nov 2026)
+- **New file `16l_smuggling.js`.** Tunables are in `SM`.
+- **Contraband** is a mark on real goods, never a new good, so the ledger is unchanged:
+  - **Stolen:** crates spilled by a power's ships or convoys carry its mark. Scooping them tags the goods (`P.stol[item][power]`), and the tags shrink as the goods leave your hold and vault.
+  - **Black-market run goods:** contraband for the power whose space they are run into.
+  - **Cash-only contraband:** Ghost relics, which anomaly caches now hold (made from Xenocrystal in the recycling pools), and Riftstone and Rift Shards, which are legal only in Ostrova space.
+  - A power's own market refuses goods stolen from it.
+- **Heat** per power (`P.heat`): Cool, Warm, Hot or Burning. It is raised by being caught, a refused bribe, running, and scooping a power's cargo, and it cools at 0.05 a second. The Allegiance tab shows it as words.
+- **Customs:**
+  - **Who scans, and how often:** a power's patrols, escorts, pickets and frigates within 900 m scan contractors in its space (a sector it holds, its home, or one with its station). A check comes about every 3 s; its chance rises with heat, low standing, and being within 3 km of a station.
+  - **The scan:** it takes 5 s and you are warned.
+  - **The hidden cargo container** (a new utility part: 2 Alloy Plate and 1 Conduit) keeps 4 t of contraband out of a scan (+4 t a grade), the most valuable first. The patrol's grade, from its power's forges, against the container's grade decides how often it is found anyway.
+- **When contraband is found,** a box offers three answers:
+  - **Bribe:** half the goods' value to the power's treasury. It is likelier at better standing, never works on a Vengeful leader's patrols, and leaves half the heat. A refused bribe adds heat, and you choose again.
+  - **Surrender:** the goods go into the power's stores and you pay a 15% fine, −3 standing and the heat.
+  - **Run:** double heat +40, and the power's ships treat you as hostile until your heat with it drops below Hot.
+  - **No answer in 15 s** is a surrender.
+  - **Guests** answer through the host. Their scans run on the host.
+- **Riftstone:** the two richest Xenocrystal rocks in each deep and quiet system are Riftstone, moved out beyond the gate ring. Its Xenocrystal comes out as Riftstone (1 t of Xenocrystal each).
+  - **Dangers:** it throws rift discharges every few seconds that hurt a ship within 260 m, its mining-laser ring flickers out, and a blast on it sets off a chain reaction that damages ships within 300 m.
+  - **Rift Shards** (3 Riftstone at a workshop) are a valuable cash-only good for now.
+- **Black-market runs.** Fixers at the freeports post runs: carry goods from the freeport's stock into a power's station within five jumps, rated by the heat they'd bring if caught.
+  - **Light:** +25%.
+  - **Heavy:** +50% (the destination power has an embargo running).
+  - **Severe:** +75% (Heavy and into its core).
+  - Delivery is paid by the freeport on docking at the destination, and the goods go into that station's market.
+- **Not yet:**
+  - The Black market tab on the Company screen, assigning runs to AI pilots, and contacts at the powers' stations (stage 10 and later).
+  - Embargo contraband by origin.
+  - Pirate gear (with the Unbound rework, stage 12b).
+  - Lairs laundering goods and cooling heat (stage 9).
+  - The Rift Shard as a wild-card component.
+- **Tests:** `smuggling.py` (in the quick suite). It covers stolen tags, contraband by power, heat words, a surrender, a bribe, a run and its hostility, cooling, the hidden container, Riftstone placement and cutting, and a black-market run taken and delivered, with the ledger checked throughout.
+
+### Stage 8: as built (2 Nov 2026)
+- **New file `16m_rating.js`.** **Contractor Rating 1–10** per galaxy, kept as Rating points in `P.rp`.
+  - **Points come from:** 20 points per standing point earned through work for a power (deliveries, escorts, kills paid by a power, claims, beacon flips, limpets: everything that goes through `standWork`), 60 per anomaly scan and 80 per black-market run delivered.
+  - **Thresholds:** 150, 350, 600, 950, 1,400, 1,950, 2,600, 3,400 and 4,300 points for Ratings 2 to 10. A delivery is worth roughly 60–120 points.
+  - **Rating never falls.** A level-up is announced with what it opens.
+- **Hulls by Rating** (contractors; sworn pilots and training are not gated): Light Fighter, Light Miner and Light Hauler at 1; Medium Fighter, Medium Miner, Medium Hauler and Scout at 2; Heavy Fighter, Bomber and Advanced Scout at 4; Heavy Miner and Heavy Hauler at 5; Heavy Bomber at 6. Yards refuse a hull above your Rating, and the hull cards say what it needs. House-brand hulls still need Partner standing.
+- **Grades by Rating:** grade 2 at Rating 2, 3 at 4, 4 at 6, 5 at 8, for both slot parts and ship systems. A maker's grade 4 and 5 parts also need Trusted standing with its power.
+- **Unbound mode dropped:** the Unbound card is gone from the start screen, so every new galaxy is a contractors' galaxy (`S.unb` is never set). The old Unbound-mode code stays in the files, unused, until the Unbound rework in stage 12b.
+- **The Allegiance tab** shows your Rating, your points and what each level opens.
+- **Not yet:**
+  - Hull upgrades.
+  - Capital ships by station level (stage 11).
+  - Legend's rework (stage 14).
+- **Tests:** `rating.py` (in the quick suite). It covers the start screen cards, starting at Rating 1, a hull refused at Rating 1, work raising the Rating, the hull allowed at Rating 2, the grade caps, a part upgrade and a system upgrade capped, Rating not falling with standing, and the Allegiance tab. `designs.py` and `loadout.py` now give their pilot a high Rating first.
+
+### Stage 9: as built (2 Nov 2026)
+- **New file `16n_holdings.js`.** It builds on Driftgate 1's Unbound Lair (docking into the rock, the stash, repairs), now for contractors.
+- **Building a Lair:**
+  - **Materials:** a Depot Frame and 6 Alloy Plate in your hold (lighter than the proposal's 20 plate, so a Medium Hauler can carry it).
+  - **Where:** within 700 m of a large asteroid (50 t of ore or more, not Riftstone) in any system with no station.
+  - **How:** the comms build order or the Holdings tab. The materials become the Lair's fortifications, and it is ready after 60 s.
+  - **Limits:** up to four per pilot, and one per pilot per system, so several pilots can each hide one in the same system.
+- **Level 1:**
+  - a 200 t stash, repairs and rearming
+  - **lying low:** heat cools three times as fast while docked there
+  - **laundering:** goods stored in the stash lose their stolen tag
+- **Level 2** (a Depot Frame, 10 Alloy Plate and 4 Flux Coils, while docked there): a 400 t stash, and a workshop and forge with no fee.
+- **Hidden:** a Lair is unseen until a scout of a power that is hostile to its owner comes within 5 km. From then on, that power's ships wear it down whenever they pass within 2.5 km; it has no guns. A destroyed Lair's stash drifts as salvage and its fortifications become debris.
+- **Rearming is never free:** at your own bases, the supplies are bought from the Compact (paid to the freeport treasury).
+- **The Company screen:** key 0, or the Company button on the HUD. It opens anywhere, over the running game, and closes with Esc or 0. For now it has two tabs:
+  - **Allegiance:** Rating, standing, heat, relations and leaders.
+  - **Holdings:** each base's system, level, stash, status (building, hidden, or found and by whom) and upgrade, plus building a Lair where you are.
+  - Economy, Post jobs and Black market come with the Depots (stage 10).
+- **Tests:** `lairs.py` (in the quick suite). It covers the Company screen, no Lair where there's a station, missing materials, building with the ledger exact, ready after the build time, one per system, docking, laundering in the stash, the stash's capacity, lying low, level 2, paid rearming at a Lair, the Holdings tab, and a hostile scout finding the Lair and ships wearing it down.
+
+### Stage 10: as built (2 Nov 2026)
+- **New file `16o_depots.js`.** Tunables are in `DEP`.
+- **Depots:**
+  - **Building one:** upgrade a Lair in place (2 Depot Frames from your hold or its stash, while docked there), or build fresh in flight (2 Depot Frames in your hold) in a system with no station, outside the powers' home space.
+  - **Upgrading a Lair in place:** the stash becomes the depot's store, and the Lair's fortifications become the depot's.
+  - **What it is:** a player-owned depot station (Driftgate 1's `makeStation`, owner `player`, with `R.pid` naming its pilot). It is on every map, with Driftgate 1's depot modules in the Works tab.
+  - **Level:** 1, then 2 with three modules, 3 with six.
+- **Your market:**
+  - On the Economy tab, mark each good in the store **Sell** (keeping a reserve), **Buy** (up to a target) or **Off**.
+  - About every minute, traders of a power that will deal with you (Neutral standing or better, not hostile) visit. They buy up to 10 of each good for sale at the market price, paid from their power's treasury, and sell you up to 10 of each good you want from their power's stores.
+  - Credits and goods only move, so both ledgers stay exact.
+- **AI crews** (the Post jobs tab):
+  - **Hiring:** a pilot comes with a hull, for the hull's price (at least 800 cr) paid to the Compact. Your Rating gates the hull. Each depot's hangar holds one crew plus one per hangar module.
+  - **Orders:**
+    - **Mine:** 3, 5 or 7 t a minute of this system's ore into the store.
+    - **Haul:** every two minutes, 20, 35 or 70 t of goods marked for sale, sold at the nearest market that deals with you.
+    - **Guard:** +25% to the depot's guns each.
+    - **Idle.**
+  - **Upkeep:** 300 cr an hour each to the Compact (paid each minute), and an Alloy Plate an hour of running costs from the store, into the outer drift. Unpaid crews leave; without plate the ship is laid up.
+  - Crews work while you're away, abstractly, every minute of game time.
+- **The Economy tab:** for each depot, the last hour's net (gaining or losing), its trend against the hour before, the lines behind it (market, hauling, hire, wages) and the latest reasons in plain words, plus the company's total. Each base keeps its log in `R.eco`.
+- **Not yet:**
+  - Crews as ships in the world (they work abstractly).
+  - Posting jobs to other contractors and other factions' pilots, and bidding.
+  - The Black market tab.
+  - Base capture-or-destroy choices.
+  - Guests can't change crews from flight (actions go through the dock).
+- **Tests:** `depots.py` (in the quick suite). It covers a Lair upgraded to a Depot with the store from the stash, your market selling and buying through traders, hiring within the hangar's room, crews mining and paying wages, laid-up ships, an unpaid crew leaving, and the Holdings, Economy and Post jobs tabs, with the ledger checked throughout.
+
+### Stage 11: as built (2 Nov 2026)
+- **New file `16p_stations.js`.**
+- **Upgrading a Depot to a Station** (Holdings tab): a Capital Keel, 2 Depot Frames and a Compact Seal, from the depot's store or your hold. It gets 1.8× hull and shield.
+- **Only a Station holds the system for you.** A Depot alone doesn't count (`sectorOwner` skips it).
+- **Buildings:** one per level, up to five, chosen from six. Each takes a Depot Frame, 20 Alloy Plate and 4 Flux Coils, which go into the station's fortifications. A station's level is its number of buildings (at least 1).
+  - **Shipyard:** the dock sells hulls (your own design line), and the slip builds capitals.
+  - **External storage:** traders take and bring twice the lot.
+  - **Defence platform:** +50% guns and +50% hull.
+  - **Hangar:** two more crews.
+  - **Forge:** a workshop and forge with no fee.
+  - **Market wing:** traders call twice as often and pay 10% more.
+- **Capital ships at your slip:** an **Escort from level 3** and a **Carrier at level 5**, at Driftgate 1's costs and build times. They are paid from the station's store or your hold and launch as your own capitals (Driftgate 1's player capitals: ordered from the galaxy map, flyable from the bridge). The limits are two escorts and one carrier.
+- **Not yet:**
+  - The destroyer (it comes with its model and main gun).
+  - The approved station and building models (stations still draw as Driftgate 1's depot).
+  - AI choosing to capture or destroy a fallen base.
+  - Station hull upgrades.
+  - In multiplayer, a guest's capitals launch on its design faction's side.
+- **Tests:** `stations.py` (in the quick suite). It covers a Depot not holding the system, a Station that does, four buildings and their effects, an Escort laid down at level 3 and launched, and the Carrier refused below level 5, with the ledger checked throughout.
+
+### Stage 12: as built (2 Nov 2026)
+- **New file `16q_strategic.js`.** The galaxy map (M) now opens a **sector view** for the selected system, above its usual detail.
+  - **What it draws:** top-down, its gates (named for where they lead), its station in its owner's colour, its rocks (Riftstone in pink), your Lairs, and the ships there. Ships are live when the system is loaded; elsewhere it shows the capitals and convoys your intel knows of.
+  - It counts ships and threats (the Brood, the Unbound, and powers hostile to you).
+- **Orders from the view:**
+  - Your capital ships: **Guard here** (hold this system) or **Come here** (from elsewhere).
+  - The AI crews at your depot in that system: mine, haul, guard or idle.
+- **Not yet:**
+  - Zooming the map itself into the sector.
+  - Orders to escort or patrol.
+  - Crews as ships you can see in the view (they work abstractly, stage 10).
+- **Tests:** `strategic.py` (in the quick suite). It covers the sector view in the loaded system and in another, and a capital ordered from the view.
+
+### Stage 12b: as built (2 Nov 2026)
+- **The new galaxy** (from the approved `tools/previews/beyond_map.py`) replaces Driftgate 1's map in `SECTOR_DEFS` and `LINKS`: 46 systems and 77 gates.
+  - **Layout:** deep space at the centre round the Bloom (an inner ring of five deep systems and a rim of six), and the Wrack hidden inside it, gated to three deep systems. The freeports sit in pockets whose two gates both lead into deep space. Then the open ring of twelve (frontiers, forges and quiet doors), the cores, the relay and quiet space out to the corners.
+  - **Map drawing:** systems are drawn spread out from the centre (radius r becomes 0.48·(r/0.48)^0.72) so the crowded inner rings have room. Quiet systems' names are smaller and dimmer.
+  - **System ids:** existing ones keep their ore; new systems take their kind's ore mix. The freeports keep their ids, and their start-screen blurbs describe where they now sit.
+  - The test checks no two gate lines cross, and that every freeport's two gates lead into deep space.
+- **Scrapheart Haven for contractors** (new file `16r_wrack.js`):
+  - **Neutral ground:** while you keep the peace, its guns and the Unbound in the Wrack hold their fire. Attacking an Unbound ship breaks the peace for a minute.
+  - **Its market** buys and sells anything, stolen goods and contraband included, from the Unbound's stores and treasury.
+  - **The Rusty Tankard's rumours** are black-market runs out of Scrapheart into the powers' stations within six jumps: Heavy heat, or Severe into a core. They are paid by the Unbound on delivery and count for your Rating.
+- **The Unbound fly bigger holds:** Raider, Corsair, Plunderer and Skiff carry 40% more.
+- **Not yet:**
+  - Pirate gear for contractors (jammers, harpoons and cargo hooks as fitted parts).
+  - The Ravager and the Dread Pirate.
+  - A war check on the new map (balance targets are still undecided).
+- **Tests:**
+  - `galaxy.py` (in the quick suite) covers the system and gate counts, no crossings, freeports gated into deep space, the Wrack's neighbours, bigger Unbound holds, docking at Scrapheart in peace, its market and rumours, a rumour run paid by the Unbound with the ledger exact, and the peace breaking.
+  - `mp_loopback.py` is retired with Unbound mode.
+
+### Stage 13: as built (2 Nov 2026)
+- **New file `16s_declare.js`.**
+- **Winning:** **20 systems held for 10 minutes** (`VIC_NEED` 20, `WIN_TIME` 600). The freeports and the Wrack can't be held, which leaves 42 of the 46 systems. **No deadline:** the two-hour tie-break is gone, so a galaxy runs until someone wins, and the HUD clock is hidden.
+- **Declaring a faction** (Allegiance tab) takes a Station of your own.
+  - Declared, your Stations count toward the galaxy as your faction's systems, and you can win. Lead, and the three powers' truce turns on you (their ships become hostile).
+  - **Losing your last Station** ends the faction. You keep your company, and can declare again with a Station.
+- **Leaders' proposals to a founder,** about every ten minutes per power, answered on the Allegiance tab within five minutes:
+  - **An alliance,** when standing is +40 or better and the leader isn't Vengeful. Accepting it opens that power's stations to you, gives +10 standing with it, and −8 with its enemies.
+  - **A demand for 2,000 cr tribute,** when standing is −20 or worse. Paying gives +12. Refusing gives −15, and its ships attack you for ten minutes.
+- **Slower war pacing:** leaders act less often (cooldowns 240–480 s, from 150–300) and pairs wait longer between events (450 s, from 300).
+- **The Brood starts slow and grows with what it holds:** one strength scale from the systems it holds. It is 0.5 with the Bloom alone, 1 at five systems and 2 at twelve or more, and it scales its building, offensives, grazing and regrowth. Its Hive Ships come out from four systems. The fast simulator reports the scale (`relStats().broodK`) and the counts.
+- **Not yet:**
+  - Player factions in the faction status ledger as their own column; their standing with you stands in for it.
+  - Swearing to another player's faction.
+  - Your faction running Driftgate 1's strategic AI on its own.
+  - Tuning to the Brood's 20% target, since balance targets are not set.
+- **Tests:** `declare.py` (in the quick suite). It covers the win rules, declaring refused without a Station, a Station and declaring, the truce on a declared leader, an alliance accepted and a tribute refused, the Allegiance tab, the faction ending with its last Station, and the Brood's scale.
+
+### Stage 14: as built (2 Nov 2026)
+- **New file `16t_legend.js`: Legend reworked** (kept per callsign on the device, beside Driftgate 1's record).
+- **Legend points**, each once per galaxy:
+  - Rating 5: 1, and Rating 10: 1 more
+  - your first Lair: 1, Depot: 1, Station: 2
+  - declaring a faction: 2
+  - shooting down an ace or a Brood Hive Ship: 1
+  - your faction winning: 6, or being allied with the winner: 3
+  - Nobody scores the win when the Brood wins.
+- **Legend levels** come at 2, 4, 7, 10, 14, 18, 23, 28, 34 and 40 points, with titles Journeyman (1), Veteran (5) and Founder (10).
+- **The start package:** on the leaderboard sheet you tick the perks you've unlocked, each costing its level in start points, with your level as the budget. You can take one Rating perk and one base perk. The package is applied as the galaxy is made, before its ledger baseline:
+  - Rating 2, 4 or 6
+  - +5,000 credits
+  - a fully equipped medium hull (fighter, miner or hauler)
+  - three grade 2 parts in your first weapon slots
+  - a Lair kit (your first Lair needs no materials)
+  - house-brand hulls at Trusted standing
+  - a level 1 Depot, or a level 1 Station, in the nearest system where one can be built
+- **Conqueror's spoils** are banked when your declared faction wins:
+  - your flagship and its parts
+  - a war chest (10% of your credits, at most 25,000)
+  - three veteran crews (no hire cost and no wages for two hours)
+  - Renown (+25 with every power)
+  - the Wraith in yards
+  - Allied winners get half (a smaller chest, one veteran, Renown +12).
+  - The spoils are carried into the next galaxy and then used up.
+- **Driftgate 1's Legend perks no longer apply** (`P.lvl` is 0 in Beyond galaxies). The leaderboard ranks by Legend level.
+- **Not yet:**
+  - **Multiplayer rivalries.** Pilots in one galaxy each have their own bases and crews (`R.pid`), but guests' Legend points, other pilots' bases as targets, and posting jobs to rival companies are still to do.
+  - **The training rewrite.** Training still teaches Driftgate 1's systems in its own sandbox (Beyond's slots, payload, standing and bases are off there).
+- **Tests:** `legend.py` (in the quick suite). It covers the package picker, a level 10 start package with the ledger exact, a point awarded once per galaxy, a win banking spoils, and the next galaxy carrying them (Renown, war chest, the Wraith) with a starting Station and the ledger exact.

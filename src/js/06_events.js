@@ -121,8 +121,8 @@ function bcnAllowed(d){return true}
 function beaconInit(){S.beacons=S.beacons||{};for(const id in S.beacons)if(!bcnAllowed(DEF[id]))delete S.beacons[id];for(const d of SECTOR_DEFS){if(!bcnAllowed(d)||S.beacons[d.id])continue;const p=beaconPos(d.id);S.beacons[d.id]={x:p.x,y:p.y,z:p.z,owner:null,by:null,T:0,pay:0}}for(const id in S.beacons){const B=S.beacons[id];if(B.owner&&B.sec==null)B.sec=S.T}S.bcnV=(S.bcnV||0)+1}
 // who may flip: the side a ship flies for, if it is a scout hull and free to act
 function bcnFlipper(e){if(e.type!=='ship'||!e.alive||e.inJump||e.ghost)return null;
-  if(e.isPlayer){if(W!==LW||S.player.docked||W.dead||W.docking||W.detach||!isScoutCls(S.player.cls))return null;if(!S.player.sworn||(S.player.sworn==='pirate'&&DEF[W.sid].home))return null;return{side:S.player.sworn,by:pkey()}}
-  if(e.rp){const P=S.pilots&&S.pilots[e.rp];if(!P||P.docked||!isScoutCls(P.cls))return null;if(!P.sworn||(P.sworn==='pirate'&&DEF[W.sid].home))return null;return{side:P.sworn,by:e.rp}}
+  if(e.isPlayer){if(W!==LW||S.player.docked||W.dead||W.docking||W.detach||!isScoutCls(S.player.cls))return null;const iF=intelFor(S.player);if(!iF||(iF==='pirate'&&DEF[W.sid].home))return null;return{side:iF,by:pkey()}}
+  if(e.rp){const P=S.pilots&&S.pilots[e.rp];if(!P||P.docked||!isScoutCls(P.cls))return null;const iF=intelFor(P);if(!iF||(iF==='pirate'&&DEF[W.sid].home))return null;return{side:iF,by:e.rp}}
   if(e.npc&&e.role==='scout'&&FAC_IDS.includes(e.side))return{side:e.side,by:null};return null}
 // host / single player: run in every open system each frame
 function beaconWorld(dt){const B=S.beacons&&S.beacons[W.sid];if(!B)return;const F=W.bcnF||(W.bcnF={side:null,t:0,by:null,cont:false});
@@ -209,20 +209,20 @@ function limpetSync(dt){if(NET.cl||!W)return;W.lpT=(W.lpT||0)-dt;if(W.lpT>0)retu
   for(const E of W.ents.slice()){const R=(E.type==='ship'&&E.alive&&E.role==='frigate')||E.type==='station'||E.type==='outpost'?lpRec(E):null;if(!R||!R.pings)continue;
     for(const f in R.pings){if(!capPinged(R,f)||!hostile(f,sideNorm(lpSide(E)||'neutral')))continue;if(!W.ents.some(l=>l.role==='limpet'&&l.lh===E&&l.lf===f))limpetSpawn(E,f,null)}}}
 function capPingPay(t){if(!t||!t.pings)return;for(const f in t.pings){const P=t.pings[f];if(!P||P.until<=S.T||!P.by||!hostile(f,t.side))continue;const got=payKey(P.by,f,PING_PAY[t.cls]||300);if(got)keyFeed(P.by,`🧲 The ${capName(t)} ${t.name} you put a limpet on has been destroyed: +${fmt(got)} cr scouting bonus.`,'good')}t.pings={}}
-function limpetTarget(){const p=W.player,t=W.tgt;if(!p||!t||!validTgt(t)||!FAC_IDS.includes(S.player.sworn))return null;const E=t.ref;if(t.kind==='ship'){if(!E.alive||E.role!=='frigate'||!E.tok)return null}else if(t.kind==='outpost'){if(E.o.breached)return null}else if(t.kind!=='station')return null;
-  const sd=lpSide(E);if(!sd||sd==='neutral'||!hostile('player',sd))return null;return E}
+function limpetTarget(){const p=W.player,t=W.tgt;const iF=intelFor(S.player);if(!p||!t||!validTgt(t)||!FAC_IDS.includes(iF))return null;const E=t.ref;if(t.kind==='ship'){if(!E.alive||E.role!=='frigate'||!E.tok)return null}else if(t.kind==='outpost'){if(E.o.breached)return null}else if(t.kind!=='station')return null;
+  const sd=lpSide(E);if(!sd||sd==='neutral'||!hostile(iF,sideNorm(sd)))return null;return E}
 const lpSurf=(E,p)=>d3(E,p)-lpRad(E);
 // the player's hold on F in a scout, from blPilotUpdate (host, single player and client alike: a client asks the host)
 function limpetHold(hold,dt){const F=W.lpF||(W.lpF={E:null,t:0,h:false}),P=S.player,p=W.player,E=limpetTarget(),press=hold&&!F.h;F.h=hold;
   if(press&&P.limpetUsed){flash('No limpet aboard: dock at a friendly station or outpost to rearm.');return}
   if(press&&!E&&W.t-(W.drillMsg||0)>3){W.drillMsg=W.t;flash('Target an enemy carrier, escort, station or depot to plant a limpet. Scouts carry no mining laser.')}
   if(F.E!==E){F.E=E;F.t=0}
-  if(!(E&&hold&&!P.limpetUsed&&lpSurf(E,p)<=LIMPET_R&&!capPinged(lpRec(E),P.sworn))){F.t=Math.max(0,F.t-dt*.5);return}
+  if(!(E&&hold&&!P.limpetUsed&&lpSurf(E,p)<=LIMPET_R&&!capPinged(lpRec(E),intelFor(P)))){F.t=Math.max(0,F.t-dt*.5);return}
   F.t+=dt;if(F.t<LIMPET_T)return;F.t=0;P.limpetUsed=true;
-  if(NET.cl)netSend({t:'limpet',k:E.type==='ship'?'cap':E.type,id:E.type==='ship'?E.tok.id:null,at:{x:p.x,y:p.y,z:p.z}});else limpetPlant(E,P.sworn,pkey(),p);
+  if(NET.cl)netSend({t:'limpet',k:E.type==='ship'?'cap':E.type,id:E.type==='ship'?E.tok.id:null,at:{x:p.x,y:p.y,z:p.z}});else limpetPlant(E,intelFor(P),pkey(),p);
   flash(`🧲 Limpet planted on ${lpName(E)}.`)}
 function limpetChip(){const P=S.player;if(!isScoutCls(P.cls)||P.docked||!W.player)return null;const E=limpetTarget();if(!E)return null;const R=lpRec(E),nm=lpName(E),F=W.lpF||{};
-  if(capPinged(R,P.sworn))return[`🧲 Limpet on ${nm} · ${fmtT(R.pings[P.sworn].until-S.T)} · +${Math.round((LIMPET_DMG-1)*100)}% damage`,'good'];
+  if(capPinged(R,intelFor(P)))return[`🧲 Limpet on ${nm} · ${fmtT(R.pings[intelFor(P)].until-S.T)} · +${Math.round((LIMPET_DMG-1)*100)}% damage`,'good'];
   if(P.limpetUsed)return['🧲 Limpet spent · dock to rearm','warn'];
   if(F.E===E&&F.t>0)return[`🧲 Planting ${Math.round(clamp(F.t/LIMPET_T,0,1)*100)}% · hold ${kb('mine')} within ${LIMPET_R} m`,'warn'];
   const d=lpSurf(E,W.player);return[d>LIMPET_R?`🧲 Limpet ready · close to ${LIMPET_R} m of ${nm} (${fmt(Math.round(Math.max(0,d)))} m), hold ${kb('mine')}`:`🧲 Hold ${kb('mine')} to plant a limpet on ${nm}`,'warn']}

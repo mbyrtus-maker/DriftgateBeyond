@@ -192,7 +192,7 @@ const LORE=['Gatewright’s log: the rings were never ours. We found them alread
 const LORE_KEY='dgbeyond.lore.v1';
 function anomSects(){return SECTOR_DEFS.filter(d=>d.kind==='void').map(d=>d.id)}
 function anomsIn(sid){return(S.anoms&&S.anoms[sid])||[]}
-function anomPos(sid){const gs=GATES[sid];for(let k=0;k<30;k++){const p=randPos(700*SPACE,2600*SPACE);if(gs.some(g=>d3(g,p)<1200))continue;if(S.stations[sid]&&d3(S.stations[sid],p)<1500)continue;return p}return randPos(900*SPACE,2200*SPACE)}
+function anomPos(sid){const gs=GATES[sid],gr=Math.max(1500*SPACE,...gs.map(g=>hyp(g.x,g.y,g.z)));for(let k=0;k<30;k++){const p=randPos(gr+700,gr+1800);if(gs.some(g=>d3(g,p)<1200))continue;if(S.stations[sid]&&d3(S.stations[sid],p)<1500)continue;return p}return randPos(900*SPACE,2200*SPACE)}
 function anomSpawn(sid){S.anoms=S.anoms||{};const L=S.anoms[sid]=S.anoms[sid]||[];if(L.length>=ANOM_MAX)return;const w={...ANOM_KIND};
   if(Object.values(S.anoms).some(a=>a.some(x=>x.kind==='hulk'))||driftMass()<220)delete w.hulk;const p=anomPos(sid);L.push({id:S.nextId++,kind:wpick(w),x:p.x,y:p.y,z:p.z,v:ri(0,7),born:S.T,until:S.T+ANOM_LIFE})}
 function driftMass(){const D=S.drift||{};let m=0;for(const k of RAWS)m+=D[k]||0;for(const id in S.sectors){const d=S.sectors[id].debris;for(const k of RAWS)m+=d[k]||0}return m}
@@ -206,7 +206,7 @@ function driftTake(n,only,sid){const ks=only||RAWS,got={};S.drift=S.drift||{fe:0
   const pools=[S.drift,...(sid&&S.sectors[sid]?[S.sectors[sid].debris]:[]),...SECTOR_DEFS.filter(d=>d.kind==='void'&&d.id!==sid).map(d=>S.sectors[d.id].debris),...SECTOR_DEFS.filter(d=>d.kind!=='void'&&d.id!==sid).map(d=>S.sectors[d.id].debris)];let left=Math.round(n);
   for(const P of pools){if(left<=0)break;let tot=0;for(const k of ks)tot+=P[k]||0;if(tot<=0)continue;const want=Math.min(left,tot);for(const k of ks){const m=Math.min(P[k]||0,Math.round(want*(P[k]||0)/tot),left);if(m>0){P[k]-=m;got[k]=(got[k]||0)+m;left-=m}}}return got}
 function partsFrom(o){let g=0;while(g++<400){if(haveIn(ITEMS.coil.recipe,[o])&&Math.random()<.35){takeFrom(ITEMS.coil.recipe,[o]);inv.add(o,'coil',1);continue}if((o.fe||0)>=3&&Math.random()<.6){takeFrom({fe:3},[o]);inv.add(o,'plate',1);continue}if((o.cu||0)>=3){takeFrom({cu:3},[o]);inv.add(o,'wire',1);continue}if((o.fe||0)>=3){takeFrom({fe:3},[o]);inv.add(o,'plate',1);continue}break}return o}
-function anomOpen(sid,A,k,ent){const L=anomsIn(sid),i=L.indexOf(A);if(i<0)return;L.splice(i,1);const P=xPilotOfKey(k),f=containPayer(P||S.player)||(P||S.player).sworn||'neutral',nm=DEF[sid].name,s=S.sectors[sid];if(P)xGS(P).sc++;
+function anomOpen(sid,A,k,ent){const L=anomsIn(sid),i=L.indexOf(A);if(i<0)return;L.splice(i,1);const P=xPilotOfKey(k),f=intelFor(P||S.player)||containPayer(P||S.player)||'neutral',nm=DEF[sid].name,s=S.sectors[sid];if(P)xGS(P).sc++;
   const fee=payKey(k,f,ANOM_FEE);let kind=A.kind,msg='';
   if(kind==='hulk'&&driftMass()<150)kind='cache';if(kind==='cache'&&driftMass()<20)kind='log';
   if(kind==='shard'){let o=driftTake(ri(30,70),['au'],sid);let m=o.au||0;if(m<15){for(const id of DEEP){const d=S.sectors[id].debris;const t=Math.min(d.au||0,70-m);if(t>0){d.au-=t;m+=t}if(m>=50)break}o={au:m}}
@@ -580,7 +580,7 @@ function ujobHud(el){try{ujobSteer()}catch(e){}const L=ujList(),si=Math.max(0,L.
   L.forEach((j,i)=>{const on=i===si;h+=`<div class="oi sd${on?' sel':''}"><div class="om"><i class="otg cmb">${j.kind==='mine'?'Disrupt':'Intercept'}</i>${esc(j.title)}</div><div class="os"><span>${esc(ujStat(j))} · ${fmtT(Math.max(0,j.until-S.T))} · ${fmt(j.pay)} cr</span><span class="${j.on?'ok':'go'}">${j.on?(on?'✓ P course':'✓'):on?'P · take':''}</span></div></div>`});
   if(L.length>1)h+=`<div class="onx"><kbd>⇧P</kbd> next job · ${si+1} of ${L.length}</div>`;el.hidden=false;if(el._h!==h){el._h=h;el.innerHTML=h}}
 // ============================================================ upgrade stock at each faction's home station
-// A pilot's Mk II and Mk III parts (Alloy Plate, Conduit, Flux Coil) shouldn't vanish because the faction spent its
+// A pilot's grade 2 and grade 3 parts (Alloy Plate, Conduit, Flux Coil) shouldn't vanish because the faction spent its
 // warehouse on keels and torpedoes. Each faction's main station keeps a separate upgrade stock no other project can touch,
 // refilled by a slow recharge counter (no hauling, no mining). At that station, parts missing from your hold and vault for
 // an upgrade are bought from it at base price. Its parts enter the economy when fitted; the ledger baseline counts them in.

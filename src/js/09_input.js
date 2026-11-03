@@ -11,12 +11,12 @@ function actKey(){return touchUI()?'Act':kb('act')}
 const KEY_ACTS=[
  ['Flight',[['thrust','KeyW','Thrust'],['brake','KeyS','Brake (reverse thrust with assist off)'],['rollL','KeyA','Roll left'],['rollR','KeyD','Roll right'],
   ['fa','KeyX','Flight assist on/off: on, sideways slip bleeds off; off, pure drift'],['level','KeyL','Auto-level on/off'],['autopilot','KeyJ','Autopilot to your target or the next jump on your course'],['act','KeyE','Dock, launch, land on a rock, board, hook a jammed ship']]],
- ['Weapons',[['fire','Space','Fire the selected gun (or left-click)'],['kin','Digit1','Kinetic cannons'],['las','Digit2','Lasers'],['msl','KeyC','Launch a missile once locked (or middle-click)'],
+ ['Weapons',[['fire','Space','Fire the selected gun (or left-click)'],['kin','Digit1','Machine gun (uses ammunition)'],['las','Digit2','Laser (uses reactor energy)'],['msl','KeyC','Launch a missile once locked (or middle-click)'],
   ['swarm','Digit3','Swarm pods: Heavy Fighter, Bombers, Advanced Scout, Wraith'],['jam','Digit4','Jam mode: Unbound only'],['flare','KeyB','Flares: spoof missiles tracking you (30 energy)'],['track','KeyZ','Hold: auto-turn onto the target\'s lead marker']]],
- ['Mining',[['mine','KeyF','Fire a blast charge at the targeted rock; hold on a chunk or cloud to scoop (or right-click). In a Scout: hold to plant a limpet'],['det','Digit5','Detonate your charges (back off 120 m first)'],['cancel','Digit6','Cancel set charges (they return to the magazine)']]],
+ ['Mining',[['mine','KeyF','Fire a blast charge at the targeted rock; hold on a chunk or cloud to scoop (or right-click). In a Scout: hold to plant a limpet'],['det','Digit5','Detonate your charges (back off 120 m first)'],['cancel','Digit6','Cancel set charges (they return to the magazine)'],['mtool','Digit7','Mining tool: charge launcher or mining laser (when both are fitted)']]],
  ['Targets',[['tgtH','KeyT','Nearest hostile (Shift: pick a system on the targeted capital or station; it can be hit once the shield is down)'],['cycleH','KeyQ','Cycle hostiles, nearest first'],['ahead','KeyG','The ship closest to your nose'],['ast','KeyR','Nearest rock (again: rescan it)'],['cycle','Tab','Cycle all targets, gates included (Shift+Tab: backwards)'],['assist','KeyY','Whoever is attacking a friendly']]],
  ['Command',[['comms','KeyI','Comms: Command, then the friendly ships nearby'],['distress','KeyU','Distress call'],['op','KeyO','Join the top friendly operation'],['orders','KeyP','Sign on to the picked order (Shift: pick the next)'],['ordDrop','Backspace','Drop the order or job you are on: sign off and clear its course'],['stealth','KeyK','Wraith stealth, or Unbound false colours']]],
- ['Screens',[['map','KeyM','Galaxy map'],['help','KeyH','This manual'],['cam','KeyV','Chase or cockpit camera'],['sound','KeyN','Sound: all on, music off, muted'],['touch','Backquote','Show or hide touch buttons']]]];
+ ['Screens',[['map','KeyM','Galaxy map'],['company','Digit0','Company screen: Allegiance and Holdings'],['help','KeyH','This manual'],['cam','KeyV','Chase or cockpit camera'],['sound','KeyN','Sound: all on, music off, muted'],['touch','Backquote','Show or hide touch buttons']]]];
 const KEY_FIXED=[['Mouse','Steer: the further from the centre ring, the harder you turn'],['Arrows','Pitch and yaw without the mouse'],['Shift','Afterburner'],['Click','Target a ship, or a row in Contacts'],['Wheel','Chase camera distance'],['Esc','Close a screen; in flight, free the mouse cursor (the ship holds its heading). Esc again to steer'],['F11','Full screen']];
 const KEY_DEF={};for(const[,L]of KEY_ACTS)for(const[id,code]of L)KEY_DEF[id]=code;
 let KEYB={};try{KEYB=JSON.parse(localStorage.getItem('dgbeyond.keys')||'{}')||{}}catch(e){KEYB={}}
@@ -59,10 +59,11 @@ addEventListener('keydown',e=>{touchLast=false;if(e.code==='F11'){e.preventDefau
   if(['Space','Tab','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(c)&&running)e.preventDefault();
   if(keys[c])return;keys[c]=true;
   if(!running)return;
-  if(c==='Escape'){if(!$('sndPop').hidden){sndPanel(false);return}if(commsOpen()){closeComms();return}if(W&&W.bridge&&W.bridge.panel){closeConsole();return}if(running&&W&&!W.dead&&S.player&&!S.player.docked&&$('help').hidden&&$('map').hidden){mouseFreeToggle();return}closeSheets();return}
+  if(c==='Escape'){if(!$('company').hidden){$('company').hidden=true;return}if(!$('sndPop').hidden){sndPanel(false);return}if(commsOpen()){closeComms();return}if(W&&W.bridge&&W.bridge.panel){closeConsole();return}if(running&&W&&!W.dead&&S.player&&!S.player.docked&&$('help').hidden&&$('map').hidden){mouseFreeToggle();return}closeSheets();return}
   if(c==='KeyM'){toggleMap();return}
+  if(c==='Digit0'){toggleCompany();return}
   if(c==='KeyH'||c==='Slash'){toggleSheet('help');return}
-  if(!$('map').hidden||!$('help').hidden)return;
+  if(!$('map').hidden||!$('help').hidden||!$('company').hidden)return;
   if(W&&W.gunseat){if(c==='KeyC'){if(NET.cl)netSend({t:'gmsl'});else W.gunseat.msl=1;return}}
   if(W&&W.bridge&&W.bridge.panel){const i=['Digit1','Digit2','Digit3','Digit4','Digit5'].indexOf(e.code);if(i>=0){W.bridge.panel=FC_TABS[i][0];renderConsole(true);return}}
   if(W&&W.bridge&&!W.bridge.panel&&(c==='KeyT'||c==='KeyQ')){bridgeTarget(c==='KeyQ');return}
@@ -80,6 +81,7 @@ addEventListener('keydown',e=>{touchLast=false;if(e.code==='F11'){e.preventDefau
   if(c==='Digit3'){if(blHull(S.player.cls))flash(`Mining ships carry no swarm launcher: ${kb('det')} detonates your charges, ${kb('cancel')} cancels them.`);else fireSwarm()}
   if(c==='Digit5'&&blHull(S.player.cls))blKeyPress('det');
   if(c==='Digit6'&&blHull(S.player.cls))blKeyPress('cancel');
+  if(c==='Digit7'&&blHull(S.player.cls))mtoolToggle();
   if(c==='Digit4'&&S.unb)jamToggle();
   if(c==='KeyB')playerFlares();
   if(c==='Digit1')setWeapon('kinetic');
@@ -196,7 +198,7 @@ function issueOrder(k,T){const fac=S.player.sworn||'player',me=T===W.player||T.r
   feed(`${who}: copy, ${k==='guard'?'guarding':'escorting'} ${me?'you':ftgtName(T)} for ${ORDER_TIME/60} minutes.`,'good');return pick.length}
 // comms: ask your faction to build. In its home system that means a capital shipyard; anywhere else, a depot near you (a constructor convoy flies in)
 function lackText(cost,src){const m=[];for(const k in cost){const h=(src&&src[k])||0;if(h<cost[k]){const n=cost[k]-h;m.push(`${n} ${ITEMS[k].name}${n>1&&!/s$/.test(ITEMS[k].name)?'s':''}`)}}return m.join(', ')}
-function requestBuild(){if(!W||!W.player||W.dead||(S.player.docked&&S.player.docked!=='bridge'))return;if(S.unb){lairBuild();return}if(truceAt(W.sid)){feed('Command: nothing can be built in a truce zone. Burn the Bloom out of this system first.','warn');return}const f=S.player.sworn;if(!f||!FACTIONS[f]){feed('Only your own faction\'s command builds for you. As a contractor you will build your own bases.','warn');return}const sid=W.sid,F=FACTIONS[f].short,st=S.econ.stock[f],p=W.player;
+function requestBuild(){if(!W||!W.player||W.dead||(S.player.docked&&S.player.docked!=='bridge'))return;if(S.unb){lairBuild();return}if(!S.player.sworn){lairBuildB();return}if(truceAt(W.sid)){feed('Command: nothing can be built in a truce zone. Burn the Bloom out of this system first.','warn');return}const f=S.player.sworn;if(!f||!FACTIONS[f]){feed('Only your own faction\'s command builds for you. As a contractor you will build your own bases.','warn');return}const sid=W.sid,F=FACTIONS[f].short,st=S.econ.stock[f],p=W.player;
   if(sid===FAC_HOME(f)){
     if(S.yards[f]){feed(`${F} command: ${DEF[sid].name} already has a capital shipyard. Commission a carrier or escorts from Ship → Shipyard at the station.`,'info');return}
     const yb=S.events.find(e=>e.type==='yardbuild'&&e.att===f);if(yb){feed(`${F} command: the shipyard is already under construction, about ${Math.max(1,Math.ceil((yb.until-S.T)/60))} min to go.`,'info');return}
@@ -249,4 +251,4 @@ function mouseFreeToggle(on){mouse.free=on===undefined?!mouse.free:!!on;mouse.l=
   flash(mouse.free?'Mouse cursor free: the ship holds its heading and keys still fly it. Esc to steer with the mouse again.':'Mouse steering back on.')}
 
 // the act key (E) and the touch Act button: leave a gunner seat, bridge chairs and consoles, launch, lift off, hook, Lair, dock
-function actPress(){if(!running||!W)return;if(W.gunseat){leaveSeat();return}if(W&&W.bridge){if(W.bridge.panel){closeConsole();return}if(W.bridge.seat){standChair();return}const n=bridgeNear();if(n){if(n.id==='hatch')exitBridge();else if(n.id==='cmd'){const tk=W.bridge.f.tok;if(fGuest(tk)){openConsole('strat');flash('Take command first to use the command chair.',true)}else if(NET.on&&tk.owner&&!crewCan(tk,curPid(),'helm')){flash('The command chair goes with the Helm station.',true)}else sitChair()}else openConsole(n.id)}return}if(S.player.docked)undock();else if(W&&W.player&&W.player.landed)liftOff();else if(S.unb&&hookTarget()){if(NET.cl){const T=hookTarget();MP.hookOn=1;netSend({t:'hook',on:1,id:netTid(T)})}return}else if(S.unb&&lairNear()){lairEnter(lairNear());return}else tryDock();}
+function actPress(){if(!running||!W)return;if(W.gunseat){leaveSeat();return}if(W&&W.bridge){if(W.bridge.panel){closeConsole();return}if(W.bridge.seat){standChair();return}const n=bridgeNear();if(n){if(n.id==='hatch')exitBridge();else if(n.id==='cmd'){const tk=W.bridge.f.tok;if(fGuest(tk)){openConsole('strat');flash('Take command first to use the command chair.',true)}else if(NET.on&&tk.owner&&!crewCan(tk,curPid(),'helm')){flash('The command chair goes with the Helm station.',true)}else sitChair()}else openConsole(n.id)}return}if(S.player.docked)undock();else if(W&&W.player&&W.player.landed)liftOff();else if(S.unb&&hookTarget()){if(NET.cl){const T=hookTarget();MP.hookOn=1;netSend({t:'hook',on:1,id:netTid(T)})}return}else if(lairNear()){lairEnter(lairNear());return}else tryDock();}

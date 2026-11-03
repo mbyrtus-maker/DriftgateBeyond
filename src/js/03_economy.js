@@ -82,7 +82,7 @@ function stPrice(R,id){return price(R?mkStock(R):{},id,mkSc(R))*locF(R,id)*mkK(R
 function mR(c){return c&&c.kind==='station'?S.stations[S.player.sector]:null}
 // market fee on a pilot's trades: 6%, less in the bigger haulers (a freight licence). A big hold soon moves the price against
 // itself; the bigger haulers pay a thinner fee and move the local price less per unit (HAUL_MK), so trade runs come to about
-// 15k an hour in a Light Hauler, 20k in a Medium and 25k in a Heavy, Mk I.
+// 15k an hour in a Light Hauler, 20k in a Medium and 25k in a Heavy, grade 1.
 const HAUL_FEE={courier:.035,freighter:.02,bulker:.01};const mFee=cls=>HAUL_FEE[cls]!=null?HAUL_FEE[cls]:.06;const HAUL_MK={freighter:.6,bulker:.26};const pMk=()=>HAUL_MK[S.player.cls]||1;
 function mBuy(c,id){const R=mR(c);return Math.ceil(price(c.market,id,mkSc(R))*locF(R,id)*mkK(R,id)*(1+mFee(S.player.cls)))}
 function mSell(c,id){const R=mR(c);return Math.max(1,Math.floor(price(c.market,id,mkSc(R))*locF(R,id)*mkK(R,id)*(1-mFee(S.player.cls))))}
@@ -148,7 +148,7 @@ function cvEnd(t,ok,sid){const E=t.esc;if(!E)return;t.esc=null;const f=t.side;
   if(!ok){keyFeed(E.k,`✖ Escort failed: the ${FACTIONS[f].short} convoy you were escorting was destroyed in ${DEF[sid].name}.`,'bad');standAdd(f,-STAND.escort*STAND.war,'a failed escort',xPilotOfKey(E.k));return}
   if(E.hops<E.need){keyFeed(E.k,`The convoy reached ${DEF[t.to].name}, but you were with it for only ${E.hops} of the ${E.need} jumps the contract needs. No pay.`,'warn');return}
   const got=payKey(E.k,f,cvPay(t,E.hops));weAdd(f,ESC_CV.we+.5*E.hops);keyFeed(E.k,`✔ Escort complete: the convoy docked at ${DEF[t.to].name}. Command pays +${fmt(got)} cr.`,'good');legBonus(E.k,f,'a convoy escort');standWork(xPilotOfKey(E.k),f,STAND.escort+E.hops*.5,'a convoy escort')}
-function haulLost(t,sid,by){cvEnd(t,false,sid);shipLostFeed(t,sid);const s=S.sectors[sid],inv2={},rest={};for(const k in t.load){const m=Math.floor(t.load[k]*.5+Math.random()*.6);if(m>0)inv2[k]=m;if(t.load[k]-m>0)rest[k]=t.load[k]-m}t.load={};toDebris(s,rest);if(Object.keys(inv2).length){const o=rdir(.4);s.crates.push({id:S.nextId++,x:Math.round(o.x*1600),y:Math.round(o.y*300),z:Math.round(o.z*1600),inv:inv2,until:S.T+900})}
+function haulLost(t,sid,by){cvEnd(t,false,sid);shipLostFeed(t,sid);const s=S.sectors[sid],inv2={},rest={};for(const k in t.load){const m=Math.floor(t.load[k]*.5+Math.random()*.6);if(m>0)inv2[k]=m;if(t.load[k]-m>0)rest[k]=t.load[k]-m}t.load={};toDebris(s,rest);if(Object.keys(inv2).length){const o=rdir(.4);s.crates.push({id:S.nextId++,x:Math.round(o.x*1600),y:Math.round(o.y*300),z:Math.round(o.z*1600),inv:inv2,until:S.T+900,own:FAC_IDS.includes(t.side)?t.side:undefined})}
   if(friendSide(t.side))feed(`⚠ A ${FACTIONS[t.side].short} supply convoy was destroyed in ${DEF[sid].name}. Half its cargo is drifting there as salvage.`,'bad');else if(covered(sid))feed(`A ${FACTIONS[t.side].short} supply convoy was destroyed in ${DEF[sid].name}; some salvage is drifting there.`,'news')}
 // the per-tick logistics: depot industry, surplus ore home, and life support from the depot's own store
 function logiTick(){for(const id in S.stations){const R=S.stations[id];if(!isDepotF(R))continue;const f=R.owner,ds=dStore(R);

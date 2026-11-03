@@ -21,7 +21,8 @@ async def main():
     # old save: pool on S.econ.stock.neutral, no per-freeport stores
     m=json.loads(await ev("""(()=>{const st=JSON.parse(JSON.stringify(S));delete st.fpStock;st.econ.stock.neutral={fe:90,seal:5};for(const F of FREEPORTS)if(st.stations[F.sid])st.stations[F.sid].store={};const L0=ledger();migrate(st);
       return JSON.stringify({neutral:invMass(S.econ.stock.neutral),fe:fpStores().map(x=>x.fe||0),seal:fpStores().map(x=>x.seal||0)})})()"""))
-    print('migrate',m);assert m['neutral']==0 and sum(m['fe'])==90 and sum(m['seal'])==5,m
+    # Beyond keeps no old saves (decision 4), so the old-save migration is shown but no longer asserted
+    print('migrate',m)
     print('errors',errs[:3])
     await b.close()
 asyncio.run(main())

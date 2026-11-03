@@ -82,7 +82,7 @@ function fireLaser(e){if(jamDark(e))return;if(e.cool>0||e.landed||e.stealth||(e.
 function damageShip(e,dmg,srcSide,at,kind){
   {const me=W.player;if(me&&e.alive&&!e.ghost){if(e===me){if(srcSide&&srcSide!==me.side)musHit(e.shield>0)}else if(at&&(at.src===me||at===me))musHit(e.shield>0)}}
   if(!e.alive||e.inJump||e.ghost||(e.isPlayer&&(W.detach||W.t<(W.ejectT||0))))return;if(NET.cl){if(e.isPlayer)return;e.lastHit=W.t;if(e.shield>0){e.shHitT=W.t;e.shHitA=.4;fxSpark(at||e,'#8fc8ff',3)}else fxSpark(at||e,'#ffd9a0',3);return}e.lastHit=W.t;e.lastHitBy=srcSide;if(e.role==='frigate'&&e.tok&&e.tok.pings)dmg*=limpetK(e.tok,srcSide);const h0=e.hull,s0=e.shield,rec=()=>dmgRec(e,srcSide,at,(s0-Math.max(0,e.shield))+(h0-Math.max(0,e.hull)));
-  // escorts are light capitals: a torpedo that connects guts one (about 4 hits at Mk I, 2 at Mk V)
+  // escorts are light capitals: a torpedo that connects guts one (about 4 hits at grade 1, 2 at grade 5)
   if(e.stealth){if(e.isPlayer)stealthOff(true);else{e.stealth=false;e.masked=false;e.maskR=0;e.boot=W.t+BOOT_T;if(e.rp&&NET.host)netMsg(e.rp,'stealthoff')}}
   if(e.cls==='escort'&&(kind||(at&&at.kind))==='torpedo'){dmg*=ESC_TORP_MUL;stat('torpHit')}
   if(e.cls==='frigate'||e.cls==='carrier'){if(e.tok)e.tok.fightT=S.T;const k=kind||(at&&at.kind);if(k==='torpedo'){dmg*=4;stat('torpHit');stat('torpDmg',dmg)}else if(k!=='capital'){if(e.shield>0){e.shield=Math.max(0,e.shield-dmg*.6);e.shHitT=W.t;e.shHitA=.5;fxSpark(at||e,'#8fc8ff',3)}else{fxSpark(at||e,'#ffd9a0',2);e.hull-=dmg*capChip(k);if(srcSide==='player'&&W.t-(W.capT||-99)>8){W.capT=W.t;flash('Fighter weapons only chip capital-ship armour. It takes a lot of hits; torpedoes do the real damage.',true)}}rec();if(e.hull<=0)killShip(e,srcSide,at);return}}
@@ -116,7 +116,7 @@ const BL_HULL={skiff:{n:5,reload:90,coll:6,cd:1,k:2.5},prospector:{n:6,reload:10
 const BL_REL={on:.9,near:.5,off:.25};
 function blHull(cls){return BL_HULL[cls]||null}
 function blTier(P){return(P&&P.tiers&&P.tiers.drill)||1}
-function blCap(P){const h=P&&blHull(P.cls);return h?Math.max(1,h.n+blTier(P)-1+(vF(P,'blChg')||0)):0}                       // a Blast Rig Mk level adds a charge
+function blCap(P){const h=P&&blHull(P.cls);return h?Math.max(1,h.n+blTier(P)-1+(vF(P,'blChg')||0)):0}                       // a Blast Rig grade level adds a charge
 function blColl(P){const h=P&&blHull(P.cls);return h?h.coll*(1+.2*(blTier(P)-1)):0}
 function blWin(P,a){const rare=a&&!a.wpt&&a.ore&&(a.ore.au||a.ore.nu),b=(vF(P,'blWin')||5)+(a&&a.wpt?2:0);return(rare?b-2:b)+((P&&(P.lvl||0)>=3)?2:0)}
 function blRange(P){return Math.max(legMineR(P),vF(P,'blRange')||0)}
@@ -308,7 +308,7 @@ function killShip(e,src,at){if(e.role==='limpet'){limpetShot(e,src,at);return}
   if(e.role==='frigate'&&e.tok&&makeWreck(e)){{const _i=W.ents.indexOf(e);if(_i>=0)W.ents.splice(_i,1)}if(W.tgt&&W.tgt.ref===e)W.tgt=null;payKill(e,src,at);return}
   const crate={};for(const k in e.load){const m=Math.min(e.load[k],Math.floor(e.load[k]*.5+Math.random()*.6));if(m)crate[k]=m;const rest=e.load[k]-m;if(rest>0)toDebris(s,{[k]:rest})}
   inv.addAll(crate,e.cargo);e.load={};e.cargo={};
-  if(Object.keys(crate).length)s.crates.push({id:S.nextId++,x:Math.round(e.x),y:Math.round(e.y),z:Math.round(e.z),inv:crate,until:S.T+300});
+  if(Object.keys(crate).length)s.crates.push({id:S.nextId++,x:Math.round(e.x),y:Math.round(e.y),z:Math.round(e.z),inv:crate,until:S.T+300,own:FAC_IDS.includes(e.side)?e.side:undefined});
   {const _i=W.ents.indexOf(e);if(_i>=0)W.ents.splice(_i,1)}if(W.tgt&&W.tgt.ref===e)W.tgt=null;
   payKill(e,src,at)
 }

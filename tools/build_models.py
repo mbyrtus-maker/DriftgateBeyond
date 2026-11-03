@@ -116,6 +116,11 @@ MODELS={
 for _k,_f in BROOD_MODELS.items():
     if _k=='b_leviathan':continue   # the old frigate-class Leviathan isn't packed: the Hive Ship replaced it
     MODELS[_k]=('ship',_f);GLOW_N[_k]=0   # Brood: glow comes from their sacs and vents, not the stern rule
+# Beyond: the factions' own fighter designs, generated in code (tools/previews/beyond_hulls.py), first wave
+sys.path.insert(0,_os.path.join(_os.path.dirname(_os.path.abspath(__file__)),'previews'))
+import beyond_hulls as _BH
+DESIGN_MODELS={'dz_swift':_BH.swift,'dz_kite':_BH.kite,'dz_osprey':_BH.osprey,'dz_fang':_BH.fang,'dz_talon':_BH.talon,'dz_halberd':_BH.halberd,'dz_mote':_BH.mote,'dz_wisp':_BH.wisp,'dz_vigil':_BH.vigil}
+for _k,_f in DESIGN_MODELS.items():MODELS[_k]=('ship',(lambda f:lambda:f().out())(_f));GLOW_N[_k]=0
 for _k,_v in WORKS.items():MODELS[_k]=('struct',_v[0] if len(_v)>2 else (lambda f:lambda:comp_model(f))(_v[0]))
 FIT={'rockbase':230,'station':150,'depot':105,'forge':120,'relay':120,'yard':120,**{k:v[1] for k,v in WORKS.items()}}
 def pack():

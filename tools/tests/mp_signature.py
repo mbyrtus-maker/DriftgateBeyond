@@ -37,7 +37,7 @@ async def main():
     await C.wait_for_timeout(2500)
     await ev(C,"(()=>{selFac='varkesh';mpLaunch('varkesh','skiff');return 1})()");await C.wait_for_timeout(4000)
     # the guest docked at home in a Heavy Miner with credits
-    print('setup:',await ev(H,"(()=>{const P=S.pilots.clipid1;P.cls='dredger';P.credits=20000;P.docked='station';P.sector=FAC_HOME('varkesh');return P.faction+' '+P.cls+' '+P.sector})()"))
+    print('setup:',await ev(H,"(()=>{relInit();S.rel.varkesh.ostrova=S.rel.ostrova.varkesh=-60;Object.assign(pairOf('varkesh','ostrova'),{war:true,warT:S.T});const P=S.pilots.clipid1;P.cls='dredger';P.credits=20000;P.docked='station';P.sector=FAC_HOME('varkesh');return P.faction+' '+P.cls+' '+P.sector})()"))
     await H.wait_for_timeout(6000)
     print('guest sees:',await ev(C,"S.player.cls+' '+S.player.credits+' docked '+S.player.docked"))
     await ev(C,"(()=>{openDock();dockTab='ship';renderDock();return 1})()");await C.wait_for_timeout(500)
