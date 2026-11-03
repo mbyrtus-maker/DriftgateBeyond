@@ -8,12 +8,13 @@ def pol(ang,r,c=(.5,.5)):
     t=math.radians(ang);return (round(c[0]+r*math.cos(t),3),round(c[1]+r*math.sin(t),3))
 def sy(name,ang,r,kind,own=None):
     x,y=pol(ang,r);return (name,x,y,kind,own)
-# Deep space is the middle of the galaxy: the Bloom at its centre, an inner ring of five deep systems, and on its rim the Wrack
-# (Scrapheart Haven), two more deep systems and the three freeports. Each freeport has one gate into deep space and one into
-# open space, so any route between freeports crosses deep space.
-# Around it, a ring of twelve: the three frontiers, the three forges, and six quiet systems that are the doors to deep space.
+# Deep space is the middle of the galaxy: the Bloom at its centre, an inner ring of five deep systems, and a rim of six
+# with the Wrack (Scrapheart Haven) among them. The freeports sit just outside deep space, each in a pocket whose two gates
+# both lead into the deep-space rim: every route to a freeport crosses deep space.
+# Around that, a ring of twelve: the three frontiers, the three forges, and six quiet systems that are the doors to deep space.
 # Outside, the three cores, the relay, and more quiet space out to the corners.
-R1,R2,R3,R4=.12,.22,.34,.46
+R1,R2,RF,R3,R4=.10,.19,.28,.36,.47
+DISC=.235
 S = {
  'bl':("The Bloom",.5,.5,'hive','brood'),
  'gs':sy("Glass Shallows",270,R1,'deep'),
@@ -21,12 +22,15 @@ S = {
  'ld':sy("Lantern Deep",54,R1,'deep'),
  'ae':sy("Ashen Expanse",126,R1,'deep'),
  'ud':sy("Umbral Deep",198,R1,'deep'),
- 'ew':sy("Ember Wake",0,R2,'freeport','freeport'),
+ 'gd':sy("Gloam Deep",0,R2,'deep'),
  'mn':sy("Mournwater",60,R2,'deep'),
- 'cw':sy("Coldwater Drift",120,R2,'freeport','freeport'),
+ 'tm':sy("Thornmere",120,R2,'deep'),
  'wr':sy("The Wrack",180,R2,'den','pirate'),
- 'mw':sy("Mirrorwater",240,R2,'freeport','freeport'),
+ 'sk':sy("Sunken Reach",240,R2,'deep'),
  'br':sy("Blackwater Rift",300,R2,'deep'),
+ 'ew':sy("Ember Wake",30,RF,'freeport','freeport'),
+ 'cw':sy("Coldwater Drift",150,RF,'freeport','freeport'),
+ 'mw':sy("Mirrorwater",270,RF,'freeport','freeport'),
  'vm':sy("Sundered Marches",330,R3,'frontier','varkesh'),
  'dl':sy("Dusk Lanes",0,R3,'void'),
  'ci':sy("Cinder Reach",30,R3,'contested'),
@@ -40,15 +44,15 @@ S = {
  'ke':sy("Kestrel Drift",270,R3,'contested'),
  'bw':sy("Brinewell",300,R3,'void'),
  'vb':sy("Varkesh Hold",330,R4,'core','varkesh'),
- 'gd':sy("Gloam Shelf",0,R4,'void'),
+ 'sg':sy("Saltglass Verge",0,R4,'void'),
  'rh':sy("Rook's Hollow",30,R4,'void'),
  'ho':sy("Hollow Verge",60,R4,'hub'),
  'os':sy("Ostrova Spire",90,R4,'core','ostrova'),
- 'tm':sy("Thornmere",120,R4,'void'),
+ 'eb':sy("Ebbwater",120,R4,'void'),
  'gw':sy("Greywater Shelf",150,R4,'void'),
  'dm':sy("Driftmoor",180,R4,'void'),
  'hp':sy("Halcyon Prime",210,R4,'core','halcyon'),
- 'sk':sy("Sunken Reach",240,R4,'void'),
+ 'nv':sy("Northgap Void",240,R4,'void'),
  'sf':sy("Starless Fold",270,R4,'void'),
  'av':sy("Ashwind Void",300,R4,'void'),
  'pr':("Pale Reach",.05,.05,'void',None),
@@ -57,10 +61,11 @@ S = {
  'll':("Lastlight Shoals",.95,.95,'void',None),
 }
 L = """bl-gs bl-cd bl-ld bl-ae bl-ud gs-cd cd-ld ld-ae ae-ud ud-gs
-ew-cd cw-ae mw-gs ew-dl cw-qs mw-cv
-mn-ld wr-ud br-gs fh-mn hu-wr bw-br
+gd-cd mn-ld tm-ae wr-ud sk-gs br-gs gd-mn mn-tm tm-wr wr-sk sk-br br-gd
+ew-gd ew-mn cw-tm cw-wr mw-sk mw-br
+dl-gd fh-mn qs-tm hu-wr cv-sk bw-br
 vm-dl dl-ci ci-fh fh-of of-qs qs-sh sh-hu hu-hr hr-cv cv-ke ke-bw bw-vm
-vb-vm os-of hp-hr gd-dl gd-rh tm-qs tm-sm sk-cv sk-pr
+vb-vm os-of hp-hr sg-dl sg-rh eb-qs eb-sm nv-cv nv-pr
 rh-ci rh-ho ho-of ho-os os-ll ll-rh gw-sh gw-dm dm-hp gw-sm hp-pr sf-ke sf-av av-bw av-vb vb-ih ih-av dm-hu""".split()
 L = [tuple(e.split('-')) for e in L]
 
@@ -100,8 +105,8 @@ COL={'halcyon':'#4fd8d0','varkesh':'#ff7a3d','ostrova':'#b893ff','brood':'#9be35
 def draw(out,nb):
     fig=plt.figure(figsize=(12,12),dpi=110);ax=fig.add_axes([0,0,1,1]);fig.patch.set_facecolor('#05070d');ax.set_facecolor('#05070d')
     from matplotlib.patches import Circle
-    ax.add_patch(Circle((.5,.5),.28,facecolor='#0d1428',edgecolor='#232d45',lw=1,zorder=0))
-    ax.text(.5,.5-.268,'DEEP SPACE',ha='center',va='top',fontsize=9,color='#4a5675',zorder=0)
+    ax.add_patch(Circle((.5,.5),DISC,facecolor='#0d1428',edgecolor='#232d45',lw=1,zorder=0))
+    ax.text(.5,.5+DISC-.014,'DEEP SPACE',ha='center',va='bottom',fontsize=9,color='#4a5675',zorder=0)
     for a,b in L:
         (x1,y1),(x2,y2)=P(a),P(b);ax.plot([x1,x2],[y1,y2],color='#36435f',lw=1.6,zorder=1)
     for k,(n,x,y,kind,own) in S.items():
