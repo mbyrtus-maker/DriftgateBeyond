@@ -9543,14 +9543,15 @@ function evCeasefire(f,g){const P=pairOf(f,g),ok=weary(g,f)||((hasT(g,'Cautious'
 function evBetrayal(f,g){const P=pairOf(f,g);if(!P.betray){P.betray=S.T;relAdd(f,g,-20,'relations cooling');P.cool=S.T+240;chron(`Relations between ${FAC(f).short} and ${FAC(g).short} are cooling: ${lName(f)} recalls envoys.`,'bad',[f,g]);return}
   P.ally=0;P.betray=0;P.war=1;P.warT=S.T;S.rel[f][g]=S.rel[g][f]=-70;(leaderOf(g).grudge||{})[f]=3;S.betrayed=S.betrayed||{};S.betrayed[g]=f;chron(`${lName(f)} breaks the alliance and declares war on ${FAC(g).name}. A betrayal.`,'big',[f,g])}
 // ---- successions: the new leader's traits come from what happened to the faction
-const SUCC={killed:['Vengeful'],core:['Vengeful'],bled:['Cautious'],embargo:['Mercantile'],betrayed:['Wary'],saved:['Loyal'],conquest:['Ambitious'],brood:['Zealous'],peace:['Patient','Mercantile','Honourable'],razed:['Ruthless'],short:['Industrious'],far:['Isolationist'],neighbour:['Opportunist']};
+const LEAD_OUST={tenure:1800,grace:3600,drop:.5,minDrop:5,lost:30};
+const SUCC={ousted:['Cautious','Patient'],killed:['Vengeful'],core:['Vengeful'],bled:['Cautious'],embargo:['Mercantile'],betrayed:['Wary'],saved:['Loyal'],conquest:['Ambitious'],brood:['Zealous'],peace:['Patient','Mercantile','Honourable'],razed:['Ruthless'],short:['Industrious'],far:['Isolationist'],neighbour:['Opportunist']};
 function succession(f,cause,by){const L0=leaderOf(f);if(!L0)return;const hist=[cause];
   const n=controlCounts(),lost=Object.values(((S.loss||{})[f])||{}).reduce((a,b)=>a+b,0);if(lost>=12)hist.push('bled');if((n.brood||0)>=4)hist.push('brood');if(short(f,'plate')&&short(f,'wire'))hist.push('short');
   if(S.betrayed&&S.betrayed[f])hist.push('betrayed');if((n[f]||0)>=5)hist.push('conquest');if(!FAC_IDS.some(g=>g!==f&&(pairOf(f,g)||{}).war))hist.push('peace');
-  const pool=[];for(const h of hist)for(const t of SUCC[h]||[])if(!pool.includes(t))pool.push(t);while(pool.length<2){const t=pick(TRAITS);if(!pool.includes(t))pool.push(t)}
+  const bar=cause==='ousted'?L0.traits:[],pool=[];for(const h of hist)for(const t of SUCC[h]||[])if(!pool.includes(t)&&!bar.includes(t))pool.push(t);while(pool.length<2){const t=pick(TRAITS);if(!pool.includes(t)&&!bar.includes(t))pool.push(t)}
   const traits=[pool[0],pool.slice(1)[Math.floor(Math.random()*(pool.length-1))]];S.leadPast=S.leadPast||[];S.leadPast.push(L0.name);
   const N=leaderNew(f,traits,(L0.n||1)+1);if(by&&isPow(by)&&traits.includes('Vengeful'))N.grudge[by]=3;S.leaders[f]=N;leaderProfiles();
-  const why={killed:`${L0.name} was killed${by?' by '+(isPow(by)?FAC(by).short:by):''}`,core:`the fall of ${FAC(f).station}`,bled:'a long, losing war',betrayed:'betrayal by an ally',far:'a lost war'}[cause]||cause;
+  const why={killed:`${L0.name} was killed${by?' by '+(isPow(by)?FAC(by).short:by):''}`,core:`the fall of ${FAC(f).station}`,bled:'a long, losing war',betrayed:'betrayal by an ally',far:'a lost war',ousted:`being ousted: ${L0.ousted||'the power is failing'}`}[cause]||cause;
   chron(`${FAC(f).name}: ${N.title} ${N.name} succeeds ${L0.name} after ${why}. ${N.name} is ${traits.join(' and ')}.`,'big',[f])}
 // ---- what pilots do: a leader's traits shape how its power's AI ships fight (steps of stage 2)
 let LEADP={};
@@ -9569,6 +9570,13 @@ function relTick(){if(!S||!S.rel)return;
   // a long losing war brings a new leader
   if(Math.random()<.05)for(const f of FAC_IDS){const L=leaderOf(f);if(!L||S.T-L.since<1800)continue;const lost=Object.values((S.loss||{})[f]||{}).reduce((x,y)=>x+y,0),wars=FAC_IDS.filter(g=>g!==f&&(pairOf(f,g)||{}).war);
     if(wars.length&&lost>=14&&wars.some(g=>S.T-pairOf(f,g).warT>1800&&sysCount(g)>sysCount(f)))succession(f,'bled')}
+  // a power cut down or bleeding ships ousts its own leader (Beyond): from 30 minutes into a leader's rule, losing half of the
+  // systems it held at its best under this leader (at least 5), or 30 ships' worth of recent losses, brings a successor who
+  // shares none of the ousted leader's traits; a successor who replaced an ousted leader gets an hour before it can happen again
+  {S.lpk=S.lpk||{};const n=controlCounts();for(const f of FAC_IDS){const L=leaderOf(f);if(!L)continue;const k=L.name+L.n;const P=S.lpk[f]&&S.lpk[f].k===k?S.lpk[f]:(S.lpk[f]={k,pk:0});const h=n[f]||0;P.pk=Math.max(P.pk,h);
+    S.oustT=S.oustT||{};if(S.T-L.since<LEAD_OUST.tenure||S.T-(S.oustT[f]||-1e9)<LEAD_OUST.grace||Math.random()>=.1)continue;const lost=Object.values((S.loss||{})[f]||{}).reduce((x,y)=>x+y,0);
+    const why=P.pk-h>=LEAD_OUST.minDrop&&h<=P.pk*(1-LEAD_OUST.drop)?`${FAC(f).short} has fallen from ${P.pk} systems to ${h}`:lost>=LEAD_OUST.lost?`${FAC(f).short} has lost ship after ship`:null;
+    if(why){L.ousted=why;S.oustT[f]=S.T;succession(f,'ousted')}}}
   for(const f in S.hurt||{})for(const g in S.hurt[f])S.hurt[f][g]*=.985;
   for(const f in S.loss||{})for(const g in S.loss[f])S.loss[f][g]*=.995;
   for(const f of FAC_IDS){const G=(leaderOf(f)||{}).grudge||{};for(const g in G)G[g]*=hasT(f,'Vengeful')?.9995:.998}}
