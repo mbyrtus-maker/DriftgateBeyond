@@ -1673,3 +1673,10 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - **The port nearest you is labelled:** DOCK and its distance, then "DOCK · PRESS E" once you're in range, or NO DOCKING.
 - A base without arm ports (you set down over its hangar) shows one port above it.
 - The marks fade in over the last 800 m of that 4 km and hide while you're docking.
+
+### The free Light Miner's fit (3 Nov 2026)
+- **The user's ask:** free miners start with a mining laser, not a combat weapon.
+- The Light Miner (Wren, Pick, Glim) now comes with a **mining laser and its charge launcher** (`HULL_SLOTS.skiff`). The machine gun is gone.
+- A new pilot's mining tool is the laser, so F works the ring of a targeted rock at once; switch to charges as before.
+- It has no combat weapon now, so its guard drones do the fighting. A gun can be fitted in either slot on the Loadout.
+- Pilots who already fly one keep their current fit.

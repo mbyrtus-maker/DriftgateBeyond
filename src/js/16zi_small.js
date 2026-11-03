@@ -71,3 +71,7 @@ function riftSwap(k,srcs){const c=comp(k),s=comp('riftshard');takeFrom({riftshar
   if(!n&&!has.length)return h;h+=`<div class="h3" style="margin-top:14px">Rift Shards</div><p class="note" style="margin:0 0 6px">A Rift Shard fed into a part's upgrade leaves a random trait (most often a strength; taking the part out loses it). At a workshop, a shard also stands in for one missing component. You have ${n}.</p>`;
   for(const r of rows){const R=F.rt&&F.rt[r[0]+r[1]],q=pupQuote(c,P,`${r[0]}:${r[1]}`),nm=ITEMS[PART[r[2]]]?ITEMS[PART[r[2]]].name:r[2];if(!R&&!q)continue;
     h+=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:3px 0"><span class="note" style="margin:0;min-width:160px">${esc(nm)} · grade ${r[3]}</span>${R?`<span class="req ok">${esc(trText(R.tr))}</span>`:''}${q&&n?`<button class="btn sm" type="button" data-act="pupr" data-arg="${r[0]}:${r[1]}" ${haveIn(q.r,srcs)&&P.credits>=q.fee?'':'disabled'}>To grade ${q.t} with a Rift Shard</button>`:''}</div>`}}catch(err){console.error(err)}return h}}
+// the free Light Miner starts with a mining laser and its charge launcher, not a machine gun (user, 3 Nov 2026)
+HULL_SLOTS.skiff.w=['mlaser','charge'];
+{const o=newGame;newGame=function(){const r=o.apply(this,arguments);try{const P=S&&S.player;if(P&&P.cls==='skiff'&&fitOf(P).w.includes('mlaser'))P.mtool='mlaser'}catch(e){}return r}}
+{const o=newPilot;newPilot=function(pid){const r=o.apply(this,arguments);try{const P=S.pilots&&S.pilots[pid];if(P&&P.cls==='skiff'&&fitOf(P).w.includes('mlaser'))P.mtool='mlaser'}catch(e){}return r}}
