@@ -18,11 +18,11 @@
 ## Rules the game keeps
 - **The ledger is exact:** goods are never created or destroyed except by mining real rock; every unit moves between stores, holds, debris and wrecks. `ledger()` must stay exact (`devLedger(fn)` checks a change).
 - **Multiplayer:** the host simulates; guests send inputs. Code that acts for a guest runs on the host inside `runAs(pid,fn)`; guest dock actions arrive as `{t:'act'}` and run through `dockAction` on the host.
-- Faction balance target: the three factions about 30% each, the Brood about 10–13%, checked with a war check after any change that moves faction strength.
+- Faction balance target (Beyond, 3 Nov 2026): the Brood about 20%, the three powers about 25% each, balanced on stats with neutral leaders (traits are left to sway real galaxies), checked with a war check after any change that moves faction strength.
 
 ## Tests and checks
 - Browser tests: `tools/tests/run.sh` (quick, ~10 min) or `run.sh full` (adds the training courses); multiplayer tests take `$PWD/index.html` (see `tools/tests/README.md`). The limpet test is timing-sensitive under load.
-- War check: `PFAC=<halcyon|varkesh|ostrova|pirate> python3 tools/fastsim.py FILE GAMES HOURS TUNE_JS|- WORKERS OUT.json` (480 games, 2.2 h per side; run the four sides, ~25 min). `fastsim.py` has a hard-coded scratch directory `D=` at the top: point it at your own scratchpad and copy the page there first. Run-to-run noise is about ±2 points.
+- War check: balance on stats only: `fastsim.py` starts every leader without traits (set `LEADERS=1` to keep them). Run Beyond's with `PPORT=mw` (the player an idle contractor). Driftgate 1's form: `PFAC=<halcyon|varkesh|ostrova|pirate> python3 tools/fastsim.py FILE GAMES HOURS TUNE_JS|- WORKERS OUT.json` (480 games, 2.2 h per side; run the four sides, ~25 min). `fastsim.py` has a hard-coded scratch directory `D=` at the top: point it at your own scratchpad and copy the page there first. Run-to-run noise is about ±2 points.
 - Don't `pkill -f` with a pattern that matches your own command line (it kills the shell).
 
 ## Workflow
