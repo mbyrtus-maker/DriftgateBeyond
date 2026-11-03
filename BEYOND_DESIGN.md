@@ -1386,3 +1386,40 @@ Today each power's AI mines at its own hidden rate (Halcyon 0.53, Varkesh 1.75, 
   - At a workshop, a Rift Shard stands in for one missing component of a recipe. The rift pulls that component's makings out of the outer drift, so it only works while the drift holds them, and the shard's Riftstone goes into the drift; the ledger stays exact.
   - Fed into a part's upgrade (Loadout → Rift Shards), it leaves the part a random trait: a strength 65% of the time (one or two steps of the brand table), a one-step weakness otherwise. Taking the part out or changing hulls loses the trait.
 - **Tests:** `smallitems.py`. `intel.py` and `limpet.py` now fit a rig and a rack to their scouts.
+
+### Proposal: the graphical market, the Loadout screen and the Hangar (mockups, 3 Nov 2026, being reviewed)
+Three new screens on the "Driftgate Beyond screens" canvas (https://claude.ai/artifact/J1zRwXEc74WSmS59L2fjbP), bottom row. They replace the parked graphical-market sketch.
+- **Docked · Trade (graphical market).** Tiles grouped as Ore, Components, Weapons, Utility parts and Payload, with a filter for each.
+  - Each tile has an icon, the price, a stock meter, and a ▲ (wanted here) or ▼ (glut) mark. Your hold shows as a coloured bar.
+  - Picking a tile opens a detail panel: buy, sell and galaxy-average prices, a 30-minute price graph, a quantity slider with Buy and Sell totals, and the best places to sell from your scans.
+  - **Icons by kind (user, 3 Nov):** ore a hexagon, components a square, weapons a dart, utility parts a plus, missiles a rocket, charges an octagon.
+  - **Colours (user, 3 Nov):**
+    - Ores keep their colours.
+    - Components take the colour of the ore they use most (by raw units: Alloy Plate and Crystal Lattice Ferrite tan; Conduit, Flux Coil, Depot Frame and Calibration Matrix Cuprite copper).
+    - Weapons are reds, utility parts cyans, and payload magentas.
+    - Open question: count by value instead, which would make Crystal Lattice and Resonance Core Xenocrystal violet and Flux Coil Iridium blue.
+- **Docked · Ship → Loadout.** A top-down schematic of the hull with every weapon and utility slot labelled, its part and its grade as pips. Clicking a slot shows:
+  - its trait (a maker's, your brand's, or a Rift Shard's);
+  - the next upgrade, with component chips in red where you're short, the fee, and Upgrade or Upgrade with a Rift Shard;
+  - Take out → hangar or hold;
+  - Fit instead: parts that fit, tagged with where they are (hangar, hold, or the market with its price).
+
+  **Systems** (Drive, Reactor, Shield, Armour) are clickable too, and show:
+  - the tier and what the next one gives (e.g. top speed 236 → 262 m/s);
+  - the components it needs, with what you have;
+  - a "Missing:" line;
+  - Upgrade, greyed out until you have everything;
+  - Buy what's missing, with its total, linking to the market.
+- **Docked · Ship → Hangar** (the per-station Vault, renamed and given a sub-tab). It holds your cargo and the ships you aren't flying, and has three columns:
+  - **Hangar:** berthed ships as cards (class, slots fitted, tonnes aboard, hull %) above the cargo list;
+  - **Hold:** with a capacity bar;
+  - **Ship:** the slots of the ship you're flying.
+
+  What you can do there:
+  - Move 1, 10 or all between hangar and hold.
+  - **Fit to ship** puts a part in a slot and sends whatever was there to the hangar.
+  - Taking a part out returns its upgrade components with it.
+  - **Fly this ship** swaps ships: each keeps its own parts and hold, and the one you were flying is berthed.
+  - **Sell hull** takes the parts and hold off into the hangar first.
+  - Free hulls are never berthed.
+  - Proposal: 2 berths at a freeport or a power's station, more at your own Depot or Station with its hangar building.
