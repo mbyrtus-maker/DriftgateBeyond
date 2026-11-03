@@ -1174,3 +1174,20 @@ Driftgate 1 v255 removed its frigates, but their code paths survive everywhere a
   14. Wrap-up.
 - The practice crate's goods are added to the practice galaxy's books, so its ledger stays exact.
 - **Tests:** `train_combat.py` (in the quick suite) walks all 14 steps through the game's own actions, with the ledger checked.
+
+### Training rewrite: section 4 (2 Nov 2026)
+- **Section 4, Mining** (agreed with the user 2 Nov 2026), 13 steps, in `16v_training.js`. It puts you in a Medium Miner with its stock tools: a charge launcher, a mining laser and a gun, and the landing kit. The hull swap goes through the practice galaxy's books, so the ledger stays exact.
+  1. Launch.
+  2. Target a rock.
+  3. Reading a rock: its ring, fault points and rescanning.
+  4. Cut 3 ore with the mining laser held on the ring.
+  5. Switch to charges (and why charges crack the ring).
+  6. Fire a charge onto a fault point.
+  7. Back off and detonate (cancelling explained).
+  8. Scoop 3 ore from the chunks.
+  9. The ores and where they lie (Aurorite deep, Vantium contested, Riftstone and its contraband status), weight and handling, bigger miners.
+  10. Dock at the freeport.
+  11. Deliver half your ore to a request set up there (and why supply contracts want your own ore).
+  12. Sell the rest at the Market.
+  13. Wrap-up.
+- **Tests:** `train_mining.py` (in the quick suite) walks all 13 steps with the game's own controls (the laser held with F on the ring, a charge fired, detonated and scooped), with the ledger checked.
