@@ -1292,3 +1292,30 @@ Today each power's AI mines at its own hidden rate (Halcyon 0.53, Varkesh 1.75, 
   - whoever broke it takes a quarter of every good in the Unbound's stores and a quarter of their treasury: a power into its own stores and treasury, a pilot into the vault where they last docked and their credits. Everything only moves, so the ledger stays exact.
 - It comes back lit at half hull, with everyone told.
 - **Tests:** `galaxy.py` covers the knock-out (the haven at 1 hull, a quarter of the plate and credits moved, the market and rumours shut), the reopening at half hull, and the ledger.
+
+### The Dread Pirate: as built (3 Nov 2026)
+- **New file `16zc_dread.js`.** The Unbound are led by the Dread Pirate (the title passes with the hat). Each galaxy rolls a name (Marrow, Black Agnes, Saltjaw, Iron Nell…) and two traits from the pirate table: Bloodthirsty, Greedy, Cunning, Showman, Superstitious, Gallant, Paranoid, Kingmaker. The war check starts it without traits, like the powers' leaders.
+- **Its ship.** Aboard the Ravager while the Ravager is afloat (going down with it if it's sunk); otherwise a Corsair with three times the hull, twice the shields and an ace escort, moving every few minutes among the Wrack and nearby systems (a Paranoid captain stays within two jumps, a Superstitious one keeps out of Brood space). Met in a system, it's named on radar (☠ the Dread Pirate …).
+- **Killed.** Every power pays its killer 3,000 cr (9,000 in all). It's back with a new captain after 15 minutes. The successor's traits follow what happened: killed by a power → Bloodthirsty, with a grudge against that power; killed by a contractor → Paranoid, with a 2,500 cr bounty on that pilot; Scrapheart looted → Paranoid or Cunning; a rich treasury → Greedy or Showman; a power within four systems of winning → Kingmaker (these last two are checked now and then after an hour in the hat).
+- **Pilots fly like it:** its traits set the Unbound's leader profile (how far they chase, whether they break off, whether they spare a beaten ship), the same way the powers' leaders set theirs.
+- **Where the raids go:** a raiding season, a grudge or (for a Kingmaker) the leading power steers the Unbound capital toward that power's systems; Superstitious captains won't go into Brood space; Paranoid ones stay near home; lying low sends everything home.
+- **Events**, at most one every 4–8 minutes, chosen among those whose trigger holds and weighted three to one toward its traits (none while Scrapheart is knocked out):
+  - *Raiding season* on one power's lanes for 20 minutes.
+  - *Tribute demand*: a power pays 1,500 cr (more likely if its leader is Mercantile or Cautious) or gets a raiding season.
+  - *Bounty on a pilot* who has sunk six or more Unbound ships: Unbound ships go for that pilot first, and the Allegiance tab tells you.
+  - *Hoard sale*: Scrapheart's market 30% cheaper for 15 minutes.
+  - *Open house* at the Rusty Tankard: new rumours pay 30% more for 15 minutes.
+  - *Lie low* when the Brood hold six or more systems or the Ravager is badly hurt: Unbound wings turn up a third as often for 15 minutes.
+  - *Ravager raid* on a battered power depot within three jumps.
+  - Not built yet: ransoms, a lair spree, and the "Unbound raiders lost to the Brood", "failed raids" and "bargains kept" successions.
+- **Where you see it:** an Unbound row under the powers' leaders on the Allegiance tab (name, traits, whether it's flying or aboard the Ravager); a hunt job at every power's station (9,000 cr, its system shown if that power's sensors cover it); word of its whereabouts for 300 cr at Scrapheart.
+- Everything moves credits between wallets and treasuries; no goods are made. **Test:** `dread.py` (roll, spawn, killed by you with the bounties and a Paranoid successor, aboard and sunk with the Ravager, events, hoard prices, the hunt job, the rumour, the ledger).
+
+### When your base falls: capture or destroy (3 Nov 2026)
+- **New file `16zd_fall.js`.** However a power breaks one of your Depots or Stations (assault ships, a siege, or guns alone), its leader chooses:
+  - **Capture** (a Station 85%, a Depot 55% of the time to start with; +20 points for an Ambitious, Mercantile, Industrious or Opportunist leader, −15 for a Vengeful one, −30 if the base is away from the power's own space; a Ruthless leader always destroys). The base flies the power's flag at 75–90% hull with its buildings and modules and its store, less up to a quarter lost as debris in the fighting. A captured Station holds the system for that power. Your crews leave and your market orders lapse; your vault there stays yours. You're told, and the dock says it was captured from a contractor.
+  - **Destroy:** Driftgate 1's raze (its stores spill and drift).
+- **Taking it back:** break a captured base's hull yourself (or land assault ships on it) and it's yours again, with its store, at a third of its hull.
+- **Lairs:** a power that wears one down impounds it (half the time to start with, the same leader leanings): the stash, less up to a quarter, goes into its stores and the Lair is shut. Otherwise it's destroyed and the stash drifts. An impounded Lair can't be taken back.
+- The Brood and the Unbound always destroy. Goods only move, so the ledger stays exact.
+- **Test:** `fall.py` (a Station captured with its building and store, holding the system for Varkesh, crews gone; taken back; destroyed; a Lair impounded; the ledger).

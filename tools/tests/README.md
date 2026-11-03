@@ -34,6 +34,8 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 | train_mining.py | Beyond training section 4: Mining, all 13 steps: laser on the ring, a charge fired and detonated, chunks scooped, ore delivered and sold, ledger exact |
 | crews.py | Beyond: AI crews as ships: miner, hauler and guard flying their jobs, a job change, laid up, a crew ship lost, none elsewhere, ledger exact |
 | destroyers.py | Beyond: destroyers and the Ravager: laid down and launched, assault ships, model and mounts, the charged gun (shields down), the Gullet beam, your level 4 Station, no sloops, ledger exact |
+| dread.py | Beyond 12c: the Dread Pirate: rolled traits, Allegiance row, spawned with an escort, killed by you (bounties from every power, Paranoid successor with a bounty on you), aboard and sunk with the Ravager, events, hoard-sale prices, the hunt job, the rumour, ledger exact |
+| fall.py | Beyond: when your base falls: a Station captured (hull, buildings, store, holds the system for the power, crews leave), taken back, destroyed; a Lair impounded; ledger exact |
 | start_screen.py | the Training button stands out without moving the other buttons |
 | keys.py | key list, rebinding with swap, saved bindings, the keys strip |
 | brood_ui.py | Brood HUD chip, alerts at 5/6/7 systems, map meter |

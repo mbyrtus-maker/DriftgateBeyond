@@ -43,5 +43,7 @@ js/16y_capitals.js
 js/16z_models.js
 js/16za_launder.js
 js/16zb_haven.js
+js/16zc_dread.js
+js/16zd_fall.js
 js/17_main.js
 end.html
