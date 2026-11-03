@@ -1751,3 +1751,14 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - a fitted beacon for the power that already holds the outpost: it's already theirs;
   - no beacon at all: buy one and fit it.
 - **The Ship tab opens on the Loadout** (user, 3 Nov). Loadout leads the Ship group (Loadout, Shipyard, Hangar, Refits), and the Ship tab always opens there, whatever sub-tab you used last.
+
+### Docking ports get their art; turrets keep off them (3 Nov 2026)
+- **The user's report:** docking ports needed their art, and a docking at Ember Wake seemed to go into a turret.
+- **Art** (`16zw_ports.js`): every port of a station, depot or outpost now has a docking collar in the world:
+  - a hull-grey ring with a dark lip;
+  - a green lit ring inside it;
+  - four amber guide lights round it;
+  - two lines of green approach lights running 70 m out from it.
+
+  It's tinted red where you may not dock. The flight markers stay as well.
+- **Turrets:** a station's turrets went on the outermost hull point in each turret's direction, which on the freeports is often a docking arm's head. They now take the outermost point at least 30% of the station's size away from every port, so no turret sits on a docking port.
