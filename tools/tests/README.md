@@ -42,6 +42,7 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 | zoom.py | Beyond: the strategic map zoomed into a system (button, wheel, the Galaxy box, drawn full size), a capital on patrol sweeping its route, one escorting you, Guard here clearing both |
 | smallitems.py | Beyond: rigs and racks on scouts only, flips and limpets by grade and restocked on docking, a comet sold to the Compact, embargo contraband by origin, a Rift Shard standing in and leaving a trait, ledger exact |
 | dev_beyond.py | Beyond: the developer panel without a faction: all powers as enemy sides, the Beyond tools and the old ones, ledger exact after each |
+| company2.py | Beyond screens pass: the minimal Company screen (Holdings list and detail, Send a guard, buildings; every tab in simple and Full view; hire and post from the Jobs forms; market trade switch; relations pair; Black market assign); ledger exact |
 | start_screen.py | the Training button stands out without moving the other buttons |
 | keys.py | key list, rebinding with swap, saved bindings, the keys strip |
 | brood_ui.py | Brood HUD chip, alerts at 5/6/7 systems, map meter |

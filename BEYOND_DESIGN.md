@@ -1484,7 +1484,57 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - Fill hold, Sell all, Store all and Load to hold;
   - the best places to sell, from your scans.
 
-  "Table" switches back to the old list, with every button it had (Claim Beacons included). The makers' works and salvage sales stay underneath.
+  "Table" switches back to the old list, with every button it had. Claim Beacons, where sold, also have their own line under the tiles (Buy 1, Load, the hull fix).. The makers' works and salvage sales stay underneath.
+
+### Screens pass: as built, part 2: the Company screen (3 Nov 2026)
+- **Files:** `16zo_company2.js` (the header and Holdings), `16zp_company3.js` (Allegiance, Economy, Jobs, Black market). CSS `.co*` in `page.html`.
+- **Every tab is a list on the left and the picked row's detail on the right**, with a few views across the top. **Full view** on every tab shows the old screen with everything on it, so no control is lost (checked against the old screens).
+- **Header:** the company's name (your brand's, or your faction's once declared), then credits · Rating · upkeep an hour · bases. The tab once called Post jobs is now **Jobs**.
+- **Holdings:**
+  - Alert lines appear only when they apply: you can declare a faction; a base is under a strike, with **Send a guard**. Send a guard sets one of that depot's crews to guarding, or, if it has none, posts a Guard job at Medium pay.
+  - The rows show your Stations, Depots and Lairs: icon, name, kind and level, level pips, and one status (holds the system, market open, under threat, damaged, hidden, found).
+  - The footer shows systems held, AI pilots, capitals, + Build a Lair here (or why not), and + Build a Depot here.
+  - The detail panel holds a base's controls:
+    - **Lair:** To level 2, Upgrade to a Depot.
+    - **Depot:** modules, Upgrade to a Station with cost chips.
+    - **Station:** the five building plots, the next building with cost chips and a button per building, capital ships (Escort, Destroyer, Carrier) with their slips.
+    - Links go to Economy (with that base picked) and to Jobs.
+  - Your brand stays underneath.
+- **Allegiance:**
+  - Rating (with what it opens), your faction, the declare banner and proposals (Accept / Pay, Decline / Refuse) sit on top.
+  - Views: **Your standing** (the three powers, the Compact and the Unbound: band, bar, leader, heat if not Cool), **Between the powers** (the grid; pick a pair), **Chronicle**.
+  - A power's detail shows: what your standing opens, the next band up and down, heat, its leader (traits, where it is), its perks, its relations with the other two, and **what moved the picked pair** (the last entries of the relations log).
+  - The Unbound's detail shows the Dread Pirate, its traits, its bounty on you and its kills.
+- **Economy:**
+  - Views: Hour or 3 hours.
+  - Rows: the company and each base, with net, a spark of the period in twelve steps, the trend against the period before, and the latest reason. A line flags the worst losing base.
+  - Detail: the lines (sales, wages, running costs and so on), the latest five entries, and **your market at that base** (Sell / Buy / Off per good, as before).
+  - The mockup's company credit history and goods-used panel aren't built: the game keeps no such record yet.
+- **Jobs:**
+  - Views: All, Your pilots (each crew: job, base, wage), Posted out (each posted job: state, fee).
+  - **+ Hire a pilot** opens a form: base, then hull with price.
+  - **+ Post a job** opens a form: What, Where (which depot), the good and amount, Pay (Low, Medium, Fast with fee and wait), Post.
+  - A crew's detail has its job (Mining, Hauling, Guarding, Idle) and Let go. A posted job's detail has its status, fee and Withdraw.
+  - The mockup's "Faction jobs" view isn't here: the powers' jobs stay on the docked Jobs board, since they're offered at a station.
+- **Black market:**
+  - Your heat with each power sits on top.
+  - Views: Offers and Runs, with a heat filter and **+ Request work** (fixers, quiet buyers, the Tankard once met).
+  - An offer's detail: heat if caught (and with whom), pay, from and to, then **who runs it**: you, each crew with its hold and its chance of being caught, or a Compact contractor (your 25% cut). Deals show Buy, Sell or Set course.
+  - A run's detail: its progress or result, and the pay.
+- **Tests:** `company2.py` is new. `blackmarket.py`, `declare.py` and `stations.py` read the new screens.
+
+### Screens pass: the docked Jobs board (3 Nov 2026)
+- **File:** `16zq_jobs2.js`. It shows the same jobs, filters, sort and buttons as before, drawn quietly.
+- **Filters and sort:** the kinds are words with counts (All, Haul, Mine, Fight, Scout), with "Sort: Pay ▾" (or Distance) beside them.
+- **Each row:** an icon for its kind (square haul, hexagon mine, dart fight, triangle scout, shield campaign) in the issuer's colour; the title; the issuer and the job's line; where (with ✓ yours); and the pay.
+- **The panel:**
+  - kind and where, the title;
+  - who issues it and your standing with them;
+  - Where, Pays, Paid by;
+  - the job's own notes and buttons.
+- **At a freeport,** a line says whose jobs you can't see because your standing is too low.
+- **What stays:** the intel bar above and the convoy section below.
+- **Tests:** `jobs.py`, `ship.py` and `hull_tags.py` read the new classes (`.jrow2`, `.jdet2`).
 
 ### The developer panel without a faction (Ctrl+Alt+D, 3 Nov 2026)
 - **New file `16zn_dev.js`.**

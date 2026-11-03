@@ -25,7 +25,7 @@ async def main():
     print('escort',await ev("""(()=>{const P=S.player,R=S.stations[P.sector];devLedger(()=>{inv.addAll(R.stock,escCost('player'))});const m=capBuild(P,R,'esc');const ev=S.events.find(e=>e.type==='escbuild'&&e.att===yardKeyOf(R));const n0=S.frigates.filter(fMine).length;S.T=ev.until+1;capitalTick();
       const mine=S.frigates.filter(fMine);return JSON.stringify({msg:m,launched:mine.length-n0,ship:mine.map(t=>t.name+' '+t.cls+' '+t.side+' @'+t.sector),carrier:capBuild(P,R,'car')})})()"""))
     print('ledger',await ev(LED))
-    print('holdings',await ev("(()=>{$('company').hidden=false;coTab='holdings';renderCompany();const t=$('coBody').innerText;const i=t.search(/stations/i);return t.slice(i,i+300).replace(/\\n/g,' | ')})()"))
+    print('holdings',await ev("(()=>{$('company').hidden=false;coTab='holdings';renderCompany();return $('coBody').innerText.slice(0,300).replace(/\\n/g,' | ')})()"))
     await ev("(()=>{$('company').hidden=true;if(S.player.docked)undock();return 1})()");await pg.wait_for_timeout(20000)
     print('after flight',await ev("JSON.stringify({T:Math.round(S.T)})"),await ev(LED))
     print('errors',errs[:4]);await b.close()

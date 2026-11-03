@@ -22,7 +22,7 @@ async def main():
     print('truce on the leader',await ev("""(()=>{const keep=sectorOwner;let fake=0;sectorOwner=function(id){if(fake<VIC_NEED&&!DEF[id].home&&!FREEPORTS.some(f=>f.sid===id)&&id!=='wr'&&id!=='bl'){return 'player'}return keep.apply(this,arguments)};const n=controlCounts();S.coal=null;coalTick();const C=S.coal;sectorOwner=keep;const h=hostile('varkesh','player');S.coal=null;return JSON.stringify({playerSystems:n.player,coal:C&&{lead:C.lead,mem:C.mem},hostile:h})})()"""))
     print('proposals',await ev("""(()=>{const P=S.player;P.stand.halcyon=50;P.stand.varkesh=-40;S.propT={};declTick();const L=(P.props||[]).map(x=>x.f+':'+x.k);const a=P.props.find(x=>x.k==='ally'),d=P.props.find(x=>x.k==='demand');const r1=a?propAnswer(P,a.id,true):'';const r2=d?propAnswer(P,d.id,false):'';return JSON.stringify({props:L,ally:r1,demand:r2,allied:P.allied,hostileVarkesh:hostile('varkesh','player')})})()"""))
     print('ledger',await ev(LED))
-    print('tab',await ev("(()=>{$('company').hidden=false;coTab='allegiance';renderCompany();const t=$('coBody').innerText;const i=t.search(/your faction/i);return t.slice(i,i+200).replace(/\\n/g,' | ')})()"))
+    print('tab',await ev("(()=>{$('company').hidden=false;coTab='allegiance';renderCompany();return $('coBody').innerText.slice(0,260).replace(/\\n/g,' | ')})()"))
     print('loses its station',await ev("""(()=>{const P=S.player,R=_R;devLedger(()=>{delete S.stations[R.sid]});declTick();return JSON.stringify({decl:P.decl})})()"""))
     print('brood ramp',await ev("JSON.stringify([1,3,5,8,12,15].map(n=>n+':'+broodK(n).toFixed(2)))"))
     print('brood now',await ev("(()=>{broodRamp();return JSON.stringify({n:controlCounts().brood||0,k:S.broodK,brOff:+BAL.brOff.toFixed(3),hives:BAL.brLevT<1e9})})()"))
