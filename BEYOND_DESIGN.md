@@ -1427,7 +1427,7 @@ Three new screens on the "Driftgate Beyond screens" canvas (https://claude.ai/ar
 ### War check after the 3 Nov features (neutral leaders, 600 galaxies, 16 h)
 Varkesh 28%, Brood 24%, Ostrova 24%, Halcyon 23%, nobody 1%. Before these features it was Ostrova 28, Halcyon 27, Varkesh 24, Brood 20. The spread is a little wider than run-to-run noise (about ±2 to 3 points); the Brood are 4 points over the 20% target. No retune yet.
 - **Retune (user, 3 Nov):** ease Varkesh's edge in unwatched battles a little: `FACTIONS.varkesh.tough` 1.14 → 1.10. War check (neutral leaders, 600 galaxies, 16 h): Halcyon 30%, Ostrova 25%, Varkesh 23%, Brood 21%, nobody 1%. Varkesh fell 5 points and the Brood 3; Halcyon rose 7, more than the change explains on its own, so part of that is run-to-run noise.
-- **Second step (user, 3 Nov):** split the difference: `tough` 1.12, and cut Halcyon's Trade Charter if Halcyon stays high. War check pending.
+- **Second step (user, 3 Nov):** split the difference: `tough` 1.12, and cut Halcyon's Trade Charter if Halcyon stays high. War check (neutral leaders, 600 galaxies, 16 h): **Ostrova 26%, Varkesh 26%, Halcyon 25%, Brood 23%, nobody 1%**. The three powers are level, so the Trade Charter stays as it is. The Brood are 3 points over their 20%, near the edge of run-to-run noise.
 
 ### Proposal: the minimal pass over every screen (mockups, 3 Nov 2026, being reviewed)
 The canvas's "Minimal pass" rows hold a minimal version of every screen; the originals stay beside them.
@@ -1609,3 +1609,25 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - **The map's side panel** shows any contractor base's fees.
 - **Ledger:** only credits move: from the powers' and the Compact's treasuries to you, as trade already does.
 - **Not yet:** other players docking at your base in multiplayer. A visitor's view of someone else's base (its market at the owner's prices, repairs at the owner's services fee, the docking fee as you dock) doesn't exist yet; until it does, the fees reach other players only through the AI traffic above.
+
+### The cargo scanner (agreed 3 Nov 2026)
+- **The user's choices:**
+  - Every Unbound hull has one built in; anyone else fits it as a utility part.
+  - The reading is rough at once and exact once the scan completes.
+  - The scanned ship notices, with consequences.
+- **The part:** Cargo scanner (`pt_cscan`), made from a Copper Wire and a Flux Coil. Every freeport stocks three in a new galaxy and Scrapheart three.
+  - **Unbound hulls** scan at grade 1 without it, or at the fitted part's grade if better.
+  - **Range:** 1,200 m, plus 150 m a grade.
+  - **Scan time:** 4 s, half a second less a grade (at least 2 s).
+- **Using it:** target a ship within range; the scan runs while you hold it in range (moving out pauses it, a new target starts again).
+  - **At once:** the kinds of goods (ore, components, parts, payload, contraband), roughly how many tonnes, and roughly what they're worth.
+  - **When the scan completes:** the exact manifest, each good with its icon and tonnes, and its value.
+  - Both show in the target panel.
+  - **What it reads:** a freighter's or trader's hold, a capital's store, a pilot's hold.
+  - **Hidden cargo containers** keep their share out of every reading (the contraband first), as they do from customs.
+  - Each ship's reading stays with it while it's in the system.
+- **Noticing:**
+  - **Pilots** (other players) are warned that someone is scanning their cargo.
+  - **AI freighters, traders and miners** notice half the time; one that notices breaks off and runs at full burn.
+  - **Heat:** completing a scan of a power's ship inside that power's own space adds a little heat with it (+6). Elsewhere scanning is nobody's business.
+- **Not yet:** guests in multiplayer, whose game doesn't hold other ships' cargo; their scanner shows nothing until the host relays readings.
