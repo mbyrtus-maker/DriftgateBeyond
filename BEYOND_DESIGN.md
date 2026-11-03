@@ -674,7 +674,7 @@ Today one field, the pilot's `faction`, does two jobs: it picks the **hull desig
 
 **Tests:** about 12 browser tests assume a faction start (jobs, hulls, ships, limpets, contacts, docks, soak, haul rates, the five multiplayer tests). Each gets a one-line setup that swears the test pilot to Halcyon where it tests faction behaviour; new tests cover standing bands, docking by standing, bounty payers and the freeport start. The fast simulator's `PFAC` becomes `PPORT` (mw, cw or ew).
 
-**War check:** stage 1 doesn't change how the powers fight each other, so the AI-only war should be unchanged; run the war check once to prove it (Driftgate 1's target until stage 2).
+**War check:** stage 1 doesn't change how the powers fight each other. **Beyond's balance targets are not set yet** (2 Nov 2026): the faction and Brood shares get decided later, so war checks are not run against Driftgate 1's percentages for now.
 
 ### Stage 1: as built (2 Nov 2026)
 - **New file `02b_standing.js`** holds the standing model: `P.stand` (Halcyon, Varkesh, Ostrova and the Compact, −100..100), `P.sworn` (null for a contractor), `P.home` (the freeport), `P.job` (`{by, kind, id}`), and the helpers `standOf`, `standAdd`, `standBand`/`standName`, `pilotHostile`, `tradeOK`, `escortOK`, `intelSide`, `jobIssuers`, `bountyPayer`, `weSide`, `containPayer`, `helpFac`, `pilotHome`, `standHit`, `standWork`, `standDrift`. Tunables in `STAND`.
