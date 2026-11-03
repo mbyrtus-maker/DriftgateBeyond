@@ -1359,3 +1359,12 @@ Today each power's AI mines at its own hidden rate (Halcyon 0.53, Varkesh 1.75, 
 - **Built at your Depot's or Station's workshop,** a standard part comes out as your brand's ("Kestrel Works machine gun"), with your trait, and sells on your market like any maker's. A Lair's workshop and other stations' still build standard parts. Fitted, a brand part works through the makers' trait code (stage 7), so a brand is a shape and not a free gain.
 - **Items:** four fixed brand slots per galaxy (one for each pilot), `bp<N>_<kind>`, with the standard part's recipe, so the ledger is untouched. Their name and trait are read live from `S.brands`.
 - **Test:** `brand.py`.
+
+### The strategic map zooms in; escort and patrol orders (3 Nov 2026)
+- **New file `16zh_zoom.js`.** The galaxy map (M) **zooms into the selected system**: the whole map becomes its sector view, live when the system is loaded and from your intel otherwise. Your capitals, your crews, you, any leader or the Dread Pirate there, and the station are named. Zoom in with the side panel's **Zoom in** button, a double click on a system or the mouse wheel. Zoom out the same way, or with the **◀ Galaxy** box.
+- **Two new orders for your capital ships**, under Patrols and escorts in the side panel:
+  - **Patrol:** it sweeps the selected system and its neighbours (not the powers' home systems, the freeports or the Wrack), two minutes in each, round and round.
+  - **Escort me:** it follows you from system to system (in multiplayer, whoever gave the order).
+  - Guard here and Come here clear either.
+- **Fix:** a contractor's capitals now take their owner's own yard as their base. The base lookup assumed a sworn pilot, and an unsworn pilot's capital broke the capital tick.
+- **Test:** `zoom.py`.
