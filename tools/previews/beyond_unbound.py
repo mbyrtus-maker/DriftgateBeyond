@@ -169,7 +169,30 @@ def ravager():
     spikes(M,[(.16,-.1,2.25),(-.16,-.1,2.25),(.25,.05,2.0),(-.25,.05,2.0)],(0,0,1),.25,.04)
     for c,n in (((.2,.36,.3),(0,1,0)),((-.3,.32,-.5),(-.4,1,0)),((.35,-.2,1.3),(.5,-1,0)),((-.35,.1,-2.0),(-1,.3,0))):patch(M,c,.22,.4,n)
     lights(M,[(.2,-.15,2.0),(-.2,-.15,2.0)],.04)
+    # every capital role in one hull (2 Nov 2026): a ventral hangar for its small plundered wing, and two boarding pinnaces
+    abox(M,(0,-.38,.15),(.56,.2,1.15),DARK,(.85,.9),.72)                                                              # Varkesh hangar keel
+    weld(M,-.42,at(HEX(.29,.11),0,-.38));weld(M,.72,at(HEX(.25,.1),0,-.38))
+    plate(M,[(-.17,-.487,-.3),(.17,-.487,-.3),(.17,-.487,.5),(-.17,-.487,.5)],.004,DARK,.22)                          # open bay doors
+    for x in (-.19,.19):plate(M,[(x-.012,-.49,-.32),(x+.012,-.49,-.32),(x+.012,-.49,.52),(x-.012,-.49,.52)],.006,ACC,.95)
+    for x in (-.19,.19):
+        for z in (-.32,.52):M.blob((x,-.495,z),.022,WIN,sub=1,noise=0)
+    for x in (-.24,.24):plate(M,[(x,-.47,-.28),(x*1.55,-.6,-.28),(x*1.55,-.6,.48),(x,-.47,.48)],.012,MID,.8)       # bay doors hinged open
+    for x in (-.1,0,.1):M.blob((x,-.47,.1),.03,WIN,sub=1,noise=0)
+    for side in (-1,1):pinnace(M,(side*.78,-.02,-1.2),side)
     return finish(M,4.0,1.0)
+def pinnace(M,c,side,k=1.6):
+    # a boarding pinnace clamped to the Ravager's stern: a small Varkesh wedge in sand plating, a Halcyon canopy,
+    # grapple claws forward, held off the hull on two clamp arms
+    x,y,z=c
+    loft(M,[(z+k*a,at(SMH(k*w,k*h),x,y)) for a,w,h in ((-.3,.08,.06),(-.22,.1,.075),(-.02,.13,.09),(.16,.1,.07),(.3,.03,.03))],smh_role)
+    M.blob((x,y+k*.07,z+k*.03),k*.045,GLASS,sub=1,squash=(1,.7,1.6),noise=0)
+    for dx in (-.05,.05):tube(M,[(x+k*dx,y-k*.03,z+k*.17),(x+k*dx*1.8,y-k*.05,z+k*.4)],[k*.014,k*.005],ACC,.95,4,cap0=True,cap1=False)
+    M.vent((x,y,z-k*.31),k*.045)
+    for dz in (-.12,.1):
+        tube(M,[(x-side*k*.1,y,z+k*dz),(x-side*.36,y,z+k*dz)],[.025,.025],DARK,.85,5)
+        abox(M,(x-side*.33,y,z+k*dz),(.08,.08,.08),ACC,(1,1),.9)
+    weld(M,z-k*.02,at(SMH(k*.13,k*.09),x,y))
+    lights(M,[(x+side*k*.11,y,z-k*.05)],.02)
 
 UNBOUND=[('pirate','The Unbound',[('Raider','Light',raider),('Skiff','Scout',skiff),('Corsair','Medium',corsair)]),
-         ('pirate','The Unbound',[('Plunderer','Heavy (hold)',plunderer),('Wrecker','Bomber',wrecker),('Ravager','Capital (destroyer class)',ravager)])]
+         ('pirate','The Unbound',[('Plunderer','Heavy (hold)',plunderer),('Wrecker','Bomber',wrecker),('Ravager','Capital (every role)',ravager)])]

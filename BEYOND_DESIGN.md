@@ -157,6 +157,8 @@ Player scouting comes back in a different form: what you find and do is intel, a
 
 - **Scout hulls return,** not as a starter: each faction designs a Scout and an Advanced Scout, unlocked by Rating. Only scout hulls carry beacon devices and limpet racks, as only mining hulls carry mining gear.
 - **Beacon device.** Load a beacon device (payload, one use) and flip a sector's beacon to the faction **you choose**. That faction pays you a fee and you gain standing with it; you lose standing with the faction you flipped it from. Choosing who to flip a beacon to is how you court a faction, or sell a sector to its rival.
+- **Claim Beacons for any faction** (decided 2 Nov 2026). Driftgate 1's Claim Beacon (12 t of cargo; carry it into an unclaimed outpost's ring, or a breached depot, and hold there to claim it) is now an item you buy **for any faction you choose**: at a power's station for that power, at a freeport for any power, and, once you own a Depot, for your own company. The beacon claims for the faction it was bought for, whoever carries it. Claiming moves standing like a beacon flip: up with the faction you claimed for, down with the one that held it. As in Driftgate 1 only combat hulls can claim, and a beacon bought for credits is built from that station's plate and conduit, so the ledger stays exact.
+- **Claim jobs.** Powers (and later player factions) post jobs to **claim a depot or outpost for them**: carry their beacon in, break or slip past what guards it, and hold the ring. Paid by the issuer, often with a war bonus, and sometimes posted as deniable proxy work (11c) when a power wants ground taken without being seen to take it.
 - **Hired intel work.** Factions hire you to **ping a rival's capital ships** (find and mark them) or **place a limpet** on a target, as in Driftgate 1 (a limpeted target is hit harder by the side that ordered it).
 - **Discoveries.** Find and sell **comets, derelict cargo and wreckage from anomalies**. Sell the find as intel to a faction or the Compact, or salvage it yourself. (Proposal: finding them needs a scanner, which any hull can fit in a utility slot; scout hulls find them farthest out.)
 - **Anomalies move out beyond the gates.** They sit far out past the gate ring, away from the lanes, so finding them means flying out into the empty edge of a system.
@@ -209,7 +211,7 @@ Players have several things to spend money and materials on, in this order, each
 - **Hidden** until a scout of a hostile power comes within range (AI scouts find Lairs, as in Driftgate 1).
 - **Level 1:** stash (200 t), repairs and rearming. **Lie low** (heat cools faster while you are docked) and **launder** stolen goods in the stash (section 6b).
 - **Level 2:** your own workshop (components, parts, upgrades and payload with no fee), a forge (lattice, core), a bigger stash, and a spare berth to keep a second ship.
-- One Lair per system.
+- **Up to four Lairs per company** (decided 2 Nov 2026), anywhere on the map. **A system holds one Lair per player or faction:** several companies (and the Unbound) can each have a Lair hidden in the same system, but no one can have two there.
 
 #### Depot
 - **Building:** upgrade a Lair in place, or build fresh (proposal: 2 Depot Frames, as Driftgate 1's `DEPOT_COST`). Visible on every map, with a market.
@@ -257,7 +259,7 @@ These reuse what Driftgate 1 has where they can: the station's task tabs, the Jo
 - **One new Company screen** holds, in this order, **Allegiance** (it opens there), **Holdings, Economy, Post jobs, Black market**, and a **read-only Faction jobs** tab so you can browse work in flight. It opens anywhere, in flight or docked, with its own key (proposal: **0**, since every letter is taken) and a **Company** button on the HUD beside Map, and works like the galaxy map: a full screen over a running game, closed with Esc.
 - **The Strategic map grows out of the galaxy map** (still M): click a sector to zoom into a live view of it, with your bases, your AI ships and the threats there, and give your AI orders (guard, mine here, escort, patrol), as the capital bridge's Strategic console already does for one ship.
 - **Faction jobs replace the dock's Jobs tab,** where you sign on; the Company screen's copy is for browsing.
-- **The title screen offers:** the freeport and role cards (in place of the faction cards), the **Legend start package** (spend start points on your unlocked perks), and keeps **Training** and the **Leaderboard**. The company's name and colour are not chosen there.
+- **The title screen offers:** the freeport and role cards (in place of the faction cards), the **Legend start package** (spend start points on your unlocked perks), and keeps **Training** and the **Leaderboard**, which ranks pilots by **Legend level** (decided 2 Nov 2026). The company's name and colour are not chosen there.
 - **Mockups: approved (2 Nov 2026), with the tab order above, the Light Hauler's drones, posted jobs open to other factions' pilots, bidding, the per-base credit trend, the Black market tab, and the Allegiance tab without numbers.** the Design canvas "Driftgate Beyond screens" (https://claude.ai/artifact/J1zRwXEc74WSmS59L2fjbP) holds seven screens in Driftgate's own look (Big Shoulders Display, Saira Semi Condensed, JetBrains Mono, amber on near-black): the title screen; the Company screen's Holdings, Economy, Post jobs and Allegiance tabs (their tabs link to one another in Play); the docked Jobs tab with faction jobs; and the galaxy map zoomed into a sector with orders. The example company is "Ashfall Hauling" in sky blue.
 
 ### 10. Progression: Contractor Rating (replaces Legend levels)
@@ -492,7 +494,8 @@ A player faction's leader is its founder: AI leaders send it proposals and deman
     - **Carrier:** a hangar launches a small wing of whatever hulls the Unbound have plundered (proposal: up to four Raiders, Skiffs or Wreckers, refilled only from stock at Scrapheart Haven or a Lair, never grown or built).
     - **Boarding:** two boarding pinnaces (back from Driftgate 1's Destroyer) dock with a capital, station or depot that has been jammed dark and hook its material store into the 400 t plunder hold. This is how the Unbound take a capital's cargo instead of just fighting it.
     - It does each role less well than a faction's dedicated ship, and there are few of them (proposal: one per galaxy at first, a second once the Unbound's plunder can crew it). Art: the approved Ravager model needs a hangar mouth and two pinnaces added.
-  - **Scrapheart Haven is their one main station, one per galaxy,** in the Wrack, out in deep space (12b). It can be **deactivated** (knocked out for a while) but **never destroyed**.
+  - **Scrapheart Haven is their one main station, one per galaxy,** in the Wrack, out in deep space (12b). It can be **deactivated** (knocked out for a while) but **never destroyed**. **Deactivated, it is closed and looted** (decided 2 Nov 2026): its rum bar and market shut and Unbound raids slow (proposal: for 30 minutes), and the attackers take a share of the Unbound's plundered stores (proposal: a quarter of each good and of their credits), moved into their own stores so the ledger stays exact.
+  - **The Dread Pirate leads them** (decided 2 Nov 2026): a leader like the powers' leaders, with its own personality table (12c).
   - **Jammers and hooks, as in Driftgate 1** (decided 2 Nov 2026). Unbound guns fire jam rounds that knock shields down and then fill the target's **Jam bar**; at a full bar the ship goes dark (no thrust, guns, shields or radar, and it can't jump) for a window by size, and an Unbound ship within 150 m runs its **cargo hook** (8 t/s, most valuable first) until the window closes. Shock harpoons (35% of the bar, stretching the hook to 400 m), jamming torpedoes (Plunderer and Wrecker; the only way to jam a capital, turret by turret), one disable per ship then 60 s hardened, and the being-jammed effects all carry over. What they hook is plunder: it goes into the Unbound's stores, tagged stolen from whoever owned it. **Contractors can fit them too** (decided 2 Nov 2026): they are pirate gear, contraband in every power's space (6b). Driftgate 1's anti-jam parts (Faraday plating, fast-reboot reactor, snap-back emitter, sealed hold) become makers' products, so a convoy runner can buy protection.
   - **Bigger holds** (decided 2 Nov 2026): Unbound hulls are built to carry plunder, about half again the matching faction hull's hold. Proposal from Driftgate 1's holds: Skiff 50 t (was 35), Raider 60 t (40), Corsair 100 t (70), Plunderer 160 t (110), Wrecker 60 t, and the Ravager a 400 t plunder hold.
   - **You can dock at Scrapheart Haven** (decided 2 Nov 2026). The haven is open ground: its guns and the Unbound in the Wrack hold fire on any ship that comes in without firing on them (proposal: attack an Unbound ship in the Wrack and the haven bars you for an hour). Out in the lanes the Unbound still hunt you. No power's patrols scan there, so it is the one dock where contraband is never a risk.
@@ -518,6 +521,50 @@ A new map, not Driftgate 1's, built on the same rules: **no two gate lines cross
 - **The three powers sit at even distances from the Bloom:** Varkesh to the north-east, Ostrova to the south, Halcyon to the north-west, each a core on the outer ring with its frontier inside it. Each forge lies between two powers' frontiers: Kestrel Drift (Halcyon and Varkesh), Cinder Reach (Varkesh and Ostrova), The Shoal (Ostrova and Halcyon). Hollow Verge, the relay, sits by Ostrova.
 - **More open space:** 46 systems (Driftgate 1: 29), 21 of them open space (18 quiet systems and the 3 freeports, against Driftgate 1's 14), with quiet systems out to all four corners. **No dead ends:** every system has at least two gates.
 - **Rebalance.** The Bloom moves from the edge (one gate, Driftgate 1) to the centre with five, so the Brood reaches every power. That suits the stronger Brood (about 20%, section 12), but the faction mining and Brood knobs are retuned with the war check when the map is built.
+
+### 12c. The Dread Pirate: the Unbound's leader (decided 2 Nov 2026)
+The Unbound are led from the Wrack by **the Dread Pirate** (the title passes with the hat; names are placeholders, e.g. "the Dread Pirate Marrow"). The Dread Pirate is a **leader in every respect** (11c): out flying, rarely docked (only ever at Scrapheart Haven), in the Ravager when it's out or a Corsair otherwise, **always with an ace escort**, met in the world and shown on radar by name. It **can die,** which triggers a succession, and every power pays a large bounty to whoever kills it. It **makes work:** powers post jobs to hunt it, rumours of its movements sell at the Rusty Tankard, and its events go to the feed with a reason. **Unbound pilots fly like it** (as the powers' pilots fly like their leaders), and it acts at most once every few minutes.
+
+It has **two traits from its own table,** not the powers' list. The Unbound have no relations with anyone, so its events don't move relations: they move credits, goods and heat, and set where the raiders go.
+
+| Pirate trait | How the Unbound fly |
+|---|---|
+| Bloodthirsty | Kill rather than take: finish jammed ships, hit escorts and patrols, raid depots for the fight |
+| Greedy | Take, never kill when a take is possible: richest holds first, mercy takes, long hook windows; hoards plunder at Scrapheart |
+| Cunning | Ambush at gates in deep space, bait with false distress calls, strike from Lairs and slip away before patrols come |
+| Showman | Go after famous targets (aces, leaders' escorts, the leading power's convoys) and announce raids in the feed beforehand |
+| Superstitious | Avoid Brood-held systems and the Bloom; break off at the first lost capital or a bad omen (a Riftstone blast, an ace's death) |
+| Gallant | Let crews go after a take, keep bargains and bribes, never touch rescue or aid convoys; ransom rather than kill |
+| Paranoid | Keep raiders close to the Wrack and the Lairs, many Lairs, few far raids; bar contractors from the haven at the first offence |
+| Kingmaker | Raid whichever power is leading the galaxy, and sell plunder cheap to whichever is losing |
+
+**Its events** (each needs its trigger; traits choose among eligible ones):
+
+| Event | Trigger | Who leans to it | What happens | Ledger |
+|---|---|---|---|---|
+| Raiding season | A power's convoys run rich and lightly guarded | Greedy, Bloodthirsty | Raids focus on that power's lanes for a while | none (raids are real) |
+| Tribute demand | A power's trade runs past Unbound Lairs | Greedy, Cunning | The power pays credits to be spared for a while; refusal brings a raiding season | credits move |
+| Ransom | The Unbound jam a leader's escort, an ace or a rich convoy | Gallant, Greedy | Its owner can buy the ship or cargo back, or lose it | credits or goods move |
+| Bounty on a pilot | A contractor sinks Unbound ships or hunts the Dread Pirate | Bloodthirsty, Paranoid | A pirate bounty on that pilot, paid at Scrapheart | credits move when paid |
+| Ravager raid | The Ravager is ready and a depot or station is weak | Bloodthirsty, Showman | The Ravager sails to board it | goods move |
+| Hoard sale | Scrapheart's stores are full | Greedy, Kingmaker | The market sells plunder cheap for a while | trades |
+| Open house | Quiet times, a full treasury | Showman, Gallant | The rum bar's rumours pay more for a while | none |
+| Lair spree | Raiders are being hunted in the lanes | Cunning, Paranoid | New Unbound Lairs go up | goods consumed |
+| Lie low | The Brood is spreading, or the Dread Pirate's ship was badly hurt | Superstitious, Paranoid | Raids pause; the raiders stay in the Wrack | none |
+| Succession | The Dread Pirate is killed, the haven is looted, or the captains lose faith after a long run of losses | (any) | A captain takes the hat | none |
+
+**Successors** come from the Unbound's aces and are shaped by what happened:
+
+| What happened to the Unbound | The new Dread Pirate is likely to be |
+|---|---|
+| The Dread Pirate killed by a power | Bloodthirsty, with a grudge against that power |
+| Killed by a contractor | Paranoid, and puts a bounty on that pilot |
+| Scrapheart Haven deactivated and looted | Paranoid or Cunning |
+| Fat years of plunder | Greedy or Showman |
+| Many raiders lost to the Brood | Superstitious |
+| A power growing toward 20 systems | Kingmaker |
+| A long run of failed raids | Cunning |
+| Bargains kept, ransoms paid | Gallant |
 
 ### 13. Multiplayer: rival companies
 - **Each pilot runs their own company.** Friends can partner (post jobs for each other, share convoys) or compete.
@@ -579,10 +626,10 @@ Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is cre
 
 ### Proposed build order (once the design is agreed)
 1. **Cut the faction tie:** start at a chosen freeport with three equipped starters; standing with every power; docking and hostility from standing; pay from the issuer; faction job bonuses.
-2. **Faction relations and leaders:** the faction status ledger, all factions starting Neutral, leaders with traits, the event table and successions, the chronicle; war checks that galaxies still go to war. (It comes this early because the Neutral start only works once leaders can start wars.)
+2. **Faction relations and leaders** (and the Dread Pirate, 12c, once the Unbound's Ravager and haven are in): the faction status ledger, all factions starting Neutral, leaders with traits, the event table and successions, the chronicle; war checks that galaxies still go to war. (It comes this early because the Neutral start only works once leaders can start wars.)
 3. **Weapon slots and weapons** (and the landing kit as a utility part): slot counts per hull; machine gun with ammunition, laser on reactor energy, missile and torpedo payload; mining laser with rings and charge launchers in mining hulls' weapon slots.
 4. **Making things:** ore → components → parts → upgraded parts; grades replace Mk.
-5. **Faction jobs screen,** with intel jobs: beacon devices, capital pings, limpets, and discoveries out beyond the gates.
+5. **Faction jobs screen,** with Claim Beacons for any faction and claim jobs, and intel jobs: beacon devices, capital pings, limpets, and discoveries out beyond the gates.
 6. **Unique hull designs, first wave:** each faction's fighters, with their own models and stats, duel-balanced; freeport yards build them.
 7. **Makers:** the corporations, their works and stock; product lines replace variants; AI fleets fitted from their makers.
 7b. **Smuggling:** contraband tags (stolen, embargo, cash-only), hidden cargo containers, patrol scans with bribe, surrender or run, Riftstone and Rift Shards.
