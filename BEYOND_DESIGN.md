@@ -1720,3 +1720,7 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - **The user's question:** is the galaxy average a buy or a sell price?
 - **The answer:** it's the **sell** price, the average of what the stations you've scanned would pay you. The label now reads **Galaxy sell**, with a tooltip saying so.
 - The sparkline is this station's sell price while you've watched it, and its caption now says so.
+
+### Claim Beacons say they're single use (3 Nov 2026)
+- **The user's ask:** note that a Claim Beacon is a single-use item.
+- Everywhere it's described, it now reads **Single use (ammo: 1)**: the part's description and trait line on the Loadout, the Buy & fit rows, and the Market's beacon tiles and their heading.
