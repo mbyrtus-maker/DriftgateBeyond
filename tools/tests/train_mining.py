@@ -37,11 +37,11 @@ async def main():
     acts=["(()=>{undock();return 1})()","(()=>{targetNearest('ast');return 1})()",ack,laser,
       "(()=>{keys.KeyF=false;S.player.mtool='charge';return 1})()",fire,det,scoop,
       "(()=>{keys.KeyF=false;return 1})()".replace("return 1","S.training.ack=1;return 1"),
-      "(()=>{const SE=W.stationEnt,p=W.player;apOn=false;p.x=SE.x+200;p.y=SE.y;p.z=SE.z;p.vx=p.vy=p.vz=0;p.boot=0;if(!W.docking&&!S.player.docked)actPress();return 1})()",
+      "(()=>{if(W.docking||S.player.docked)return 1;const SE=W.stationEnt,p=W.player;apOn=false;p.x=SE.x+200;p.y=SE.y;p.z=SE.z;p.vx=p.vy=p.vz=0;p.boot=0;actPress();return 1})()",
       "(()=>{if(S.player.docked){$('dock').hidden=false;dockTab='jobs';renderDock();dockClick('deliver',String(S.training.v.kid))}return 1})()",
       "(()=>{const k=bt4Ore();if(k){dockAction('sell',k+':all');renderDock()}return 1})()",ack]
     for n,a in enumerate(acts):
-      ok=await wait_step(n,a,120 if n in(3,7) else 40)
+      ok=await wait_step(n,a,120 if n in(3,7,9) else 40)
       print(n+1,'ok' if ok else 'STUCK',await ev("(()=>{const c=trCur();return c?String(typeof c.s.x==='function'?c.s.x():c.s.x).replace(/<[^>]+>/g,'').slice(0,80):'done'})()"),await ev("JSON.stringify({ore:trOre(),ch:bt4Charges(),err:dockErr||''})"))
       if not ok:break
     print('end',await ev("JSON.stringify({done:S.training.done.length,cargo:S.player.cargo,cr:S.player.credits})"),await ev(LED))

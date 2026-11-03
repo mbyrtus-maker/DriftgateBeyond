@@ -1700,3 +1700,10 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - Without a rock under the sight, a charge flies along the nose as before.
 - **In multiplayer,** a guest sends its aim point with the shot, and the host fires the charge at it.
 - **Unchanged:** the fault-point rings on the rock and the dashed line to the nearest one.
+
+### The mining training course (3 Nov 2026)
+- **The user's ask:** fix the mining training course.
+- **The cause:** the course itself completes in play. Its test was stuck at "Back to the freeport": it put the ship back beside the station every quarter second, even while the docking run was under way, and gave the slow headless browser only ten seconds to dock. The test now leaves the docking run alone and allows it thirty seconds. All 13 steps pass, and the ledger is exact.
+- **Two lessons now match today's changes:**
+  - **The laser:** point at the rock and hold F; the beam finds the ring, and its spot fills as each tonne comes free.
+  - **Charges:** put the sight on a fault point until it turns green and reads ON POINT.
