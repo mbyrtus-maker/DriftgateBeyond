@@ -1191,3 +1191,18 @@ Driftgate 1 v255 removed its frigates, but their code paths survive everywhere a
   12. Sell the rest at the Market.
   13. Wrap-up.
 - **Tests:** `train_mining.py` (in the quick suite) walks all 13 steps with the game's own controls (the laser held with F on the ring, a charge fired, detonated and scooped), with the ledger checked.
+
+### Every approved design in the game (2 Nov 2026)
+- **Asked by the user:** the starter miners and haulers still drew as Driftgate 1's; push the entire design live.
+- **The model pack now holds every approved Beyond model** (about 3 MB in the page, 79 new models), built from the preview scripts by `tools/build_models.py`:
+  - **Each power's work ships** (Wren, Plover, Heron, Tern, Albatross, Pelican; Pick, Gouge, Sledge, Runner, Bulwark, Rampart; Glim, Lumen, Delve, Drift, Cairn, Monolith), mapped in `16j_designs.js`.
+  - **Scouts, advanced scouts, bombers and heavy bombers** (Lark, Skylark, Condor, Harrier; Jackal, Wolfhound, Maul, Warhound; Seer, Oracle, Obelisk, Sentinel).
+  - **Constructors and drones** (Architect, Foundry, Loom; Aegis, Ward and Halo drones).
+  - **Escorts and carriers** (Shrike, Sovereign; Vanguard, Bastille; Lantern, Cathedral). Their turret mounts, sub-target points (drives, shield generator, torpedo tubes, bays) and the carriers' deck spots are recorded from the models as they're built, so turrets, Shift+T systems and deck landings sit on the new hulls.
+  - **The house-brand hulls and the Wraith** (Gannet, Bombard, Vesper, Wraith).
+  - **The Unbound hulls** (Raider, Skiff, Corsair, Plunderer; the Wrecker is packed but no class flies it yet).
+  - **The powers' stations and depots** (the Halcyon lens, the Varkesh Talon Citadel, the Ostrova station, and their depots), **the freeport** and **Scrapheart Haven**. Station turrets are set onto each model's own surface, and docking ports come from the new geometry.
+  - **The Riftstone rock**, in its hot pink.
+  - Brood fins come from `tools/brood.py`, already in the pack.
+- **New file `16z_models.js`** maps classes to models (models only: no stat changes come with them) and fixes each power's destroyer name in its hull list (Peregrine, Ironclad, Prism).
+- **Not yet:** the shared assault ship model (assault ships are still loads aboard capitals, never drawn); Driftgate 1's station works modules still draw round stations as before.

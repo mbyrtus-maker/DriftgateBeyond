@@ -120,37 +120,82 @@ for _k,_f in BROOD_MODELS.items():
 sys.path.insert(0,_os.path.join(_os.path.dirname(_os.path.abspath(__file__)),'previews'))
 import beyond_hulls as _BH
 DESIGN_MODELS={'dz_swift':_BH.swift,'dz_kite':_BH.kite,'dz_osprey':_BH.osprey,'dz_fang':_BH.fang,'dz_talon':_BH.talon,'dz_halberd':_BH.halberd,'dz_mote':_BH.mote,'dz_wisp':_BH.wisp,'dz_vigil':_BH.vigil}
+# Beyond: the faction work ships (miners and haulers, tools/previews/beyond_work.py), approved 2 Nov 2026
+import beyond_work as _BW
+WORK_MODELS={'dz_'+_n.lower():_f for _fac,_ln,_L in _BW.WORK for _n,_r,_f in _L}
+DESIGN_MODELS.update(WORK_MODELS)
 for _k,_f in DESIGN_MODELS.items():MODELS[_k]=('ship',(lambda f:lambda:f().out())(_f));GLOW_N[_k]=0
 # Beyond: the destroyers (Peregrine, Ironclad, Prism from beyond_capitals.py; the Brood Gullet from beyond_brood.py) and the
 # Unbound Ravager (beyond_unbound.py). Their point-defence turrets are recorded as they're built (pd() calls), carried through
 # finish()'s rescale, and packed as the models' turret mounts.
 import beyond_capitals as _BC, beyond_unbound as _BU, beyond_brood as _BB
-def _mounted(mod_list,build):
-    rec=[];xf=[None]
-    o_pd={m:m.pd for m in mod_list};o_fin={m:m.finish for m in mod_list if hasattr(m,'finish')}
-    def pd(M,c,*a,**k):
-        rec.append(np.array(c,float));return o_pd[mod_list[0]](M,c,*a,**k)
+import beyond_hulls as _BHm
+def _mounted(mod_list,build,want_torp=False):
+    # build a model while recording where its working parts go: point defence (pd), shield generators (shd), hangar mouths
+    # (bay), deck spots (pt), drive vents (eng) and, on escorts, the torpedo tube caps (torp); all carried through finish()
+    rec={'pd':[],'shd':[],'bay':[],'pt':[],'eng':[],'torp':[]};xf=[None];base=mod_list[0]
+    o={m:{k:getattr(m,k) for k in ('pd','shieldgen','mouth','spots','finish') if hasattr(m,k)} for m in mod_list}
+    O=o[base];Mc=_BHm.Mesh;ov,ob=Mc.vent,Mc.blob
+    def pd(M,c,*a,**k):rec['pd'].append(np.array(c,float));return O['pd'](M,c,*a,**k)
+    def sg(M,c,*a,**k):rec['shd'].append(np.array(c,float));return O['shieldgen'](M,c,*a,**k)
+    def mo(M,c,*a,**k):rec['bay'].append(np.array(c,float));return O['mouth'](M,c,*a,**k)
+    def sp(M,pts,r=.12,y=0):
+        for x,z in pts:rec['pt'].append(np.array((x,y,z),float))
+        return O['spots'](M,pts,r,y)
     def fin(M,length,girth=1.12):
         P=np.array(M.T,float);lo=P.reshape(-1,3).min(0);hi=P.reshape(-1,3).max(0);c=(lo+hi)/2;k=length/(hi[2]-lo[2]);xf[0]=(c,k*np.array([girth,girth,1.0]))
-        return o_fin[mod_list[0]](M,length,girth)
+        return O['finish'](M,length,girth)
+    def vent(self,c,r,*a,**k):rec['eng'].append(np.array(c,float));return ov(self,c,r,*a,**k)
+    def blob(self,c,r,role,*a,**k):
+        if want_torp and role==ACC and r<=.05 and c[2]>1.5:rec['torp'].append(np.array(c,float))
+        return ob(self,c,r,role,*a,**k)
+    rep={'pd':pd,'shieldgen':sg,'mouth':mo,'spots':sp,'finish':fin}
     for m in mod_list:
-        m.pd=pd
-        if m in o_fin:m.finish=fin
+        for k in o[m]:setattr(m,k,rep[k])
+    Mc.vent=vent;Mc.blob=blob
     try:M=build()
     finally:
         for m in mod_list:
-            m.pd=o_pd[m]
-            if m in o_fin:m.finish=o_fin[m]
-    pts=[(p-xf[0][0])*xf[0][1] if xf[0] else p for p in rec]
-    return M,pts
-def _cap(mods,build,name):
+            for k,v in o[m].items():setattr(m,k,v)
+        Mc.vent=ov;Mc.blob=ob
+    X=lambda L:[tuple(float(v) for v in ((p-xf[0][0])*xf[0][1] if xf[0] else p)) for p in L]
+    out={k:X(v) for k,v in rec.items()}
+    if out['eng']:
+        zl=min(p[2] for p in out['eng']);out['eng']=[p for p in out['eng'] if p[2]<zl+.6]
+    return M,out
+def _cap(mods,build,name,torp=False,bay_aft=False):
     def f():
-        M,pts=_mounted(mods,build);MOUNTS[name]=[tuple(float(x) for x in p) for p in pts];return M.out()
+        M,R=_mounted(mods,build,torp);MOUNTS[name]=R['pd']
+        sub={k:R[k] for k in ('eng','shd','bay','torp') if R[k]}
+        if bay_aft and R['shd']:sub['bay']=[(p[0],p[1],p[2]-1.0) for p in R['shd']]   # an escort's ventral assault bay, aft of its shield generator
+        if sub:SUBS[name]=sub
+        if R['pt']:PTS[name]=R['pt']
+        return M.out()
     return f
 for _k,_m,_b in (('dz_peregrine',[_BC],_BC.peregrine),('dz_ironclad',[_BC],_BC.ironclad),('dz_prism',[_BC],_BC.prism),('dz_ravager',[_BU,_BC],_BU.ravager)):
     MODELS[_k]=('ship',_cap(_m,_b,_k));GLOW_N[_k]=0
+for _k,_b in (('dz_shrike',_BC.shrike),('dz_vanguard',_BC.vanguard),('dz_lantern',_BC.lantern)):
+    MODELS[_k]=('ship',_cap([_BC],_b,_k,torp=True,bay_aft=True));GLOW_N[_k]=0
+for _k,_b in (('dz_sovereign',_BC.sovereign),('dz_bastille',_BC.bastille),('dz_cathedral',_BC.cathedral)):
+    MODELS[_k]=('ship',_cap([_BC],_b,_k));GLOW_N[_k]=0
 AFT_GLOW={'b_gullet','dz_ravager'}   # their glow forward (the maw's charge, the pinnaces' vents) isn't an engine
 MODELS['b_gullet']=('ship',lambda:_BB.gullet().out());GLOW_N['b_gullet']=0
+# Beyond: every other approved design (2 Nov 2026): scouts and bombers (beyond_recon.py), constructors and drones
+# (beyond_support.py), the house-brand hulls and the Wraith (beyond_brand.py), the Unbound hulls (beyond_unbound.py), the
+# powers' stations and depots and the freeport (beyond_faction_stations.py), Scrapheart Haven (beyond_unbound_base.py) and the
+# Riftstone rock (beyond_riftstone.py)
+import beyond_recon as _BR, beyond_support as _BSu, beyond_brand as _BBr, beyond_faction_stations as _BFS, beyond_unbound_base as _BUB, beyond_riftstone as _BRS
+for _L in (_BR.RECON,_BSu.SUPPORT,_BBr.BRAND,_BU.UNBOUND):
+    for _fac,_ln,_ships in _L:
+        for _n,_r,_f in _ships:
+            _k='dz_'+_n.lower().replace(' drone','').replace(' ','_')
+            if _k in MODELS:continue
+            MODELS[_k]=('ship',(lambda f:lambda:f().out())(_f));GLOW_N[_k]=0
+for _fac,_ln,_st,_dp in _BFS.FACTION_STATIONS:
+    MODELS['by_st_'+_fac]=('base',(lambda f:lambda:f().out())(_st));MODELS['by_dp_'+_fac]=('base',(lambda f:lambda:f().out())(_dp))
+MODELS['by_freeport']=('base',lambda:_BFS.freeport().out())
+MODELS['by_haven']=('base',lambda:_BUB.scrapheart().out())
+MODELS['by_rift']=('base',lambda:_BRS.riftstone().out())
 # Beyond: the company-style player bases (tools/previews/beyond_stations.py): Lairs, Depots by level, the Station core and its
 # six buildings. Kind 'base': no stern glow, and dark trusses stay dark. The pack keeps each one's centre and half-extent so the
 # game can put a Station's buildings back on its hardpoints at the right size.
@@ -160,6 +205,7 @@ BASE_MODELS={'by_lair1':lambda:_BS.lair(1),'by_lair2':lambda:_BS.lair(2),'by_dep
 for _k,_f in BASE_MODELS.items():MODELS[_k]=('base',(lambda f:lambda:f().out())(_f))
 for _k,_v in WORKS.items():MODELS[_k]=('struct',_v[0] if len(_v)>2 else (lambda f:lambda:comp_model(f))(_v[0]))
 FIT={'rockbase':230,'station':150,'depot':105,'forge':120,'relay':120,'yard':120,**{k:v[1] for k,v in WORKS.items()}}
+FIT.update({'by_st_halcyon':170,'by_st_varkesh':170,'by_st_ostrova':170,'by_dp_halcyon':105,'by_dp_varkesh':105,'by_dp_ostrova':105,'by_freeport':210,'by_haven':240})   # world half-size: docking ports scale by it
 def pack():
     idx={};blob=bytearray()
     for name,(kind,fn) in MODELS.items():

@@ -30,3 +30,11 @@ function yardDesign(c,cls){if(!designOf('halcyon',cls)||!c||c.kind!=='station')r
       if(!String(dockErr).startsWith('✓')){P.faction=f0;return}fitOf(P);if(W&&W.player){refreshPlayerStats();W.player.fac=f}dockErr+=` It's ${/^[AEIOU]/.test(FACTIONS[f].short)?'an':'a'} ${FACTIONS[f].short} design: the ${designOf(f,arg).name}.`;return}}return o.apply(this,arguments)}}
 // every freeport has a yard (Beyond): it builds the faction designs rolled for it, for anyone who can dock
 {const o=dockCtx;dockCtx=function(){const c=o.apply(this,arguments);if(c&&c.kind==='station'&&c.owner==='neutral'&&!S.unb)c.hulls=true;return c}}
+// ---- the powers' work ships (miners and haulers): their own approved models (tools/previews/beyond_work.py, packed as dz_*).
+// Models only for now: the classes keep Driftgate 1's stats and slots, so no design line or stat changes come with them.
+const WORK_MDL={halcyon:{skiff:'dz_wren',prospector:'dz_plover',dredger:'dz_heron',courier:'dz_tern',freighter:'dz_albatross',bulker:'dz_pelican'},
+  varkesh:{skiff:'dz_pick',prospector:'dz_gouge',dredger:'dz_sledge',courier:'dz_runner',freighter:'dz_bulwark',bulker:'dz_rampart'},
+  ostrova:{skiff:'dz_glim',prospector:'dz_lumen',dredger:'dz_delve',courier:'dz_drift',freighter:'dz_cairn',bulker:'dz_monolith'}};
+{const o=shipMesh;shipMesh=function(fac,cls){const m=WORK_MDL[fac]&&WORK_MDL[fac][cls];if(m&&mdlHas(m)){const key='wk'+fac+cls;if(MESH[key])return MESH[key];const L=new GB();L.seg([0,0,0],[0,0,0],[0,0,0]);
+  return MESH[key]={hull:mdlMesh(m,fac,1),rim:L.upload(true),eng:engFix(m).map(e=>e.slice()),mdl:true}}return o.apply(this,arguments)}}
+
