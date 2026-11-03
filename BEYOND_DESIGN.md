@@ -1228,3 +1228,24 @@ Driftgate 1 v255 removed its frigates, but their code paths survive everywhere a
 - **Leaders ousted (built, `16g_leaders.js`, `LEAD_OUST`):** from 30 minutes into a leader's rule, a power that loses half the systems it held at its best under that leader (at least 5), or runs up 30 ships' worth of recent losses, ousts the leader. The successor shares none of the ousted leader's traits and leans Cautious or Patient; after an ousting the new leader has an hour's grace. About 3 ousted leaders a galaxy in the runs, mostly from a power in collapse.
 - **Neutral runs (300 galaxies):** original rates: Halcyon 37%, Brood 31%, Ostrova 17%, Varkesh 12%, none 3% (100 galaxies). Rates Halcyon 0.55, Varkesh 1.5, Ostrova 1.0 with the Brood ramp [[1,.4],[5,.78],[12,1.45]]: Brood 27%, Ostrova 25%, Halcyon 23%, Varkesh 22%, none 3%. Not in the game yet; "none" still runs short of 5%.
 - **Tuned on stats with neutral leaders (3 Nov 2026), now in the game:** `BAL.ext` Halcyon 0.54, Varkesh 1.7, Ostrova 0.95 (was 0.712, 1.2, 0.84); the Brood ramp [[1,.37],[5,.73],[12,1.37]] (was [[1,.5],[5,1],[12,2]]). 600 galaxies: Halcyon 27%, Ostrova 25%, Varkesh 25%, Brood 21%, none 2%. A second 300-galaxy check of the built game gave Brood 28%, Halcyon 25%, Varkesh 23%, Ostrova 22%, so the Brood may sit a few points over 20%; a larger confirming run was under way. `fastsim.py` now starts every leader neutral unless `LEADERS=1`. Game length and the no-winner share aren't targets (the user, 3 Nov 2026).
+
+### Why the powers need different mining rates (3 Nov 2026)
+Asked by the user: why would a side need a boost to compete? Each test below is 300 galaxies with neutral leaders, every power on the same mining rate (1.0), and one more asymmetry switched off each time:
+
+| Test | Halcyon | Ostrova | Varkesh | Brood |
+|---|---|---|---|---|
+| Equal mining, everything else as built | 58% | 14% | 11% | 16% |
+| … without Halcyon's protected freeport convoys | 56% | 18% | 8% | 16% |
+| … without Ostrova's perks (third escort, cheaper carrier, safer scouts) | 58% | 17% | 6% | 18% |
+| … without Halcyon's Trade Charter | 20% | 32% | 12% | 35% |
+| … without the Charter and Ostrova's perks | 22% | 26% | 14% | 36% |
+| … and without the ship traits (+12% / −12% stats) | 20% | 21% | 17% | 39% |
+
+- **Halcyon: the Trade Charter.** Driftgate 1 gave Halcyon two AI economy perks: when its ore runs low it hires Freeport prospectors to mine its own systems, and it imports from the freeports at twice the volume at a discount. It never starves of ore, so at an equal mining rate it wins nearly 60% of galaxies. Its own mining rate is cut to compensate (0.53).
+- **Varkesh: no AI perk at all.** Its perks (Aurorite job pay, Ward drones on mining hulls) only help human pilots and live fights; nothing helps the AI's economy. Its hull-for-reactor trade costs it a few points in AI fights too. So it needs the biggest mining boost (1.75).
+- **Ostrova: small perks** worth a few points (a third escort, carriers 8% cheaper, scouts that survive more): a modest rate (0.95).
+- **The map is even:** each power's home is 4 jumps from the Bloom and from each other power, with 10 systems within 2 jumps; with every perk and trait removed the three powers come out within a few points of each other.
+- **Leaders aren't balanced on** (the user's direction): their traits sway real galaxies.
+- **Final values in the game (3 Nov 2026):** `BAL.ext` Halcyon 0.53, Varkesh 1.75, Ostrova 0.95; Brood ramp [[1,.37],[5,.73],[12,1.37]].
+  - **Neutral leaders (the balance), 600 galaxies:** Varkesh 27%, Halcyon 26%, Ostrova 26%, Brood 18%, none 3%. Across the last four 600-galaxy runs at nearby values the Brood averaged about 20%.
+  - **With the starting leaders' traits (`LEADERS=1`), 600 galaxies:** Ostrova 32%, Varkesh 23%, Halcyon 22%, Brood 20%, none 2%. Ostrova's Scheming, Patient leader is worth about 6 points; Varkesh's Ambitious, Vengeful leader costs it about 4 (the ousting rule replaces it when Varkesh is cut down); Halcyon's Mercantile, Cautious leader costs it about 4. About 3.3 successions a galaxy.
