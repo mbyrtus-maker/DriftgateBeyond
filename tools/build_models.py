@@ -121,6 +121,43 @@ sys.path.insert(0,_os.path.join(_os.path.dirname(_os.path.abspath(__file__)),'pr
 import beyond_hulls as _BH
 DESIGN_MODELS={'dz_swift':_BH.swift,'dz_kite':_BH.kite,'dz_osprey':_BH.osprey,'dz_fang':_BH.fang,'dz_talon':_BH.talon,'dz_halberd':_BH.halberd,'dz_mote':_BH.mote,'dz_wisp':_BH.wisp,'dz_vigil':_BH.vigil}
 for _k,_f in DESIGN_MODELS.items():MODELS[_k]=('ship',(lambda f:lambda:f().out())(_f));GLOW_N[_k]=0
+# Beyond: the destroyers (Peregrine, Ironclad, Prism from beyond_capitals.py; the Brood Gullet from beyond_brood.py) and the
+# Unbound Ravager (beyond_unbound.py). Their point-defence turrets are recorded as they're built (pd() calls), carried through
+# finish()'s rescale, and packed as the models' turret mounts.
+import beyond_capitals as _BC, beyond_unbound as _BU, beyond_brood as _BB
+def _mounted(mod_list,build):
+    rec=[];xf=[None]
+    o_pd={m:m.pd for m in mod_list};o_fin={m:m.finish for m in mod_list if hasattr(m,'finish')}
+    def pd(M,c,*a,**k):
+        rec.append(np.array(c,float));return o_pd[mod_list[0]](M,c,*a,**k)
+    def fin(M,length,girth=1.12):
+        P=np.array(M.T,float);lo=P.reshape(-1,3).min(0);hi=P.reshape(-1,3).max(0);c=(lo+hi)/2;k=length/(hi[2]-lo[2]);xf[0]=(c,k*np.array([girth,girth,1.0]))
+        return o_fin[mod_list[0]](M,length,girth)
+    for m in mod_list:
+        m.pd=pd
+        if m in o_fin:m.finish=fin
+    try:M=build()
+    finally:
+        for m in mod_list:
+            m.pd=o_pd[m]
+            if m in o_fin:m.finish=o_fin[m]
+    pts=[(p-xf[0][0])*xf[0][1] if xf[0] else p for p in rec]
+    return M,pts
+def _cap(mods,build,name):
+    def f():
+        M,pts=_mounted(mods,build);MOUNTS[name]=[tuple(float(x) for x in p) for p in pts];return M.out()
+    return f
+for _k,_m,_b in (('dz_peregrine',[_BC],_BC.peregrine),('dz_ironclad',[_BC],_BC.ironclad),('dz_prism',[_BC],_BC.prism),('dz_ravager',[_BU,_BC],_BU.ravager)):
+    MODELS[_k]=('ship',_cap(_m,_b,_k));GLOW_N[_k]=0
+AFT_GLOW={'b_gullet','dz_ravager'}   # their glow forward (the maw's charge, the pinnaces' vents) isn't an engine
+MODELS['b_gullet']=('ship',lambda:_BB.gullet().out());GLOW_N['b_gullet']=0
+# Beyond: the company-style player bases (tools/previews/beyond_stations.py): Lairs, Depots by level, the Station core and its
+# six buildings. Kind 'base': no stern glow, and dark trusses stay dark. The pack keeps each one's centre and half-extent so the
+# game can put a Station's buildings back on its hardpoints at the right size.
+import beyond_stations as _BS
+BASE_MODELS={'by_lair1':lambda:_BS.lair(1),'by_lair2':lambda:_BS.lair(2),'by_depot1':lambda:_BS.depot(1),'by_depot2':lambda:_BS.depot(2),'by_depot3':lambda:_BS.depot(3),'by_core':lambda:_BS.station_core('standard',True),
+  'by_yard':_BS.shipyard,'by_storage':_BS.ext_storage,'by_defence':_BS.defence_platform,'by_hangar':_BS.hangar,'by_forge':_BS.forge,'by_market':_BS.market_wing}
+for _k,_f in BASE_MODELS.items():MODELS[_k]=('base',(lambda f:lambda:f().out())(_f))
 for _k,_v in WORKS.items():MODELS[_k]=('struct',_v[0] if len(_v)>2 else (lambda f:lambda:comp_model(f))(_v[0]))
 FIT={'rockbase':230,'station':150,'depot':105,'forge':120,'relay':120,'yard':120,**{k:v[1] for k,v in WORKS.items()}}
 def pack():
@@ -144,7 +181,7 @@ def pack():
         T=np.array(tris);q=np.clip(np.round(T*32767),-32767,32767).astype('<i2')
         eng=[]
         if kind=='ship':
-            G=[T[k].mean(0) for k in range(len(T)) if roles[k]==GLOW];cl=[]
+            G=[T[k].mean(0) for k in range(len(T)) if roles[k]==GLOW and (name not in AFT_GLOW or T[k].mean(0)[2]<zlo+.3*L)];cl=[]
             for g in G:
                 for C in cl:
                     if np.linalg.norm(C['c']/C['n']-g)<.18:C['c']+=g;C['n']+=1;C['p'].append(g);break
@@ -159,7 +196,7 @@ def pack():
         tp=[[round(float(x),3) for x in (np.array(m)-c)/half] for m in MOUNTS.get(name,[])]
         pt=[[round(float(x),3) for x in (np.array(m)-c)/half] for m in PTS.get(name,[])]
         sb={k:[[round(float(x),3) for x in (np.array(m)-c)/half] for m in v] for k,v in SUBS.get(name,{}).items()}
-        idx[name]={'o':off,'n':len(T),'k':kind,'s':FIT.get(name,1),'e':eng,'tp':tp,'top':round(float(T[:,:,1].max()),3),**({'pt':pt} if pt else {}),**({'sub':sb} if sb else {})}
+        idx[name]={**({'c':[round(float(x),4) for x in c],'h':round(float(half),4)} if kind=='base' else {}),'o':off,'n':len(T),'k':kind,'s':FIT.get(name,1),'e':eng,'tp':tp,'top':round(float(T[:,:,1].max()),3),**({'pt':pt} if pt else {}),**({'sub':sb} if sb else {})}
         print(name.ljust(12),kind,len(T),'tris',('eng %d'%len(eng)) if eng else '')
     return idx,bytes(blob)
 idx,blob=pack()

@@ -1050,3 +1050,89 @@ Today one field, the pilot's `faction`, does two jobs: it picks the **hull desig
   - **Multiplayer rivalries.** Pilots in one galaxy each have their own bases and crews (`R.pid`), but guests' Legend points, other pilots' bases as targets, and posting jobs to rival companies are still to do.
   - **The training rewrite.** Training still teaches Driftgate 1's systems in its own sandbox (Beyond's slots, payload, standing and bases are off there).
 - **Tests:** `legend.py` (in the quick suite). It covers the package picker, a level 10 start package with the ledger exact, a point awarded once per galaxy, a win banking spoils, and the next galaxy carrying them (Renown, war chest, the Wraith) with a starting Station and the ledger exact.
+
+### After stage 14: pirate gear (2 Nov 2026)
+- **New file `16u_piracy.js`.**
+- **The gear:**
+  - **Jammer:** a weapon part. Key 4 toggles jam mode: guns fire jam rounds and missiles fly as shock harpoons, as the Unbound's do. Jammers never kill and do nothing to a shielded ship.
+  - **Cargo hook:** a utility part. Hold E beside a ship jammed dark (150 m, or 400 m on a harpoon tether) to hook its hold at 8 t a second, most valuable first. What you take is tagged stolen from its owner and costs heat and standing with it.
+  - **Where to get it:** Scrapheart sells both (3 each at the start). They are never built at a workshop.
+- **Carrying it is contraband:** a customs scan that finds pirate gear raises that power's heat: Light (+15), or Heavy (+30) if you've jammed one of its ships in the last hour. Gear in the hold can be hidden in a hidden container; fitted gear can't.
+- **A fix found on the way:** a contractor's gunfire now hits any power's ship, as Driftgate 1's lasers and missiles already did through `hostAt` (stage 1 had missed the guns).
+- **Not yet:** a guest's cargo hook (the host hooks for its own pilot only).
+- **Tests:** `piracy.py` covers Scrapheart's stock, fitting the gear, jamming a hauler dark and hooking its hold (stolen tags, heat, standing, ledger exact), and the customs heat.
+
+### Training rewrite: section 1 (2 Nov 2026)
+- **New file `16v_training.js`.** Training is now ten short sections, each started on its own from the Training button. The picker lists all ten, with the unbuilt ones marked "coming soon".
+  - A section starts you as an independent contractor docked at the freeport picked on the start screen, in a private practice galaxy.
+  - Beyond's ship systems (slots, payload, the landing kit) are on; customs, Rating and crews stay quiet.
+- **Section 1, Flight and your first job** (agreed with the user: flight, the controls, the ways to fly, and simple job acceptance), 21 steps:
+  1. Launch.
+  2. Thrust and steer to 150 m/s.
+  3. Brake below 20 m/s.
+  4. Roll.
+  5. The afterburner above 200 m/s.
+  6. Flight assist off: drift and turn while coasting.
+  7. Flight assist back on.
+  8. Auto-level off.
+  9. Auto-level back on.
+  10. The cockpit camera.
+  11. The chase camera.
+  12. Target a rock.
+  13. Land on it.
+  14. Lift off.
+  15. Autopilot to the freeport.
+  16. Dock.
+  17. Open the Jobs tab.
+  18. Select a job.
+  19. How issuers, pay and standing work.
+  20. Launch and make a jump on the job's course with autopilot.
+  21. Wrap-up.
+- **Driftgate 1's old courses** stay in the code (the full suite's `training.py` still drives them) but are no longer offered.
+- **The start screen** now describes Beyond: 46 systems, starting as a contractor, and 20 systems for 10 minutes with no deadline.
+- **Sections 2–10** come next, each agreed before it's built.
+- **Tests:** `train_flight.py` covers the picker and the start state, then walks all 21 steps through the game's own controls and state.
+
+### After stage 14: AI crews as ships you can see (2 Nov 2026)
+- **New file `16w_crews.js`.** While a depot's system is loaded, each of its working crews flies there as a ship on your side, labelled with the pilot's name and job:
+  - **Miners** hover at the system's nearest rock with their beams on.
+  - **Haulers** shuttle between the depot and the nearest gate.
+  - **Guards** circle the depot and fight anything hostile that comes within about 2.6 km of it.
+  - **Idle crews** wait beside the depot. **Laid-up crews** stay in the hangar (no ship).
+- **The work itself is still abstract** (stage 10's minute tick), so the ships move no goods: a miner's beam is for show, and the store fills from the tick as before.
+- **A crew ship destroyed is a crew lost:** the pilot and the hull leave the hangar, and you're told. Crew ships carry nothing, so a loss drops nothing and the ledger is untouched.
+- Changing a crew's job swaps its ship; crew ships don't take room from the system's ordinary traffic.
+- **Not yet:** in multiplayer, only the host's own crews fly (a guest's crews keep working abstractly).
+- **Tests:** `crews.py` (in the quick suite) covers a miner, a hauler and a guard flying their jobs, a job change, a laid-up crew, a crew ship destroyed and the crew lost, no crew ships in other systems, and the ledger.
+
+### After stage 14: base models (2 Nov 2026)
+- **The approved company-style models** from `tools/previews/beyond_stations.py` are in the model pack (`by_*`, kind `base`: no stern glow, dark trusses stay dark). The pack records each base model's centre and half-extent so the game can reassemble them.
+- **New file `16x_bases.js`** draws your bases with them:
+  - **Lairs:** the rock with its hangar cut in (level 1), or with the second berth, forge vent, stash and dish (level 2).
+  - **Depots:** by level (1 storage; 2 production and hangar; 3 turrets, armour plates and the life-support ring).
+  - **Stations:** the core with its five hardpoints, and each building you've added on a hardpoint, in the order you built them (shipyard, external storage, defence platform, hangar, forge, market wing). Each shape is assembled once and cached.
+  - The base's turrets sit on the model (a Depot's dome rim, keel and arm; a Station's habitat ring and crown) and re-seat when the base changes shape.
+- **The model pack** grows by about 350 KB (12 models).
+- **Not yet:**
+  - Driftgate 1's module works (the targetable store, production, armour and life-support blocks, and the shipyard slip) still draw round a player base as they always did. Folding them into the new models is a later pass.
+  - The powers' stations, the freeports and Scrapheart Haven in their approved Beyond looks (`beyond_faction_stations.py`, `beyond_unbound_base.py`).
+
+### Destroyers and the Ravager: as built (2 Nov 2026)
+Driftgate 1 v255 removed its frigates, but their code paths survive everywhere a capital isn't an escort or a carrier: the lance (a heavy capital shot at stations, works and capitals within 2.6 km), the stand-off at 1.6 km from a station, the line-ship orders (`frigOrders`: go for hostile depots, open systems and enemy capitals), the hardest-hitting abstract fight. **Beyond's destroyer is that line ship brought back** (internal class `frigate`, shown everywhere as "destroyer"), with the approved models and a charged main gun.
+- **Stats (proposals, to tune):** hull 4,200 (escort 3,100, carrier 5,000), shield 2,000. Two assault ships. No hull berths (as decided), the frigate's five point-defence turrets.
+- **The main gun fires a charged shot.** It charges for 3 s, and **while it charges the ship's shields are down** (whatever shield it had comes back when it fires). One shot does 600 to its target (about the old lance's damage over time), then 4 s to reload. The bridge's fire control fires it by hand as it did the lance. Off-screen fights resolve as Driftgate 1's frigates did.
+- **The Brood's destroyer, the Gullet:** no shields at all. Its **Maw Cannon** charges for 4 s, then fires a beam 2.6 km straight ahead that does 900 to every hostile ship, station and works it passes within 50 m of; 7 s to recover.
+- **Who builds them:** each power and the Brood keep **one** destroyer (proposal), built at their capital shipyard after the yard is up, as escorts are (Escort cost plus half again, and the escort's build time plus half). The Brood grow theirs only once their Hive Ships are out (the stage 13 ramp).
+- **Your own:** a level 4 Station with a shipyard lays one down (from its store or your hold), one at a time; you keep one. It launches as your capital like an escort, ordered from the map and flyable from the bridge.
+- **Models:** the approved Peregrine (Halcyon), Ironclad (Varkesh), Prism (Ostrova) and Gullet (Brood) go into the model pack; turrets sit on the models' own point-defence mounts.
+- **The Ravager** (the Unbound's only capital): Driftgate 1's Unbound "destroyer" (their carrier, with its plundered wing and boarding pinnaces) becomes the Ravager with the approved model, and gains the charged main gun (its Varkesh giant gun: 3 s charge with shields down, 500 a shot, 6 s to reload). **The Unbound stop building sloops** (their escorts), so the Ravager is their one capital: one per galaxy at first, laid down at Scrapheart from minute 80 as their carrier was.
+- **Balance:** this adds a capital to every power and takes the sloops from the Unbound, so it moves faction strength. The targets aren't set yet; a war check on the new map comes after.
+- **New file `16y_capitals.js`**; the Unbound's slip changes are in `16_expansion.js` (`pirTick`).
+- **As built, beyond the spec:** the Gullet turns its whole body onto its target and fires only when the maw bears. The Peregrine has eight mounts; six carry turrets (its middle pair stays bare), so every destroyer fires six. AI powers lay one down when the carrier is out (or they can afford both), more readily at war, and rush it at war as they do carriers. A destroyer's shield is down for as long as its gun charges: anything hitting it then goes straight to the hull.
+- **Not yet:**
+  - Beyond's approved escorts and carriers (Shrike, Sovereign and the rest) and the other Unbound hulls in the model pack; escorts and carriers still draw as Driftgate 1's.
+  - The bridge's weapons console still calls the main gun the lance.
+  - A guest doesn't see the charge glow (the shot and the beam do reach guests).
+  - The Dread Pirate.
+  - A war check (balance targets aren't set).
+- **Tests:** `destroyers.py` (in the quick suite) covers a power laying one down and launching it (two assault ships, hull and shield, model, turrets on its mounts), a destroyer duel (shields down while charging, a 600 hit), the Gullet's beam hitting three ships in a line, your level 4 Station laying one down (refused below level 4, one at a time), the Ravager's name, model and gun, no sloops laid down, and the ledger throughout.

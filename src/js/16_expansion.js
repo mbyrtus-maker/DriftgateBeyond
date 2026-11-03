@@ -290,16 +290,17 @@ function pirFence(want){const st=S.econ.stock.pirate,fpA=fpNear('wr'),N=fpA&&dSt
   for(const k of['cu','nu','wire']){const need=(want[k]||0)-(st[k]||0);if(need<=0)continue;const n=Math.min(k==='nu'?3:k==='wire'?6:10,need,(N[k]||0)-(k==='nu'?4:k==='wire'?7:8));if(n<=0)continue;const pr=Math.ceil(baseValue(k)*(k==='wire'?1.4:1.5)),cost=pr*n;if((S.econ.treasury.pirate||0)<cost+1500)continue;inv.take(N,k,n);inv.add(st,k,n);transfer('pirate','neutral',cost)}}
 function pirTick(){if(NET.cl||!S||S.training)return;pirSetup();const st=S.econ.stock.pirate,T=S.T,H=S.stations.wr,caps=pirCaps(),bld=S.events.filter(e=>e.type==='pirbuild'&&e.stage!=='done');
   const nE=caps.filter(isEsc).length+bld.filter(e=>e.cls==='escort').length,nC=caps.filter(isCar).length+bld.filter(e=>e.cls==='carrier').length;
-  const wantE=(T>=PIR_E1?1:0)+(T>=PIR_E2?1:0),wantC=T>=PIR_C?1:0,next=nC<wantC?'carrier':nE<wantE?'escort':null,pre=!next&&T>=PIR_C-600&&nC<1?'carrier':null;
+  // Beyond: the Ravager is the Unbound's only capital, so they build no sloops (escorts)
+  const wantE=0*((T>=PIR_E1?1:0)+(T>=PIR_E2?1:0)),wantC=T>=PIR_C?1:0,next=nC<wantC?'carrier':nE<wantE?'escort':null,pre=!next&&T>=PIR_C-600&&nC<1?'carrier':null;
   // the salvage works: keels, lattice and cores for the slip (no Forge needed for rough Unbound work)
   craftAbstract(st,'lattice',1,next?8:3);craftAbstract(st,'core',1,next?3:1);if(next||pre){const nx=next||pre,kc=nx==='carrier'?6:1;craftAbstract(st,'keel',1,kc);if(nx==='carrier')craftAbstract(st,'frame',1,4)}
   const want={};if(next||pre){const need={},r=pirCost(next||pre);for(const k in r)need[k]=(need[k]||0)+r[k];const raw=invVec(need);for(const k of RAWS)want[k]=Math.ceil(raw[k]*.6)+20;want.wire=(need.wire||0)+12}want.cu=Math.max(want.cu||0,40);want.wire=Math.max(want.wire||0,24);pirFence(want);
   {const sk={fe:1,cu:1,ir:1,xc:1,au:1,nu:1};let any=false;for(const k of['nu','cu'])if((want[k]||0)>(st[k]||0)){sk[k]=0;any=true}const s=S.sectors.ho;if(any&&s&&!S.stations.ho&&!WORLDS.ho)inv.addAll(st,extract(s,3,true,sk))}
   if(next&&!bld.length&&T-S.pir.lostT>=PIR_REBUILD&&H&&H.hull>H.hMax*.2&&haveIn(pirCost(next),[st])){const force={};takeFrom(pirCost(next),[st]);inv.addAll(force,pirCost(next));
     S.events.push({id:S.nextId++,type:'pirbuild',cls:next,att:'pirate',sector:'wr',force,until:T+(next==='carrier'?FRIGATE_TIME:ESCORT_TIME)*(unbWork('graving')>=1?.8:1),stage:'building'});
-    allFeed(`☠ Unbound salvage crews are welding ${next==='carrier'?'a carrier':'an escort'} together in the slip at Scrapheart Haven, The Wrack.`,'warn')}
+    allFeed(`☠ Unbound salvage crews are welding ${next==='carrier'?'a Ravager':'an escort'} together in the slip at Scrapheart Haven, The Wrack.`,'warn')}
   for(const ev of S.events){if(ev.type!=='pirbuild'||ev.stage==='done'||T<ev.until)continue;ev.stage='done';const t=(ev.cls==='carrier'?makeCarrier:makeEscort)('pirate','wr',ev.force);ev.force={};
-    allFeed(`☠ The Unbound have launched the ${ev.cls} ${t.name} from Scrapheart Haven. It hunts the convoy lanes and the depots on the edges of faction space, frontier systems included.`,'bad')}
+    allFeed(`☠ The Unbound have launched the ${ev.cls==='carrier'?'Ravager':ev.cls} ${t.name} from Scrapheart Haven. It hunts the convoy lanes and the depots on the edges of faction space, frontier systems included.`,'bad')}
   // refit: a capital at the haven loads raid kits (two raids' worth) from Unbound stores
   for(const t of caps){if(t.live||t.sector!=='wr')continue;const sto=t.store=t.store||{};for(const[k,n]of[['plate',26],['wire',16],['coil',3],['missile',3]]){const m=Math.min(n-(sto[k]||0),Math.max(0,(st[k]||0)-(k==='wire'?12:k==='plate'?12:0)));if(m>0)inv.add(sto,k,inv.take(st,k,m))}}
   // plunder: a pirate capital sitting on a broken faction depot carries its stores off, a little each tick

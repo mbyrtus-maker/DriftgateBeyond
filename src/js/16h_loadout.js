@@ -80,7 +80,7 @@ function ldSay(e,t,bad){if(!e)return;const k='_ldm'+t.length;if(W.t-(e[k]||-9)<2
   if(P.wpn==='laser'&&!fitN(P,'laser')&&fitN(P,'gun'))P.wpn='kinetic';else if(P.wpn!=='laser'&&!fitN(P,'gun')&&fitN(P,'laser'))P.wpn='laser';
   if(sc&&(P.swarm||0)<sc){if(!(P.swT>0))P.swT=reloadT(P,'swarm');P.swT-=dt;if(P.swT<=0){P.swarm=sc;P.swT=0}}else P.swT=0}}
 // ---- the machine gun spends a round a shot (and little energy); extra guns or lasers of a kind add damage
-{const o=fire;fire=function(e){const P=loadOn()&&pilotOfEnt(e);if(!P)return o.apply(this,arguments);const n=fitN(P,'gun');
+{const o=fire;fire=function(e){const P=loadOn()&&pilotOfEnt(e);if(!P)return o.apply(this,arguments);if(e.jamMode&&fitN(P,'jammer'))return o.apply(this,arguments);const n=fitN(P,'gun');
   if(!n){ldSay(e,`No machine gun fitted.${fitN(P,'laser')?' Lasers: '+kb('las')+'.':''}`,true);return}
   if(!(P.ammo>0)){ldSay(e,`Out of ammunition: dock to rearm.${fitN(P,'laser')?' Switch to lasers ('+kb('las')+').':''}`,true);return}
   const lf=e.lastFire,d=e.st.dmg;e.st.dmg=d*(1+LOAD.dupK*(n-1))*(1+PG.dmg*(fitG(P,'gun')-1));try{o.apply(this,arguments)}finally{e.st.dmg=d}

@@ -27,6 +27,10 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 | galaxy.py | Beyond stage 12b: the new galaxy (46 systems, no crossing gates, freeports gated into deep space), bigger Unbound holds, Scrapheart for a peaceful contractor (market, rumours, a run paid by the Unbound, ledger exact), the peace breaking |
 | declare.py | Beyond stage 13: 20 systems for 10 minutes and no deadline, declaring needs a Station, the truce on a declared leader, proposals (alliance, tribute), the faction ends with its last Station, the Brood strength scale |
 | legend.py | Beyond stage 14: Legend points once per galaxy, the start package picker, a level 10 package applied (ledger exact), a win banking Conqueror's spoils carried into the next galaxy |
+| piracy.py | Beyond: pirate gear: Scrapheart stock, jammer and hook fitted, a hauler jammed dark and hooked (stolen tags, heat, standing, ledger exact), customs heat for gear |
+| train_flight.py | Beyond training section 1: the picker, the contractor start, all 21 steps of Flight and your first job |
+| crews.py | Beyond: AI crews as ships: miner, hauler and guard flying their jobs, a job change, laid up, a crew ship lost, none elsewhere, ledger exact |
+| destroyers.py | Beyond: destroyers and the Ravager: laid down and launched, assault ships, model and mounts, the charged gun (shields down), the Gullet beam, your level 4 Station, no sloops, ledger exact |
 | start_screen.py | the Training button stands out without moving the other buttons |
 | keys.py | key list, rebinding with swap, saved bindings, the keys strip |
 | brood_ui.py | Brood HUD chip, alerts at 5/6/7 systems, map meter |

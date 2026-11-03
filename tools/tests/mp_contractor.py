@@ -37,7 +37,7 @@ async def main():
     await ev(C,"(()=>{undock();return 1})()");await C.wait_for_timeout(3000)
     print('guest ship on host:',await ev(H,"(()=>{const e=MP.rp.clipid1;if(!e)return 'no ship';return JSON.stringify({side:e.side,fac:e.fac,varkesh:hostE('varkesh',e),brood:hostE('brood',e)})})()"))
     print('guest hated by Varkesh:',await ev(H,"(()=>{const P=S.pilots.clipid1,e=MP.rp.clipid1;P.stand.varkesh=-70;const a=hostE('varkesh',e),b=hostE('halcyon',e);P.stand.varkesh=0;return JSON.stringify({varkesh:a,halcyon:b,hostStillFine:hostile('varkesh','player')})})()"))
-    print('guest job and pay:',await ev(H,"(()=>{const P=S.pilots.clipid1;P.job={by:'ostrova',kind:'fight'};const t0=S.econ.treasury.ostrova,c0=P.credits;payKill({side:'varkesh',role:'patrol',cls:'interceptor',tier:1,dmg:{clipid1:100}},null,{src:MP.rp.clipid1});P.job=null;return JSON.stringify({got:P.credits-c0,fromOstrova:t0-S.econ.treasury.ostrova})})()"))
+    print('guest job and pay:',await ev(H,"(()=>{relInit();S.rel.varkesh.ostrova=S.rel.ostrova.varkesh=-60;Object.assign(pairOf('varkesh','ostrova'),{war:true,warT:S.T});const P=S.pilots.clipid1;P.job={by:'ostrova',kind:'fight'};const t0=S.econ.treasury.ostrova,c0=P.credits;payKill({side:'varkesh',role:'patrol',cls:'interceptor',tier:1,dmg:{clipid1:100}},null,{src:MP.rp.clipid1});P.job=null;return JSON.stringify({got:P.credits-c0,fromOstrova:t0-S.econ.treasury.ostrova})})()"))
     await C.wait_for_timeout(8000)
     print('guest sees standing:',await ev(C,"JSON.stringify(S.player.stand)"))
     print('ledger:',await ev(H,"(()=>{const l=ledger();let b=[];for(const e of RAWS)if(Math.abs(l.tot[e]-S.ledger0.tot[e])>1e-6)b.push(e);return b.length?'DRIFT '+b:'exact'})()"))

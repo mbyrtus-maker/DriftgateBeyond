@@ -35,5 +35,10 @@ js/16q_strategic.js
 js/16r_wrack.js
 js/16s_declare.js
 js/16t_legend.js
+js/16u_piracy.js
+js/16v_training.js
+js/16w_crews.js
+js/16x_bases.js
+js/16y_capitals.js
 js/17_main.js
 end.html

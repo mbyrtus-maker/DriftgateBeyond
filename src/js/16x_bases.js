@@ -1,0 +1,33 @@
+//@src 16x_bases.js
+// ============================================================ your bases drawn in the company style (Beyond, after stage 14)
+// The approved models from tools/previews/beyond_stations.py, in the model pack as by_*: a Lair (level 1 or 2) set into its
+// rock, a Depot by level (1 storage; 2 production and hangar; 3 turrets, armour and the life-support ring), and a Station: the
+// core with five hardpoints, each built-on hardpoint carrying its building (shipyard, external storage, defence platform,
+// hangar, forge, market wing) in the order you built them. The pack keeps each model's centre and half-extent (c, h) so the
+// buildings go back on the core at the right size; each base is assembled once into one mesh and cached by its shape.
+const BM={K:{lair:38,depot:48,station:32},hpR:4.6,hpY:-.9,bS:.8,bld:{yard:'by_yard',storage:'by_storage',defence:'by_defence',hangar:'by_hangar',forge:'by_forge',market:'by_market'}};
+const BM_HP=[0,1,2,3,4].map(k=>Math.PI/2+k*2*Math.PI/5);
+// copy a packed model into a mesh builder in its original model space, turned about +y, scaled and moved
+function bmPart(g,name,fac,yaw,s,ox,oy,oz){const M=MDL.i[name];if(!M)return;const n=M.n,P=new Int16Array(MDL.b,M.o,n*9),R=new Uint8Array(MDL.b,M.o+n*18,n),SH=new Uint8Array(MDL.b,M.o+n*19,n),Q=mdlPal(fac),h=(M.h||1)/32767,c=M.c||[0,0,0],cs=Math.cos(yaw),sn=Math.sin(yaw),v=new Float32Array(9);
+  for(let t=0;t<n;t++){const o=t*9;for(let j=0;j<3;j++){const x=P[o+j*3]*h+c[0],y=P[o+j*3+1]*h+c[1],z=P[o+j*3+2]*h+c[2];v[j*3]=(cs*x+sn*z)*s+ox;v[j*3+1]=y*s+oy;v[j*3+2]=(-sn*x+cs*z)*s+oz}
+    const ux=v[3]-v[0],uy=v[4]-v[1],uz=v[5]-v[2],wx=v[6]-v[0],wy=v[7]-v[1],wz=v[8]-v[2];let nx=uy*wz-uz*wy,ny=uz*wx-ux*wz,nz=ux*wy-uy*wx;const l=Math.hypot(nx,ny,nz)||1;nx/=l;ny/=l;nz/=l;
+    const r=R[t],col=Q.c[r],sh=SH[t]/100,em=Q.e[r];for(let j=0;j<3;j++)g.d.push(v[j*3],v[j*3+1],v[j*3+2],nx,ny,nz,col[0]*sh,col[1]*sh,col[2]*sh,em)}}
+function bmSpin(){if(MESH.bmSpin)return MESH.bmSpin;const e=new GB();e.seg([0,0,0],[0,0,0],[0,0,0]);return MESH.bmSpin=e.upload(true)}
+function bmReady(){return MDL.ready&&mdlHas('by_core')}
+// the mesh for a player depot or Station record
+function bmBase(R,fac){const st=!!R.pst,lv=st?(R.bld||[]).join(','):String(depLvl(R)),key='bm'+(st?'s':'d')+lv+fac;if(MESH[key])return MESH[key];const g=new GB();
+  if(st){const K=BM.K.station;bmPart(g,'by_core',fac,0,K,0,0,0);(R.bld||[]).slice(0,5).forEach((b,i)=>{const a=BM_HP[i];if(BM.bld[b])bmPart(g,BM.bld[b],fac,Math.PI/2-a,BM.bS*K,Math.cos(a)*BM.hpR*K,BM.hpY*K,Math.sin(a)*BM.hpR*K)})}
+  else bmPart(g,'by_depot'+Math.min(3,depLvl(R)),fac,0,BM.K.depot,0,0,0);
+  return MESH[key]={core:g.upload(),spin:bmSpin()}}
+function bmLair(lvl,fac){const key='bml'+lvl+fac;if(MESH[key])return MESH[key];const g=new GB();bmPart(g,'by_lair'+(lvl>=2?2:1),fac,0,BM.K.lair,0,0,0);return MESH[key]=g.upload()}
+function bmOwned(R){return!!R&&R.owner==='player'&&R.kind==='depot'}
+{const o=stationMesh;stationMesh=function(fac,kind){const SE=W&&W.stationEnt,R=SE&&SE.rec;if(fac==='player'&&kind==='depot'&&bmOwned(R)&&bmReady())return bmBase(R,fac);return o.apply(this,arguments)}}
+// turrets sit on the model: a Depot's on its dome rim, keel and docking arm; a Station's round its habitat ring and crown
+function bmTurrets(R){if(R.pst){const K=BM.K.station,out=[];for(let i=0;i<6;i++){const a=i/6*TAU+.3;out.push([Math.cos(a)*3.1*K,.45*K,Math.sin(a)*3.1*K])}out.push([0,2.75*K,0],[0,-3.3*K,0]);return out}
+  const K=BM.K.depot;return[...[Math.PI/4,-Math.PI/4,Math.PI*.6].map(a=>[Math.cos(a)*.45*K,1.2*K,Math.sin(a)*.45*K]),[0,-1.65*K,0],[1.4*K,.4*K,0],[-.2*K,.25*K,-1.35*K]]}
+{const o=mdlStationTurrets;mdlStationTurrets=function(SE){const R=SE&&SE.rec;if(!SE._mt&&bmOwned(R)&&bmReady()){SE._mt=1;devEnt(SE);const T=bmTurrets(R);SE.turrets.filter(t=>!t.mod).forEach((tu,i)=>{tu.p=T[i%T.length].slice()});SE._bmShape=R.pst?'s'+(R.bld||[]).length:'d'+depLvl(R);return}return o.apply(this,arguments)}}
+// a base that changes shape (a new level or building) re-seats its turrets
+{const o=worldUpdate;worldUpdate=function(dt){const r=o.apply(this,arguments);try{const SE=W&&W.stationEnt,R=SE&&SE.rec;if(SE&&SE._bmShape&&bmOwned(R)){const sh=R.pst?'s'+(R.bld||[]).length:'d'+depLvl(R);if(sh!==SE._bmShape)SE._mt=0}}catch(err){}return r}}
+// Lairs: the rock with the hangar cut into it, and its beacon above
+{const o=lairDrawB;lairDrawB=function(){if(!bmReady())return o.apply(this,arguments);const k=curPid()||'me';for(const L of(S.lairs||[])){if(L.sid!==W.sid||L.hull<=0||L.pid!==k||!inView(L.x,L.y,L.z,140))continue;
+  qAxis(.2,1,.1,.6,_xq);qNorm(_xq);mModel(MM,L.x,L.y,L.z,_xq,1,1,1);drawMesh(bmLair(L.lvl||1,'player'),MM);sprite(L.x,L.y+100,L.z,10+3*Math.sin(W.t*3),L.build>S.T?[.9,.6,.3]:[.85,.8,.55],.6)}}}

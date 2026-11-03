@@ -12,7 +12,7 @@ const KEY_ACTS=[
  ['Flight',[['thrust','KeyW','Thrust'],['brake','KeyS','Brake (reverse thrust with assist off)'],['rollL','KeyA','Roll left'],['rollR','KeyD','Roll right'],
   ['fa','KeyX','Flight assist on/off: on, sideways slip bleeds off; off, pure drift'],['level','KeyL','Auto-level on/off'],['autopilot','KeyJ','Autopilot to your target or the next jump on your course'],['act','KeyE','Dock, launch, land on a rock, board, hook a jammed ship']]],
  ['Weapons',[['fire','Space','Fire the selected gun (or left-click)'],['kin','Digit1','Machine gun (uses ammunition)'],['las','Digit2','Laser (uses reactor energy)'],['msl','KeyC','Launch a missile once locked (or middle-click)'],
-  ['swarm','Digit3','Swarm pods: Heavy Fighter, Bombers, Advanced Scout, Wraith'],['jam','Digit4','Jam mode: Unbound only'],['flare','KeyB','Flares: spoof missiles tracking you (30 energy)'],['track','KeyZ','Hold: auto-turn onto the target\'s lead marker']]],
+  ['swarm','Digit3','Swarm pods: Heavy Fighter, Bombers, Advanced Scout, Wraith'],['jam','Digit4','Jam mode (with a jammer fitted): guns fire jam rounds, missiles become shock harpoons'],['flare','KeyB','Flares: spoof missiles tracking you (30 energy)'],['track','KeyZ','Hold: auto-turn onto the target\'s lead marker']]],
  ['Mining',[['mine','KeyF','Fire a blast charge at the targeted rock; hold on a chunk or cloud to scoop (or right-click). In a Scout: hold to plant a limpet'],['det','Digit5','Detonate your charges (back off 120 m first)'],['cancel','Digit6','Cancel set charges (they return to the magazine)'],['mtool','Digit7','Mining tool: charge launcher or mining laser (when both are fitted)']]],
  ['Targets',[['tgtH','KeyT','Nearest hostile (Shift: pick a system on the targeted capital or station; it can be hit once the shield is down)'],['cycleH','KeyQ','Cycle hostiles, nearest first'],['ahead','KeyG','The ship closest to your nose'],['ast','KeyR','Nearest rock (again: rescan it)'],['cycle','Tab','Cycle all targets, gates included (Shift+Tab: backwards)'],['assist','KeyY','Whoever is attacking a friendly']]],
  ['Command',[['comms','KeyI','Comms: Command, then the friendly ships nearby'],['distress','KeyU','Distress call'],['op','KeyO','Join the top friendly operation'],['orders','KeyP','Sign on to the picked order (Shift: pick the next)'],['ordDrop','Backspace','Drop the order or job you are on: sign off and clear its course'],['stealth','KeyK','Wraith stealth, or Unbound false colours']]],
@@ -82,7 +82,7 @@ addEventListener('keydown',e=>{touchLast=false;if(e.code==='F11'){e.preventDefau
   if(c==='Digit5'&&blHull(S.player.cls))blKeyPress('det');
   if(c==='Digit6'&&blHull(S.player.cls))blKeyPress('cancel');
   if(c==='Digit7'&&blHull(S.player.cls))mtoolToggle();
-  if(c==='Digit4'&&S.unb)jamToggle();
+  if(c==='Digit4'&&(S.unb||loadOn()&&fitN(S.player,'jammer')))jamToggle();
   if(c==='KeyB')playerFlares();
   if(c==='Digit1')setWeapon('kinetic');
   if(c==='Digit2')setWeapon('laser');
