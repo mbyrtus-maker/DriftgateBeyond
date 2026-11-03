@@ -1642,3 +1642,13 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - **Models:** `by_freeport`, `by_freeport_cw` and `by_freeport_ew`, chosen by the station's system (`FP_MDL` in `16z_models.js`). All three are the same overall size.
 - **Docking ports:** each freeport's ports are now set at the heads of its docking arms (`PTS` in `build_models.py`), not found from the silhouette. So Coldwater has three ports.
 - **The title screen's picture** now shows the real freeport model for the picked port (it showed the generic station before).
+
+### The galaxy map's names, readable (3 Nov 2026)
+- **The user's report:** names on the galaxy map overlapped or were hidden under other systems.
+- **Room for every system:** systems that sat too close are eased apart on the map (`mapSpread`). Each pair keeps both radii plus a gap clear, and each system stays near its old place, with the same gates. Clicks, routes and overlays all use the same positions (`mapXY`).
+- **Names drawn last, each placed where it fits** (`mapLabels`):
+  - The candidate spots are below its system, above, right, left, then the diagonals. A name takes the first spot that clears every system and every name already placed, and sits nearer its own system than any other.
+  - Each name is drawn over a dark halo, so gate lines and rings don't cut through it.
+  - If no spot near its system is free, the name goes a little further out with a thin line to its system.
+  - A freeport's "FREEPORT" tag sits on the line above its name.
+- **Smaller windows:** systems and names scale down with the map, to about two thirds of their size at most.
