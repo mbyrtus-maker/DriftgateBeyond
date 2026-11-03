@@ -22,7 +22,7 @@
 
 ## Tests and checks
 - Browser tests: `tools/tests/run.sh` (quick, ~10 min) or `run.sh full` (adds the training courses); multiplayer tests take `$PWD/index.html` (see `tools/tests/README.md`). The limpet test is timing-sensitive under load.
-- War check: balance on stats only: `fastsim.py` starts every leader without traits (set `LEADERS=1` to keep them). Run Beyond's with `PPORT=mw` (the player an idle contractor). Driftgate 1's form: `PFAC=<halcyon|varkesh|ostrova|pirate> python3 tools/fastsim.py FILE GAMES HOURS TUNE_JS|- WORKERS OUT.json` (480 games, 2.2 h per side; run the four sides, ~25 min). `fastsim.py` has a hard-coded scratch directory `D=` at the top: point it at your own scratchpad and copy the page there first. Run-to-run noise is about ±2 points.
+- War check: balance on stats only: `fastsim.py` starts every leader without traits (set `LEADERS=1` to keep them). Run Beyond's with `PPORT=mw` (the player an idle contractor) and **16 hours** (`... FILE 600 16 - 2 OUT.json`, about 25 min): Beyond has no deadline and galaxies take about 4.5 h to settle, so a 2.2 h run reports nearly every galaxy unfinished. Driftgate 1's form: `PFAC=<halcyon|varkesh|ostrova|pirate> python3 tools/fastsim.py FILE GAMES HOURS TUNE_JS|- WORKERS OUT.json` (480 games, 2.2 h per side; run the four sides, ~25 min). `fastsim.py` has a hard-coded scratch directory `D=` at the top: point it at your own scratchpad and copy the page there first. Run-to-run noise is about ±2 points.
 - Don't `pkill -f` with a pattern that matches your own command line (it kills the shell).
 
 ## Workflow
