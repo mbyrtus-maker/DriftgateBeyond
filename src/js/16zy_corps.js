@@ -43,3 +43,16 @@ function corpLine(k){const I=ITEMS[k];if(!I)return'';if(I.maker)return MAKERS[I.
   return h.slice(0,j)+`<div class="note" style="margin:0 0 4px">${ITEMS[k].maker||/^Unbranded/.test(who)?'':'Made by '}<b style="color:var(--ivory,#ece4cf)">${esc(who)}</b>${ITEMS[k].maker?'':ITEMS[k].part?'':' · here'}</div>`+h.slice(j)}catch(e){return h}}}
 // tiles: the maker's short name under each component and payload
 {const o=mkHtml;mkHtml=function(c,P){let h=o.apply(this,arguments);try{h=h.replace(/(<button class="mkt[^"]*" type="button" data-act="mksel" data-arg="([^"]+)">)/g,(all,b,k)=>{const m=corpMakerOf(P.sector,k);return m?b.replace('type="button"',`type="button" title="Made by ${esc(MAKERS[m].name)}"`):b})}catch(e){}return h}}
+// ---- a lived-in market at launch (user, 3 Nov 2026): each new galaxy's markets get a random selection of makers' parts instead
+// of one of everything. The local makers' parts are three times as likely and come in bigger lots; other makers' parts turn up
+// as imports. Freeports get 8 to 12 lots, the powers' core stations 7 to 10, their other stations 2 to 4; a freeport or core
+// always has at least one gun, laser, missile launcher, landing kit and cargo module. The works restock their own lines as before.
+const CORP_SEED={free:[8,12],core:[7,10],depot:[2,4],local:.75,basics:['gun','laser','missile','land','cargo']};
+function corpLocal(R){return R.owner==='neutral'?CORP_HOME[R.sid]:FAC_IDS.includes(R.owner)?CORP_HOME[R.owner]:null}
+function corpSeedMarkets(){const all=Object.keys(MAKERS);for(const sid in S.stations||{}){const R=S.stations[sid];if(!R||sid===WRACK.sid)continue;const L=corpLocal(R);if(!L)continue;let st;try{st=mkStock(R)}catch(e){continue}if(!st)continue;
+    const type=R.owner==='neutral'?'free':R.kind==='core'?'core':'depot',kinds=new Set(corpSells(R.owner==='neutral'?sid:R.owner));
+    for(const k of Object.keys(st))if(ITEMS[k]&&ITEMS[k].part&&!String(k).startsWith('bc_'))delete st[k];
+    const ok=id=>ITEMS[id]&&kinds.has(ITEMS[id].part),local=L.flatMap(m=>MK_LINE[m]).filter(ok),foreign=all.filter(m=>!L.includes(m)).flatMap(m=>MK_LINE[m]).filter(ok);if(!local.length)continue;
+    const[a,b]=CORP_SEED[type],n=ri(a,b);for(let i=0;i<n;i++){const loc=Math.random()<CORP_SEED.local||!foreign.length,id=pick(loc?local:foreign);inv.add(st,id,loc?ri(1,3):ri(1,2))}
+    if(type!=='depot')for(const k of CORP_SEED.basics){if(!kinds.has(k))continue;if(Object.keys(st).some(id=>ITEMS[id]&&ITEMS[id].part===k&&st[id]>0))continue;const c=local.filter(id=>ITEMS[id].part===k);if(c.length)inv.add(st,pick(c),1)}}}
+{const o=partsSeed;partsSeed=function(){o.apply(this,arguments);try{corpSeedMarkets()}catch(e){console.error(e)}}}

@@ -1762,3 +1762,13 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 
   It's tinted red where you may not dock. The flight markers stay as well.
 - **Turrets:** a station's turrets went on the outermost hull point in each turret's direction, which on the freeports is often a docking arm's head. They now take the outermost point at least 30% of the station's size away from every port, so no turret sits on a docking port.
+
+### A lived-in market at launch (3 Nov 2026)
+- **The user's ask:** randomize the markets at the start of a galaxy, so that parts from various makers are spread around. Local makers should have more; you don't need one piece from every maker at each station, just a good random selection.
+- **As built:** each new galaxy's markets get a random selection of makers' parts in place of one of everything.
+  - A lot is from the local makers three times in four, and local lots are bigger (1–3, against 1–2 for imports). Other makers' parts turn up as imports.
+  - **Lots:** freeports get 8 to 12, the powers' core stations 7 to 10, and their other stations (which sold no parts before) 2 to 4.
+  - A freeport or core station always has at least one gun, laser, missile launcher, landing kit and cargo module.
+  - In a sample galaxy: freeports had 10–11 kinds from 3–4 makers; cores 8–9 kinds from 4–6 makers; other power stations 2–3 kinds.
+- **Over time:** the makers' works restock their own lines as before, so a station's local range fills out as the galaxy runs.
+- Existing galaxies keep their markets.

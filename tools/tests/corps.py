@@ -1,5 +1,5 @@
-# Beyond: every item has a maker. The makers' markets (power cores, freeports) sell no unbranded parts: their stock became
-# the local makers' plain parts; each maker's line includes plain parts for the slots it covers; the works build them;
+# Beyond: every item has a maker. The makers' markets (power cores, freeports) sell no unbranded parts, and start with a random
+# selection, mostly local makers' with some imports (basics always there at freeports and cores); each maker's line includes plain parts for the slots it covers; the works build them;
 # components and payload show their maker in the Market detail; the ledger stays exact
 import asyncio,json,os
 from playwright.async_api import async_playwright
@@ -14,7 +14,7 @@ async def main():
     ev=lambda c:pg.evaluate('c=>__dg.ev(c)',c)
     print('lines',await ev("JSON.stringify(Object.fromEntries(Object.keys(MK_LINE).map(m=>[m,MK_LINE[m].map(id=>ITEMS[id].name)])))"))
     print('unbranded on makers markets',await ev("JSON.stringify(Object.keys(S.stations).filter(s=>{const R=S.stations[s];return R.owner==='neutral'||(FAC_IDS.includes(R.owner)&&R.kind==='core')}).map(s=>[s,Object.keys(PART).filter(k=>(mkStock(S.stations[s])[PART[k]]||0)>0).length,Object.keys(mkStock(S.stations[s])).filter(k=>k.startsWith('mq_')).length]))"))
-    print('slots covered at a freeport',await ev("(()=>{const st=mkStock(S.stations[S.player.sector]);return JSON.stringify(Object.keys(PART).filter(k=>!partItems(k).some(it=>it!==PART[k]&&(st[it]||0)>0)))})()"))
+    print('markets at launch',await ev("(()=>{const o={};for(const sid in S.stations){const R=S.stations[sid],L=corpLocal(R);if(!L||sid===WRACK.sid)continue;const st=mkStock(R),ids=Object.keys(st).filter(k=>ITEMS[k]&&ITEMS[k].part&&st[k]>0),loc=ids.filter(k=>L.includes(ITEMS[k].maker)),makers=new Set(ids.map(k=>ITEMS[k].maker));o[sid]=`${R.kind}: ${ids.length} kinds, ${loc.length} local, makers ${makers.size}, basics missing ${CORP_SEED.basics.filter(b=>corpSells(R.owner==='neutral'?sid:R.owner).includes(b)&&!ids.some(k=>ITEMS[k].part===b)).join('/')||'none'}`}return JSON.stringify(o)})()"))
     print('works',await ev("(()=>{const R=S.stations[S.player.sector],st=mkStock(R),id=MK_LINE.qs.find(x=>x.startsWith('mq_'));devLedger(()=>{st[id]=0;inv.addAll(st,{plate:50,wire:50,coil:20})});for(let i=0;i<30;i++){S.mkT=0;makersTick()}return id+' '+(st[id]||0)})()"))
     print('labels',await ev("(()=>{$('dock').hidden=false;dockTab='market';const out=[];for(const k of['plate','coil','wire',MK_LINE.mwa[0],MK_LINE.qs.find(x=>x.startsWith('mq_'))]){mkSel=k;renderDock();const d=$('dBody').querySelector('.mkdet');out.push(k+': '+(d?d.innerText.split('\\n').slice(0,2).join(' / '):'-'))}return out.join(' || ')})()"))
     print('ledger',await ev(LED))
