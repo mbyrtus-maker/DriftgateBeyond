@@ -1136,3 +1136,22 @@ Driftgate 1 v255 removed its frigates, but their code paths survive everywhere a
   - The Dread Pirate.
   - A war check (balance targets aren't set).
 - **Tests:** `destroyers.py` (in the quick suite) covers a power laying one down and launching it (two assault ships, hull and shield, model, turrets on its mounts), a destroyer duel (shields down while charging, a 600 hit), the Gullet's beam hitting three ships in a line, your level 4 Station laying one down (refused below level 4, one at a time), the Ravager's name, model and gun, no sloops laid down, and the ledger throughout.
+
+### Training rewrite: section 2 (2 Nov 2026)
+- **Section 2, Contracts and standing** (agreed with the user 2 Nov 2026), 13 steps, in `16v_training.js`. It starts at the picked freeport with a freeport request set up to the nearest other freeport (three jumps), for a good this freeport sells and you don't already own.
+  1. Open the Allegiance tab.
+  2. Standing: the scale, the five bands and what each opens or closes, how work raises it and damage lowers it, the drift back to 0, the Compact's standing.
+  3. Between the powers: the relations table, leaders and the Chronicle; war work costs a quarter of its standing with the enemy, and freeport work never does.
+  4. Open the Jobs tab.
+  5. The kinds of job: supply contracts (own goods only, partial delivery), freeport requests, blockade runs, convoy raids and escorts, and their time limits.
+  6. Select a job and drop it.
+  7. Select the freeport request (its course is set).
+  8. Buy the goods here.
+  9. Fly the three jumps on autopilot.
+  10. Dock.
+  11. Deliver.
+  12. Paid by the Compact's treasury, and the standing gained; a power's contract works the same way.
+  13. Wrap-up.
+- **The Allegiance tab** now shows in Beyond's training sections.
+- **A fix found on the way:** a station's Overview crashed when a freeport request could be delivered there (it looked up the Compact as a faction).
+- **Tests:** `train_contracts.py` (in the quick suite) walks all 13 steps through the game's own actions, with the payment, the standing and the ledger checked.
