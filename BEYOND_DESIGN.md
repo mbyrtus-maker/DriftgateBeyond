@@ -1715,3 +1715,8 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - Held right on the ring yourself, the laser cuts **twice as fast**: "ON THE RING · ×2", about 0.7 t a second on a Light Miner.
   - Swung onto the ring by the beam's 25° help, it cuts at the base rate ("CUTTING").
   - In a check of 20 seconds each: 13 t on the ring, 6 t assisted.
+
+### Market detail: "Galaxy" is the sell average (3 Nov 2026)
+- **The user's question:** is the galaxy average a buy or a sell price?
+- **The answer:** it's the **sell** price, the average of what the stations you've scanned would pay you. The label now reads **Galaxy sell**, with a tooltip saying so.
+- The sparkline is this station's sell price while you've watched it, and its caption now says so.
