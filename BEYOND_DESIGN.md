@@ -1249,3 +1249,21 @@ Asked by the user: why would a side need a boost to compete? Each test below is 
 - **Final values in the game (3 Nov 2026):** `BAL.ext` Halcyon 0.53, Varkesh 1.75, Ostrova 0.95; Brood ramp [[1,.37],[5,.73],[12,1.37]].
   - **Neutral leaders (the balance), 600 galaxies:** Varkesh 27%, Halcyon 26%, Ostrova 26%, Brood 18%, none 3%. Across the last four 600-galaxy runs at nearby values the Brood averaged about 20%.
   - **With the starting leaders' traits (`LEADERS=1`), 600 galaxies:** Ostrova 32%, Varkesh 23%, Halcyon 22%, Brood 20%, none 2%. Ostrova's Scheming, Patient leader is worth about 6 points; Varkesh's Ambitious, Vengeful leader costs it about 4 (the ousting rule replaces it when Varkesh is cut down); Halcyon's Mercantile, Cautious leader costs it about 4. About 3.3 successions a galaxy.
+
+### Starting leaders rolled for each galaxy (3 Nov 2026, built)
+- **Asked by the user:** so the same story doesn't play out every galaxy, the starting leaders' traits differ each time.
+- **As built (`16g_leaders.js`, `LEADT`, `leadRoll`):** every new galaxy gives each power's first leader two different traits drawn from the fourteen, and no two leaders get the same pair. Titles stay with the power (Chair of the Merchant Houses, Marshal, First Archivist); names were already drawn at random. `fastsim.py` starts leaders neutral for balance runs (`LEADT.mode='neutral'`), and `LEADERS=1` rolls them as a real galaxy does.
+- **The live balance with rolled leaders (600 galaxies):** Varkesh 28%, Halcyon 26%, Ostrova 22%, Brood 20%, none 4%. Rolled traits average out across galaxies, where the fixed pairs had given Ostrova 32%.
+
+### Proposal: balance through perks instead of hidden mining rates (3 Nov 2026, not built)
+Today each power's AI mines at its own hidden rate (Halcyon 0.53, Varkesh 1.75, Ostrova 0.95) to make up for its perks. The alternative: every power mines at the same rate, and each power's edge is a named perk, sized so that they come out even.
+
+| Power | Perk | Size in the proposal |
+|---|---|---|
+| Halcyon | **Trade Charter** (Driftgate 1's, kept): when short of ore it hires Freeport prospectors to work its own systems, and at times buys from the freeports at double volume and 20% off | prospectors on 5% of chances (was 50%), bulk buying on 2% of ticks (was 8%) |
+| Varkesh | **Deep Bore** (new): Dominion stations and depots mine more ore, fitting its mining identity (Aurorite jobs, Ward drones on mining hulls) | +85% station mining |
+| Ostrova | **Archive fleet** (as built): a third escort, carriers 8% cheaper, scouts that survive more | unchanged |
+
+- **Neutral leaders (900 galaxies across two runs):** Halcyon 26%, Varkesh 25%, Ostrova 25%, Brood 22%, none 1%.
+- **With rolled leaders (600 galaxies):** Halcyon 28%, Ostrova 28%, Varkesh 21%, Brood 21%, none 2%.
+- If adopted, the perks would be shown on the start screen and in each power's description, and the Brood's ramp trimmed slightly to bring it back to 20%.

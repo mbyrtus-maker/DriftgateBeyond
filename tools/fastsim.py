@@ -22,8 +22,8 @@ SETUP=SETUP.replace('__PFN__',repr('halcyon' if PF=='pirate' else PF)).replace('
 async def boot(pg):
   await pg.goto('file://'+D+FILE+'?name=Tester',timeout=180000,wait_until='domcontentloaded');await pg.wait_for_function('window.__dg&&__dg.ev("MDL.ready")',timeout=60000)
   await pg.evaluate("selFac=%s;document.getElementById('bLaunch').click()"%repr('halcyon' if PF=='pirate' else PF));await pg.wait_for_timeout(800)
-  # balance on stats, not leaders: every starting leader is neutral (no traits) unless LEADERS=1 keeps their traits
-  if os.environ.get('LEADERS')!='1':await pg.evaluate('c=>__dg.ev(c)',"for(const f of FAC_IDS)LEAD0[f].traits=[];1")
+  # balance on stats, not leaders: every starting leader is neutral (no traits) unless LEADERS=1 rolls them as a real galaxy does
+  if os.environ.get('LEADERS')!='1':await pg.evaluate('c=>__dg.ev(c)',"LEADT.mode='neutral';1")
   if TUNE:await pg.evaluate('c=>__dg.ev(c)',TUNE+';1')
   await pg.evaluate('c=>__dg.ev(c)',SETUP)
   if os.environ.get('CC')=='1':await pg.evaluate('c=>__dg.ev(c)',"(()=>{const st=strategicTick;strategicTick=function(){st.apply(this,arguments);controlCounts()};return 1})()")

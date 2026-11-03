@@ -9483,7 +9483,12 @@ function warWith(a,b){a=sideNorm(a);b=sideNorm(b);if(!REL.on||!S.rel||!isPow(a)|
 function leaderNew(f,traits,n){const used=new Set(Object.values(S.leaders||{}).map(L=>L.name).concat((S.chron||[]).length?[]:[]));const pool=LEAD_NAMES[f].filter(x=>!used.has(x)&&!(S.leadPast||[]).includes(x));
   return{f,name:pick(pool.length?pool:LEAD_NAMES[f]),title:LEAD0[f].title,traits:traits.slice(0,2),since:S.T,cool:S.T+(S.T<60?rnd(90,200):rnd(REL.leadCool[0],REL.leadCool[1])),grudge:{},n:n||1,
     ship:{sid:FAC_HOME(f),alive:true,back:0,move:S.T+rnd(60,180)}}}
-function leadersInit(){if(S.leaders)return;S.leaders={};for(const f of FAC_IDS){S.leaders[f]=leaderNew(f,LEAD0[f].traits,1)}leaderProfiles()}
+// Beyond: each galaxy rolls its starting leaders' traits afresh (two different traits each, no two leaders with the same
+// pair), so the same story doesn't play out every time; LEADT.mode 'neutral' starts them with none (the balance runs) and
+// 'fixed' uses LEAD0's (Driftgate 1's) pairs
+const LEADT={mode:'random'};
+function leadRoll(){const out={},seen=new Set();for(const f of FAC_IDS){let t;do{const a=pick(TRAITS);let b=pick(TRAITS);while(b===a)b=pick(TRAITS);t=[a,b]}while(seen.has([...t].sort().join('|')));seen.add([...t].sort().join('|'));out[f]=t}return out}
+function leadersInit(){if(S.leaders)return;S.leaders={};const R=LEADT.mode==='random'?leadRoll():null;for(const f of FAC_IDS){S.leaders[f]=leaderNew(f,LEADT.mode==='neutral'?[]:R?R[f]:LEAD0[f].traits,1)}leaderProfiles()}
 function leaderOf(f){return S&&S.leaders&&S.leaders[f]||null}
 function lName(f){const L=leaderOf(f);return L?`${L.title} ${L.name}`:FAC(f).short}
 function hasT(f,t){const L=leaderOf(f);return!!L&&L.traits.includes(t)}
