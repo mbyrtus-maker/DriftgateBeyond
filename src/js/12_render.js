@@ -581,10 +581,11 @@ function drawOverlay(){
   try{sigHud(c)}catch(e){}
   {const las=S.player.wpn==='laser',LRy=las?laserRay(p,LASER_RANGE):null,onH=!!(LRy&&LRy.hit&&(LRy.hit.kind==='ship'||LRy.hit.kind==='outpost'));
     qRot(p.q,0,0,1,_f);const A=proj(p.x+_f.x*900,p.y+_f.y*900,p.z+_f.z*900);
-    if(!A.behind&&!blAim){const col=las?(onH?'#ff5d4f':'rgba(165,222,255,.95)'):'rgba(240,178,74,.9)';c.strokeStyle=col;c.lineWidth=1.5;c.beginPath();
+    const BS=blHull(S.player.cls)&&W.blSight;if(!A.behind&&(!blAim||BS)){const col=BS?BS.col:las?(onH?'#ff5d4f':'rgba(165,222,255,.95)'):'rgba(240,178,74,.9)';c.strokeStyle=col;c.lineWidth=1.5;c.beginPath();
       if(las){c.moveTo(A.x,A.y-10);c.lineTo(A.x+10,A.y);c.lineTo(A.x,A.y+10);c.lineTo(A.x-10,A.y);c.closePath()}else c.arc(A.x,A.y,9,0,TAU);c.stroke();
       c.beginPath();c.moveTo(A.x-17,A.y);c.lineTo(A.x-12,A.y);c.moveTo(A.x+12,A.y);c.lineTo(A.x+17,A.y);c.moveTo(A.x,A.y-17);c.lineTo(A.x,A.y-12);c.stroke();
       if(onH){c.fillStyle=col;c.beginPath();c.arc(A.x,A.y,3,0,TAU);c.fill()}
+      if(BS&&BS.lab){c.save();c.textAlign='center';c.font='700 11px "Saira Semi Condensed",sans-serif';c.lineWidth=3;c.strokeStyle='rgba(0,0,0,.6)';c.strokeText(BS.lab,A.x,A.y+32);c.fillStyle=col;c.fillText(BS.lab,A.x,A.y+32);c.restore()}
       if(las&&W.tgt&&lockable(W.tgt)&&d3(W.tgt.ref,p)>LASER_RANGE){c.textAlign='center';c.fillStyle='rgba(165,222,255,.85)';c.fillText(`LASER RANGE ${LASER_RANGE} M`,A.x,A.y+30)}}}
   const sp=hyp(p.vx,p.vy,p.vz);if(sp>30&&!blAim){const Vv=proj(p.x+p.vx/sp*900,p.y+p.vy/sp*900,p.z+p.vz/sp*900);if(!Vv.behind){c.strokeStyle='rgba(122,217,167,.75)';c.beginPath();c.arc(Vv.x,Vv.y,5,0,TAU);c.moveTo(Vv.x+5,Vv.y);c.lineTo(Vv.x+11,Vv.y);c.moveTo(Vv.x-5,Vv.y);c.lineTo(Vv.x-11,Vv.y);c.moveTo(Vv.x,Vv.y-5);c.lineTo(Vv.x,Vv.y-11);c.stroke()}}
   // missile lock ring and lock box

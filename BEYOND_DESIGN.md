@@ -1690,3 +1690,13 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - **On screen:** a ring at the beam's spot fills as the next tonne comes free, with "CUTTING CUPRITE · 84 t LEFT", and each tonne that lands is called out with your hold ("+1 t Cuprite · hold 12 / 30 t").
   - **Instructions:** the rock's target panel explains the laser when it's your tool (or that the ring is broken). The key hint reads "hold: cut the ring".
 - Charges are unchanged: faster and riskier, and a blast still breaks a rock's ring for good.
+
+### Charges aim with the standard sight (3 Nov 2026)
+- **The user's ask:** the charge launcher should use the standard gun or laser sight for aiming, not a third reticle in an odd place.
+- **Why it sat oddly:** the old reticle was drawn where the charge would land on the rock, close in. Seen from the chase camera above and behind the ship, that point sits well below the sight, which is drawn 900 m out along the nose.
+- **Now:**
+  - Charges aim with the standard sight. A charge flies from the launcher to the point on the targeted rock under the sight, where the camera's line through the sight meets the rock. So it lands where the sight shows (in a check, 4 m from the aim point).
+  - The separate charge reticle and its flight line are gone. The standard sight takes the charge's colour (green on a fault point, amber near one, red off, grey out of range) and its label underneath ("ON POINT · FIRE (F)", "OFF · 33 M", "OUT OF RANGE", "MISSES THE ROCK").
+  - Without a rock under the sight, a charge flies along the nose as before.
+- **In multiplayer,** a guest sends its aim point with the shot, and the host fires the charge at it.
+- **Unchanged:** the fault-point rings on the rock and the dashed line to the nearest one.
