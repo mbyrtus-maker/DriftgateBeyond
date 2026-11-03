@@ -1680,3 +1680,13 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - A new pilot's mining tool is the laser, so F works the ring of a targeted rock at once; switch to charges as before.
 - It has no combat weapon now, so its guard drones do the fighting. A gun can be fitted in either slot on the Loadout.
 - Pilots who already fly one keep their current fit.
+
+### The mining laser, made to work in play (3 Nov 2026)
+- **The user's report:** the mining laser didn't seem to work.
+- **What was wrong:** it did cut, but only when the beam sat on the rock's thin ring, which you rarely see from range. Even then it took six seconds a tonne on a Light Miner, and it said nothing while it worked.
+- **The fixes** (`16zx_mlaser.js`):
+  - **The beam finds the ring:** when the beam strikes the rock off the ring and the nearest ring point facing you is within 25 degrees of your nose and in range (380 m), it swings onto the ring and cuts there. Aiming at the rock is enough.
+  - **About twice as fast:** a tonne every three seconds on a Light Miner (Medium 2 s, Heavy 1.5 s).
+  - **On screen:** a ring at the beam's spot fills as the next tonne comes free, with "CUTTING CUPRITE · 84 t LEFT", and each tonne that lands is called out with your hold ("+1 t Cuprite · hold 12 / 30 t").
+  - **Instructions:** the rock's target panel explains the laser when it's your tool (or that the ring is broken). The key hint reads "hold: cut the ring".
+- Charges are unchanged: faster and riskier, and a blast still breaks a rock's ring for good.
