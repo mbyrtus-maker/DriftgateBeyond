@@ -1155,3 +1155,22 @@ Driftgate 1 v255 removed its frigates, but their code paths survive everywhere a
 - **The Allegiance tab** now shows in Beyond's training sections.
 - **A fix found on the way:** a station's Overview crashed when a freeport request could be delivered there (it looked up the Compact as a faction).
 - **Tests:** `train_contracts.py` (in the quick suite) walks all 13 steps through the game's own actions, with the payment, the standing and the ledger checked.
+
+### Training rewrite: section 3 (2 Nov 2026)
+- **Section 3, Combat** (agreed with the user 2 Nov 2026), 14 steps, in `16v_training.js`. It puts you in a Light Fighter at the picked freeport.
+  1. Launch; three Unbound target drones (they don't fire) wait ahead.
+  2. Target the nearest hostile.
+  3. Cycle hostiles (and the other targeting keys).
+  4. The machine gun (ammunition, rearmed and paid at a dock) and the laser (reactor energy); switch to the laser.
+  5. Shoot one down: the lead marker and tracking.
+  6. Shields and hull: what each takes, recharge, repair; lasers bite shields, rounds bite hull.
+  7. A missile lock and launch.
+  8. Flares.
+  9. Finish the drones.
+  10. Scoop a salvage crate (and what scooping a power's goods means).
+  11. A live fight: two Unbound raiders jump in and shoot back.
+  12. A distress call.
+  13. What attacking a power costs: standing, a minute as its hostile, and convoy raids as the paid way to do it.
+  14. Wrap-up.
+- The practice crate's goods are added to the practice galaxy's books, so its ledger stays exact.
+- **Tests:** `train_combat.py` (in the quick suite) walks all 14 steps through the game's own actions, with the ledger checked.

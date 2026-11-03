@@ -30,6 +30,7 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 | piracy.py | Beyond: pirate gear: Scrapheart stock, jammer and hook fitted, a hauler jammed dark and hooked (stolen tags, heat, standing, ledger exact), customs heat for gear |
 | train_flight.py | Beyond training section 1: the picker, the contractor start, all 21 steps of Flight and your first job |
 | train_contracts.py | Beyond training section 2: Contracts and standing, all 13 steps, a freeport request bought, flown and delivered, ledger exact |
+| train_combat.py | Beyond training section 3: Combat, all 14 steps: drones, laser, missile, flares, salvage, two live raiders, distress, ledger exact |
 | crews.py | Beyond: AI crews as ships: miner, hauler and guard flying their jobs, a job change, laid up, a crew ship lost, none elsewhere, ledger exact |
 | destroyers.py | Beyond: destroyers and the Ravager: laid down and launched, assault ships, model and mounts, the charged gun (shields down), the Gullet beam, your level 4 Station, no sloops, ledger exact |
 | start_screen.py | the Training button stands out without moving the other buttons |
