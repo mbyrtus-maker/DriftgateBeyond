@@ -6,8 +6,8 @@ from PIL import Image,ImageDraw,ImageFont
 sys.path.insert(0,os.path.dirname(__file__))
 from beyond_hulls import DESIGNS,FAMILY
 
-FAC_HEX={'halcyon':'#4fd8d0','varkesh':'#ff7a3d','ostrova':'#b893ff','company':'#f0b24a','freeport':'#e8c878','pirate':'#d8cd98','brood':'#9be35a','wraith':'#bfe3ff'}
-HULL={'halcyon':[.6,.61,.62],'varkesh':[.43,.41,.4],'ostrova':[.56,.54,.6],'company':[.57,.58,.6],'freeport':[.57,.58,.6],'pirate':[.5,.47,.42],'brood':[.5,.5,.5],'wraith':[.19,.2,.24]}
+FAC_HEX={'halcyon':'#4fd8d0','varkesh':'#ff7a3d','ostrova':'#b893ff','company':'#f0b24a','freeport':'#e8c878','pirate':'#d8cd98','brood':'#9be35a','wraith':'#bfe3ff','rift':'#ff4fc8'}
+HULL={'halcyon':[.6,.61,.62],'varkesh':[.43,.41,.4],'ostrova':[.56,.54,.6],'company':[.57,.58,.6],'freeport':[.57,.58,.6],'pirate':[.5,.47,.42],'brood':[.5,.5,.5],'wraith':[.19,.2,.24],'rift':[.3,.28,.3]}
 def rgb(h):return np.array([int(h[i:i+2],16)/255 for i in (1,3,5)])
 def mix(a,b,t):return np.array(a)*(1-t)+np.array(b)*t
 def pal(fac):
@@ -15,6 +15,8 @@ def pal(fac):
     F=rgb(FAC_HEX[fac]);base=HULL[fac]
     if fac=='brood':   # mirrors broodPal() in src/js/12_render.js
         return [np.array([.74,.69,.56]),mix([.19,.23,.16],F,.12),np.array([.07,.08,.06]),np.array([.52,.27,.34]),np.array([.06,.08,.1]),F,mix(F,[1,1,.85],.18),np.array([.4,.37,.33]),np.array([.25,.23,.21])],[0,0,0,.04,.25,.9,.7,0,0]
+    if fac=='rift':   # Riftstone: dark rock, rifts in their own hot pink, white-hot cores
+        return [mix(base,F,.1),np.array([.3,.3,.33]),np.array([.1,.1,.12]),F,np.array([.16,.3,.4]),F,mix(F,[1,1,1],.6),np.array([.33,.31,.3]),np.array([.16,.15,.15])],[0,0,0,0,.15,.95,.9,0,0]
     c=[mix(base,F,.1),mix([.36,.38,.43],F,.04),np.array([.15,.16,.19]),F*.92,np.array([.16,.3,.4]),F,mix([.2,.33,.42],F,.25),np.array([.43,.4,.36]),np.array([.25,.23,.21])]
     e=[0,0,0,0,.15,.85,.55,0,0]   # roles 7 and 8 are rock and dark rock, as in mdlPal()
     return c,e
