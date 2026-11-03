@@ -38,6 +38,7 @@ kbd{font-family:var(--f-mono);font-size:10px;padding:1px 4px;border:1px solid va
 .bsl{display:flex;align-items:center;gap:6px;font-size:12px;border:1px solid rgba(255,255,255,.06);padding:4px 6px}.bsl span{flex:1;color:var(--dim)}.bsl b{font-family:var(--f-mono);font-weight:400}
 .lfeed{margin-top:10px;width:min(40vw,380px);background:rgba(5,7,13,.6);border:1px solid var(--line);padding:5px 8px 6px;font-size:12px;pointer-events:none}
 .lfeed .cmt{margin:0 0 4px}
+.lnews{margin-top:10px;width:min(40vw,380px);background:rgba(5,7,13,.66);border:1px solid var(--line);padding:5px 8px 6px;font-size:12px;pointer-events:none}.lnews .cmt{margin:0 0 4px}.lnews .nwi{border-left:2px solid var(--line-hi);padding:2px 0 2px 7px;margin-top:4px;transition:opacity .9s linear}.lnews .nwh{font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}.lnews .nwm{color:var(--ivory);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.lnews .nwi.big .nwm{font-weight:600}
 .sec-clock{margin-top:4px;font-family:var(--f-mono);font-size:13px;letter-spacing:.06em;color:var(--ivory);opacity:.9}.sec-clock.mid{color:var(--amber)}.sec-clock.lo{color:var(--danger)}
 #hML{left:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:flex-start;gap:6px;max-width:min(36vw,340px)}#hML:empty{display:none}#hML .chip{font-size:12px;padding:4px 9px;letter-spacing:.06em;white-space:normal;line-height:1.35}
 .sec-bcn{font-size:13px;margin-top:5px;letter-spacing:.02em;color:var(--dim)}.sec-bcn b{font-weight:600}
@@ -340,7 +341,7 @@ table.t td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white
   .bars{width:150px}.bar{grid-template-columns:44px 1fr 36px;font-size:10px}
   #hBR{width:180px;bottom:auto;top:calc(200px + env(safe-area-inset-top,0px))}
   #hComms .cev,#hComms .ckeys,#hComms .cmt{display:none}
-  .lfeed{display:none}
+  .lfeed{display:none}.lnews{width:min(70vw,320px)}.lnews .nwi:nth-child(n+4){display:none}
   #hComms,#hTgt{width:180px}
   #feed{top:calc(100px + env(safe-area-inset-top,0px));transform:none;width:calc(100% - 32px)}
   .fd{font-size:11.5px}
@@ -395,7 +396,7 @@ table.t td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white
   <div id="train" hidden></div>
   <div id="hud" hidden>
     <div class="hud" id="hML"></div>
-    <div class="hud" id="hTL"><div class="sec-name" id="hSec"></div><div class="sec-sub" id="hSub"></div><div class="sec-clock" id="hClock" hidden></div><div class="sec-bcn" id="hBcn" hidden></div><div class="chips" id="hChips"></div><div class="netchip" id="netChip" hidden></div><div class="lfeed" id="hFeedL"><div class="cmt">Recent</div><div class="cev" id="cEv"></div></div></div>
+    <div class="hud" id="hTL"><div class="sec-name" id="hSec"></div><div class="sec-sub" id="hSub"></div><div class="sec-clock" id="hClock" hidden></div><div class="sec-bcn" id="hBcn" hidden></div><div class="chips" id="hChips"></div><div class="netchip" id="netChip" hidden></div><div class="lnews" id="hNews" hidden></div><div class="lfeed" id="hFeedL"><div class="cmt">Recent</div><div class="cev" id="cEv"></div></div></div>
     <div class="netban" id="netBanner" hidden></div><input id="chatIn" class="chatin" hidden maxlength="160" autocomplete="off" placeholder="Message everyone · Enter sends · Esc cancels">
     <div class="hud" id="hTR">
       <div class="cr"><small>CREDITS</small><span id="hCr">0</span></div>
@@ -12434,6 +12435,31 @@ function corpSeedMarkets(){const all=Object.keys(MAKERS);for(const sid in S.stat
     const[a,b]=CORP_SEED[type],n=ri(a,b);for(let i=0;i<n;i++){const loc=Math.random()<CORP_SEED.local||!foreign.length,id=pick(loc?local:foreign);inv.add(st,id,loc?ri(1,3):ri(1,2))}
     if(type!=='depot')for(const k of CORP_SEED.basics){if(!kinds.has(k))continue;if(Object.keys(st).some(id=>ITEMS[id]&&ITEMS[id].part===k&&st[id]>0))continue;const c=local.filter(id=>ITEMS[id].part===k);if(c.length)inv.add(st,pick(c),1)}}}
 {const o=partsSeed;partsSeed=function(){o.apply(this,arguments);try{corpSeedMarkets()}catch(e){console.error(e)}}}
+
+//@src 16zz_news.js
+// ============================================================ the leaders' news box (Beyond, 3 Nov 2026)
+// The user's ask: a news report on top of the "Recent" ticker showing the latest position or declaration from a faction's
+// leader, keeping up to three before they fade. Every chronicle entry a leader speaks (it opens with their title and name:
+// a border demand, an embargo, a trade pact, aid, an alliance offer or refusal, a reprisal, war, a ceasefire, a betrayal),
+// every major turn of the galaxy (alliances, ceasefires, successions, a leader shot down) and the Dread Pirate's fortunes go
+// into S.news (the host's; guests get it with the rest of the state). The box shows the newest three, each under its
+// faction's colour and leader, for three minutes of game time, fading over the last thirty seconds. It shows whatever
+// power you serve: this is galactic news, not your own channel.
+const NEWS={max:3,life:180,fade:30};
+function newsOf(msg,kind,who){if(!msg)return null;const m=String(msg);
+  for(const f of FAC_IDS){const n=lName(f);if(n&&m.startsWith(n+' ')){const rest=m.slice(n.length+1);if(/^of /.test(rest))break;return{f,who:n,msg:rest.replace(/^./,c=>c.toUpperCase())}}}
+  if(/^the Dread Pirate/i.test(m)){let n='';try{n=dpName()}catch(e){}if(n&&m.startsWith(n+' '))return{f:'pirate',who:n.replace(/^the /,''),msg:m.slice(n.length+1).replace(/^./,c=>c.toUpperCase())};return{f:'pirate',who:'The Unbound',msg:m.replace(/^the /,'The ')}}
+  if(kind==='big'&&who&&who.length&&FAC_IDS.includes(who[0])){const f=who[0],pre=FAC(f).name+': ';return{f,who:lName(f),msg:m.startsWith(pre)?m.slice(pre.length):m}}
+  return null}
+{const o=chron;chron=function(msg,kind,who){const r=o.apply(this,arguments);try{if(S&&!S.training&&!(typeof STRAT_SIM==='function'&&STRAT_SIM())){const n=newsOf(msg,kind,who);
+  if(n){S.news=S.news||[];S.newsN=(S.newsN||0)+1;S.news.push({id:S.newsN,T:S.T,f:n.f,who:n.who,msg:n.msg,big:kind==='big'?1:0});while(S.news.length>NEWS.max)S.news.shift()}}}catch(e){}return r}}
+let newsSig='';
+function newsRender(){const el=$('hNews');if(!el)return;const L=(S&&!S.training&&S.news||[]).filter(x=>S.T-x.T<NEWS.life);
+  const sig=L.map(x=>x.id).join(',')+'|'+L.map(x=>Math.ceil(Math.min(NEWS.fade,NEWS.life-(S.T-x.T)))).join(',');if(sig===newsSig)return;newsSig=sig;
+  el.hidden=!L.length;if(!L.length){el.innerHTML='';return}
+  el.innerHTML=`<div class="cmt">News</div>`+L.slice().reverse().map(x=>{const left=NEWS.life-(S.T-x.T),op=left<NEWS.fade?Math.max(.08,left/NEWS.fade):1,col=sideCol(x.f),fac=x.f==='pirate'?'The Unbound':FAC(x.f).short;
+    return`<div class="nwi${x.big?' big':''}" style="border-left-color:${col};opacity:${op.toFixed(2)}"><div class="nwh"><b style="color:${col}">${esc(fac)}</b> · ${esc(x.who)}</div><div class="nwm">${esc(x.msg)}</div></div>`}).join('')}
+{const o=hudUpdate;hudUpdate=function(){const r=o.apply(this,arguments);try{newsRender()}catch(e){}return r}}
 
 //@src 17_main.js
 // ============================================================ main loop

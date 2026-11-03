@@ -38,6 +38,7 @@ kbd{font-family:var(--f-mono);font-size:10px;padding:1px 4px;border:1px solid va
 .bsl{display:flex;align-items:center;gap:6px;font-size:12px;border:1px solid rgba(255,255,255,.06);padding:4px 6px}.bsl span{flex:1;color:var(--dim)}.bsl b{font-family:var(--f-mono);font-weight:400}
 .lfeed{margin-top:10px;width:min(40vw,380px);background:rgba(5,7,13,.6);border:1px solid var(--line);padding:5px 8px 6px;font-size:12px;pointer-events:none}
 .lfeed .cmt{margin:0 0 4px}
+.lnews{margin-top:10px;width:min(40vw,380px);background:rgba(5,7,13,.66);border:1px solid var(--line);padding:5px 8px 6px;font-size:12px;pointer-events:none}.lnews .cmt{margin:0 0 4px}.lnews .nwi{border-left:2px solid var(--line-hi);padding:2px 0 2px 7px;margin-top:4px;transition:opacity .9s linear}.lnews .nwh{font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}.lnews .nwm{color:var(--ivory);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.lnews .nwi.big .nwm{font-weight:600}
 .sec-clock{margin-top:4px;font-family:var(--f-mono);font-size:13px;letter-spacing:.06em;color:var(--ivory);opacity:.9}.sec-clock.mid{color:var(--amber)}.sec-clock.lo{color:var(--danger)}
 #hML{left:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:flex-start;gap:6px;max-width:min(36vw,340px)}#hML:empty{display:none}#hML .chip{font-size:12px;padding:4px 9px;letter-spacing:.06em;white-space:normal;line-height:1.35}
 .sec-bcn{font-size:13px;margin-top:5px;letter-spacing:.02em;color:var(--dim)}.sec-bcn b{font-weight:600}
@@ -340,7 +341,7 @@ table.t td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white
   .bars{width:150px}.bar{grid-template-columns:44px 1fr 36px;font-size:10px}
   #hBR{width:180px;bottom:auto;top:calc(200px + env(safe-area-inset-top,0px))}
   #hComms .cev,#hComms .ckeys,#hComms .cmt{display:none}
-  .lfeed{display:none}
+  .lfeed{display:none}.lnews{width:min(70vw,320px)}.lnews .nwi:nth-child(n+4){display:none}
   #hComms,#hTgt{width:180px}
   #feed{top:calc(100px + env(safe-area-inset-top,0px));transform:none;width:calc(100% - 32px)}
   .fd{font-size:11.5px}
@@ -395,7 +396,7 @@ table.t td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white
   <div id="train" hidden></div>
   <div id="hud" hidden>
     <div class="hud" id="hML"></div>
-    <div class="hud" id="hTL"><div class="sec-name" id="hSec"></div><div class="sec-sub" id="hSub"></div><div class="sec-clock" id="hClock" hidden></div><div class="sec-bcn" id="hBcn" hidden></div><div class="chips" id="hChips"></div><div class="netchip" id="netChip" hidden></div><div class="lfeed" id="hFeedL"><div class="cmt">Recent</div><div class="cev" id="cEv"></div></div></div>
+    <div class="hud" id="hTL"><div class="sec-name" id="hSec"></div><div class="sec-sub" id="hSub"></div><div class="sec-clock" id="hClock" hidden></div><div class="sec-bcn" id="hBcn" hidden></div><div class="chips" id="hChips"></div><div class="netchip" id="netChip" hidden></div><div class="lnews" id="hNews" hidden></div><div class="lfeed" id="hFeedL"><div class="cmt">Recent</div><div class="cev" id="cEv"></div></div></div>
     <div class="netban" id="netBanner" hidden></div><input id="chatIn" class="chatin" hidden maxlength="160" autocomplete="off" placeholder="Message everyone · Enter sends · Esc cancels">
     <div class="hud" id="hTR">
       <div class="cr"><small>CREDITS</small><span id="hCr">0</span></div>

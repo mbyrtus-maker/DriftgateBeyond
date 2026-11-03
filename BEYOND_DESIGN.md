@@ -1772,3 +1772,16 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - In a sample galaxy: freeports had 10–11 kinds from 3–4 makers; cores 8–9 kinds from 4–6 makers; other power stations 2–3 kinds.
 - **Over time:** the makers' works restock their own lines as before, so a station's local range fills out as the galaxy runs.
 - Existing galaxies keep their markets.
+
+### The leaders' news box (3 Nov 2026)
+- **The user's ask:** a news report on top of the ticker showing each faction leader's latest position or declaration, keeping up to three before they fade.
+- **What goes in** (`16zz_news.js`, a wrapper on the chronicle):
+  - every chronicle line a leader speaks, which opens with their title and name: border demands, embargoes, trade pacts, aid, alliance offers and refusals, reprisals, declarations of war, ceasefire offers, betrayals;
+  - the galaxy's big turns: alliances, ceasefires, successions;
+  - the Dread Pirate's fortunes (shot down, taking the hat), under the Unbound.
+  - Relations simply drifting between bands ("now Cool") and a power ignoring a demand stay in the Recent ticker only.
+- **The box** (`#hNews`, above Recent): titled News, newest first, at most three items. Each has its faction's colour on the left, the faction and the speaker's title and name in small capitals above, and the declaration under it (two lines at most; the big turns in bold).
+- **Fading:** each item stays three minutes of game time and fades over its last thirty seconds; a fourth pushes the oldest out. The box hides when empty.
+- It shows every power's news whoever you serve: it's galactic news, not your own channel. The host keeps it in the state (`S.news`), so guests see the same box. On a phone it shows the newest two.
+- **Test:** `news.py` (in the quick suite).
+
