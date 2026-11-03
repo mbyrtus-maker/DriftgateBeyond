@@ -23,6 +23,12 @@ async def main():
     print('ledger',await ev(LED))
     print('peace breaks',await ev("""(()=>{const P=S.player;exitSector();P.sector='wr';P.docked=null;enterSector('wr');const a=hostile('pirate','player');standHit(P,'pirate',10,'ship');const b=hostile('pirate','player');return JSON.stringify({before:a,after:b,canDock:canDock(W.stationEnt)})})()"""))
     await pg.wait_for_timeout(20000)
+    print('haven knocked out',await ev("""(()=>{const P=S.player;exitSector();P.sector='wr';P.docked=null;enterSector('wr');const E=W.stationEnt,R=E.rec;devLedger(()=>{inv.add(S.econ.stock.pirate,'plate',40)});
+      const v0=JSON.stringify(P.vault),c0=P.credits,t0=S.econ.treasury.pirate,pl0=S.econ.stock.pirate.plate||0;E.shield=0;R.hull=10;damageStation(E,500,'player','kinetic',W.player);
+      P.docked='station';const c=dockCtx();P.docked=null;return JSON.stringify({down:havenDown(),hull:R.hull,plate:[pl0,S.econ.stock.pirate.plate||0,(P.vault.plate||0)],cr:[t0,S.econ.treasury.pirate,P.credits-c0],market:!!c.market,rum:!!c.rum,sub:c.sub})})()"""))
+    print('ledger',await ev(LED))
+    print('haven back',await ev("""(()=>{S.T=S.havenDown.until+1;strategicTick();const R=S.stations.wr;return JSON.stringify({down:havenDown(),hull:Math.round(R.hull/R.hMax*100)+'%'})})()"""))
+    print('ledger',await ev(LED))
     print('after flight',await ev("JSON.stringify({T:Math.round(S.T)})"),await ev(LED))
     print('errors',errs[:4]);await b.close()
 asyncio.run(main())

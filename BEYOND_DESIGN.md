@@ -1283,3 +1283,12 @@ Today each power's AI mines at its own hidden rate (Halcyon 0.53, Varkesh 1.75, 
 - Lying low (heat cools three times as fast while docked at your Lair) and laundering were built in stage 9; the stage 7b "not yet" list was out of date.
 - **New file `16za_launder.js`:** as the design says, laundering now takes a spell instead of being instant. Stolen goods put in a Lair's stash keep their tag for 60 s plus 5 s a tonne (10 t of Iridium: 1 min 50 s). Taken out early, they come out still tagged; when the spell ends the tag is gone and you're told. The dock header shows what's still being laundered. Only tags move, never goods.
 - **Tests:** `lairs.py` now also covers goods taken out early (still tagged) and the spell ending.
+
+### Scrapheart Haven knocked out (3 Nov 2026)
+- **New file `16zb_haven.js`.** When Scrapheart's hull is broken it is knocked out, never destroyed, for 30 minutes:
+  - its market and the Rusty Tankard shut (docking still works), and no new rumours are posted;
+  - its guns stay dark;
+  - Unbound wings turn up half as often, and their slip stops (a build in it waits);
+  - whoever broke it takes a quarter of every good in the Unbound's stores and a quarter of their treasury: a power into its own stores and treasury, a pilot into the vault where they last docked and their credits. Everything only moves, so the ledger stays exact.
+- It comes back lit at half hull, with everyone told.
+- **Tests:** `galaxy.py` covers the knock-out (the haven at 1 hull, a quarter of the plate and credits moved, the market and rumours shut), the reopening at half hull, and the ledger.
