@@ -1206,3 +1206,9 @@ Driftgate 1 v255 removed its frigates, but their code paths survive everywhere a
   - Brood fins come from `tools/brood.py`, already in the pack.
 - **New file `16z_models.js`** maps classes to models (models only: no stat changes come with them) and fixes each power's destroyer name in its hull list (Peregrine, Ironclad, Prism).
 - **Not yet:** the shared assault ship model (assault ships are still loads aboard capitals, never drawn); Driftgate 1's station works modules still draw round stations as before.
+
+### Bug sweep (2 Nov 2026)
+- **Single player:** the quick suite, Driftgate 1's training courses (`training.py` now starts them directly, as Beyond's picker offers only its sections), `contacts`, `hull_tags`, `designs`, a 15-minute soak in eleven hull and faction setups, and the dock sweep over every station, outpost and Lair tab. Fixed:
+  - A station's Overview crashed when a freeport request could be delivered there (found by training section 2).
+  - The job board's "Switch to a … here · free" button offered paid hulls as free; it now shows the price (a Lark at a freeport is 1,350 cr).
+- **Multiplayer:** the five faked-link tests and a new one, `mp_beyond.py`, for Beyond's late additions seen and used by a guest.

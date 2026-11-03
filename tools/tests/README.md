@@ -48,11 +48,12 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 | dock_sweep.py | renders every dock tab at every station and outpost (and a Lair) for each faction and the Unbound, clicks the buttons on one of each kind; prints any exception (slow, ~20 min) |
 | soak.py | a bot pilot fights, jumps, docks, lands, mines and fires missiles for N sim minutes in eight hull/faction setups; prints frame errors: `python3 tools/tests/soak.py 15` |
 | mine_rates.py | mining pay model per miner hull at real market prices (relative check against an older build; optimistic in absolute terms) |
-| training.py | flies a training course end to end; `TRK=full\|combat\|mining\|hauling\|scouting` |
+| training.py | flies one of Driftgate 1's training courses end to end (started with trainStart: Beyond's picker offers only its own sections); `TRK=full\|combat\|mining\|hauling\|scouting` |
 | mp_loopback.py | **retired with Unbound mode (stage 8)**: it starts an Unbound crew galaxy, which Beyond no longer offers. `mp_contractor.py` covers two pages joined over a faked link |
 | mp_guest_jump.py | a guest in a Light Miner (with Ward Drones) jumps Varkesh Hold → Iron Hush: no exception, the screen fades back in, host and guest agree: `python3 tools/tests/mp_guest_jump.py $PWD/index.html` |
 | mp_subtargets.py | sub-targets over the faked link: a hostile escort's damaged systems reach the guest, the guest's Shift+T, systems panel, lead point and HUD markers, a guest's shots disable a turret on the host, ledger: `python3 tools/tests/mp_subtargets.py $PWD/index.html` |
 | mp_signature.py | faction signature hulls flown by a guest: a Varkesh guest converts a Heavy Miner to a Bombard through the dock, its shells fire on the host and hit; a guest Gannet's barrage and a guest Vesper's charged railgun fire on the host: `python3 tools/tests/mp_signature.py $PWD/index.html` |
+| mp_beyond.py | Beyond's late additions over the faked link: the guest sees the new models (destroyers, Gullet, escorts, carriers, Unbound and work ships), a destroyer duel and the Gullet beam with the guest watching, a guest Medium Miner cutting with the mining laser on the host, ledger: `python3 tools/tests/mp_beyond.py $PWD/index.html` |
 | mp_contractor.py | host and guest both start as contractors at freeports: the guest flies as its own side, AI hostility follows its own standing, its job's issuer pays its bounty, standing reaches the guest, ledger: `python3 tools/tests/mp_contractor.py $PWD/index.html` |
 | mp_guest_faction.py | a faction guest over the faked link: hired wingman follows, stands down when docked or dead, rejoins; insurance and a covered loss; patronage; charge reticle; ledger: `python3 tools/tests/mp_guest_faction.py $PWD/index.html` |
 

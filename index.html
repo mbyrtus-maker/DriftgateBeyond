@@ -6696,10 +6696,10 @@ function hullTags(k){const C=CLASSES[k]||{},T=[],dr=C.drones||0;if(k==='construc
 const tagsHtml=k=>!hullTags(k).length?'':`<span class="htags">${hullTags(k).map(t=>`<i>${esc(t)}</i>`).join('')}</span>`;
 // the cheapest way into a hull that can do a job: fly one you keep in the hangar, store this ship and take a free starter,
 // switch here, or set course to the nearest shipyard
-function hullFix(c,P,ok,want){if(ok(P.cls))return null;const HN=k=>FAC(P.faction).hulls[k];
+function hullFix(c,P,ok,want){if(ok(P.cls))return null;const HN=k=>FAC(P.faction).hulls[k],pr=Math.max(0,hullOwned(P,want)?0:hullPrice(want)-vchOf(P,want)),PR=pr>0?`${fmt(pr)} cr`:'free';
   const bi=(P.ships||[]).findIndex(r=>ok(r.cls));if(bi>=0&&c.storage===P.vault)return['bfly',bi,`Fly your stored ${HN(P.ships[bi].cls)}`];
   if(c.hulls){const bare=shipBare(shipRec(P));if(!START_HULLS.includes(P.cls)||!bare){if((P.ships||[]).length<BAY_MAX&&c.storage===P.vault&&!bare)return['hullsw',want,`Store this ship, take a ${HN(want)} · free`];
-      return['hull',want,`Switch to a ${HN(want)}${START_HULLS.includes(P.cls)?' · free':` · trades in your ${HN(P.cls)}`}`]}return['hull',want,`Switch to a ${HN(want)} here · free`]}
+      return['hull',want,`Switch to a ${HN(want)}${START_HULLS.includes(P.cls)?` · ${PR}`:` · trades in your ${HN(P.cls)}`}`]}return['hull',want,`Switch to a ${HN(want)} here · ${PR}`]}
   let best=null,bh=99;for(const id in S.stations){const R=S.stations[id];if(R.kind!=='core'||!(P.sworn?R.owner===P.sworn:tradeOK(P,R.owner)))continue;const h=HOP[P.sector][id];if(h<bh){bh=h;best=id}}
   return best?['croute',best,`Nearest shipyard: ${S.stations[best].name}, ${bh} jump${bh===1?'':'s'} · Set course`]:null}
 // ---- Overview: what you can do at this dock right now, then jobs, the war and where your goods are

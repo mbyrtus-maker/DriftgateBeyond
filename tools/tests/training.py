@@ -143,7 +143,7 @@ async def main():
     pg=await b.new_page(viewport={'width':1100,'height':700});err=[];pg.on('pageerror',lambda e:err.append(str(e)))
     await pg.add_init_script('window.__fastDock=1')   # the game's test hook: docking clamps in 0.05 s instead of 5 s
     await pg.goto(GAME+'?name=Tester');await pg.wait_for_function('window.__dg&&__dg.ev("MDL.ready")',timeout=30000)
-    TRK=os.environ.get('TRK','full');await pg.evaluate("document.getElementById('mpName').value='Cadet7';document.getElementById('bTrain').click();document.querySelector('[data-trk="+TRK+"]').click()");await pg.wait_for_timeout(2000)
+    TRK=os.environ.get('TRK','full');await pg.evaluate("document.getElementById('mpName').value='Cadet7';__dg.ev('trainStart(\\''+"+repr(TRK)+"+'\\')')");await pg.wait_for_timeout(2000)
     ev=lambda c:pg.evaluate('c=>__dg.ev(c)',c)
     nsteps=await ev("TRAIN.reduce((a,L)=>a+L.steps.length,0)");nles=await ev("TRAIN.length")
     print('lessons',nles,'steps',nsteps,'acts',len(ACTS))
