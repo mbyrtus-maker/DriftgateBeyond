@@ -36,6 +36,7 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 | destroyers.py | Beyond: destroyers and the Ravager: laid down and launched, assault ships, model and mounts, the charged gun (shields down), the Gullet beam, your level 4 Station, no sloops, ledger exact |
 | dread.py | Beyond 12c: the Dread Pirate: rolled traits, Allegiance row, spawned with an escort, killed by you (bounties from every power, Paranoid successor with a bounty on you), aboard and sunk with the Ravager, events, hoard-sale prices, the hunt job, the rumour, ledger exact |
 | fall.py | Beyond: when your base falls: a Station captured (hull, buildings, store, holds the system for the power, crews leave), taken back, destroyed; a Lair impounded; ledger exact |
+| blackmarket.py | Beyond: the Black market tab: contacts, requested work, the heat filter, a run given to a contractor (broker cut) and to an AI crew (paid; caught: seized, heat on you), a contraband buy, a quiet buyer, a fence, the tab, ledger exact |
 | start_screen.py | the Training button stands out without moving the other buttons |
 | keys.py | key list, rebinding with swap, saved bindings, the keys strip |
 | brood_ui.py | Brood HUD chip, alerts at 5/6/7 systems, map meter |

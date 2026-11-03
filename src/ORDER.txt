@@ -45,5 +45,6 @@ js/16za_launder.js
 js/16zb_haven.js
 js/16zc_dread.js
 js/16zd_fall.js
+js/16ze_blackmarket.js
 js/17_main.js
 end.html

@@ -1319,3 +1319,21 @@ Today each power's AI mines at its own hidden rate (Halcyon 0.53, Varkesh 1.75, 
 - **Lairs:** a power that wears one down impounds it (half the time to start with, the same leader leanings): the stash, less up to a quarter, goes into its stores and the Lair is shut. Otherwise it's destroyed and the stash drifts. An impounded Lair can't be taken back.
 - The Brood and the Unbound always destroy. Goods only move, so the ledger stays exact.
 - **Test:** `fall.py` (a Station captured with its building and store, holding the system for Varkesh, crews gone; taken back; destroyed; a Lair impounded; the ledger).
+
+### The Black market tab: as built (3 Nov 2026)
+- **New file `16ze_blackmarket.js`;** a sixth Company tab, **Black market**.
+- **Contacts:** a freeport's fixers and a power's quiet buyers become your contacts when you dock there; the Rusty Tankard once you've been to Scrapheart.
+- **Offers** from your contacts, each with its heat rating and the power whose heat it raises, its pay, and how far away it is:
+  - **runs** (the fixers' and the Tankard's, from stages 9 and 12b), now priced at the destination's market rather than the goods' base value;
+  - **contraband buys** (None): a fixer sells Riftstone, relics or Rift Shards from the freeport's stock at 85% of its price;
+  - **quiet buyers** at a power's station pay over the odds for cash-only contraband (Heavy, +50%; Severe at a core, +75%);
+  - **fences** at a power's station buy goods stolen from another power at 1.4× their value (Light with the power they were stolen from); the stolen tag goes with them.
+  - Contacts post new buys and quiet buys on their own now and then; **Request work** asks the fixers, the quiet buyers or the Tankard for one now (once every 2 minutes).
+- **Filter** by heat: All, None, Light, Heavy, Severe.
+- **Assign a run** to:
+  - **yourself:** loaded at once if you're docked at its source, otherwise your course is set there;
+  - **one of your AI crews:** it flies the run abstractly (a minute plus 45 s a jump) if its hull's hold is big enough. The chance of being caught is 12%, 22% or 35% by rating, raised by your heat with that power and lowered for a Courier (×0.7) or Skiff (×0.85). If caught, that power seizes the goods and the heat lands on you; otherwise the goods reach the destination's market and you're paid. The crew drops its other orders while away;
+  - **a Compact contractor:** you take a 25% broker's cut and nothing lands on you if they're caught.
+- **Runs:** yours, your crews' and your contractors' in progress (which jump they're on, when they're due, your heat with the power at the other end) and the last results (paid or caught, and for what).
+- Buys, quiet buys and fences are dealt in person: the button sets your course to the contact or deals when you're docked there.
+- Goods only move (a run's load is counted in the ledger while it's under way). **Test:** `blackmarket.py`.
