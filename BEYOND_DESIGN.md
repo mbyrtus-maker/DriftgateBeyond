@@ -512,7 +512,7 @@ Each faction pays contractors a bonus on the work it cares most about, out of it
 
 Their signature hulls survive as house-brand hulls built with Partner standing: the Gannet (Halcyon), the Bombard (Varkesh) and the Vesper (Ostrova).
 
-### 12b. The galaxy map (draft for review, 2 Nov 2026)
+### 12b. The galaxy map (approved 2 Nov 2026)
 A new map, not Driftgate 1's, built on the same rules: **no two gate lines cross and no line runs past another system.** Preview: `tools/previews/beyond_map.png`, from `tools/previews/beyond_map.py`, which also runs the checks (planar, clear of other systems, freeports' exits, every system reachable). Names are placeholders.
 
 - **Deep space is the middle of the galaxy.** **The Bloom sits at its centre,** with gates to all five systems of an inner deep ring (Glass Shallows, Corona Deep, Lantern Deep, Ashen Expanse, Umbral Deep), and a deep rim of six (Gloam Deep, Mournwater, Thornmere, Rustmere, Sunken Reach, Blackwater Rift). Both rings are linked round.
