@@ -2,7 +2,7 @@
 // ============================================================ the title screen (Beyond screens pass, 3 Nov 2026)
 // Two columns. Left: the title, then the steps in order: 1 Callsign; 2 Legend (collapsed: your level and start package,
 // opening to the perk choices and any Conqueror's spoils); 3 Freeport, 4 Role and 5 Ship (open: each header shows what's
-// picked and folds its cards away); then Play with friends and the controls line. Right: a picture of the freeport you
+// picked and folds its cards away; Ship offers only the hulls you can start in); then Play with friends and the controls line. Right: a picture of the freeport you
 // picked and the ship you picked (the station's and the ship's real models, drawn by the start screen's small renderer),
 // with their names. Nothing else changes: the same cards, buttons and ids, so the start code and its tests still work.
 let stOpen={legend:false,port:true,role:true,ship:true};
@@ -49,4 +49,7 @@ function stSync(){const sb=$('start');if(!sb||!sb.querySelector('.st2'))return;c
   let lg;try{lg=stLegHtml()}catch(e){lg={sum:'',h:''}}const LB=$('stLeg');if(stOpen.legend)LB.innerHTML=lg.h;
   const pir=selFac==='pirate';set('legend',lg.sum,[LB]);set('port',pir?FAC('pirate').name:`${DEF[selPort].name} · ${FAC(selFac).short} design line`,[$('facs')]);set('role',pir?'Unbound':ROLES[selRole].name,[$('roles')]);
   set('ship',`${FAC(selFac).hulls[selCls]} · ${CLASSES[selCls].name}`,[sb.querySelector('.shippick')]);requestAnimationFrame(stPic)}
-{const o=showStart;showStart=function(){const r=o.apply(this,arguments);try{stSync()}catch(e){console.error(e)}return r}}
+// only the hulls you can start in are offered: you never start with credits, so the bought hulls stay off the title screen
+function stStartable(k){return selFac==='pirate'?UNB_START.includes(k):START_HULLS.includes(k)}
+{const o=showStart;showStart=function(){try{if(!stStartable(selCls)){const L=selFac==='pirate'?UNB_START:(ROLES[selRole]||ROLES.combat).ships;selCls=L.find(stStartable)||(selFac==='pirate'?UNB_START[0]:START_HULLS[0])}}catch(e){}
+  const r=o.apply(this,arguments);try{for(const b of $('clsrow').querySelectorAll('[data-cls]'))if(!stStartable(b.dataset.cls))b.hidden=true;stSync()}catch(e){console.error(e)}return r}}
