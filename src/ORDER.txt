@@ -58,5 +58,7 @@ js/16zn_dev.js
 js/16zo_company2.js
 js/16zp_company3.js
 js/16zq_jobs2.js
+js/16zr_mapside.js
+js/16zs_start2.js
 js/17_main.js
 end.html

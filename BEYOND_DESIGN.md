@@ -1536,6 +1536,31 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - **What stays:** the intel bar above and the convoy section below.
 - **Tests:** `jobs.py`, `ship.py` and `hull_tags.py` read the new classes (`.jrow2`, `.jdet2`).
 
+### Screens pass: the map's side panel (3 Nov 2026)
+- **File:** `16zr_mapside.js`.
+- **For the picked system, on top:**
+  - its name (live or from intel), Zoom in ▸ / ◀ Galaxy;
+  - who holds it, its station and your base there, and how far it is;
+  - Set course / Clear course;
+  - a threat line when a strike is coming. On your base, **Guards intercept** sets that base's crews to guarding (or posts a Guard job).
+- **Your forces:** your crews based in this system and all your capitals, each with a tick box and its status (mining, hauling, guarding; here, on its way, N jumps away, patrolling, escorting).
+- **Orders for the ticked forces:**
+  - crews: Mine here, Haul home, Guard the depot, Idle;
+  - capitals: Come here, Guard here, Patrol around here, Escort me.
+- **What stays:** the sector picture (hidden while the map itself is zoomed in). Everything the panel showed before is under **More ▾**: galaxy control, operations, the capital fleet, vaults, recent news, pilots online, New pilot.
+- The mockup's "Move to…" (click the map to place a crew) isn't built: crews don't take map positions.
+
+### Screens pass: the title screen (3 Nov 2026)
+- **File:** `16zs_start2.js`. The layout has two columns, built from the existing sheet, so every id, card and button is unchanged.
+- **Left column:** the title, then the steps:
+  1. Callsign.
+  2. **Legend**, collapsed. Its header shows your level and start package; open, it shows the perk choices (the next locked level shown greyed), the medium-hull choice, any Conqueror's spoils, and a link to the Leaderboard.
+  3. Freeport, 4 Role and 5 Ship, open. Each header shows what's picked and folds its cards away.
+
+  Play with friends and the controls line follow.
+- **Right column:** a picture of the freeport and the ship you picked, drawn by the start screen's small renderer from their real models, with their names underneath. The freeports share one station model, so the station looks the same for each; the ship changes with the design line.
+- On narrow screens the picture is hidden.
+
 ### The developer panel without a faction (Ctrl+Alt+D, 3 Nov 2026)
 - **New file `16zn_dev.js`.**
 - Every power can now be picked as the enemy side, along with the Unbound and the Brood.
