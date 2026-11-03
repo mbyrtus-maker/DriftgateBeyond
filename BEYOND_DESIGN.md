@@ -8,7 +8,7 @@ A new game in the Driftgate universe. This file holds its design as it is decide
 
 ---
 
-## Vision (draft 3, 2 Nov 2026: for review, nothing here is built)
+## Vision (draft 3, 2 Nov 2026; approved, and built in stages 1 to 14: see the "as built" sections at the end for what is in the game and what is not yet)
 
 ### In one paragraph
 The war goes on, but you no longer fight in it as a soldier. You are an independent contractor who starts at a freeport with one light ship and a few credits, and you take work from whoever will pay. Corporations under the factions and at the freeports (two at each) make what the market sells, and you can make it yourself: ore into components, components into parts, parts into better parts. Your money and materials go up a ladder: ships, then upgrades to those hulls, then a Lair (2 levels), then a Depot (3), then a full Station (5), and finally capital ships built at your stations. From the Depot on you hire AI pilots and ships, pay their upkeep, earn from your own market, post your own jobs and command them from a strategic map. In the end your company declares itself a faction and joins the war as a fourth contender.
@@ -647,7 +647,7 @@ Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is cre
 
 ---
 
-## Build spec: stages 1 and 2 (approved 2 Nov 2026; stage 1 built, see "Stage 1: as built")
+## Build spec and as-built notes (stages 1 and 2 specified 2 Nov 2026; stages 1 to 14 built 2 Nov 2026, each with its "as built" section below)
 Concrete plan for the first two build stages, mapped against the Driftgate 1 code. File references are to `src/js/`.
 
 ### Decisions (2 Nov 2026)
