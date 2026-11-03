@@ -16,7 +16,7 @@ function stPic(){const cv=$('stPic');if(!cv||!G||!MDL.ready)return;const w=cv.cl
   const pir=selFac==='pirate',port=pir?WRACK.sid:selPort,col=pir?sideCol('pirate'):'#e8c878',line=FAC(selFac).col||'#5fa8ff';
   const g=c.createRadialGradient(w*.62,h*.36,10,w*.62,h*.36,Math.max(w,h)*.7);g.addColorStop(0,'rgba(40,52,84,.55)');g.addColorStop(1,'rgba(5,7,13,0)');c.fillStyle=g;c.fillRect(0,0,w,h);
   let sd=port.split('').reduce((a,ch)=>a*31+ch.charCodeAt(0),7)>>>0;const rr=()=>(sd=(sd*1664525+1013904223)>>>0)/4294967296;c.fillStyle='rgba(236,228,207,.55)';for(let i=0;i<70;i++){c.beginPath();c.arc(rr()*w,rr()*h,rr()*1.1+.2,0,TAU);c.fill()}
-  try{const m=stationMesh(pir?'pirate':'neutral','station');const s=Math.min(w,h)*.36/stR(m.core.data);stDraw(c,m.core.data,ST_Q,w*.6,h*.36,s,.95);if(m.spin&&m.spin.data&&m.spin.data.length>30)stDraw(c,m.spin.data,ST_Q,w*.6,h*.36,s,.95)}catch(e){}
+  try{const nm=pir?'by_haven':stMdlName('neutral','free',port),m=nm&&MDL.i[nm]?stMesh(nm,pir?'pirate':'neutral',pir?240:210):stationMesh(pir?'pirate':'neutral','station');const s=Math.min(w,h)*.36/stR(m.core.data);stDraw(c,m.core.data,ST_Q,w*.6,h*.36,s,.95);if(m.spin&&m.spin.data&&m.spin.data.length>30)stDraw(c,m.spin.data,ST_Q,w*.6,h*.36,s,.95)}catch(e){}
   try{const d=shipMesh(selFac,selCls).hull.data,s=Math.min(w,h)*.2/stR(d);stDraw(c,d,SHIP2D_Q,w*.3,h*.74,s,1)}catch(e){}
   $('stCap').innerHTML=`<div><span class="lab">Freeport</span><b style="color:${col}">${esc(DEF[port].name)}</b></div><div style="text-align:right"><span class="lab">Ship</span><b style="color:${line}">${esc(FAC(selFac).hulls[selCls])}</b><span class="note" style="margin:0;display:block">${esc(CLASSES[selCls].name)}</span></div>`}
 // ---- the layout: built once from the existing sheet

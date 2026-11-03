@@ -1631,3 +1631,13 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - **AI freighters, traders and miners** notice half the time; one that notices breaks off and runs at full burn.
   - **Heat:** completing a scan of a power's ship inside that power's own space adds a little heat with it (+6). Elsewhere scanning is nobody's business.
 - **Not yet:** guests in multiplayer, whose game doesn't hold other ships' cargo; their scanner shows nothing until the host relays readings.
+
+### The three freeports, told apart (3 Nov 2026)
+- **The user's ask:** a slightly altered station for each freeport, some distinction but not much.
+- All three keep the approved freeport design (`freeport(v)` in `tools/previews/beyond_faction_stations.py`, `FREEPORT_V`):
+  - **Mirrorwater:** the approved design as it was: four docking arms.
+  - **Coldwater Drift:** three longer docking arms, and a lit ring round its waist on three spokes.
+  - **Ember Wake:** four arms swept down like a crown, and a short beacon mast above the upper welcome gate.
+- **Models:** `by_freeport`, `by_freeport_cw` and `by_freeport_ew`, chosen by the station's system (`FP_MDL` in `16z_models.js`). All three are the same overall size.
+- **Docking ports:** each freeport's ports are now set at the heads of its docking arms (`PTS` in `build_models.py`), not found from the silhouette. So Coldwater has three ports.
+- **The title screen's picture** now shows the real freeport model for the picked port (it showed the generic station before).

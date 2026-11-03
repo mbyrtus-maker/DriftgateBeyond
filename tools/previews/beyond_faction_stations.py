@@ -241,7 +241,12 @@ def lights_string(M,a,b,sag=.6,n=12):
     pts=[a+(b-a)*t-np.array([0,sag*4*t*(1-t),0]) for t in np.linspace(0,1,n)]
     tube(M,pts,[.015]*n,DARK,.9,4,cap0=False,cap1=False)
     for k,p in enumerate(pts[1:-1]):M.blob(tuple(p),.07,WIN if k%2 else ACC,sub=1,noise=0)
-def freeport():
+FREEPORT_V={'mw':dict(arms=4,phase=PI/4,tilt=0.0,ring=False,mast=False),          # Mirrorwater: the approved design
+            'cw':dict(arms=3,phase=PI/6,tilt=0.0,ring=True,mast=False),           # Coldwater Drift: three longer arms, a lit ring round its waist
+            'ew':dict(arms=4,phase=0.0,tilt=-.26,ring=False,mast=True)}           # Ember Wake: arms swept down like a crown, a beacon mast on top
+def freeport(v='mw'):
+    # variants (3 Nov 2026): the three freeports share the design, each with one or two touches of its own (FREEPORT_V)
+    V=FREEPORT_V[v]
     # a welcoming trade spire, standing upright: a smooth capsule spine with a lit glass atrium (the bazaar) at its heart, two
     # promenade rings round it with lit window stripes, lantern lights and billboards, welcome gates above and below ringed with lights,
     # four long docking arms reaching out from the centre lined with berths and ending in docking heads, two corporate towers standing on the upper promenade (one per corporation, unlike
@@ -267,19 +272,26 @@ def freeport():
         for k in range(16):a=k*PI/8;M.blob((math.cos(a)*2.8,yg+sg*.18,math.sin(a)*2.8),.09,WIN if k%2 else GLOW,sub=1,noise=0)
         for a in (PI/2,PI/2+2*PI/3,PI/2+4*PI/3):tube(M,[(math.cos(a)*.5,y,math.sin(a)*.5),(math.cos(a)*2.7,yg,math.sin(a)*2.7)],[.06,.06],LIGHT,.9,5)
         node(M,(0,yg,0),.22,GLOW)
-    for k in range(4):                                                                                            # four docking arms from the centre
-        a=k*PI/2+PI/4;u=np.array([math.cos(a),0,math.sin(a)]);t=np.array([-math.sin(a),0,math.cos(a)])
-        tube(M,[u*2.2,u*8.0],[.38,.32],LIGHT,.95,12);B=Mesh();ring(B,(0,0,0),.39,.06,ACC,seg=16,sides=4,axis='z')
+    na=V['arms'];L8=8.0 if na==4 else 8.8
+    for k in range(na):                                                                                           # docking arms from the centre
+        a=k*2*PI/na+V['phase'];tl=V['tilt'];u=np.array([math.cos(a)*math.cos(tl),math.sin(tl),math.sin(a)*math.cos(tl)]);t=np.array([-math.sin(a),0,math.cos(a)])
+        tube(M,[u*2.2,u*L8],[.38,.32],LIGHT,.95,12);B=Mesh();ring(B,(0,0,0),.39,.06,ACC,seg=16,sides=4,axis='z')
         for d in (3.2,5.4,7.6):put(M,B,u*d,zdir(u))
-        tube(M,[u*2.3+[0,.36,0],u*7.9+[0,.36,0]],[.035,.035],WIN,1.0,4,cap0=False,cap1=False)                       # lit stripe along the top
-        for d in (3.9,5.6,7.3):                                                                                    # berths along each arm, above and below
+        tube(M,[u*2.3+[0,.36,0],u*(L8-.1)+[0,.36,0]],[.035,.035],WIN,1.0,4,cap0=False,cap1=False)                       # lit stripe along the top
+        for d in ((3.9,5.6,7.3) if na==4 else (3.9,5.5,7.1,8.3)):                                                 # berths along each arm, above and below
             for sy in (1,-1):
                 c=u*d+[0,sy*.42,0];B=Mesh();plate(B,[(math.cos(q)*.5,0,math.sin(q)*.5) for q in np.linspace(0,2*PI,8,endpoint=False)],.05,MID,1.0)
                 ring(B,(0,.04,0),.38,.03,ACC,seg=16,sides=4,axis='y');node(B,(0,.06,0),.06);put(M,B,c,frame_y((0,sy,0)))
-        e=u*8.0;lathe(M,[(-.6,.3),(-.45,.95),(.45,.95),(.6,.3)],16,c=e,alt=.05)                                   # docking head with four collars
+        e=u*L8;lathe(M,[(-.6,.3),(-.45,.95),(.45,.95),(.6,.3)],16,c=e,alt=.05)                                   # docking head with four collars
         band(M,0,.97,16,.12,WIN,c=e)
         for q in (-1,1):collar(M,e+t*q*.9,.24,t*q)
         collar(M,e+u*.9,.26,u);floods(M,[e+[0,.65,0],e-[0,.65,0]],.07)
+    if V['ring']:                                                                                                 # Coldwater: a lit ring round the waist on three spokes
+        ring(M,(0,0,0),5.6,.16,LIGHT,seg=72,sides=8,axis='y');ring(M,(0,0,0),5.6,.06,WIN,seg=72,sides=4,axis='y')
+        for k in range(3):a=k*2*PI/3+PI/2;tube(M,[(math.cos(a)*2.45,0,math.sin(a)*2.45),(math.cos(a)*5.5,0,math.sin(a)*5.5)],[.07,.07],LIGHT,.95,6)
+    if V['mast']:                                                                                                 # Ember Wake: a beacon mast above the upper gate
+        tube(M,[(0,8.2,0),(0,8.95,0)],[.12,.06],LIGHT,.95,8);node(M,(0,9.04,0),.15,GLOW)
+        for y in (8.45,8.75):ring(M,(0,y,0),.26,.04,ACC,seg=16,sides=4,axis='y')
     for a,lit in ((0.0,True),(PI,False)):                                                                          # two corporate towers on the upper promenade
         b=np.array([math.cos(a)*3.6,3.95,math.sin(a)*3.6])
         if lit:
@@ -332,7 +344,7 @@ def light_up(M,windows=200,seed=7):
         navs.append(p);M.blob(tuple(p),sz*1.3,GLOW,sub=1,noise=0)
     return M
 def _lit(fn,n):
-    def f():return light_up(fn(),n)
+    def f(*a):return light_up(fn(*a),n)
     f.__name__=fn.__name__;return f
 halcyon_station=_lit(halcyon_station,220);halcyon_depot=_lit(halcyon_depot,70)
 varkesh_station=_lit(varkesh_station,220);varkesh_depot=_lit(varkesh_depot,70)

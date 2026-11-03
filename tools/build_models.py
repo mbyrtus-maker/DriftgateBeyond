@@ -193,7 +193,16 @@ for _L in (_BR.RECON,_BSu.SUPPORT,_BBr.BRAND,_BU.UNBOUND):
             MODELS[_k]=('ship',(lambda f:lambda:f().out())(_f));GLOW_N[_k]=0
 for _fac,_ln,_st,_dp in _BFS.FACTION_STATIONS:
     MODELS['by_st_'+_fac]=('base',(lambda f:lambda:f().out())(_st));MODELS['by_dp_'+_fac]=('base',(lambda f:lambda:f().out())(_dp))
-MODELS['by_freeport']=('base',lambda:_BFS.freeport().out())
+MODELS['by_freeport']=('base',lambda:_BFS.freeport('mw').out())
+MODELS['by_freeport_cw']=('base',lambda:_BFS.freeport('cw').out())
+MODELS['by_freeport_ew']=('base',lambda:_BFS.freeport('ew').out())
+# the freeports' docking ports: the head at the end of each docking arm (3 Nov 2026: three variants with different arms)
+def _fp_ports(v):
+    import math;V=_BFS.FREEPORT_V[v];na=V['arms'];L=(8.0 if na==4 else 8.8)+.9;out=[]
+    for k in range(na):
+        a=k*2*math.pi/na+V['phase'];tl=V['tilt'];out.append(np.array((math.cos(a)*math.cos(tl)*L,math.sin(tl)*L,math.sin(a)*math.cos(tl)*L),float))
+    return out
+for _v,_n in (('mw','by_freeport'),('cw','by_freeport_cw'),('ew','by_freeport_ew')):PTS[_n]=_fp_ports(_v)
 MODELS['by_haven']=('base',lambda:_BUB.scrapheart().out())
 MODELS['by_rift']=('base',lambda:_BRS.riftstone().out())
 # Beyond: the company-style player bases (tools/previews/beyond_stations.py): Lairs, Depots by level, the Station core and its
@@ -205,7 +214,7 @@ BASE_MODELS={'by_lair1':lambda:_BS.lair(1),'by_lair2':lambda:_BS.lair(2),'by_dep
 for _k,_f in BASE_MODELS.items():MODELS[_k]=('base',(lambda f:lambda:f().out())(_f))
 for _k,_v in WORKS.items():MODELS[_k]=('struct',_v[0] if len(_v)>2 else (lambda f:lambda:comp_model(f))(_v[0]))
 FIT={'rockbase':230,'station':150,'depot':105,'forge':120,'relay':120,'yard':120,**{k:v[1] for k,v in WORKS.items()}}
-FIT.update({'by_st_halcyon':170,'by_st_varkesh':170,'by_st_ostrova':170,'by_dp_halcyon':105,'by_dp_varkesh':105,'by_dp_ostrova':105,'by_freeport':210,'by_haven':240})   # world half-size: docking ports scale by it
+FIT.update({'by_st_halcyon':170,'by_st_varkesh':170,'by_st_ostrova':170,'by_dp_halcyon':105,'by_dp_varkesh':105,'by_dp_ostrova':105,'by_freeport':210,'by_freeport_cw':210,'by_freeport_ew':210,'by_haven':240})   # world half-size: docking ports scale by it
 def pack():
     idx={};blob=bytearray()
     for name,(kind,fn) in MODELS.items():
