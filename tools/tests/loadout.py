@@ -38,11 +38,11 @@ async def main():
     # a courier's cargo module
     print('cargo module',await ev("""(()=>{const P=S.player,c0=P.cls;P.cls='courier';const F=fitOf(P);const moved={w:F.w.slice(),u:F.u.slice(),vault:{laser:P.vault.pt_laser||0,msl:P.vault.pt_msl||0}};give('pt_cargo');const m=fitDo(FC,P,'u:1:cargo');const a=W.player.st.cargo;fitDo(FC,P,'u:1:');const b=W.player.st.cargo;
       P.cls=c0;fitOf(P);fitDo(FC,P,'w:1:laser');fitDo(FC,P,'w:2:missile');refreshPlayerStats();return JSON.stringify({moved,msg:m,withModule:a,without:b,base:CLASSES.courier.cargo,back:fitOf(P).w})})()"""))
-    # the mining laser on a Medium Miner: on the ring it cuts ore into the hold, off it only sparks
+    # the mining laser on a Medium Miner: on the ring it cuts ore into the hold; close over a pole, with the ring far off the nose, it only sparks
     print('mining laser',await ev("""(()=>{undock();const P=S.player,e=W.player;P.cls='prospector';fitOf(P);give('pt_mlaser');give('pt_charge');fitDo(FC,P,'w:0:charge');fitDo(FC,P,'w:1:mlaser');refreshPlayerStats();magTick(P,.1);P.mtool='mlaser';P.cargo={};const s=S.sectors[W.sid];
       const a=s.ast.filter(x=>!x.comet&&oreTotal(x)>0).sort((x,y)=>oreTotal(y)-oreTotal(x))[0];if(!a)return 'no rock';const n=ringN(a),R=astR(a),ax=Math.abs(n.x)<.9?{x:1,y:0,z:0}:{x:0,y:1,z:0};let w={x:n.y*ax.z-n.z*ax.y,y:n.z*ax.x-n.x*ax.z,z:n.x*ax.y-n.y*ax.x};const l=hyp(w.x,w.y,w.z);w={x:w.x/l,y:w.y/l,z:w.z/l};
       const put=(d)=>{e.x=a.x+d.x*(R+150);e.y=a.y+d.y*(R+150);e.z=a.z+d.z*(R+150);faceInstant(e,-d.x,-d.y,-d.z);e.vx=e.vy=e.vz=0};put(w);const o0=oreTotal(a);let r='';
-      for(let i=0;i<40;i++){e.energy=e.st.eCap;r=mlCut(e,P,a,1,s)}const on={result:r,cut:o0-oreTotal(a),hold:invMass(P.cargo),beam:mlBeam(e,a)};put(n);e.energy=e.st.eCap;const off=mlCut(e,P,a,1,s);
+      for(let i=0;i<40;i++){e.energy=e.st.eCap;r=mlCut(e,P,a,1,s)}const on={result:r,cut:o0-oreTotal(a),hold:invMass(P.cargo),beam:mlBeam(e,a)};e.x=a.x+n.x*(R+20);e.y=a.y+n.y*(R+20);e.z=a.z+n.z*(R+20);faceInstant(e,-n.x,-n.y,-n.z);e.vx=e.vy=e.vz=0;e.energy=e.st.eCap;const off=mlCut(e,P,a,1,s);
       window._A=a;return JSON.stringify({on,offRing:off,rate:mlRate(P)})})()"""))
     print('ledger',await ev(LED))
     print('blast breaks ring',await ev("""(()=>{const P=S.player,e=W.player,s=S.sectors[W.sid],a=_A;P.blN=blCap(P);s.charges=s.charges||[];const pt=blPts(a)[0];s.charges.push({id:S.nextId++,o:blKey(P),side:e.side,a:a.id,wp:false,x:pt.x,y:pt.y,z:pt.z,pi:0,q:'on'});
