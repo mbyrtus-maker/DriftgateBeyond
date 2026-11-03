@@ -8,13 +8,13 @@ def pol(ang,r,c=(.5,.5)):
     t=math.radians(ang);return (round(c[0]+r*math.cos(t),3),round(c[1]+r*math.sin(t),3))
 def sy(name,ang,r,kind,own=None):
     x,y=pol(ang,r);return (name,x,y,kind,own)
-# Deep space is the middle of the galaxy: the Bloom at its centre, an inner ring of five deep systems, and a rim of six
-# with the Wrack (Scrapheart Haven) among them. The freeports sit just outside deep space, each in a pocket whose two gates
+# Deep space is the middle of the galaxy: the Bloom at its centre, an inner ring of five deep systems, and a rim of six.
+# The Wrack (Scrapheart Haven) is a hidden pocket between them, gated only to two inner-ring deep systems. The freeports sit just outside deep space, each in a pocket whose two gates
 # both lead into the deep-space rim: every route to a freeport crosses deep space.
 # Around that, a ring of twelve: the three frontiers, the three forges, and six quiet systems that are the doors to deep space.
 # Outside, the three cores, the relay, and more quiet space out to the corners.
-R1,R2,RF,R3,R4=.10,.19,.28,.36,.47
-DISC=.235
+R1,R2,RF,R3,R4=.10,.20,.29,.37,.47
+DISC=.245
 S = {
  'bl':("The Bloom",.5,.5,'hive','brood'),
  'gs':sy("Glass Shallows",270,R1,'deep'),
@@ -25,7 +25,8 @@ S = {
  'gd':sy("Gloam Deep",0,R2,'deep'),
  'mn':sy("Mournwater",60,R2,'deep'),
  'tm':sy("Thornmere",120,R2,'deep'),
- 'wr':sy("The Wrack",180,R2,'den','pirate'),
+ 'rm':sy("Rustmere",180,R2,'deep'),
+ 'wr':sy("The Wrack",162,.16,'den','pirate'),
  'sk':sy("Sunken Reach",240,R2,'deep'),
  'br':sy("Blackwater Rift",300,R2,'deep'),
  'ew':sy("Ember Wake",30,RF,'freeport','freeport'),
@@ -61,9 +62,9 @@ S = {
  'll':("Lastlight Shoals",.95,.95,'void',None),
 }
 L = """bl-gs bl-cd bl-ld bl-ae bl-ud gs-cd cd-ld ld-ae ae-ud ud-gs
-gd-cd mn-ld tm-ae wr-ud sk-gs br-gs gd-mn mn-tm tm-wr wr-sk sk-br br-gd
-ew-gd ew-mn cw-tm cw-wr mw-sk mw-br
-dl-gd fh-mn qs-tm hu-wr cv-sk bw-br
+gd-cd mn-ld tm-ae rm-ud sk-gs br-gs gd-mn mn-tm rm-sk sk-br br-gd wr-ae wr-ud
+ew-gd ew-mn cw-tm cw-rm mw-sk mw-br
+dl-gd fh-mn qs-tm hu-rm cv-sk bw-br
 vm-dl dl-ci ci-fh fh-of of-qs qs-sh sh-hu hu-hr hr-cv cv-ke ke-bw bw-vm
 vb-vm os-of hp-hr sg-dl sg-rh eb-qs eb-sm nv-cv nv-pr
 rh-ci rh-ho ho-of ho-os os-ll ll-rh gw-sh gw-dm dm-hp gw-sm hp-pr sf-ke sf-av av-bw av-vb vb-ih ih-av dm-hu""".split()
