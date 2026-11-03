@@ -1485,3 +1485,20 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - the best places to sell, from your scans.
 
   "Table" switches back to the old list, with every button it had (Claim Beacons included). The makers' works and salvage sales stay underneath.
+
+### The developer panel without a faction (Ctrl+Alt+D, 3 Nov 2026)
+- **New file `16zn_dev.js`.**
+- Every power can now be picked as the enemy side, along with the Unbound and the Brood.
+- The friendly heavy bomber flies as yours, and "Vault" reads Hangar.
+- **A new Beyond section:**
+  - standing +25 or −25 with a chosen power or the Compact;
+  - Contractor Rating +1;
+  - clear heat, or heat +40 with every power;
+  - Lair, Depot, Station and building kits (into your hangar when docked, your hold in flight);
+  - an AI crew at your depot;
+  - Rift Shards and contraband;
+  - the Dread Pirate spawned in this system;
+  - Scrapheart knocked out;
+  - ten minutes of the galaxy run forward.
+- Anything that makes goods moves the ledger baseline, and guests' requests run on the host.
+- **Test:** `dev_beyond.py`.
