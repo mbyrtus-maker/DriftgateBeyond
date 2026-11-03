@@ -645,7 +645,7 @@ Hull upgrades are stats only · a blast breaks a rock's ring · AI upkeep is cre
 
 ---
 
-## Build spec: stages 1 and 2 (draft for approval, 2 Nov 2026; nothing built yet)
+## Build spec: stages 1 and 2 (approved 2 Nov 2026; stage 1 built, see "Stage 1: as built")
 Concrete plan for the first two build stages, mapped against the Driftgate 1 code. File references are to `src/js/`.
 
 ### Decisions (2 Nov 2026)
@@ -675,6 +675,19 @@ Today one field, the pilot's `faction`, does two jobs: it picks the **hull desig
 **Tests:** about 12 browser tests assume a faction start (jobs, hulls, ships, limpets, contacts, docks, soak, haul rates, the five multiplayer tests). Each gets a one-line setup that swears the test pilot to Halcyon where it tests faction behaviour; new tests cover standing bands, docking by standing, bounty payers and the freeport start. The fast simulator's `PFAC` becomes `PPORT` (mw, cw or ew).
 
 **War check:** stage 1 doesn't change how the powers fight each other, so the AI-only war should be unchanged; run the war check once to prove it (Driftgate 1's target until stage 2).
+
+### Stage 1: as built (2 Nov 2026)
+- **New file `02b_standing.js`** holds the standing model: `P.stand` (Halcyon, Varkesh, Ostrova and the Compact, −100..100), `P.sworn` (null for a contractor), `P.home` (the freeport), `P.job` (`{by, kind, id}`), and the helpers `standOf`, `standAdd`, `standBand`/`standName`, `pilotHostile`, `tradeOK`, `escortOK`, `intelSide`, `jobIssuers`, `bountyPayer`, `weSide`, `containPayer`, `helpFac`, `pilotHome`, `standHit`, `standWork`, `standDrift`. Tunables in `STAND`.
+- **`P.faction` is now the design faction only;** every allegiance read across the 16 files uses `P.sworn` (about 250 sites). `sideNorm('player')` is the sworn faction, or the Compact for a contractor. Save version 3 (older saves are refused).
+- **Hostility:** `hostile()` sends the unsworn player through `pilotHostile`: the Brood and the Unbound always, a power below −50, or for 60 s after you attacked one of its ships (aggro); the Compact never. It's a constant-time read. **Guests** fly as side `neutral` (the Compact) when unsworn, and AI targeting asks `hostE(side, ship)` per pilot (about 40 targeting sites), so each guest is judged by their own standing.
+- **You can fire on anyone:** a contractor's shots hit any power's ship (`hostAt`), except ships escorting or hired by them. Damage costs standing (`STAND.hitK`, about −8 for a Light Fighter killed) and starts the 60 s aggro; stations and outposts cost a quarter as much per point.
+- **Docking** (`canDock`, guests' `hDock`) and vault access follow `tradeOK`: a contractor docks where it stands −10 or better (freeports by Compact standing); sworn pilots as in Driftgate 1.
+- **Pay:** `payKill` and ace kills are paid by `bountyPayer`: a sworn pilot's faction; a contractor's job issuer if at war with the victim; else the power at war with the victim that the pilot stands best with (not Hostile); else nobody (the Compact's ships carry no bounty). War effort goes to the job's issuer (`weSide`). Seeder spotting, Brood node burns and anomaly scans are paid by `containPayer` (the best-standing power).
+- **Jobs by issuer:** every power now posts delivery contracts (up to three open each, a new one every 20–35 s). A contractor sees the station owner's contracts at Neutral or better, and convoy raids and escorts for the station owner (at a freeport, for every power it stands Neutral or better with). Selecting a job records `P.job` with its issuer (guests send it to the host). **Bonuses keyed by the issuer:** Halcyon +20% on the delivery contracts it issues, Varkesh +20% on its Aurorite jobs, Ostrova +40% on intel and escort pay it issues. Signature hulls need Partner standing with the station's owner (and, until stage 6, flying that faction's design line).
+- **Standing moves:** deliveries (+3 and +1 per 1,500 cr, double for blockade runs), escorts (+4 and +0.5 a jump), kills paid by a power (up to +3); a quarter as much lost with the issuer's enemies; damage as above; drift toward 0 at 0.01 a second.
+- **Start:** the start screen offers the three freeports and three roles (no Scouting); `START_HULLS` drops the scout. You launch unsworn, docked at the freeport, Neutral with everyone; each freeport's starters use the nearest power's design line until stage 6 (Mirrorwater Halcyon, Coldwater Drift Ostrova, Ember Wake Varkesh). Death respawns you at your freeport. Training still starts sworn to a faction. The Unbound card stays until stage 8.
+- **What a contractor doesn't get yet:** faction-only services (command wings and orders, patronage, hired wingmen, campaign moves, beacon flips and limpets, convoy calls, vault shipping, capital yards) need a sworn pilot, as before; they come back for contractors with later stages. The HUD orders card shows "Contract work" with the selected job's issuer and your standing.
+- **Tests:** `?sworn=halcyon` on the page URL starts a pilot sworn to that faction (dock, jobs, ship, limpet, contacts and hull_tags use it). New: `standing.py` (in the quick suite) and `mp_contractor.py`. The fast simulator takes `PPORT=mw|cw|ew` for a contractor start, and `FS_DIR` for its scratch folder.
 
 ### Stage 2: faction relations and leaders
 **New state** (on `S`, so saved and sent to guests already): `S.rel` (relation per pair), `S.relLog` (recent entries, capped), `S.leaders` (per power: name, traits, ship, escort, grudges, cooldowns), `S.facEv` (cooldowns per pair), `S.chron` (the chronicle). New file `src/js/16g_leaders.js` after `16f_factions.js`.

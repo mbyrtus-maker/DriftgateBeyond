@@ -4,7 +4,7 @@ import asyncio,json,sys
 from playwright.async_api import async_playwright
 MIN=float(sys.argv[1]) if len(sys.argv)>1 else 20
 JS=r"""((fac,cls,mins)=>{const errs=[];const E=(w,e)=>errs.push(w+': '+(e&&e.message)+' | '+String(e&&e.stack||'').split('\n').slice(1,3).join(' / '));
- FEED.length=0;newGame(fac==='pirate'?'halcyon':fac,cls,'Tester');if(fac==='pirate'){S.unb=1;unbP();S.player.faction='pirate';S.player.cls=cls}startWith(S);
+ FEED.length=0;const port=fac.startsWith('port:')?fac.slice(5):null;if(port)fac='halcyon';newGame(fac==='pirate'?'halcyon':fac,cls,'Tester',port);if(fac==='pirate'){S.unb=1;unbP();S.player.faction='pirate';S.player.cls=cls}startWith(S);
  running=true;try{undock()}catch(e){E('undock',e)}
  const dt=1/30;let mode='fight',mT=0,acts={};const P=S.player;const T0=S.T;
  const nb=()=>NEIGH[P.sector]||[];
@@ -34,7 +34,8 @@ JS=r"""((fac,cls,mins)=>{const errs=[];const E=(w,e)=>errs.push(w+': '+(e&&e.mes
  }
  for(const k of ['Space','KeyW','ShiftLeft'])keys[k]=false;
  return JSON.stringify({fac,cls,T:Math.round((S.T-T0)/60),acts,errs:[...new Set(errs)].slice(0,30),fe:[...new Set((window.__dgErr||[]).map(x=>x.where+': '+x.msg+' | '+x.stack.split(' | ').slice(1,3).join(' / ')))]})})"""
-SC=[('halcyon','interceptor'),('varkesh','skiff'),('ostrova','courier'),('halcyon','scout'),('varkesh','bomber'),('pirate','raider'),('ostrova','heavy'),('halcyon','dredger')]
+# port:mw etc. is a Beyond contractor starting at that freeport
+SC=[('port:mw','interceptor'),('port:cw','skiff'),('port:ew','courier'),('halcyon','interceptor'),('varkesh','skiff'),('ostrova','courier'),('halcyon','scout'),('varkesh','bomber'),('pirate','raider'),('ostrova','heavy'),('halcyon','dredger')]
 async def main():
   async with async_playwright() as p:
     b=await p.chromium.launch(args=['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader'])

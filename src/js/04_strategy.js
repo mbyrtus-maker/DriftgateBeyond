@@ -90,7 +90,7 @@ function patOpts(f,R){const out=[],L=patList(f);
   return out}
 function patUnder(f){let lo=null,ln=1e9;for(const g of FAC_IDS){const n=territory(g).size;if(n<ln){ln=n;lo=g}}return lo===f}
 function patClean(s){return String(s||'').replace(/[^\p{L}\p{N} '\-.]/gu,'').replace(/\s+/g,' ').trim().slice(0,24)}
-function patBuy(c,arg){const P=S.player,f=P.faction,[id,nm]=String(arg).split('|');if(S.unb||!FAC_IDS.includes(f)||c.owner!==f){dockErr='Patronage is open at your own faction\'s stations.';return}
+function patBuy(c,arg){const P=S.player,f=P.sworn,[id,nm]=String(arg).split('|');if(S.unb||!FAC_IDS.includes(f)||c.owner!==f){dockErr='Patronage is open at your own faction\'s stations.';return}
   const o=patOpts(f,S.stations[P.sector]).find(x=>x.id===id);if(!o){dockErr='That project is no longer open for sponsorship.';return}if(P.credits<o.price){dockErr=`Sponsoring it costs ${fmt(o.price)} cr.`;return}
   const paid=transfer('player',f,o.price);if(paid<o.price){if(paid)transfer(f,'player',paid);dockErr='Not enough credits.';return}
   const ship=o.cap&&o.kind!=='yard'?patClean(nm):'';patList(f).push({id:S.nextId++,kind:o.kind,sid:o.sid||null,k:o.k||null,name:o.name,ship,by:pkey(),who:P.name||'a pilot',T:S.T,paid,spent:0});
@@ -118,8 +118,8 @@ function patTick(){if(NET.cl||!S.pat)return;for(const f of FAC_IDS){const L=S.pa
     if(!ok&&!building){L.splice(i,1);continue}if(!building)patSupply(f,p,patKit(f,p.kind),FAC_HOME(f),[st])}}}
 function patLaunch(f,type,t){const kind=type==='yardbuild'?'yard':type==='frigbuild'?'car':type==='escbuild'?'esc':null,L=S.pat&&S.pat[f];if(!kind||!L)return;const i=L.findIndex(p=>p.kind===kind);if(i<0)return;const p=L.splice(i,1)[0];
   if(t&&p.ship)t.name=p.ship;keyFeed(p.by,`★ The ${FACTIONS[f].short} ${PAT_NAME[kind]}${t?' '+esc(t.name):''} you sponsored is ${kind==='yard'?'complete':'launched'}.`,'good')}
-function patOK(c,P){return!S.unb&&FAC_IDS.includes(P.faction)&&c.kind==='station'&&c.owner===P.faction}
-function patronHtml(c,P){const f=P.faction,R=S.stations[P.sector],opts=patOpts(f,R),L=patList(f);
+function patOK(c,P){return!S.unb&&FAC_IDS.includes(P.sworn)&&c.kind==='station'&&c.owner===P.sworn}
+function patronHtml(c,P){const f=P.sworn,R=S.stations[P.sector],opts=patOpts(f,R),L=patList(f);
   let h=`<p class="note" style="margin:0 0 12px">Sponsor ${FACTIONS[f].short}'s next station module or capital ship. Nothing is paid back: ${FACTIONS[f].short} spends your credits on the goods the project is missing, buying from freeports at market price or shipping from its warehouse, and builds it once everything is in place. Station work costs more the more developed the station is; a carrier costs more than a shipyard, and a shipyard more than an escort. You name a capital ship you sponsor, and every sponsorship counts toward the faction's war effort${patUnder(f)?' (1.5× now: your faction holds the least territory)':''}.</p>`;
   if(opts.some(o=>o.cap&&o.kind!=='yard'))h+=`<div class="mprow" style="padding:0;margin:0 0 12px"><input class="mpin" id="patName" maxlength="24" placeholder="Name for a capital ship you sponsor" value="${esc(P.patName||'')}"></div>`;
   if(!opts.length)h+=`<p class="note">Nothing here is open for sponsorship right now.</p>`;
@@ -134,11 +134,11 @@ function patronHtml(c,P){const f=P.faction,R=S.stations[P.sector],opts=patOpts(f
 // replacement arrives 4 minutes later; the contract clock keeps running. Bounties count only your own damage, as always.
 const HIRE={cls:{interceptor:600,striker:1000,heavy:1600},T:1800,maxAhead:3600,re:240};
 const HIRE_E={};   // runtime only: pilot key → {e, sid} of the wingman now flying
-function hireOK(c,P){return!S.unb&&FAC_IDS.includes(P.faction)&&c.kind==='station'&&c.owner===P.faction}
-function hireLive(P){return P.hire&&P.hire.fac===P.faction&&P.hire.until>S.T?P.hire:null}
+function hireOK(c,P){return!S.unb&&FAC_IDS.includes(P.sworn)&&c.kind==='station'&&c.owner===P.sworn}
+function hireLive(P){return P.hire&&P.hire.fac===P.sworn&&P.hire.until>S.T?P.hire:null}
 function hireKit(f,cls){const srcs=[S.econ.fleet[f],S.econ.stock[f]].filter(Boolean);let t=factionTier(f),ld=loadout('patrol',t,cls);while(!haveIn(ld,srcs)&&t>1){t--;ld=loadout('patrol',t,cls)}return haveIn(ld,srcs)?{t,ld,srcs}:null}
 function hireDrop(k){const H=HIRE_E[k];delete HIRE_E[k];if(!H||!H.e||!H.e.alive)return;const w=WORLDS[H.sid];if(!w||!w.ents.includes(H.e))return;inW(w,()=>{returnHome(H.e);despawn(H.e)})}
-function hireBuy(c,arg){const P=S.player,f=P.faction,cls=String(arg),wage=HIRE.cls[cls];if(!hireOK(c,P)||!wage){dockErr='Pilots are hired at your own faction\'s stations.';return}
+function hireBuy(c,arg){const P=S.player,f=P.sworn,cls=String(arg),wage=HIRE.cls[cls];if(!hireOK(c,P)||!wage){dockErr='Pilots are hired at your own faction\'s stations.';return}
   const L=hireLive(P),same=L&&L.cls===cls,from=same?L.until:S.T;if(from-S.T+HIRE.T>HIRE.maxAhead){dockErr=`You can book at most ${HIRE.maxAhead/60} minutes ahead.`;return}
   if(!hireKit(f,cls)){dockErr=`${FACTIONS[f].short} can't kit ${art(FAC(f).hulls[cls]).toLowerCase()} ${FAC(f).hulls[cls]} right now: its warehouse is short.`;return}
   if(P.credits<wage){dockErr=`${art(FAC(f).hulls[cls])} ${FAC(f).hulls[cls]} pilot costs ${fmt(wage)} cr for ${HIRE.T/60} minutes.`;return}
@@ -160,7 +160,7 @@ function hireWorld(){if(NET.cl||S.unb||!W)return;if(W===LW&&S.player)try{hireTic
   if(NET.host){for(const e of W.ents.slice())if(e.rp&&e.alive&&S.pilots&&S.pilots[e.rp]&&e.rp!==NET.me)try{runAs(e.rp,()=>hireTick())}catch(er){frameErr('hire',er)}
     // a guest who docked, died or left keeps no wingman loitering here (it stands down and its kit goes home)
     const me=pkey();for(const k of Object.keys(HIRE_E)){const H=HIRE_E[k];if(k===me||!H||H.sid!==W.sid)continue;const e=MP.rp[k];if(!(e&&e.alive&&W.ents.includes(e)))hireDrop(k)}}}
-function hireHtml(c,P){const f=P.faction,L=hireLive(P),HN=k=>esc(FAC(f).hulls[k]);
+function hireHtml(c,P){const f=P.sworn,L=hireLive(P),HN=k=>esc(FAC(f).hulls[k]);
   let h=`<p class="note" style="margin:0 0 12px">Hire a ${FACTIONS[f].short} pilot to fly escort on you for ${HIRE.T/60} minutes, paid up front to the treasury. Your wingman joins you whenever you're in space, in every system you fly to. If it's shot down, its kit is lost as salvage and a replacement arrives after ${HIRE.re/60} minutes; the contract keeps running. Your wingman's kills don't pay bounties: only your own damage does. Its ship comes from ${FACTIONS[f].short}'s own stock, so a short warehouse can't kit every class.</p>`;
   if(L)h+=`<p class="note" style="color:var(--ok)">Under contract: ${art(FAC(f).hulls[L.cls]).toLowerCase()} ${HN(L.cls)} pilot, ${Math.ceil((L.until-S.T)/60)} min left${(P.hireT||0)>S.T?` · replacement arriving in ${fmtT(P.hireT-S.T)}`:''}.</p>`;
   h+=`<div class="tblw"><table class="t"><thead><tr><th>Wingman</th><th class="r">30 min</th><th class="r">Per hour</th><th></th></tr></thead><tbody>`;
@@ -200,18 +200,18 @@ function covOf(side,sensorsOnly){const C=new Set(),add=(sid,nb)=>{C.add(sid);if(
   for(const sc of S.scouts||[])if(sc.side===side)add(sc.sector,true);for(const x of S.frigates||[])if(x.side===side)add(x.sector,true);for(const sid in S.beacons||{})if(S.beacons[sid].owner===side)C.add(sid);return C}
 let covC=null,covK='';
 function playerCov(){const k=Math.floor(S.T)+'|'+S.player.sector+'|'+S.player.cls+(refitsOf(S.player).scan?'s':'')+'|'+(S.scouts||[]).length+'|'+Object.keys(S.stations).length+'|'+(S.frigates||[]).map(x=>x.sector).join('')+'|'+(S.bcnV||0);if(covC&&covK===k)return covC;
-  const C=covOf(S.player.faction);for(const x of covOf('player'))C.add(x);C.add(S.player.sector);if(CLASSES[S.player.cls].radar||refitsOf(S.player).scan)for(const n of NEIGH[S.player.sector])C.add(n);
+  const sw=S.player.sworn,C=sw?covOf(sw):new Set();if(!sw)for(const f of FAC_IDS)for(const x of covOf(f))C.add(x);for(const x of covOf('player'))C.add(x);C.add(S.player.sector);if(CLASSES[S.player.cls].radar||refitsOf(S.player).scan)for(const n of NEIGH[S.player.sector])C.add(n);
   if(hasIntel())for(const d of SECTOR_DEFS)C.add(d.id);covC=C;covK=k;return C}
 function covered(sid){return playerCov().has(sid)}
-function evKnown(ev){return ev.att===S.player.faction||ev.seen||covered(ev.sector)}
-function covSource(sid){const pf=S.player.faction;if(sid===S.player.sector&&W)return'Your sensors';if(S.beacons&&S.beacons[sid]&&S.beacons[sid].owner===pf)return`${FAC(pf).short} beacon`;
-  for(const sc of S.scouts||[])if(sc.side===pf&&(sc.sector===sid||NEIGH[sc.sector].includes(sid)))return`${FAC(pf).short} scout`;
+function evKnown(ev){return(!!S.player.sworn&&ev.att===S.player.sworn)||ev.seen||covered(ev.sector)}
+function covSource(sid){const pf=S.player.sworn,mine=f=>pf?f===pf:FAC_IDS.includes(f);if(sid===S.player.sector&&W)return'Your sensors';if(S.beacons&&S.beacons[sid]&&mine(S.beacons[sid].owner))return`${FAC(S.beacons[sid].owner).short} beacon`;
+  for(const sc of S.scouts||[])if(mine(sc.side)&&(sc.sector===sid||NEIGH[sc.sector].includes(sid)))return`${FAC(sc.side).short} scout`;
   for(const id in S.stations){const R=S.stations[id];if(friendSide(R.owner)&&(id===sid||NEIGH[id].includes(sid)))return`${R.name} sensors`}
   if(CLASSES[S.player.cls].radar&&NEIGH[S.player.sector].includes(sid))return'Your long-range radar';
   for(const id in S.outposts){const o=S.outposts[id];if(friendSide(o.owner)&&o.sector===sid)return o.name}
   return hasIntel()?'Hollow Relay intercept':'Sensors'}
-function announce(ev){if((NET.cl?MP.seenEv.has(ev.id):ev.seen)||ev.stage==='done'||(ev.type!=='offensive'&&ev.type!=='build'))return;const pf=S.player.faction;if(ev.att!==pf&&!covered(ev.sector))return;if(NET.cl)MP.seenEv.add(ev.id);else ev.seen=true;
-  const eta=Math.max(0,Math.round(ev.eta-S.T)),src=ev.att===pf?'':covSource(ev.sector)+': ',nm=DEF[ev.sector].name,when=ev.stage==='inbound'?`ETA ${eta}s.`:'Under way now.';
+function announce(ev){if((NET.cl?MP.seenEv.has(ev.id):ev.seen)||ev.stage==='done'||(ev.type!=='offensive'&&ev.type!=='build'))return;const pf=S.player.sworn;if((!pf||ev.att!==pf)&&!covered(ev.sector))return;if(NET.cl)MP.seenEv.add(ev.id);else ev.seen=true;
+  const eta=Math.max(0,Math.round(ev.eta-S.T)),src=pf&&ev.att===pf?'':covSource(ev.sector)+': ',nm=DEF[ev.sector].name,when=ev.stage==='inbound'?`ETA ${eta}s.`:'Under way now.';
   if(ev.type==='build'){if(ev.att==='brood')feed(`⚠ ${src}a Brood Seeder is drifting toward ${nm} to grow a Bloom Node. ${when}`,'warn');
     else if(ev.att===pf)feed(`${FAC(pf).short} constructor convoy (${ev.n} escorts) heading to ${nm}${DEF[ev.sector].home===pf?' to rebuild its depot':' to build a depot'}. ${when} Press O to escort it.`,'info');
     else feed(`${src}${src?art(sideAdj(ev.att)).toLowerCase():art(sideAdj(ev.att))} ${sideAdj(ev.att)} constructor convoy is heading to ${nm}.`,'news');return}
@@ -233,8 +233,8 @@ function fctl(t){if(!t.ctl)t.ctl={throttle:1,movePt:null,lanceMode:'auto',pd:'to
   return C}
 // capital ownership: a solo pilot's capitals use side 'player'; in multiplayer they fly the pilot's faction colours and carry owner = pilot id
 function curPid(){return NET.on?((S.player&&S.player.pid)||NET.me||MP.pid):null}
-function fGuest(t){return!!t&&!t.owner&&t.side!=='player'&&t.side===S.player.faction}
-function fCrewOK(t){if(!NET.on||!t||!t.owner||t.owner===curPid())return false;const O=S.pilots&&S.pilots[t.owner];return!!O&&O.faction===S.player.faction}
+function fGuest(t){return!!t&&!t.owner&&t.side!=='player'&&!!S.player.sworn&&t.side===S.player.sworn}
+function fCrewOK(t){if(!NET.on||!t||!t.owner||t.owner===curPid())return false;const O=S.pilots&&S.pilots[t.owner];return!!O&&!!S.player.sworn&&O.sworn===S.player.sworn}
 function fBoard(t){return fMine(t)||fGuest(t)||fCrewOK(t)}
 // crew stations on a capital ship: the commander can hand a guest one station; the commander loses it while it's assigned,
 // the guest can use only that station, and it returns to the commander the moment the guest steps away from the console
@@ -255,13 +255,13 @@ const CAR_K={ostrova:.92};function carCostF(f){const k=CAR_K[f]||1;if(k===1)retu
 function capitalTick(){const T=S.T;S.frigates=S.frigates||[];if(!S.capGateSaid&&T>=CAP_GATE-180){S.capGateSaid=1;feed(`Capital slips are cleared: from minute ${CAP_GATE/60} the factions can launch carriers and escorts.`,'news')}
   // AI shipyards: the carrier, then escorts beside it (or while the carrier kit is out of reach)
   for(const f of[...FAC_IDS,'brood']){const st=S.econ.stock[f],busyY=S.events.some(e=>e.type==='yardbuild'&&e.att===f),busyF=S.events.some(e=>e.type==='frigbuild'&&e.att===f);
-    if(!S.yards[f]&&!busyY&&T>300&&haveIn(yardCost(f),[st])&&(patOn(f,'yard')||Math.random()<.4)){const force={};takeFrom(yardCost(f),[st]);inv.addAll(force,yardCost(f));S.events.push({id:S.nextId++,type:'yardbuild',att:f,sector:yardHome(f),force,until:T+YARD_TIME,stage:'building'});if(covered(yardHome(f))||f===S.player.faction)feed(`${FACTIONS[f].short} has begun building a capital shipyard at ${DEF[yardHome(f)].name}.`,'warn')}
+    if(!S.yards[f]&&!busyY&&T>300&&haveIn(yardCost(f),[st])&&(patOn(f,'yard')||Math.random()<.4)){const force={};takeFrom(yardCost(f),[st]);inv.addAll(force,yardCost(f));S.events.push({id:S.nextId++,type:'yardbuild',att:f,sector:yardHome(f),force,until:T+YARD_TIME,stage:'building'});if(covered(yardHome(f))||f===S.player.sworn)feed(`${FACTIONS[f].short} has begun building a capital shipyard at ${DEF[yardHome(f)].name}.`,'warn')}
     const war=S.ai[f]&&S.ai[f].war>T;{const busyE=S.events.some(e=>e.type==='escbuild'&&e.att===f);const both={...carCostF(f)},EC=escCost(f);for(const k in EC)both[k]=(both[k]||0)+EC[k];if(S.yards[f]&&!busyE&&capGateOK(f,ESCORT_TIME)&&facEsc(f).length<(ESC_CAP[f]||0)&&(f!=='brood'||T>BAL.brLevT)&&(facCar(f).length>=1||haveIn(both,[st])||!haveIn(carCostF(f),[st]))&&haveIn(EC,[st])&&(patOn(f,'esc')||Math.random()<(war?.8:.35))){
 const force={};takeFrom(EC,[st]);inv.addAll(force,EC);S.events.push({id:S.nextId++,type:'escbuild',t0:S.T,yard:f,att:f,sector:S.yards[f].sector,force,until:T+ESCORT_TIME,stage:'building'})}}if(S.yards[f]&&!busyF&&capGateOK(f,FRIGATE_TIME*(war?.7:1)*(CAR_K[f]||1))&&(f!=='brood'||T>BAL.brLevT)&&facCar(f).length<1&&haveIn(carCostF(f),[st])&&(patOn(f,'car')||Math.random()<(war?1:.5))){const force={};takeFrom(carCostF(f),[st]);inv.addAll(force,carCostF(f));S.events.push({id:S.nextId++,type:'frigbuild',t0:S.T,yard:f,att:f,sector:S.yards[f].sector,force,until:T+FRIGATE_TIME*(war?.7:1)*(CAR_K[f]||1),stage:'building'});if(war&&friendSide(f))feed(`${FACTIONS[f].short} has rushed a carrier into the slip at ${DEF[S.yards[f].sector].name} to answer the enemy capital ships.`,'info')}}
   for(const ev of S.events){if(ev.type!=='yardbuild'&&ev.type!=='frigbuild'&&ev.type!=='escbuild')continue;if(ev.stage==='done'||T<ev.until)continue;ev.stage='done';const mkCap=ev.type==='escbuild'?makeEscort:makeCarrier,capW=ev.type==='escbuild'?'Escort':'Carrier';
-    const evp=ykPid(ev.att);if(ev.type==='yardbuild'&&S.yards[ev.att]){inv.addAll(evp&&S.pilots&&S.pilots[evp]?S.pilots[evp].vault:S.econ.stock[ev.att]||S.econ.stock[S.player.faction],ev.force);ev.force={};continue}
+    const evp=ykPid(ev.att);if(ev.type==='yardbuild'&&S.yards[ev.att]){inv.addAll(evp&&S.pilots&&S.pilots[evp]?S.pilots[evp].vault:S.econ.stock[ev.att]||S.econ.stock[sideNorm('player')],ev.force);ev.force={};continue}
     if(evp){if(ev.type==='yardbuild'){S.yards[ev.att]={sector:ev.sector,fort:ev.force};ev.force={};feedTo(evp,`Your capital shipyard at ${DEF[ev.sector].name} is complete. Commission a Carrier and Escorts from Ship → Shipyard there.`,'good')}
-      else{const P=S.pilots&&S.pilots[evp];if(P){const t=mkCap(P.faction,ev.sector,ev.force,evp);feedTo(evp,`${capW} ${t.name} has launched from ${DEF[ev.sector].name}. Order it from the galaxy map (M).`,'good')}else{const h=S.econ.stock[S.player.faction];inv.addAll(h,ev.force)}ev.force={}}continue}
+      else{const P=S.pilots&&S.pilots[evp];if(P){const t=mkCap(P.sworn||P.faction,ev.sector,ev.force,evp);feedTo(evp,`${capW} ${t.name} has launched from ${DEF[ev.sector].name}. Order it from the galaxy map (M).`,'good')}else{const h=S.econ.stock[sideNorm('player')];inv.addAll(h,ev.force)}ev.force={}}continue}
     if(ev.type==='yardbuild'){S.yards[ev.att]={sector:ev.sector,fort:ev.force};ev.force={};if(FAC_IDS.includes(ev.att))try{patLaunch(ev.att,'yardbuild',null)}catch(e){}feed(ev.att==='player'?`Your capital shipyard at ${DEF[ev.sector].name} is complete. Commission a Carrier and Escorts from Ship → Shipyard there.`:`${FACTIONS[ev.att].short} capital shipyard complete at ${DEF[ev.sector].name}.`,ev.att==='player'?'good':friendSide(ev.att)?'info':'warn')}
     else{const t=mkCap(ev.att,ev.sector,ev.force);ev.force={};if(FAC_IDS.includes(ev.att))try{patLaunch(ev.att,ev.type,t)}catch(e){}if(ev.att==='player')feed(`${capW} ${t.name} has launched from ${DEF[ev.sector].name}. Order it from the galaxy map (M).`,'good');else if(friendSide(ev.att)||covered(ev.sector))feed(`${ev.att==='brood'?`⚠ A Brood ${ev.type==='escbuild'?'Prowler':'Leviathan'} has been spawned`:FACTIONS[ev.att].short+' '+capW.toLowerCase()+' '+t.name+' has launched'} at ${DEF[ev.sector].name}.`,ev.att==='brood'?'bad':friendSide(ev.att)?'good':'warn')}}
   for(const t of S.frigates)if(t.live){const w=WORLDS[t.sector];if(!w||!w.ents.some(e=>e.alive&&e.tok===t))t.live=false}
@@ -273,7 +273,7 @@ const force={};takeFrom(EC,[st]);inv.addAll(force,EC);S.events.push({id:S.nextId
     if(fOwn(t)&&t.sector===t.dest)feedTo(t.owner,`${t.name} has arrived in ${DEF[t.sector].name}.`,'info');if(WORLDS[nx])inW(WORLDS[nx],()=>spawnFrigate(t,true))}
   // abstract fighting away from the player
   for(const t of S.frigates.slice()){if(t.live||t.hull<=0)continue;const own=t.sector;let hit=0;
-    for(const o of frigatesIn(own))if(o!==t&&!o.live&&hostile(t.side,o.side))hit+=isEsc(o)?rnd(150,260):isCar(o)?wingPower(o)*rnd(40,70):rnd(250,420);
+    for(const o of frigatesIn(own))if(o!==t&&!o.live&&hostE(t.side,o))hit+=isEsc(o)?rnd(150,260):isCar(o)?wingPower(o)*rnd(40,70):rnd(250,420);
     if(isCar(t)&&hit>0&&Math.random()<.08)wingLoseN(t,S.sectors[own]);
     // a carrier strikes its target from next door (or where it sits); escorts strike where they are
     const sid=isCar(t)&&t.dest&&HOP[t.sector][t.dest]===1&&hostileStationAt(t.dest,t.side)?t.dest:own;
@@ -283,28 +283,29 @@ const force={};takeFrom(EC,[st]);inv.addAll(force,EC);S.events.push({id:S.nextId
         if(Rs.hull<=0){if(Rs.kind==='depot'){if(Rs.owner!=='brood'&&t.side!=='brood'){const g=garrison(Rs),n=capLoads(sid,t.side);if(n>=g){useLoads(sid,t.side,g,Rs);captureDepot(sid,t.side)}else if(n>0||fOwn(t))Rs.hull=1;else razeStation(sid,t.side)}else razeStation(sid,t.side)}else if(Rs.kind==='free')razeStation(sid,'brood');else Rs.hull=1}}}
     if(hit){t.fightT=S.T;t.hull-=hit;if(t.hull<=0)killFrigateToken(t,'in battle')}else t.hull=Math.min(capHullMax(t),t.hull+capHullMax(t)*.03)}
   // outposts: a capital carrying an assault load takes an unguarded hostile outpost after a minute
-  for(const t of S.frigates){const own=t.side==='player'?'player':t.side;if(!(aAvail(t)>0)||frigatesIn(t.sector).some(o=>hostile(t.side,o.side))){t.hold=0;continue}
-    const oid=OUT_BY_SECTOR[t.sector],o=oid&&S.outposts[oid];if(!o||!o.owner||!hostile(t.side,o.owner)||(own==='player'&&o.owner===S.player.faction)||outLockBars(t.sector,own)){t.hold=0;continue}t.hold=(t.hold||0)+1;
+  for(const t of S.frigates){const own=t.side==='player'?'player':t.side;if(!(aAvail(t)>0)||frigatesIn(t.sector).some(o=>hostE(t.side,o))){t.hold=0;continue}
+    const oid=OUT_BY_SECTOR[t.sector],o=oid&&S.outposts[oid];if(!o||!o.owner||!hostile(t.side,o.owner)||(own==='player'&&!!S.player.sworn&&o.owner===S.player.sworn)||outLockBars(t.sector,own)){t.hold=0;continue}t.hold=(t.hold||0)+1;
     if(t.hold>=6){aSend(t,t.sector,ASSAULT.outLoss);capture(o,own);t.hold=0}}}
 function killFrigateToken(t,how){capPingPay(t);toDebris(S.sectors[t.sector],t.load);t.load={};if(t.store){toDebris(S.sectors[t.sector],t.store);t.store={}}if(t.fab){toDebris(S.sectors[t.sector],t.fab.kit);t.fab=null}S.frigates=S.frigates.filter(x=>x!==t);if(friendSide(t.side)||covered(t.sector))feed(`${t.side==='player'?'Your '+capName(t):t.owner&&S.pilots&&S.pilots[t.owner]?S.pilots[t.owner].name+'\'s '+capName(t):t.side==='brood'?'A Brood '+broodCap(t):sideName(t.side)+' '+capName(t)} ${t.side==='brood'?'':t.name+' '}was destroyed ${how} in ${DEF[t.sector].name}.`,friendSide(t.side)?'bad':'good')}
 function frigOrders(t){let best=t.sector,bs=-1e9;const bro=t.side==='brood',bcc=bro?controlCounts():null,bmx=bro?Math.max(1,...FAC_IDS.map(k=>bcc[k]||0)):1;for(const d of SECTOR_DEFS){const h=HOP[d.id][t.sector];if(h>(bro?5:3))continue;let sc=-(bro?.55:.8)*h+rnd(0,1);const Rs=S.stations[d.id];
     if(bro){const ow=sideNorm(sectorOwner(d.id));if(FAC_IDS.includes(ow))sc+=2.5*(bcc[ow]||0)/bmx}   // Leviathans range further and go for the leading faction
     if(Rs&&hostile(t.side,Rs.owner)&&(Rs.kind==='depot'||Rs.kind==='free'&&t.side==='brood'))sc+=Rs.owner==='brood'?7:t.side==='brood'?5:3;else if(Rs&&Rs.owner!==t.side)sc-=4;
-    if(frigatesIn(d.id).some(o=>hostile(t.side,o.side)))sc+=3;
+    if(frigatesIn(d.id).some(o=>hostE(t.side,o)))sc+=3;
     if(!Rs&&d.kind!=='hive'&&d.kind!=='den'&&d.kind!=='core'){sc+=2.5;const oid=OUT_BY_SECTOR[d.id];if(oid&&S.outposts[oid].owner!==t.side)sc+=2}
-    if(territory(t.side).has(d.id)&&frigatesIn(d.id).some(o=>hostile(t.side,o.side)))sc+=4;
+    if(territory(t.side).has(d.id)&&frigatesIn(d.id).some(o=>hostE(t.side,o)))sc+=4;
     if(frigatesIn(d.id).some(o=>o!==t&&o.side===t.side))sc-=3;
-    {const C=S.coal;if(C&&t.side!=='brood'){const ow=sideNorm(sectorOwner(d.id));if(C.mem.includes(t.side)){if(ow===C.lead)sc+=5*BAL.coal;if(frigatesIn(d.id).some(o=>sideNorm(o.side)===C.lead))sc+=4}else if(t.side===C.lead){if(ow===t.side&&frigatesIn(d.id).some(o=>hostile(t.side,o.side)))sc+=4;if(ow!==t.side)sc-=2.5}}}
+    {const C=S.coal;if(C&&t.side!=='brood'){const ow=sideNorm(sectorOwner(d.id));if(C.mem.includes(t.side)){if(ow===C.lead)sc+=5*BAL.coal;if(frigatesIn(d.id).some(o=>sideNorm(o.side)===C.lead))sc+=4}else if(t.side===C.lead){if(ow===t.side&&frigatesIn(d.id).some(o=>hostE(t.side,o)))sc+=4;if(ow!==t.side)sc-=2.5}}}
     if(sc>bs){bs=sc;best=d.id}}return best}
 const WIN_TIME=1200;   // the 7-system hold: 20 minutes
-function controlCounts(){const n={};for(const d of SECTOR_DEFS){let o=sectorOwner(d.id);if(o==='player')o=S.player.faction;if(o&&o!=='pirate'&&o!=='neutral')n[o]=(n[o]||0)+1}return n}
+function controlCounts(){const n={};for(const d of SECTOR_DEFS){let o=sectorOwner(d.id);if(o==='player')o=S.player.sworn;if(o&&o!=='pirate'&&o!=='neutral')n[o]=(n[o]||0)+1}return n}
 const VIC_NEED=7;   // hold 7 systems for 20 minutes (tested: the hold decides ~43% of galaxies instead of ~16%)
 // ============================================================ the coalition: when one side nears galaxy control, the other factions call a truce and
 // turn on it. The Brood never joins: it keeps playing for its own dominance, and if the Brood is the one winning, all three factions unite against it.
-function sideNorm(sd){return sd==='player'?S.player.faction:sd}
+// the side a pilot's work counts for: their sworn faction, or the Freeport Compact for an independent contractor
+function sideNorm(sd){return sd==='player'?(S.player.sworn||'neutral'):sd}
 function coalNames(m){const n=m.map(f=>FACTIONS[f].short);return n.length>1?n.slice(0,-1).join(', ')+' and '+n[n.length-1]:n[0]}
 function coalTick(){const n=controlCounts();let lead=null,best=0;for(const k in n){if(k==='pirate')continue;if(n[k]>best){best=n[k];lead=k}}
-  const C=S.coal,pf=S.player.faction,nb=n.brood||0;
+  const C=S.coal,pf=S.player.sworn,nb=n.brood||0;
   if(nb>=ACCORD_ON&&!(C&&C.lead==='brood')){S.ffa=null;S.coal={lead:'brood',mem:[...FAC_IDS],since:S.T,accord:1};if(running&&!STRAT_SIM())SFX.accord();feed(`⚠ The Containment Accord: the Brood holds ${nb} systems. Halcyon, Varkesh and Ostrova stop fighting each other everywhere and turn their fleets on the Bloom until it is pushed back below ${ACCORD_OFF}.`,'bad');return}
   // a faction passing the truce's leader while that leader still holds 7 breaks the truce: a free-for-all, and the leader's
   // clock keeps running until one of them gives way (the leader drops under 7, or nobody is ahead of it any more)
@@ -340,20 +341,20 @@ function victoryTick(){if(deadlineTick())return;const n=controlCounts(),need=VIC
   // two sides over the line at once: the side already holding keeps its clock unless the other clearly has more
   if(lead&&S.victory&&S.victory.side!==lead&&(n[S.victory.side]||0)>=need&&(n[S.victory.side]||0)>=n[lead])lead=S.victory.side;
   // during a truce, a second faction reaching 7 gets no clock while the truce's leader still holds 7: it starts when that leader is down to 6
-  {const C=S.coal;if(C&&C.lead!=='brood'&&(n[C.lead]||0)>=need){for(const k in n)if(k!==C.lead&&k!=='brood'&&k!=='pirate'&&n[k]>=need&&S.vicHeld!==k){S.vicHeld=k;feed(`${sideName(k)} now holds ${n[k]} systems, but the truce is still aimed at ${sideName(C.lead)}: ${sideName(k)}'s clock starts only once ${sideName(C.lead)} is down to ${need-1}.`,k===S.player.faction?'warn':'news')}if(lead&&lead!=='brood')lead=C.lead}else S.vicHeld=null}
+  {const C=S.coal;if(C&&C.lead!=='brood'&&(n[C.lead]||0)>=need){for(const k in n)if(k!==C.lead&&k!=='brood'&&k!=='pirate'&&n[k]>=need&&S.vicHeld!==k){S.vicHeld=k;feed(`${sideName(k)} now holds ${n[k]} systems, but the truce is still aimed at ${sideName(C.lead)}: ${sideName(k)}'s clock starts only once ${sideName(C.lead)} is down to ${need-1}.`,k===S.player.sworn?'warn':'news')}if(lead&&lead!=='brood')lead=C.lead}else S.vicHeld=null}
   if(!lead){if(S.victory)feed(`${sideName(S.victory.side)} has lost its grip on the galaxy.`,'news');S.victory=null;return}
-  if(!S.victory||S.victory.side!==lead){S.victory={side:lead,since:S.T};feed(`${lead==='brood'?'⚠ The Brood':sideName(lead)} now controls ${n[lead]} of ${SECTOR_DEFS.length} systems. Hold ${VIC_NEED} for ${Math.round(WIN_TIME/60)} minutes and the galaxy is ${lead===S.player.faction?'yours':'theirs'}.`,lead===S.player.faction?'good':'bad');return}
+  if(!S.victory||S.victory.side!==lead){S.victory={side:lead,since:S.T};feed(`${lead==='brood'?'⚠ The Brood':sideName(lead)} now controls ${n[lead]} of ${SECTOR_DEFS.length} systems. Hold ${VIC_NEED} for ${Math.round(WIN_TIME/60)} minutes and the galaxy is ${lead===S.player.sworn?'yours':'theirs'}.`,lead===S.player.sworn?'good':'bad');return}
   if(S.T-S.victory.since>=WIN_TIME)galaxyWon(lead)}
 function loadLegacy(){try{return JSON.parse(localStorage.getItem('dgbeyond.legacy')||'{}')||{}}catch(e){return{}}}
 function galaxyWon(side,how){{const v=$('winV');if(v)v.hidden=true}if(!NET.cl)legAward(side);if(NET.host)for(const c of readyCl())send(c.L,{t:'won',side,how});const lg=loadLegacy();lg.wins=lg.wins||{};lg.wins[side]=(lg.wins[side]||0)+1;lg.last=side;try{localStorage.setItem('dgbeyond.legacy',JSON.stringify(lg));localStorage.removeItem(SAVE_KEY)}catch(e){}
-  S.won=side;hideSheets();const mine=side===S.player.faction,n=controlCounts()[side]||0;
+  S.won=side;hideSheets();const mine=side===S.player.sworn,n=controlCounts()[side]||0;
   $('winT').textContent=side==='brood'?'The Bloom spreads':mine?'Victory':`${FACTIONS[side].short} rules`;
   const held=how==='tie'?`held the most systems (${n} of ${SECTOR_DEFS.length}) when the two-hour deadline arrived`:`held ${n} of ${SECTOR_DEFS.length} systems for ${Math.round(WIN_TIME/60)} minutes`;
   $('winP').textContent=side==='brood'?`The Vael Brood ${held}. The galaxy is consumed. No pilot earns a Legend point. A new galaxy waits.`:`The ${FACTIONS[side].name} ${held} and unites the galaxy.${mine?' Your faction won, and you with it.':''} A new galaxy begins: ${FACTIONS[side].short} starts it with a finished capital shipyard and 40% richer stores${mine?', and you start with 4,000 extra credits and a crate of parts':''}.`;
   if(S.unb)$('winP').innerHTML=esc($('winP').textContent)+unbDebrief(side);$('winS').textContent=`Galaxies won · ${Object.keys(lg.wins).map(k=>`${sideName(k)} ${lg.wins[k]}`).join(' · ')}`;$('win').hidden=false}
 function broodNear(sid){const t=territory('brood');return t.has(sid)||NEIGH[sid].some(n=>t.has(n))}
 function planOffensive(f){if(FACTIONS[f]&&f!=='brood'&&campBusy(f)){S.ai[f].next=S.T+rnd(30,50);return}
-  const terr=territory(f),busy=new Set(S.events.filter(e=>e.type==='offensive'&&e.stage!=='done'&&e.att===f).map(e=>e.st?'st:'+e.st:e.target)),c=[],pf=S.player.faction;
+  const terr=territory(f),busy=new Set(S.events.filter(e=>e.type==='offensive'&&e.stage!=='done'&&e.att===f).map(e=>e.st?'st:'+e.st:e.target)),c=[],pf=S.player.sworn;
   const adjOf=sec=>terr.has(sec)||NEIGH[sec].some(n=>terr.has(n)),hopTo=sec=>{let m=9;for(const t of terr)m=Math.min(m,HOP[t][sec]);return m},bw=sec=>{const h=hopTo(sec);return h<=1?1.6:h===2?1.1:h===3?.7:.4};
   // the Brood hunts the strong: targets held by the faction with the most systems weigh up to 1.5x, the weakest down to 0.6x
   const bcc=f==='brood'?controlCounts():null,bmx=bcc?Math.max(1,...FAC_IDS.map(k=>bcc[k]||0)):1,bstr=ow=>!bcc||!FAC_IDS.includes(sideNorm(ow))?1:.6+.9*(bcc[sideNorm(ow)]||0)/bmx;
@@ -394,7 +395,7 @@ function wePts(f){const g=weFac(f);return g&&S.we?(S.we[g]||0):0}
 function weBonus(f){return WE.max*(1-Math.exp(-wePts(f)/WE.scale))}
 function weMul(f){return 1+weBonus(f)}
 function weTick(){if(!S.we)return;const k=Math.exp(-10/WE.tau);for(const f in S.we){S.we[f]*=k;if(S.we[f]<.01)delete S.we[f]}}
-function weKill(e,sh=1){if(!hostile(S.player.faction,e.side))return;const K=WE.kill;let p=e.role==='frigate'?(e.cls==='escort'?K.escort:K.frigate):e.role==='builder'?K.builder:e.role==='hauler'||e.role==='trader'?K.hauler:e.role==='miner'?K.miner:e.role==='drone'||e.role==='picket'||e.role==='limpet'?K.drone:e.role==='og'?K.og:e.cls==='mite'?K.mite:(e.cls==='heavy'||isBmb(e.cls)?K.heavy:K.fighter);if(e.side==='pirate')p*=.5;weAdd(S.player.faction,p*sh)}
+function weKill(e,sh=1){const wf=weSide(S.player);if(!wf||!hostile(wf,e.side))return;const K=WE.kill;let p=e.role==='frigate'?(e.cls==='escort'?K.escort:K.frigate):e.role==='builder'?K.builder:e.role==='hauler'||e.role==='trader'?K.hauler:e.role==='miner'?K.miner:e.role==='drone'||e.role==='picket'||e.role==='limpet'?K.drone:e.role==='og'?K.og:e.cls==='mite'?K.mite:(e.cls==='heavy'||isBmb(e.cls)?K.heavy:K.fighter);if(e.side==='pirate')p*=.5;weAdd(wf,p*sh)}
 // ---- kill credit. Every pilot who damaged a ship is paid their share of its bounty (and War effort) by damage dealt, so the
 // kill shot isn't needed. AI damage counts in the total but pays no one; the kill shot only adds to the kill count.
 // Bounties grow with the size of the ship.
@@ -402,17 +403,18 @@ const BOUNTY_MUL=8;   // the pay ladder: hauling, then mining, then combat, then
 const PIRATE_MUL=1.2; // the Unbound prey on everyone: their ships (and captains) carry a fifth more bounty than a rival faction's
 function bountyOf(e){if(e.role==='og')return OG.bounty;if(e.role==='drone')return 40;if(e.role==='limpet')return 60;if(e.role==='frigate')return e.cls==='escort'?1400:2800;const c=CLASSES[e.cls],r=c&&CLASSES.striker?c.hull/CLASSES.striker.hull:1;
   return Math.max(40,Math.round(BOUNTY_MUL*(e.side==='pirate'?PIRATE_MUL:1)*(25+20*(e.tier||1))*Math.pow(Math.max(.3,r),.6)/5)*5)}
-function dmgRec(e,src,at,d){if(!(d>0)||e.isPlayer)return;const k=at&&at.gk?at.gk:at&&at.src&&at.src.rp?at.src.rp:src==='player'?'me':'_ai';(e.dmg=e.dmg||{})[k]=(e.dmg[k]||0)+d}
+function dmgRec(e,src,at,d){if(!(d>0)||e.isPlayer)return;const k=at&&at.gk?at.gk:at&&at.src&&at.src.rp?at.src.rp:src==='player'?'me':'_ai';(e.dmg=e.dmg||{})[k]=(e.dmg[k]||0)+d;
+  if(k!=='_ai'&&!e.rp&&STAND_POW.includes(e.side)&&!NET.cl)standHit(xPilotOfKey(k),e.side,d,e.role==='trader'||e.role==='hauler'?'convoy':'ship')}
 function killNoun(e){return e.role==='miner'?'miner':e.role==='hauler'?'hauler':e.role==='trader'?(e.tradeT&&e.tradeT.kind==='haul'?'supply freighter':'trader'):e.role==='builder'?'constructor':e.role==='drone'?'drone':e.role==='frigate'?(e.tok?capName(e.tok):'capital ship'):CLASSES[e.cls]?CLASSES[e.cls].name.toLowerCase():'fighter'}
 function payKill(e,src,at){const D=e.dmg||{},kp=at&&at.gk?at.gk:at&&at.src&&at.src.rp,killer=kp||(src==='player'?'me':null);let tot=0;for(const k in D)tot+=D[k];
   const sh={};for(const k in D)if(k!=='_ai'&&tot>0&&D[k]/tot>=.05)sh[k]=D[k]/tot;if(killer&&!(tot>0))sh[killer]=1;
   if(killer&&!sh[killer])runAs(isMe(killer)?null:killer,()=>{S.player.kills++});
   if(!NET.cl)sideKill(e,sh,killer);
   if(S.unb){const ks=new Set(Object.keys(sh));if(killer)ks.add(killer);for(const k of ks)runAs(isMe(k)?null:k,()=>unbKill(e));return}
-  for(const k in sh)runAs(isMe(k)?null:k,()=>{const f=S.player.faction,x=sh[k],pct=Math.round(x*100);if(k===killer)S.player.kills++;if(!hostile(f,e.side))return;weKill(e,x);
+  for(const k in sh)runAs(isMe(k)?null:k,()=>{const f=bountyPayer(e.side,S.player),x=sh[k],pct=Math.round(x*100);if(k===killer)S.player.kills++;if(!f)return;weKill(e,x);
     const nm=`${e.side==='pirate'?'Unbound':FACTIONS[e.side]?FACTIONS[e.side].short:'Brood'} ${killNoun(e)}`,part=x<.995?` Your damage: ${pct}%.`:'';
     if(e.role==='trader'&&e.tradeT&&e.tradeT.kind==='haul'){const got=transfer(f,'player',Math.round(raidBounty(e.tradeT)*x));weAdd(f,3*x);if(got)feed(`Convoy raid: +${fmt(got)} cr for cutting ${FACTIONS[e.side].short} supplies.${part}`,'good')}
-    const b=transfer(f,'player',Math.max(1,Math.round(bountyOf(e)*x)));feed(`${nm} destroyed${k===killer?'':' (shared kill)'}.${b?` Bounty +${b} cr.`:''}${part}`,'good');if(e.side==='brood'&&e.role==='builder'){const c=transfer(f,'player',Math.round(CONTAIN.seeder*x));if(c)feed(`Containment order: Seeder killed before it planted. +${fmt(c)} cr.`,'good')}})}
+    const b=transfer(f,'player',Math.max(1,Math.round(bountyOf(e)*x)));if(!S.player.sworn)standWork(S.player,f,Math.min(3,bountyOf(e)*x/400),'');feed(`${nm} destroyed${k===killer?'':' (shared kill)'}.${b?` Bounty +${b} cr.`:''}${part}`,'good');if(e.side==='brood'&&e.role==='builder'){const c=transfer(f,'player',Math.round(CONTAIN.seeder*x));if(c)feed(`Containment order: Seeder killed before it planted. +${fmt(c)} cr.`,'good')}})}
 // containment orders, open to every faction pilot: a Seeder killed, a Bloom Node burned (more for a node that has rooted)
 const CONTAIN={seeder:600,young:900,node:1500,youngT:180};
 // where to catch a convoy: the first system on its remaining route you can reach in time (it spends ~45 s crossing each
@@ -431,7 +433,7 @@ function resolveAbstract(ev){
   if(dforce){loseInv(dforce,win?rnd(.5,.9):rnd(.2,.45),s);inv.addAll(S.econ.fleet[o.owner],dforce)}
   const prev=o.owner;
   if(win)capture(o,ev.att);
-  else{o.shield=oStats(o).sMax;if(prev==='player')feed(`Your ${o.name} held off the ${sideAdj(ev.att)} attack.`,'good');else if(covered(o.sector)||prev===S.player.faction)feed(`${o.name} repelled ${art(sideAdj(ev.att)).toLowerCase()} ${sideAdj(ev.att)} assault.`,'news')}
+  else{o.shield=oStats(o).sMax;if(prev==='player')feed(`Your ${o.name} held off the ${sideAdj(ev.att)} attack.`,'good');else if(covered(o.sector)||prev===S.player.sworn)feed(`${o.name} repelled ${art(sideAdj(ev.att)).toLowerCase()} ${sideAdj(ev.att)} assault.`,'news')}
   finishOffensive(ev);
 }
 function resolveSiege(ev){const Rr=S.stations[ev.st],s=S.sectors[ev.sector];if(!Rr||!hostile(ev.att,Rr.owner)){finishOffensive(ev);return}
@@ -484,7 +486,7 @@ function respSpawnGate(ev){const G=GATES[ev.sector];const src=ev.from||(respSour
 function pilotEnt(pid){if(!pid||pid===NET.me){const p=W.player;return W===LW&&p&&p.alive&&!S.player.docked&&!W.dead?p:null}const e=MP.rp[pid];return e&&e.alive&&W.ents.includes(e)?e:null}
 function engageResponse(ev){ev.stage='engaged';ev.until=S.T+(ev.kind==='hunt'?300:170);const g=respSpawnGate(ev);let n=0;
   const grp={id:'g'+(RID++),side:ev.att,role:'strike',members:[],n0:0,fleeing:false};
-  const F=ev.kind==='hunt'?W.ents.find(e=>e.alive&&e.tok&&e.tok.id===ev.tok):ev.kind==='distress'?W.ents.find(e=>e.alive&&e.role==='frigate'&&hostile(ev.att,e.side)):null,P=ev.kind==='pilot'?pilotEnt(ev.pid):null;
+  const F=ev.kind==='hunt'?W.ents.find(e=>e.alive&&e.tok&&e.tok.id===ev.tok):ev.kind==='distress'?W.ents.find(e=>e.alive&&e.role==='frigate'&&hostE(ev.att,e)):null,P=ev.kind==='pilot'?pilotEnt(ev.pid):null;
   for(let i=0;i<ev.n;i++){const cl=(ev.cls&&ev.cls[i])||'striker',ld=loadout('patrol',ev.tier,cl);if(!takeFrom(ld,[ev.force]))break;
     const e=makeNPC(ev.kind==='hunt'?'strike':'patrol',ev.att,cl,ev.tier,ld,`ev:${ev.id}:${ev.att}`);e.evId=ev.id;e.ai.hunter=ev.kind==='hunt';
     if(F){e.ai.hunt=F;e.ai.huntUntil=W.t+400}
@@ -517,24 +519,24 @@ function responseTick(ev){const T=S.T;
 // a pilot calls for help: friendly fighters nearby break off to cover them, and their faction sends a wing from the closest station
 function pilotDistress(){if(!W||!W.player)return;if(S.unb){flash('Nobody answers an Unbound distress call.',true);return}const P=S.player,p=W.player;if(P.docked||(W===LW&&!CTX&&W.dead)){flash('You can only call for help in space.');return}
   if(S.T<(P.distT||0)){flash(`Distress beacon recharging (${Math.ceil(P.distT-S.T)} s).`);return}P.distT=S.T+90;
-  const fac=P.faction,Fs=FACTIONS[fac].short;let near=0;
+  const fac=helpFac(P);if(!fac){flash('No power you stand well with has ships near enough to answer.',true);P.distT=S.T+10;return}const Fs=FACTIONS[fac].short;let near=0;
   {const cand=[];for(const e of W.ents){if(e.type!=='ship'||!e.alive||!e.npc||e.side!==fac||e.order)continue;if(!['patrol','escort','screen','strike','raider'].includes(e.role))continue;if(isBmb(e.cls)&&e.role==='strike')continue;const d=d3(e,p);if(d<4500)cand.push([e,d])}
     cand.sort((a,b)=>a[1]-b[1]);cand.slice(0,4).forEach(([e],i)=>{e.order={kind:'guard',tgt:p,until:W.t+ORDER_TIME,slot:i,by:true,pid:CTX||NET.me||null};e.ai.tgt=null;e.ai.t=0;near++})}
   const ev=dispatchResponse(fac,W.sid,'pilot',{pid:CTX||(NET.on?NET.me:null),name:P.name||'pilot'});
   const att=W.ents.filter(e=>e.npc&&e.alive&&e.ai&&e.ai.tgt===p).map(e=>e.side)[0];
   {S.distress=S.distress||[];const key=W.sid+':pilot:'+(CTX||'me');S.distress=S.distress.filter(d=>d.key!==key);S.distress.push({key,sid:W.sid,name:P.name||'A pilot',fac,by:att||null,T:S.T,T2:S.T,pilot:true});
-    if(NET.host){for(const pid in S.pilots){if(pid===CTX||(!CTX&&pid===NET.me))continue;const R=S.pilots[pid];if(R.faction!==fac)continue;const h=HOP[W.sid][R.sector];netMsgOrFeed(pid,`📡 ${P.name||'A pilot'} is calling for help in ${DEF[W.sid].name}${att?' against '+sideName(att):''}. ${h?h+' jump'+(h>1?'s':'')+' away':'You are in that system'}. Press O to respond.`)}}}
+    if(NET.host){for(const pid in S.pilots){if(pid===CTX||(!CTX&&pid===NET.me))continue;const R=S.pilots[pid];if(helpFac(R)!==fac)continue;const h=HOP[W.sid][R.sector];netMsgOrFeed(pid,`📡 ${P.name||'A pilot'} is calling for help in ${DEF[W.sid].name}${att?' against '+sideName(att):''}. ${h?h+' jump'+(h>1?'s':'')+' away':'You are in that system'}. Press O to respond.`)}}}
   SFX.distress();
   feed(`📡 Distress beacon lit. ${near?`${near} nearby fighter${near>1?'s are':' is'} breaking off to cover you. `:''}${ev?`${Fs} command: a wing of ${ev.n} is launching from ${S.stations[ev.from].name}, about ${Math.round(ev.eta-S.T)} s out.`:`${Fs} command: no wing can reach you here${near?'':'. You are on your own'}.`}`,ev||near?'good':'warn')}
 function netMsgOrFeed(pid,msg){if(pid===NET.me)feed(msg,'bad');else netMsg(pid,'distress',msg)}
-function capture(o,side){if(NET.on&&side==='player')side=S.player.faction;
+function capture(o,side){if(NET.on&&side==='player'&&S.player.sworn)side=S.player.sworn;
   const prev=o.owner,s=S.sectors[o.sector];
   if(prev&&o.level>1){const lost={};for(const e of RAWS){const m=Math.floor(o.fort[e]/o.level);o.fort[e]-=m;lost[e]=m}toDebris(s,lost);o.level--}
   if(prev&&prev!==side&&side!=='player'){const take={};for(const k in o.stock){const m=Math.floor(o.stock[k]/2);if(m)take[k]=inv.take(o.stock,k,m)}inv.addAll(S.econ.stock[side],take)}
-  if(W&&S.player.docked===o.id&&side!=='player'&&side!==S.player.faction)undock();
+  if(W&&S.player.docked===o.id&&side!=='player'&&side!==S.player.sworn)undock();
   o.owner=side;if(NET.host)netKickDocked(o.sector,o.id,side);o.breached=0;const os=oStats(o);o.hull=os.hMax*.4;o.shield=0;o.cap={side:null,p:0};
   if(W&&W.outpostEnt&&W.outpostEnt.o===o)W.outpostEnt.lastHit=W.t;
   if(side==='player')feed(`You claimed ${o.name}. It is yours to fortify and defend.`,'good');
   else if(prev==='player')feed(`${o.name} has fallen to ${sideName(side)}. Half its store was seized.`,'bad');
-  else if(covered(o.sector)||friendSide(side))feed(`${o.name} is now held by ${sideName(side)}.`,side===S.player.faction?'good':side==='brood'?'bad':'news');
+  else if(covered(o.sector)||friendSide(side))feed(`${o.name} is now held by ${sideName(side)}.`,side===S.player.sworn?'good':side==='brood'?'bad':'news');
 }

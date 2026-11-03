@@ -7,7 +7,7 @@ async def main():
   async with async_playwright() as p:
     b=await p.chromium.launch(args=['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']);pg=await b.new_page(viewport={'width':1400,'height':860});errs=[]
     pg.on('pageerror',lambda e:errs.append(str(e)))
-    await pg.goto(GAME+'?name=Tester',wait_until='domcontentloaded');await pg.wait_for_function('window.__dg&&__dg.ev("MDL.ready")',timeout=60000)
+    await pg.goto(GAME+'?name=Tester&sworn=halcyon',wait_until='domcontentloaded');await pg.wait_for_function('window.__dg&&__dg.ev("MDL.ready")',timeout=60000)
     await pg.evaluate("document.getElementById('mpName').value='Tester'");await pg.evaluate("document.getElementById('bLaunch').click()");await pg.wait_for_timeout(1500)
     ev=lambda c:pg.evaluate('c=>__dg.ev(c)',c)
     print(await ev("JSON.stringify(['interceptor','striker','heavy','bomber','gunboat','scout','scout2','skiff','prospector','dredger','courier','freighter','bulker','constructor','wraith','raider','corsair','plunderer'].map(k=>k+': '+hullTags(k).join(' · ')),null,1)"))

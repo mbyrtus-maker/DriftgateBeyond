@@ -269,10 +269,10 @@ function brFeast(s,R){const g=R.gut||{},t=invMass(g);R.gut={};if(t<=0)return 0;c
 const SPOT={t:3,r:5000,pay:250};
 function spotTarget(){const T=W.tgt;if(!T||T.kind!=='ship')return null;const e=T.ref;return e&&e.alive&&e.side==='brood'&&e.role==='builder'?e:null}
 function spotTick(dt){const F=W.spotF||(W.spotF={id:null,t:0});const e=spotTarget(),p=W.player;
-  if(!e||!p||!isScoutCls(S.player.cls)||S.player.docked||!FAC_IDS.includes(S.player.faction)||e.spotted||d3(e,p)>SPOT.r){F.t=0;return}
+  if(!e||!p||!isScoutCls(S.player.cls)||S.player.docked||!containPayer(S.player)||e.spotted||d3(e,p)>SPOT.r){F.t=0;return}
   if(F.id!==e.id){F.id=e.id;F.t=0}F.t+=dt;if(F.t<SPOT.t)return;F.t=0;SFX.spot();if(NET.cl){netSend({t:'spot',id:e.id});e.spotted=1}else spotPay(e,pkey())}
-function spotPay(e,k){if(!e||!e.alive||e.side!=='brood'||e.role!=='builder'||e.spotted)return;{const ev0=S.events.find(v=>v.type==='build'&&v.att==='brood'&&v.sector===W.sid&&v.stage!=='done');if(ev0&&ev0.spotted){e.spotted=1;return}}const P=isMe(k)?S.player:S.pilots&&S.pilots[k];if(!P||!FAC_IDS.includes(P.faction)||!isScoutCls(P.cls))return;
-  e.spotted=1;const c=payKey(k,P.faction,SPOT.pay);keyFeed(k,`📡 Containment order: Seeder spotted before it planted. Every faction can see it now.${c?` +${fmt(c)} cr.`:''}`,'good');
+function spotPay(e,k){if(!e||!e.alive||e.side!=='brood'||e.role!=='builder'||e.spotted)return;{const ev0=S.events.find(v=>v.type==='build'&&v.att==='brood'&&v.sector===W.sid&&v.stage!=='done');if(ev0&&ev0.spotted){e.spotted=1;return}}const P=isMe(k)?S.player:S.pilots&&S.pilots[k];if(!P||!containPayer(P)||!isScoutCls(P.cls))return;
+  e.spotted=1;const c=payKey(k,containPayer(P),SPOT.pay);keyFeed(k,`📡 Containment order: Seeder spotted before it planted. Every faction can see it now.${c?` +${fmt(c)} cr.`:''}`,'good');
   const ev=S.events.find(v=>v.type==='build'&&v.att==='brood'&&v.sector===W.sid&&v.stage!=='done');if(ev)ev.spotted=1}
 function spotChip(){const e=spotTarget();if(!e||!isScoutCls(S.player.cls)||S.player.docked)return null;if(e.spotted)return['📡 Seeder spotted: containment paid','good'];const d=d3(e,W.player),F=W.spotF||{};
   if(d>SPOT.r)return[`📡 Close to ${SPOT.r/1000} km to spot the Seeder (${fmt(Math.round(d))} m)`,'warn'];return[`📡 Spotting Seeder ${Math.round(clamp((F.id===e.id?F.t:0)/SPOT.t,0,1)*100)}% · keep it targeted`,'warn']}
@@ -363,7 +363,7 @@ function unbScan(dt){const P=unbP(),p=W.player,R=unbRT();if(!P.xpdr||!p||S.playe
     if(Math.random()<ch){coverBlow(f,'a patrol scan saw through your false colours');for(const e of pats)e.ai.tgt=p}else if(sm>0)P.conPass=true}}
 // ---- jam mode (4): guns fire jammers, missiles become shock harpoons (35% of the bar, and a tether that stretches the hook to 400 m)
 function jamToggle(){const p=W.player;if(!p)return;p.jamMode=!p.jamMode;SFX.jamMode(p.jamMode);if(NET.cl)netSend({t:'jam',on:p.jamMode?1:0});flash(p.jamMode?'Jam mode: guns fire jammers and missiles are shock harpoons. They never kill, and do nothing to a shielded ship.':'Jam mode off: guns and missiles kill again.')}
-function harpHit(m){let T=m.tgt&&m.tgt.type==='ship'&&m.tgt.alive&&m.tgt.role!=='frigate'&&d3(m.tgt,m)<m.tgt.st.radius+60?m.tgt:null;if(!T){let bd=90;for(const e of W.ents)if(e.type==='ship'&&e.alive&&e.role!=='frigate'&&e!==m.src&&hostile(m.side,e.side)){const d=d3(e,m)-e.st.radius;if(d<bd){bd=d;T=e}}}if(!T)return;fxSpark(m,'#b7c6ff',8);if(T.shield>T.st.sCap*.05){if(m.src===W.player)flash('Harpoon bounced off the shields. Strip them first.');return}T.shield=0;
+function harpHit(m){let T=m.tgt&&m.tgt.type==='ship'&&m.tgt.alive&&m.tgt.role!=='frigate'&&d3(m.tgt,m)<m.tgt.st.radius+60?m.tgt:null;if(!T){let bd=90;for(const e of W.ents)if(e.type==='ship'&&e.alive&&e.role!=='frigate'&&e!==m.src&&hostE(m.side,e)){const d=d3(e,m)-e.st.radius;if(d<bd){bd=d;T=e}}}if(!T)return;fxSpark(m,'#b7c6ff',8);if(T.shield>T.st.sCap*.05){if(m.src===W.player)flash('Harpoon bounced off the shields. Strip them first.');return}T.shield=0;
   jamHit(T,{side:m.side,dmg:jamCap(T)*.35,x:m.x,y:m.y,z:m.z,src:null});T.teth={by:m.src,until:W.t+30};if(m.src===W.player||T.isPlayer)SFX.tether();if(m.src===W.player)flash('Harpoon in: tethered for 30 s, hook reach 400 m.')}
 // ---- the cargo hook: hold E beside a jammed ship (150 m, 400 m tethered); 8 t/s, most valuable cargo first
 function hookReach(T){return T.teth&&T.teth.until>W.t&&T.teth.by===W.player?(W.player.st.tetherR||400):JAM.hookR}
@@ -541,7 +541,7 @@ function riggerTick(){for(const ev of S.events){if(ev.type!=='rigger'||ev.stage=
     S.lairs.push({id:S.nextId++,pid:ev.pid,sid:ev.sector,x:ev.at.x+300,y:ev.at.y,z:ev.at.z+300,stash:{},fort:ev.force,hull:LAIR.hull,seen:{}});ev.force={};if(!MUTE&&isMe(ev.pid))SFX.rigger();keyFeed(ev.pid,`☠ Your Lair in ${DEF[ev.sector].name} is ready: stash and repairs. Dock with E. Factions can't see it until one of their scouts comes within 5 km.`,'good')}}
 function lairWorld(dt){const L=lairHere();if(!L)return;const p=W.player;
   // only scouts find a Lair: AI scouts, and pilots flying a Scout or Advanced Scout (paid a finder's fee by their faction)
-  for(const e of W.ents){if(e.type!=='ship'||!e.alive)continue;const k=e.isPlayer?pkey():e.rp||null,sd=e.isPlayer?S.player.faction:e.rp?(S.pilots[e.rp]||{}).faction:e.side;if(!FAC_IDS.includes(sd))continue;
+  for(const e of W.ents){if(e.type!=='ship'||!e.alive)continue;const k=e.isPlayer?pkey():e.rp||null,sd=e.isPlayer?S.player.sworn:e.rp?(S.pilots[e.rp]||{}).sworn:e.side;if(!FAC_IDS.includes(sd))continue;
     if((e.role==='scout'||(k&&isScoutCls(e.cls)))&&!L.seen[sd]&&d3(e,L)<LAIR.seeR){L.seen[sd]=1;keyFeed(L.pid,`⚠ A ${FACTIONS[sd].short} scout has found your Lair in ${DEF[W.sid].name}. Their ships will attack it on sight.`,'bad');
       facFeed(sd,`☠ Unbound Lair found in ${DEF[W.sid].name}.`,'info');if(k){const got=payKey(k,sd,LAIR.findPay);if(got)keyFeed(k,`☠ You found an Unbound Lair: +${fmt(got)} cr. Your side's ships will attack it on sight.`,'good')}}
     if(!e.npc||!FAC_IDS.includes(e.side))continue;

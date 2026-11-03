@@ -46,45 +46,49 @@ let RF_T=null;
 {const o=raidOdds;raidOdds=function(r,sid,base,owner){const p=o.apply(this,arguments);if(RF_T&&RF_T.side==='halcyon'&&owner==='halcyon'&&fpRoute(RF_T))return clamp(p*FPK.fpRaid,.05,.95);return p}}
 
 // ---- Halcyon pilots: a convoy to or from a Freeport gets one more escort (the Compact's charter), and can be called at a Freeport
-function fpConvoyOK(P){return P.faction==='halcyon'&&(isFPsid(P.sector)||(P.route&&isFPsid(P.route)))}
+function fpConvoyOK(P){return P.sworn==='halcyon'&&(isFPsid(P.sector)||(P.route&&isFPsid(P.route)))}
 {const o=convoyCall;convoyCall=function(){const P=S.player,r=o.apply(this,arguments);const C=P.convoy;if(!C||C.charter||!String(r).startsWith('✓')||!fpConvoyOK(P))return r;C.charter=1;
-  const f=P.faction,tier=factionTier(f),srcs=[S.econ.fleet[f],S.econ.stock[f]].filter(Boolean);let cl=pickFighter('patrol'),ld=loadout('patrol',tier,cl);if(!haveIn(ld,srcs)){cl='interceptor';ld=loadout('patrol',tier,cl)}
+  const f=P.sworn,tier=factionTier(f),srcs=[S.econ.fleet[f],S.econ.stock[f]].filter(Boolean);let cl=pickFighter('patrol'),ld=loadout('patrol',tier,cl);if(!haveIn(ld,srcs)){cl='interceptor';ld=loadout('patrol',tier,cl)}
   if(!takeFrom(ld,srcs))return r;C.ships.push({cls:cl,tier,load:{...ld}});return r.replace(/✓ Convoy called: \d+/,`✓ Convoy called: ${C.ships.length}`)+' Freeport charter: one extra escort on this run.'}}
-{const o=convoyHtml;convoyHtml=function(c,P){if(P&&P.faction==='halcyon'&&c&&c.owner==='neutral'&&isHaulCls(P.cls))return o.call(this,Object.assign({},c,{owner:P.faction}),P)+'<p class="note" style="margin-top:4px">Halcyon charter: convoys to or from a Freeport fly with one extra escort.</p>';return o.apply(this,arguments)}}
+{const o=convoyHtml;convoyHtml=function(c,P){if(P&&P.sworn==='halcyon'&&c&&c.owner==='neutral'&&isHaulCls(P.cls))return o.call(this,Object.assign({},c,{owner:P.sworn}),P)+'<p class="note" style="margin-top:4px">Halcyon charter: convoys to or from a Freeport fly with one extra escort.</p>';return o.apply(this,arguments)}}
 
-// ---- job bonuses, paid by the pilot's own faction treasury on top of the job's pay
+// ---- job bonuses (Beyond: keyed by the issuer, who pays them from its own treasury on top of the job's pay)
 // Halcyon +20% on Freeport hauling jobs (contracts posted at a Freeport and Freeport requests); Varkesh +20% on Aurorite
 // mining jobs (Aurorite contracts and Aurorite supply drives); Ostrova +40% on scouting pay (beacon flips, residuals and
 // missions, recon orders, Seeder spotting, limpet pings, lair finds, anomaly scans)
-function jobBonusK(P,k){if(!P||!k)return 0;if(P.faction==='halcyon'&&k.fac==='neutral')return FPK.fpJob;if(P.faction==='varkesh'&&k.item==='au')return FPK.auJob;return 0}
+function jobBonusK(P,k){if(!P||!k)return 0;if(k.fac==='halcyon'&&!k.st)return FPK.fpJob;if(k.fac==='varkesh'&&k.item==='au')return FPK.auJob;return 0}
 function jobBonusTag(f){return f==='halcyon'?'Halcyon charter':f==='varkesh'?'Dominion Aurorite':'Archive scouting'}
-{const o=dockAction;dockAction=function(act,arg){const P=S.player;let k0=0,f=P&&P.faction;
-  if(act==='deliver'){const k=S.contracts.find(x=>String(x.id)===String(arg));k0=jobBonusK(P,k)}
+{const o=dockAction;dockAction=function(act,arg){const P=S.player;let k0=0,f=P&&P.sworn;
+  if(act==='deliver'){const k=S.contracts.find(x=>String(x.id)===String(arg));k0=jobBonusK(P,k);if(k)f=k.fac}
   else if(act==='cmine'){const C=myCamp(),m=C&&C.mv;if(m&&m.item==='au'&&f==='varkesh')k0=FPK.auJob}
   if(act==='sigconv'){sigConvert(dockCtx(),P);return}
   const c0=P?P.credits:0,r=o.apply(this,arguments);if(k0>0&&P&&P.credits>c0){const b=transfer(f,'player',Math.round((P.credits-c0)*k0));if(b){const t=` ${jobBonusTag(f)} bonus +${fmt(b)} cr.`;if(typeof dockErr==='string'&&dockErr.startsWith('✓'))dockErr+=t;feed(`${jobBonusTag(f)} bonus: +${fmt(b)} cr from the ${FACTIONS[f].short} treasury.`,'good')}}return r}}
 let FB_SCOUT=0;
 function fbScoutWrap(fn,test){return function(){const on=test?test.apply(this,arguments):true;if(on)FB_SCOUT++;try{return fn.apply(this,arguments)}finally{if(on)FB_SCOUT--}}}
-{const o=payKey;payKey=function(k,f,n){if(FB_SCOUT>0&&f==='ostrova'&&n>0){const P=xPilotOfKey(k);if(P&&P.faction==='ostrova'){const b=Math.round(n*FPK.scoutPay);const got=o.call(this,k,f,n+b);if(got>n&&b>=20)keyFeed(k,`◆ Archive scouting bonus: +${fmt(got-n)} cr of that.`,'good');return got}}return o.apply(this,arguments)}}
+{const o=payKey;payKey=function(k,f,n){if(FB_SCOUT>0&&f==='ostrova'&&n>0){const P=xPilotOfKey(k);if(P){const b=Math.round(n*FPK.scoutPay);const got=o.call(this,k,f,n+b);if(got>n&&b>=20)keyFeed(k,`◆ Archive scouting bonus: +${fmt(got-n)} cr of that.`,'good');return got}}return o.apply(this,arguments)}}
 spotPay=fbScoutWrap(spotPay);beaconFlip=fbScoutWrap(beaconFlip);beaconTick=fbScoutWrap(beaconTick);capPingPay=fbScoutWrap(capPingPay);lairWorld=fbScoutWrap(lairWorld);anomOpen=fbScoutWrap(anomOpen);
+cvEnd=fbScoutWrap(cvEnd,function(t){return!!t&&t.side==='ostrova'});
 sideEnd=fbScoutWrap(sideEnd,function(f,P,o){return!!(o&&SIDE[o.kind]&&SIDE[o.kind].lane==='intel')});
-{const o=jobsList;jobsList=function(c,P){const L=o.apply(this,arguments);if(!P||!FAC_IDS.includes(P.faction))return L;const f=P.faction;
-  for(const j of L){let k=0;const id=String(j.id);
-    if(id.startsWith('k:')||id.startsWith('r:')){const K=S.contracts.find(x=>String(x.id)===id.slice(2));k=jobBonusK(P,K)}
+{const o=jobsList;jobsList=function(c,P){const L=o.apply(this,arguments);if(!P)return L;
+  for(const j of L){let k=0,f=j.by||P.sworn;const id=String(j.id);
+    if(id.startsWith('k:')||id.startsWith('r:')){const K=S.contracts.find(x=>String(x.id)===id.slice(2));k=jobBonusK(P,K);if(K)f=K.fac}
     else if(id==='camp'&&f==='varkesh'){const C=myCamp(),m=C&&C.mv;if(m&&m.kind==='mine'&&m.item==='au')k=FPK.auJob}
-    else if(f==='ostrova'&&j.ty==='scout')k=FPK.scoutPay;
+    else if(f==='ostrova'&&(j.ty==='scout'||id.startsWith('ce:')))k=FPK.scoutPay;
     if(k>0){j.pay=`${j.pay} +${Math.round(k*100)}%`;j.sub=`${j.sub} · ${jobBonusTag(f)} +${Math.round(k*100)}%`;if(j.payN&&j.payN<1e8)j.payN=Math.round(j.payN*(1+k))}}
   return L}}
 
 // ---- signature hulls at the faction's own shipyard (its home core station), converted from the career hull you fly
 function sigFee(k){return Math.max(0,SIG[k].price-hullPrice(SIG[k].base))}
-function sigYardHtml(c,P){if(S.unb||!c||!c.hulls||!FAC_IDS.includes(P.faction))return'';const k=SIG_OF[P.faction],B=SIG[k].base,F=FAC(P.faction),home=P.sector===FAC_HOME(P.faction),fee=Math.max(0,sigFee(k)-(P.sigVch&&P.sigVch.k===k?P.sigVch.amt:0));
+function sigYardHtml(c,P){if(S.unb||!c||!c.hulls||!FAC_IDS.includes(P.faction)||c.owner!==P.faction)return'';if(!sigOK(c,P))return`<div class="h3" style="margin-top:18px">Signature hull · ${esc(FAC(c.owner).short)} only</div><p class="note">Built for pilots at Partner standing with ${esc(FAC(c.owner).name)} (you are ${esc(standName(standOf(c.owner,P)))}).</p>`;const k=SIG_OF[P.faction],B=SIG[k].base,F=FAC(P.faction),home=P.sector===FAC_HOME(P.faction),fee=Math.max(0,sigFee(k)-(P.sigVch&&P.sigVch.k===k?P.sigVch.amt:0));
   const cur=P.cls===k,can=home&&P.cls===B&&P.credits>=fee,why=cur?'<span class="req ok">current</span>':!home?`<span class="req no">converted only at ${esc(S.stations[FAC_HOME(P.faction)]?S.stations[FAC_HOME(P.faction)].name:DEF[FAC_HOME(P.faction)].name)}</span>`:P.cls!==B?`<span class="req no">fly your ${esc(F.hulls[B])} (${esc(CLASSES[B].name)}) in to convert it</span>`:`<span class="req ${P.credits>=fee?'ok':'no'}">convert · ${fmt(fee)} cr</span>`;
   return`<div class="h3" style="margin-top:18px">Signature hull · ${esc(F.short)} only</div><div class="note" style="margin-bottom:8px">Your faction's own combat conversion of its ${esc(CLASSES[B].name)}, built only at its home shipyard. You pay the conversion; your components, tunings and drones carry over. Switching away later trades it in for half its full value (${fmt(SIG[k].price)} cr).</div><div class="ships" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))"><button class="cls" type="button" data-act="sigconv" data-arg="${k}" aria-pressed="${cur}" ${can&&!cur?'':'disabled'}><b>${esc(F.hulls[k])}</b><em>${esc(CLASSES[k].name)} · from the ${esc(F.hulls[B])}</em><span>${esc(CLASSES[k].desc)}</span>${tagsHtml(k)}<span style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${why}</span></button></div>`}
 // an insured signature hull lost: the voucher goes toward a new career hull, and what's left toward the conversion
 {const o=insLoss;insLoss=function(P,lost){o.apply(this,arguments);const v=P.voucher;if(!v||!SIG[v.cls])return;const B=SIG[v.cls].base,a=Math.min(v.amt,hullPrice(B));P.sigVch={k:v.cls,amt:v.amt-a};P.voucher={cls:B,amt:a};
   feed(`🛡 The voucher splits: ${fmt(a)} cr toward a new ${FAC(P.faction).hulls[B]}, ${fmt(v.amt-a)} cr toward converting it again.`,'good')}}
-function sigConvert(c,P){const k=SIG_OF[P.faction];if(!k||!c||!c.hulls)return;const B=SIG[k].base,F=FAC(P.faction),fee=sigFee(k);
+// a house-brand hull needs Partner standing with the station's owner (or to be sworn to it); until each faction has its own
+// designs (stage 6) only a pilot flying that faction's design line can convert
+function sigOK(c,P){return!!c&&FAC_IDS.includes(c.owner)&&c.owner===P.faction&&(P.sworn===c.owner||standOf(c.owner,P)>60)}
+function sigConvert(c,P){const k=SIG_OF[P.faction];if(!k||!c||!c.hulls)return;if(!sigOK(c,P)){dockErr=`Signature hulls are built for pilots at Partner standing with ${FAC(c.owner).short}.`;return}const B=SIG[k].base,F=FAC(P.faction),fee=sigFee(k);
   if(P.sector!==FAC_HOME(P.faction)){dockErr=`The ${F.hulls[k]} is built only at your faction's home shipyard.`;return}
   if(P.cls!==B){dockErr=`Fly your ${F.hulls[B]} in to convert it to a ${F.hulls[k]}.`;return}
   const sv=P.sigVch&&P.sigVch.k===k?Math.min(fee,P.sigVch.amt):0;if(P.credits<fee-sv){dockErr=`The conversion costs ${fmt(fee-sv)} cr.`;return}
@@ -96,7 +100,7 @@ function sigConvert(c,P){const k=SIG_OF[P.faction];if(!k||!c||!c.hulls)return;co
 
 // ---- Gannet: light-missile barrage on C, spread across every hostile ship ahead
 function ganTargets(e,first){const out=[];if(first&&first.type==='ship'&&first.alive)out.push(first);qRot(e.q,0,0,1,_f);const L=[];
-  for(const o of W.ents){if(o.type!=='ship'||!o.alive||o===e||out.includes(o)||o.role==='limpet')continue;if(o.isPlayer&&(S.player.docked||W.dead))continue;if(!hostile(e.side,o.side)||mHid(o,e))continue;
+  for(const o of W.ents){if(o.type!=='ship'||!o.alive||o===e||out.includes(o)||o.role==='limpet')continue;if(o.isPlayer&&(S.player.docked||W.dead))continue;if(!hostE(e.side,o)||mHid(o,e))continue;
     const dx=o.x-e.x,dy=o.y-e.y,dz=o.z-e.z,d=hyp(dx,dy,dz)||1;if(d>GAN.range)continue;if(Math.acos(clamp((_f.x*dx+_f.y*dy+_f.z*dz)/d,-1,1))>GAN.cone)continue;L.push([d,o])}
   L.sort((a,b)=>a[0]-b[0]);for(const[,o]of L){if(out.length>=GAN.maxT)break;out.push(o)}return out}
 function ganSalvo(e,P,T){const n=Math.floor(P.gcell||0);if(n<1||!T.length)return 0;P.gcell-=n;for(let i=0;i<n;i++){const tg=T[i%T.length];launchMissile(e,tg,P.tiers.weapon,'missile',((i%4)-1.5)/1.5,true);const m=W.missiles[W.missiles.length-1];if(m&&m.src===e){m.dmg*=GAN.k;m.mini=1;m.checked=true;m.col='#9fe8ff';m.vx+=rnd(-35,35);m.vy+=rnd(-35,35);m.vz+=rnd(-35,35)}}return n}

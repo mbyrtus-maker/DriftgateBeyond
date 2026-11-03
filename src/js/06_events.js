@@ -30,7 +30,7 @@ function scheduleEvent(){
   }else{
     const f=pick(FAC_IDS),item=pick(['ir','coil','plate','wire','cu','fe']),st=S.econ.stock[f],m=Math.floor((st[item]||0)*.6);
     if(m<4)return;inv.add(S.econ.fleet[f],item,inv.take(st,item,m));
-    feed(`${FACTIONS[f].short} requisitions ${m} ${ITEMS[item].name} for the war effort. Prices will climb at their stations.`,f===S.player.faction?'warn':'news');
+    feed(`${FACTIONS[f].short} requisitions ${m} ${ITEMS[item].name} for the war effort. Prices will climb at their stations.`,f===S.player.sworn?'warn':'news');
   }
 }
 // ---- job sizes. Delivery contracts, freeport requests and blockade runs come in three bands so a bigger hold has bigger
@@ -41,23 +41,24 @@ const JOB_BIG=['fe','cu','ir','plate'],JOB_BAND={s:.5,m:.33,l:.17};
 function jobSize(item,n0){const b=wpick(JOB_BAND);if(b==='s'||!JOB_BIG.includes(item))return{n:n0,t:1};const r=b==='m'?[60,100]:[100,180];return{n:Math.max(n0,Math.round(rnd(r[0],r[1])/Math.max(1,mass(item)))),t:b==='m'?1.5:2}}
 const JOB_PART=10;   // partial deliveries: at least a quarter of the job, or 10 units, whichever is less
 function jobMin(k){return Math.min(k.n,JOB_PART,Math.ceil((k.n0||k.n)/4))}
+// delivery contracts (Beyond): every power posts them, up to three open each, for any contractor in good enough standing
 function scheduleContract(){
-  const f=S.player.faction;if(S.unb||!FACTIONS[f])return;if(S.contracts.filter(c=>c.fac===f).length>=3)return;
+  if(S.unb)return;const open=FAC_IDS.filter(x=>S.contracts.filter(c=>c.fac===x&&!c.st&&!c.blk).length<3);if(!open.length)return;const f=pick(open);
   const item=wpick({plate:3,wire:3,coil:2,ir:2,xc:1.5,lattice:.8}),js=jobSize(item,item==='plate'||item==='wire'?ri(6,14):item==='coil'?ri(3,6):item==='ir'?ri(10,24):item==='xc'?ri(8,18):ri(2,3)),n=js.n;
   const reward=Math.ceil(baseValue(item)*n*1.7/10)*10;
   S.contracts.push({id:S.nextId++,fac:f,item,n,n0:n,reward,until:S.T+480*js.t});
-  feed(`New ${FACTIONS[f].short} supply contract: ${n} ${ITEMS[item].name} for ${fmt(reward)} cr.`,'info');
+  if(S.player.sworn?S.player.sworn===f:standOf(f)>=STAND.dock)feed(`New ${FACTIONS[f].short} supply contract: ${n} ${ITEMS[item].name} for ${fmt(reward)} cr.`,'info');
 }
 // ---- distress calls: friendly stations, depots and outposts radio every pilot of their faction when attacked, wherever they are
 function distressCall(sid,name,owner,by){if(NET.cl||!owner||!S)return;S.distress=S.distress||[];const key=sid+':'+name,now=S.T;let d=S.distress.find(x=>x.key===key);
   if(d){d.T2=now;if(by)d.by=by;if(now-d.T<60)return;d.T=now}else{d={key,sid,name,fac:owner,by:by||null,T:now,T2:now};S.distress.push(d)}
   if(owner==='neutral'&&(!d.respT||now-d.respT>150)){d.respT=now;const sent=FAC_IDS.map(f=>[f,dispatchResponse(f,sid,'distress',{far:1})]).filter(x=>x[1]);if(sent.length)allFeed(`${name}: ${sent.map(([f,r])=>`${FACTIONS[f].short} wing of ${r.n}`).join(', ')} answering the call.`,'info')}
   if(FACTIONS[owner]&&(!d.respT||now-d.respT>150)){const rv=dispatchResponse(owner,sid,'distress');if(rv){d.respT=now;if(friendSide(owner))feed(`${FACTIONS[owner].short} command: response wing of ${rv.n} launching from ${S.stations[rv.from].name} to ${name}, about ${Math.round(rv.eta-now)} s out.`,'info')}}
-  const send=(pid,P)=>{const fac=P?P.faction:S.player.faction,mine=owner===fac||owner==='neutral'||(owner==='player'&&!NET.on);if(!mine)return;const here=P?P.sector:S.player.sector,h=HOP[sid][here];
+  const send=(pid,P)=>{const Q=P||S.player,mine=owner==='neutral'||(Q.sworn?owner===Q.sworn:FAC_IDS.includes(owner)&&standOf(owner,Q)>=STAND.dock)||(owner==='player'&&!NET.on);if(!mine)return;const here=P?P.sector:S.player.sector,h=HOP[sid][here];
     const msg=`📡 Distress call from ${name} in ${DEF[sid].name}: under attack${d.by&&d.by!==owner?' by '+(d.by==='player'?'a pilot':sideName(d.by)):''}. ${h?h+' jump'+(h>1?'s':'')+' away':'You are in that system'}. Press O to respond.`;
     if(!pid||pid===NET.me){feed(msg,'bad');SFX.distress()}else netMsg(pid,'distress',msg)};
   if(NET.host){for(const pid in S.pilots)send(pid,S.pilots[pid])}else send(null,null)}
-function distressOps(){const pf=S.player.faction,out=[];for(const d of S.distress||[]){if(S.T-d.T2>90)continue;if(d.pilot&&d.key.endsWith(':pilot:'+(NET.cl?NET.me:'me')))continue;if(!(d.fac===pf||d.fac==='player'))continue;out.push({kind:'defend',ev:{type:'distress',stage:'engaged',sector:d.sid},sector:d.sid,hops:HOP[d.sid][S.player.sector],eta:0,label:`Distress: ${d.name} (${DEF[d.sid].name})`})}return out}
+function distressOps(){const pf=S.player.sworn,out=[];for(const d of S.distress||[]){if(S.T-d.T2>90)continue;if(d.pilot&&d.key.endsWith(':pilot:'+(NET.cl?NET.me:'me')))continue;if(!(d.fac==='player'||(pf?d.fac===pf:FAC_IDS.includes(d.fac)&&standOf(d.fac)>=STAND.dock)))continue;out.push({kind:'defend',ev:{type:'distress',stage:'engaged',sector:d.sid},sector:d.sid,hops:HOP[d.sid][S.player.sector],eta:0,label:`Distress: ${d.name} (${DEF[d.sid].name})`})}return out}
 function updateEvents(){
   const T=S.T;
   if(S.distress)S.distress=S.distress.filter(d=>T-d.T2<120);
@@ -80,7 +81,7 @@ function updateEvents(){
 }
 const SEED_GUARDS=2,CONSTR_LD={plate:6,wire:4,coil:2},BROOD_SEED={plate:2},   // Bloom nodes are grown from a frame, not assembled by a constructor
  SCOUT_LD={plate:1,wire:2},SCOUT2_LD={plate:2,wire:3,coil:1};
-function scoutsTick(){S.scouts=S.scouts||[];const pf=S.player.faction;
+function scoutsTick(){S.scouts=S.scouts||[];const pf=S.player.sworn;
   for(const f of FAC_IDS){const mine=S.scouts.filter(x=>x.side===f).length,want=1+((S.frigates||[]).some(c=>c.scoutReq&&!c.scoutReq.sc&&sideNorm(c.side)===f)?1:0);
     const srcs=[S.econ.fleet[f],S.econ.stock[f]],adv=facVet(f)&&haveIn(SCOUT2_LD,srcs),LD=adv?SCOUT2_LD:SCOUT_LD;if(mine<want&&haveIn(LD,srcs)){const load={};takeFrom(LD,srcs);inv.addAll(load,LD);if(adv&&srcs.some(x=>(x.swarm||0)>0)){takeFrom({swarm:1},srcs);inv.add(load,'swarm',1)}const home=SECTOR_DEFS.find(d=>d.home===f&&d.kind==='frontier').id;
       const t={id:S.nextId++,side:f,sector:home,load};if(adv)t.cls='scout2';S.scouts.push(t);if(WORLDS[home])inW(WORLDS[home],()=>spawnScout(t,true))}}
@@ -93,7 +94,7 @@ function scoutsTick(){S.scouts=S.scouts||[];const pf=S.player.faction;
       const to=wpickArr(opts);t.sector=to;if(WORLDS[to])inW(WORLDS[to],()=>spawnScout(t,true))}}}
 function spawnScout(t,arrive){const e=makeNPC('scout',t.side,t.cls||'scout',factionTier(t.side),t.load,`scout:${t.id}:${t.side}`);t.load={};t.live=true;
   if(arrive){const g=pick(GATES[W.sid]);e.x=g.x*.93;e.y=g.y*.93;e.z=g.z*.93;fxWarp(e,sideCol(t.side))}else Object.assign(e,randPos(800*SPACE,2600*SPACE));faceInstant(e,-e.x,-e.y*.2,-e.z);W.ents.push(e);return e}
-function scoutThink(e,dt){const ai=e.ai;let th=null,bd=1400;for(const o of W.ents){if(o.type!=='ship'||!o.alive||!hostile(e.side,o.side))continue;if((o.isPlayer&&(S.player.docked||W.dead)||mHid(o,e)))continue;const d=d3(o,e);if(d<bd){bd=d;th=o}}
+function scoutThink(e,dt){const ai=e.ai;let th=null,bd=1400;for(const o of W.ents){if(o.type!=='ship'||!o.alive||!hostE(e.side,o))continue;if((o.isPlayer&&(S.player.docked||W.dead)||mHid(o,e)))continue;const d=d3(o,e);if(d<bd){bd=d;th=o}}
   if(th){e.boosting=bd<900;const ax=e.x-th.x,ay=e.y-th.y,az=e.z-th.z,l=hyp(ax,ay,az)||1;let tx=e.x+ax/l*900,ty=e.y+ay/l*250,tz=e.z+az/l*900;const r=hyp(tx,ty,tz);if(r>2900){tx*=2900/r;ty*=2900/r;tz*=2900/r}
     steer(e,tx,ty,tz,dt,false,1);faceDir(e,e.vx,e.vy,e.vz,dt);if(bd<300&&faceTo(e,th,0)<.15)fire(e);if(e.cls==='scout2'&&(e.load.swarm||0)>0&&bd<1100&&(ai.scd||0)<=W.t){inv.take(e.load,'swarm',1);launchSwarm(e,th,e.tier);ai.scd=W.t+14}return}
   e.boosting=false;{const Bg=scoutBeaconGoal(e);if(Bg){const d=d3(e,Bg);if(d>BCN_R*.5){steer(e,Bg.x,Bg.y,Bg.z,dt,true,.9);faceDir(e,Bg.x-e.x,Bg.y-e.y,Bg.z-e.z,dt)}else{brake(e,dt);faceDir(e,e.vx||1,e.vy,e.vz,dt)}return}}
@@ -120,8 +121,8 @@ function bcnAllowed(d){return true}
 function beaconInit(){S.beacons=S.beacons||{};for(const id in S.beacons)if(!bcnAllowed(DEF[id]))delete S.beacons[id];for(const d of SECTOR_DEFS){if(!bcnAllowed(d)||S.beacons[d.id])continue;const p=beaconPos(d.id);S.beacons[d.id]={x:p.x,y:p.y,z:p.z,owner:null,by:null,T:0,pay:0}}for(const id in S.beacons){const B=S.beacons[id];if(B.owner&&B.sec==null)B.sec=S.T}S.bcnV=(S.bcnV||0)+1}
 // who may flip: the side a ship flies for, if it is a scout hull and free to act
 function bcnFlipper(e){if(e.type!=='ship'||!e.alive||e.inJump||e.ghost)return null;
-  if(e.isPlayer){if(W!==LW||S.player.docked||W.dead||W.docking||W.detach||!isScoutCls(S.player.cls))return null;if(S.player.faction==='pirate'&&DEF[W.sid].home)return null;return{side:S.player.faction,by:pkey()}}
-  if(e.rp){const P=S.pilots&&S.pilots[e.rp];if(!P||P.docked||!isScoutCls(P.cls))return null;if(P.faction==='pirate'&&DEF[W.sid].home)return null;return{side:P.faction,by:e.rp}}
+  if(e.isPlayer){if(W!==LW||S.player.docked||W.dead||W.docking||W.detach||!isScoutCls(S.player.cls))return null;if(!S.player.sworn||(S.player.sworn==='pirate'&&DEF[W.sid].home))return null;return{side:S.player.sworn,by:pkey()}}
+  if(e.rp){const P=S.pilots&&S.pilots[e.rp];if(!P||P.docked||!isScoutCls(P.cls))return null;if(!P.sworn||(P.sworn==='pirate'&&DEF[W.sid].home))return null;return{side:P.sworn,by:e.rp}}
   if(e.npc&&e.role==='scout'&&FAC_IDS.includes(e.side))return{side:e.side,by:null};return null}
 // host / single player: run in every open system each frame
 function beaconWorld(dt){const B=S.beacons&&S.beacons[W.sid];if(!B)return;const F=W.bcnF||(W.bcnF={side:null,t:0,by:null,cont:false});
@@ -145,7 +146,7 @@ function beaconSecure(sid,side,by){const B=S.beacons[sid];if(!B||B.owner!==side)
   if(W&&W.sid===sid&&!MUTE)fxSpark(B,sideCol(side),8);bcnSend(sid)}
 // in a system its side holds (home space, or its station or outpost there) the local crew keeps the beacon secured; out in
 // contested and open space only a scout can
-function bcnCrew(sid,f){let o=sectorOwner(sid);if(o==='player')o=S.player.faction;return!!f&&o===f}
+function bcnCrew(sid,f){let o=sectorOwner(sid);if(o==='player')o=S.player.sworn;return!!f&&o===f}
 // nobody re-secured it before the fade ran out: back to neutral
 function beaconLapse(sid){const B=S.beacons[sid];if(!B||!B.owner)return;const old=B.owner,oldBy=B.by,nm=DEF[sid].name;B.owner=null;B.by=null;B.T=S.T;B.sec=null;S.bcnV=(S.bcnV||0)+1;
   if(oldBy)keyFeed(oldBy,`◆ Your beacon in ${nm} lapsed to neutral: no scout re-secured it in time. Its scan and your residual have stopped.`,'warn');
@@ -208,7 +209,7 @@ function limpetSync(dt){if(NET.cl||!W)return;W.lpT=(W.lpT||0)-dt;if(W.lpT>0)retu
   for(const E of W.ents.slice()){const R=(E.type==='ship'&&E.alive&&E.role==='frigate')||E.type==='station'||E.type==='outpost'?lpRec(E):null;if(!R||!R.pings)continue;
     for(const f in R.pings){if(!capPinged(R,f)||!hostile(f,sideNorm(lpSide(E)||'neutral')))continue;if(!W.ents.some(l=>l.role==='limpet'&&l.lh===E&&l.lf===f))limpetSpawn(E,f,null)}}}
 function capPingPay(t){if(!t||!t.pings)return;for(const f in t.pings){const P=t.pings[f];if(!P||P.until<=S.T||!P.by||!hostile(f,t.side))continue;const got=payKey(P.by,f,PING_PAY[t.cls]||300);if(got)keyFeed(P.by,`🧲 The ${capName(t)} ${t.name} you put a limpet on has been destroyed: +${fmt(got)} cr scouting bonus.`,'good')}t.pings={}}
-function limpetTarget(){const p=W.player,t=W.tgt;if(!p||!t||!validTgt(t)||!FAC_IDS.includes(S.player.faction))return null;const E=t.ref;if(t.kind==='ship'){if(!E.alive||E.role!=='frigate'||!E.tok)return null}else if(t.kind==='outpost'){if(E.o.breached)return null}else if(t.kind!=='station')return null;
+function limpetTarget(){const p=W.player,t=W.tgt;if(!p||!t||!validTgt(t)||!FAC_IDS.includes(S.player.sworn))return null;const E=t.ref;if(t.kind==='ship'){if(!E.alive||E.role!=='frigate'||!E.tok)return null}else if(t.kind==='outpost'){if(E.o.breached)return null}else if(t.kind!=='station')return null;
   const sd=lpSide(E);if(!sd||sd==='neutral'||!hostile('player',sd))return null;return E}
 const lpSurf=(E,p)=>d3(E,p)-lpRad(E);
 // the player's hold on F in a scout, from blPilotUpdate (host, single player and client alike: a client asks the host)
@@ -216,12 +217,12 @@ function limpetHold(hold,dt){const F=W.lpF||(W.lpF={E:null,t:0,h:false}),P=S.pla
   if(press&&P.limpetUsed){flash('No limpet aboard: dock at a friendly station or outpost to rearm.');return}
   if(press&&!E&&W.t-(W.drillMsg||0)>3){W.drillMsg=W.t;flash('Target an enemy carrier, escort, station or depot to plant a limpet. Scouts carry no mining laser.')}
   if(F.E!==E){F.E=E;F.t=0}
-  if(!(E&&hold&&!P.limpetUsed&&lpSurf(E,p)<=LIMPET_R&&!capPinged(lpRec(E),P.faction))){F.t=Math.max(0,F.t-dt*.5);return}
+  if(!(E&&hold&&!P.limpetUsed&&lpSurf(E,p)<=LIMPET_R&&!capPinged(lpRec(E),P.sworn))){F.t=Math.max(0,F.t-dt*.5);return}
   F.t+=dt;if(F.t<LIMPET_T)return;F.t=0;P.limpetUsed=true;
-  if(NET.cl)netSend({t:'limpet',k:E.type==='ship'?'cap':E.type,id:E.type==='ship'?E.tok.id:null,at:{x:p.x,y:p.y,z:p.z}});else limpetPlant(E,P.faction,pkey(),p);
+  if(NET.cl)netSend({t:'limpet',k:E.type==='ship'?'cap':E.type,id:E.type==='ship'?E.tok.id:null,at:{x:p.x,y:p.y,z:p.z}});else limpetPlant(E,P.sworn,pkey(),p);
   flash(`🧲 Limpet planted on ${lpName(E)}.`)}
 function limpetChip(){const P=S.player;if(!isScoutCls(P.cls)||P.docked||!W.player)return null;const E=limpetTarget();if(!E)return null;const R=lpRec(E),nm=lpName(E),F=W.lpF||{};
-  if(capPinged(R,P.faction))return[`🧲 Limpet on ${nm} · ${fmtT(R.pings[P.faction].until-S.T)} · +${Math.round((LIMPET_DMG-1)*100)}% damage`,'good'];
+  if(capPinged(R,P.sworn))return[`🧲 Limpet on ${nm} · ${fmtT(R.pings[P.sworn].until-S.T)} · +${Math.round((LIMPET_DMG-1)*100)}% damage`,'good'];
   if(P.limpetUsed)return['🧲 Limpet spent · dock to rearm','warn'];
   if(F.E===E&&F.t>0)return[`🧲 Planting ${Math.round(clamp(F.t/LIMPET_T,0,1)*100)}% · hold ${kb('mine')} within ${LIMPET_R} m`,'warn'];
   const d=lpSurf(E,W.player);return[d>LIMPET_R?`🧲 Limpet ready · close to ${LIMPET_R} m of ${nm} (${fmt(Math.round(Math.max(0,d)))} m), hold ${kb('mine')}`:`🧲 Hold ${kb('mine')} to plant a limpet on ${nm}`,'warn']}
@@ -229,19 +230,19 @@ function limpetChip(){const P=S.player;if(!isScoutCls(P.cls)||P.docked||!W.playe
 function scoutBeaconGoal(e){const B=S.beacons&&S.beacons[W.sid];if(!B||!bcnCan(B,e.side))return null;return B}
 // client: show your own progress while the host decides
 function beaconLocal(dt){const B=S.beacons&&S.beacons[W.sid],p=W.player;const F=W.bcnF||(W.bcnF={side:null,t:0,cont:false});
-  if(!B||!p||S.player.docked||!isScoutCls(S.player.cls)||!bcnCan(B,S.player.faction)||d3(p,B)>BCN_R){F.t=Math.max(0,F.t-dt*2);if(!F.t)F.side=null;return}
-  F.side=S.player.faction;F.t=Math.min(BCN_T,F.t+dt*((S.player.lvl||0)>=1?BCN_T/7:1))}
+  if(!B||!p||S.player.docked||!isScoutCls(S.player.cls)||!S.player.sworn||!bcnCan(B,S.player.sworn)||d3(p,B)>BCN_R){F.t=Math.max(0,F.t-dt*2);if(!F.t)F.side=null;return}
+  F.side=S.player.sworn;F.t=Math.min(BCN_T,F.t+dt*((S.player.lvl||0)>=1?BCN_T/7:1))}
 function beaconChip(){const B=S.beacons&&S.beacons[W.sid],p=W.player;if(!B||!p||S.player.docked)return null;const d=d3(p,B);if(d>BCN_R*3)return null;const F=W.bcnF||{};
   const st=bcnState(B),left=fmtT(bcnLeft(B));
-  if(B.owner===S.player.faction&&d<=BCN_R){if(st==='fading'&&isScoutCls(S.player.cls))return[`Beacon fading: re-securing ${Math.round(clamp((F.t||0)/BCN_T,0,1)*100)}% · hold within ${BCN_R} m · ${left} to neutral`,'warn'];
+  if(!!S.player.sworn&&B.owner===S.player.sworn&&d<=BCN_R){if(st==='fading'&&isScoutCls(S.player.cls))return[`Beacon fading: re-securing ${Math.round(clamp((F.t||0)/BCN_T,0,1)*100)}% · hold within ${BCN_R} m · ${left} to neutral`,'warn'];
     return[`Beacon held by ${FAC(B.owner).short} · ${st==='locked'?'secured '+left:'fading: a scout must re-secure it within '+left}${B.by&&isMe(B.by)?' · yours, paying '+BCN_RES+' cr/min':''}`,st==='locked'?'good':'warn']}
   if(!isScoutCls(S.player.cls))return d<=BCN_R?[S.unb?'Beacon: only a Skiff can flip it for the Unbound':'Beacon: only a Scout or Advanced Scout can flip it','warn']:null;
-  if(S.player.faction==='pirate'&&DEF[W.sid].home)return d<=BCN_R*3?['Beacon: the Unbound can\'t flip beacons in a faction\'s home systems','warn']:null;
+  if(S.player.sworn==='pirate'&&DEF[W.sid].home)return d<=BCN_R*3?['Beacon: the Unbound can\'t flip beacons in a faction\'s home systems','warn']:null;
   if(F.cont)return['Beacon contested: another team\'s scout is on it','bad'];
   if(B.owner&&st==='locked'&&d<=BCN_R*3)return[`Beacon secured by ${FAC(B.owner).short}: it can be flipped in ${left}`,'bad'];
   if(d>BCN_R)return[`Beacon ${fmt(Math.round(d-BCN_R))} m out of flip range (${BCN_R} m)`,'warn'];
   return[`Flipping beacon ${Math.round(clamp((F.t||0)/BCN_T,0,1)*100)}% · hold within ${BCN_R} m`,'warn']}
-function planBuild(f){if(FACTIONS[f]&&campBusy(f))return;const terr=territory(f),busy=new Set(S.events.filter(e=>e.type==='build').map(e=>e.sector)),c=[],pf=S.player.faction;
+function planBuild(f){if(FACTIONS[f]&&campBusy(f))return;const terr=territory(f),busy=new Set(S.events.filter(e=>e.type==='build').map(e=>e.sector)),c=[],pf=S.player.sworn;
   for(const d of SECTOR_DEFS){if(busy.has(d.id)||!canBuildIn(d.id,f)||d.kind==='den')continue;if(!(terr.has(d.id)||NEIGH[d.id].some(n=>terr.has(n))))continue;
     const w=f==='brood'?(d.kind==='deep'?3:d.kind==='contested'?2:d.kind==='core'?0:1):d.home===f?12:d.kind==='deep'?3:d.kind==='contested'?1.4:d.kind==='hub'?1:.4;if(w>0)c.push([d.id,w])}
   if(!c.length)return;const st=S.econ.stock[f],fl=S.econ.fleet[f],srcs=[fl,st],CL=f==='brood'?BROOD_SEED:CONSTR_LD;const DC=f==='brood'?DEPOT_COST:FWD_COST;if(!haveIn(DC,[st])||!haveIn(CL,srcs))return;if(f!=='brood'&&!S.yards[f]&&(st.frame||0)-DC.frame<YARD_COST.frame)return;
@@ -255,16 +256,16 @@ function buildTick(ev,T){const lw=liveIn(ev.sector),live=!!lw;if(lw&&W!==lw)retu
   if(ev.stage==='inbound'){if(T<ev.eta)return;if(ev.hold&&T<ev.hold&&!live)return;if(!canBuildIn(ev.sector,ev.att)){finishBuild(ev);return}ev.stage='building';ev.until=T+45;ev.prog=0;if(live)engageBuild(ev);return}
   if(ev.stage!=='building')return;
   if(ev.live){if(!live){ev.live=false;ev.until=T+45*(1-ev.prog);return}
-    if(!W.ents.some(e=>e.npc&&e.alive&&e.evId===ev.id&&e.role==='builder')){const pf=S.player.faction;if(ev.att===pf)feed(`The ${FAC(pf).short} constructor was destroyed. The depot in ${DEF[ev.sector].name} will not be built.`,'bad');else feed(`${ev.att==='brood'?'The Brood Seeder':sideAdj(ev.att)+' constructor'} was destroyed in ${DEF[ev.sector].name}. Construction failed.`,ev.att==='brood'?'good':'news');W.scaffold=null;finishBuild(ev)}
+    if(!W.ents.some(e=>e.npc&&e.alive&&e.evId===ev.id&&e.role==='builder')){const pf=S.player.sworn;if(pf&&ev.att===pf)feed(`The ${FAC(pf).short} constructor was destroyed. The depot in ${DEF[ev.sector].name} will not be built.`,'bad');else feed(`${ev.att==='brood'?'The Brood Seeder':sideAdj(ev.att)+' constructor'} was destroyed in ${DEF[ev.sector].name}. Construction failed.`,ev.att==='brood'?'good':'news');W.scaffold=null;finishBuild(ev)}
     return}
   if(live){engageBuild(ev);return}
   ev.prog=clamp(1-(ev.until-T)/45,0,1);if(T<ev.until)return;
   if(!canBuildIn(ev.sector,ev.att)){finishBuild(ev);return}
   if(Math.random()<buildRisk(ev.sector,ev.att)){const s=S.sectors[ev.sector];toDebris(s,{frame:inv.take(ev.force,'frame',ev.force.frame||0)});loseInv(ev.force,.3,s);
-    if(ev.att===S.player.faction||covered(ev.sector))feed(`${ev.att==='brood'?'A Brood Seeder':sideAdj(ev.att)+' constructors'} were driven off in ${DEF[ev.sector].name}.`,ev.att==='brood'?'good':'news');finishBuild(ev);return}
+    if(ev.att===S.player.sworn||covered(ev.sector))feed(`${ev.att==='brood'?'A Brood Seeder':sideAdj(ev.att)+' constructors'} were driven off in ${DEF[ev.sector].name}.`,ev.att==='brood'?'good':'news');finishBuild(ev);return}
   completeBuild(ev,ev.force)}
 function completeBuild(ev,src){const f=ev.att,DC=f==='brood'?DEPOT_COST:FWD_COST;if(!haveIn(DC,[src])){finishBuild(ev);return}takeFrom(DC,[src]);const Rr=makeStation(ev.sector,f,'depot',ev.site,{...DC});if(f!=='brood'){Rr.fwd=1;applyDev(Rr)}
-  if(f===S.player.faction||covered(ev.sector))feed(f==='brood'?`⚠ A Bloom Node has taken root in ${DEF[ev.sector].name}.`:`${Rr.name} is online.`,f==='brood'?'bad':f===S.player.faction?'good':'news');
+  if(f===S.player.sworn||covered(ev.sector))feed(f==='brood'?`⚠ A Bloom Node has taken root in ${DEF[ev.sector].name}.`:`${Rr.name} is online.`,f==='brood'?'bad':f===S.player.sworn?'good':'news');
   if(WORLDS[ev.sector])inW(WORLDS[ev.sector],()=>{W.scaffold=null;addStationEnt(Rr);fxBoom(Rr,180,sideCol(f))});finishBuild(ev)}
 function finishBuild(ev){ev.stage='done';inv.addAll(S.econ.stock[ev.att],ev.force);ev.force={}}
 // the convoy in person: a constructor plus its escort wing, flying to the site and building while you watch
@@ -277,7 +278,7 @@ function engageBuild(ev){ev.live=true;const home=`ev:${ev.id}:${ev.att}`,mid=ev.
   const grp={id:'g'+(RID++),side:ev.att,role:'escort',members:[],n0:0,fleeing:false,escort:C};C.escortG=grp;
   (ev.cls||[]).forEach((cl,i)=>{const ld=loadout('patrol',ev.tier,cl);if(!takeFrom(ld,[ev.force]))return;const e=makeNPC('escort',ev.att,cl,ev.tier,ld,home);e.evId=ev.id;e.grp=grp;e.slot=i;const o=rdir();e.x=C.x+o.x*140;e.y=C.y+o.y*140;e.z=C.z+o.z*140;qCopy(e.q,C.q);grp.members.push(e);W.ents.push(e)});
   grp.n0=grp.members.length;if(grp.n0)W.groups[grp.id]=grp;
-  const pf=S.player.faction;if(ev.att==='brood')feed(`⚠ A Brood Seeder has arrived${grp.n0?` with ${grp.n0} guards`:''}. Kill it before the Bloom Node takes root.`,'bad');else if(ev.att===pf)feed(`${FAC(pf).short} constructor on site. Keep it alive for ${Math.round(45*(1-ev.prog))} s.`,'info')}
+  const pf=S.player.sworn;if(ev.att==='brood')feed(`⚠ A Brood Seeder has arrived${grp.n0?` with ${grp.n0} guards`:''}. Kill it before the Bloom Node takes root.`,'bad');else if(ev.att===pf)feed(`${FAC(pf).short} constructor on site. Keep it alive for ${Math.round(45*(1-ev.prog))} s.`,'info')}
 function builderThink(e,dt){const ev=S.events.find(v=>v.id===e.evId);if(!ev||ev.stage!=='building'){e.role='leave';return}const st=e.ai.site,d=d3(e,st);
   if(d>90){steer(e,st.x,st.y,st.z,dt,true,.9);faceTo(e,st,dt);return}
   brake(e,dt);ev.prog=Math.min(1,ev.prog+dt/45);W.scaffold={x:st.x,y:st.y,z:st.z,owner:e.side,prog:ev.prog};

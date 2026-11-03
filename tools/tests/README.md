@@ -12,6 +12,7 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 | Test | Checks |
 |---|---|
 | load.py | the game loads with no page errors |
+| standing.py | Beyond stage 1: freeport start unsworn, standing bands, hostility and docking by standing, bounty payers, jobs by issuer, attacking costs standing and draws aggro, drift, respawn at the freeport, ledger, a minute of flight |
 | start_screen.py | the Training button stands out without moving the other buttons |
 | keys.py | key list, rebinding with swap, saved bindings, the keys strip |
 | brood_ui.py | Brood HUD chip, alerts at 5/6/7 systems, map meter |
@@ -31,7 +32,10 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 | mp_guest_jump.py | a guest in a Light Miner (with Ward Drones) jumps Varkesh Hold → Iron Hush: no exception, the screen fades back in, host and guest agree: `python3 tools/tests/mp_guest_jump.py $PWD/index.html` |
 | mp_subtargets.py | sub-targets over the faked link: a hostile escort's damaged systems reach the guest, the guest's Shift+T, systems panel, lead point and HUD markers, a guest's shots disable a turret on the host, ledger: `python3 tools/tests/mp_subtargets.py $PWD/index.html` |
 | mp_signature.py | faction signature hulls flown by a guest: a Varkesh guest converts a Heavy Miner to a Bombard through the dock, its shells fire on the host and hit; a guest Gannet's barrage and a guest Vesper's charged railgun fire on the host: `python3 tools/tests/mp_signature.py $PWD/index.html` |
+| mp_contractor.py | host and guest both start as contractors at freeports: the guest flies as its own side, AI hostility follows its own standing, its job's issuer pays its bounty, standing reaches the guest, ledger: `python3 tools/tests/mp_contractor.py $PWD/index.html` |
 | mp_guest_faction.py | a faction guest over the faked link: hired wingman follows, stands down when docked or dead, rejoins; insurance and a covered loss; patronage; charge reticle; ledger: `python3 tools/tests/mp_guest_faction.py $PWD/index.html` |
+
+Tests of faction behaviour open the page with `?sworn=halcyon`, which starts a pilot sworn to Halcyon as Driftgate 1 did; without it a pilot starts as an independent contractor at a freeport.
 
 Run them before publishing a change that touches what they cover; training.py after any change to lessons or the dock.
 `tools/old/` holds one-off patch scripts from before the source split: history only, not to be run again.

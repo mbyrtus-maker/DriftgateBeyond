@@ -84,8 +84,10 @@ function jamFx(c){const p=W.player;if(!p)return;const f=jamFrac(p),dark=jamDark(
   c.textAlign='center';c.font='700 15px "Saira Semi Condensed",sans-serif';c.fillStyle='#b7c6ff';
   if(dark)c.fillText(`SYSTEMS OFFLINE · ${Math.max(0,Math.ceil(p.jamOff-W.t))} S`,VW/2,VH/2-40);else{c.fillText(`JAM ${Math.round(f*100)}%`,VW/2,VH-154);c.fillStyle='rgba(183,198,255,.25)';c.fillRect(VW/2-90,VH-148,180,6);c.fillStyle='#b7c6ff';c.fillRect(VW/2-90,VH-148,180*f,6)}
   c.restore()}
-function hostile(a,b){if(!a||!b||a===b)return false;if(S&&S.unb&&(a==='player'||b==='player')){const o=a==='player'?b:a;if(o==='pirate'||o==='neutral')return false;if(o==='brood')return true;if(FAC_IDS.includes(o))return!unbCover(o)}if((a==='brood'&&b==='pirate')||(a==='pirate'&&b==='brood'))return false;if(!STRAT&&W&&W.truce&&isFacSide(a)&&isFacSide(b))return false;if(a==='neutral'||b==='neutral'){const o=a==='neutral'?b:a;return o==='pirate'||o==='brood'}const pf=S.player.faction;if((a==='player'&&b===pf)||(b==='player'&&a===pf))return false;
-  const C=S.coal;if(C){const A=a==='player'?pf:a,B=b==='player'?pf:b;if(A!==B&&C.mem.includes(A)&&C.mem.includes(B))return false}return true}
+function hostile(a,b){if(!a||!b||a===b)return false;if(S&&S.unb&&(a==='player'||b==='player')){const o=a==='player'?b:a;if(o==='pirate'||o==='neutral')return false;if(o==='brood')return true;if(FAC_IDS.includes(o))return!unbCover(o)}if((a==='brood'&&b==='pirate')||(a==='pirate'&&b==='brood'))return false;if(!STRAT&&W&&W.truce&&isFacSide(a)&&isFacSide(b))return false;
+  // an independent contractor (Beyond): the Brood and the Unbound always, a power only below -50 standing, the Compact never
+  if((a==='player'||b==='player')&&S&&S.player&&!S.player.sworn)return pilotHostile(S.player,a==='player'?b:a);if(a==='neutral'||b==='neutral'){const o=a==='neutral'?b:a;return o==='pirate'||o==='brood'}const pf=S.player.sworn;if(pf&&((a==='player'&&b===pf)||(b==='player'&&a===pf)))return false;
+  const C=S.coal;if(C){const A=a==='player'?pf:a,B=b==='player'?pf:b;if(A&&B&&A!==B&&C.mem.includes(A)&&C.mem.includes(B))return false}return true}
 
 // ============================================================ state
 let S=null,W=null,running=false;
@@ -157,19 +159,19 @@ function escName(side){S.escSeq=(S.escSeq||0)+1;if(side==='pirate')return SLOOP_
 function carName(side){if(side==='pirate')return pick(DEST_NAMES);return side==='brood'?'Hive Ship':`${pick(CAR_NAMES)} ${['I','II','III','IV','V'][Math.floor(Math.random()*5)]}`}
 function makeCarrier(side,sector,load,owner,full){const t={id:S.nextId++,side,sector,dest:null,cls:'carrier',hull:side==='brood'?7000:CAR_HULL,shield:side==='brood'?0:CAR_SHIELD,load,name:carName(side),hold:0,wing:[],aload:0};if(owner)t.owner=owner;else if(S.legFrig&&(S.legFrig[side]||[]).length){const nm=S.legFrig[side].shift();t.name=`Carrier “${nm}”`;facFeed(side,`${t.name} is named in honour of ${nm}.`,'good')}S.frigates.push(t);if(full)carFullLoad(t);else capRefill(t);if(WORLDS[sector])inW(WORLDS[sector],()=>spawnFrigate(t,true));return t}
 // a carrier delivered fully loaded (the developer spawn): three fighters, three bombers and every assault bay filled, kits aboard
-function carFullLoad(t){const f=t.side==='player'?S.player.faction:t.side;t.wingInit=1;t.wing=[];const fi=f==='brood'?['interceptor','striker']:['interceptor','striker','heavy'];
+function carFullLoad(t){const f=t.side==='player'?sideNorm('player'):t.side;t.wingInit=1;t.wing=[];const fi=f==='brood'?['interceptor','striker']:['interceptor','striker','heavy'];
   for(let k=0;k<CAR_WING/2;k++){const c=fi[k%fi.length];t.wing.push(c);inv.addAll(t.load,carKit(c))}for(let k=0;k<CAR_WING/2;k++){t.wing.push('bomber');inv.addAll(t.load,carKit('bomber'))}
   const cap=f==='brood'?0:CAR_ASSAULT;t.aload=0;while(t.aload<cap){inv.addAll(t.load,ASSAULT_LD);t.aload++}}
 // where a capital rearms: its faction's shipyard system (or home); the Brood's at The Bloom
-function capBase(t){const f=t.side==='player'?S.player.faction:t.side;return f==='brood'?'bl':S.yards[f]?S.yards[f].sector:FAC_HOME(f)}
+function capBase(t){const f=t.side==='player'?sideNorm('player'):t.side;return f==='brood'?'bl':S.yards[f]?S.yards[f].sector:FAC_HOME(f)}
 // a carrier's wing craft are built to a simple deck pattern: plate and coil, no wire (wire is the scarcest component)
 function carKit(c){return c==='heavy'||isBmb(c)?{plate:6,coil:2}:c==='striker'?{plate:5,coil:1}:{plate:4,coil:1}}
 function wingPick(f){return wpick(f==='brood'?{interceptor:2,striker:2,bomber:2}:{interceptor:1,striker:2,heavy:1.2,bomber:1.8})}
 // fill empty wing bays and assault bays from the faction's stores: the kits ride aboard, so the economy stays exact
-function capRefill(t){const f=t.side==='player'?S.player.faction:t.side,own=carOwned(t),st=own&&S.pilots&&S.pilots[t.owner]?S.pilots[t.owner].vault:S.econ.stock[f];if(!st)return;const srcs=own?[st]:[S.econ.fleet[f],st].filter(Boolean);
+function capRefill(t){const f=t.side==='player'?sideNorm('player'):t.side,own=carOwned(t),st=own&&S.pilots&&S.pilots[t.owner]?S.pilots[t.owner].vault:S.econ.stock[f];if(!st)return;const srcs=own?[st]:[S.econ.fleet[f],st].filter(Boolean);
   if(isCar(t)&&(t.owner||!t.wingInit)){t.wingInit=1;t.wing=t.wing||[];let g=0;while(carHave(t)<CAR_WING&&g++<CAR_WING*2){const c=wingPick(f),ld=carKit(c);if(!takeFrom(ld,srcs))break;inv.addAll(t.load,ld);t.wing.push(c)}}
   const cap=isCar(t)?(f==='brood'?0:CAR_ASSAULT):isEsc(t)?(f==='brood'?0:1):0;t.aload=t.aload||0;while(t.aload<cap&&takeFrom(ASSAULT_LD,srcs)){inv.addAll(t.load,ASSAULT_LD);t.aload++}}
-function capCanRefill(t){const f=t.side==='player'?S.player.faction:t.side,st=S.econ.stock[f];if(!st)return false;const sr=[S.econ.fleet[f],st].filter(Boolean);return(t.aload||0)<1&&haveIn(ASSAULT_LD,sr)}
+function capCanRefill(t){const f=t.side==='player'?sideNorm('player'):t.side,st=S.econ.stock[f];if(!st)return false;const sr=[S.econ.fleet[f],st].filter(Boolean);return(t.aload||0)<1&&haveIn(ASSAULT_LD,sr)}
 // ---- carrier fabrication. A carrier builds its own craft: it keeps a store of materials aboard and its deck fabricator
 // turns one kit at a time into a fighter or bomber for an empty bay (or an assault ship for an empty assault bay). When the
 // store runs low it asks its faction for materials, which are shipped out of the faction's stores and arrive after a trip
@@ -191,13 +193,13 @@ function carShipping(t){return haulBusy('car:'+t.id)}
 function carSay(t,msg){if(!(friendSide(t.side)||covered(t.sector)))return;if(S.T-(t.sayT||-99)<60)return;t.sayT=S.T;feed(msg,friendSide(t.side)?'info':'news')}
 function carOrder(t,f,need){if(S.contracts.some(c=>c.car===t.id))return;let item=null,n=0;for(const k in need){if(need[k]>0){item=k;n=need[k];break}}if(!item)return;
   const reward=Math.ceil(baseValue(item)*n*1.8/10)*10;S.contracts.push({id:S.nextId++,fac:f,item,n,reward,until:S.T+600,car:t.id,carName:t.name});
-  if(f===S.player.faction)feed(`The carrier ${t.name} needs ${n} ${ITEMS[item].name} to build fighters. Order posted: ${fmt(reward)} cr for delivery to any ${FACTIONS[f].short} dock.`,'info')}
+  if(f===S.player.sworn)feed(`The carrier ${t.name} needs ${n} ${ITEMS[item].name} to build fighters. Order posted: ${fmt(reward)} cr for delivery to any ${FACTIONS[f].short} dock.`,'info')}
 // what the carrier wants on hand: kits for its empty bays plus a little spare
 // the carrier always works to fill its store completely: kits for a full wing and a full set of assault ships
-function carWant(t){const f=t.side==='player'?S.player.faction:t.side,w={};for(let i=0;i<CAR_WING;i++)inv.addAll(w,carKit('heavy'));if(f!=='brood')for(let i=0;i<CAR_ASSAULT;i++)inv.addAll(w,ASSAULT_LD);return w}
+function carWant(t){const f=t.side==='player'?sideNorm('player'):t.side,w={};for(let i=0;i<CAR_WING;i++)inv.addAll(w,carKit('heavy'));if(f!=='brood')for(let i=0;i<CAR_ASSAULT;i++)inv.addAll(w,ASSAULT_LD);return w}
 // a faction carrier keeps building while a pilot has it on loan (t.cmd); only a pilot's own carrier is restocked by hand
 function carOwned(t){return!!t.owner&&!t.cmd}
-function carTick(){for(const t of S.frigates){if(!isCar(t)||carOwned(t)||t.hull<=0)continue;const f=t.side==='player'?S.player.faction:t.side;t.wing=t.wing||[];t.store=t.store||{};
+function carTick(){for(const t of S.frigates){if(!isCar(t)||carOwned(t)||t.hull<=0)continue;const f=t.side==='player'?sideNorm('player'):t.side;t.wing=t.wing||[];t.store=t.store||{};
   // the fabricator: finish the craft in hand, then start the next one if there's a free bay and a kit aboard
   if(t.fab&&S.T>=t.fab.until){const fb=t.fab;t.fab=null;if(fb.assault){t.aload=(t.aload||0)+1;inv.addAll(t.load,fb.kit)}else{const e=t.live&&carEnt(t);
       if(e){inW(WORLDS[t.sector],()=>{const p=makeNPC('picket',t.side,fb.cls,1,fb.kit,e.home);p.fac=e.fac;p.mom=e;p.wg=wgPick(e);p.ai.orb=Math.random()*TAU;p.x=e.x;p.y=e.y-e.st.radius*.3;p.z=e.z;qCopy(p.q,e.q);(e.pickets=e.pickets||[]).push(p);W.ents.push(p)});carSay(t,`${t.name} has launched a new ${CLASSES[fb.cls].name} from its deck.`)}
@@ -209,7 +211,7 @@ function carTick(){for(const t of S.frigates){if(!isCar(t)||carOwned(t)||t.hull<
   if(carShipping(t)||S.T<(t.askT||0))continue;const want=carWant(t),need={};let any=false;for(const k in want){const n=want[k]-(t.store[k]||0);if(n>0){need[k]=n;any=true}}if(!any)continue;t.askT=S.T+BAL.carAsk;
   const depots=Object.values(S.stations).filter(x=>x.owner===f&&isDepotF(x)),home=S.stations[f==='brood'?'bl':FAC_HOME(f)],cands=[...depots.map(x=>({R:x,srcs:[dStore(x)]})),...(home?[{R:home,srcs:[S.econ.fleet[f],S.econ.stock[f]].filter(Boolean)}]:[])].filter(c=>Object.keys(need).some(k=>c.srcs.reduce((a,x)=>a+(x[k]||0),0)>0)).sort((a,b)=>(HOP[a.R.sid][t.sector]||0)-(HOP[b.R.sid][t.sector]||0));
   const src=cands[0],sent={};if(src)for(const k in need){const n=Math.min(need[k],src.srcs.reduce((a,x)=>a+(x[k]||0),0));if(n>0){takeFrom({[k]:n},src.srcs);sent[k]=n;need[k]-=n}}
-  if(Object.keys(sent).length){haulSend(f==='brood'?'brood':t.side==='player'?S.player.faction:f,src.R.sid,t.sector,sent,'car:'+t.id,'carrier',t.id);
+  if(Object.keys(sent).length){haulSend(f==='brood'?'brood':t.side==='player'?sideNorm('player'):f,src.R.sid,t.sector,sent,'car:'+t.id,'carrier',t.id);
     carSay(t,`${t.name} has asked for materials to build fighters; ${FACTIONS[f]?FACTIONS[f].short:'its'} supply ships are on the way.`)}
   if(f!=='brood'&&Object.values(need).some(n=>n>0))carOrder(t,f,need)}}
 // ---- front-line resupply. A pilot who lands on a friendly carrier's flight deck with materials its store lacks (kits for its
@@ -219,10 +221,10 @@ function carTick(){for(const t of S.frigates){if(!isCar(t)||carOwned(t)||t.hull<
 // An open Order for that carrier pays its own rate (for goods you mined or made, never bought ones) if that's higher.
 const RESUP_MAX=2.2;
 function carNeed(t){const want=carWant(t),need={};t.store=t.store||{};for(const k in want){const n=want[k]-(t.store[k]||0);if(n>0)need[k]=n}return need}
-function frontMul(t){const f=t.side==='player'?S.player.faction:t.side;let m=1;if(!territory(f).has(t.sector))m+=.3;const e=t.live&&carEnt(t),w=WORLDS[t.sector];
-  if(e&&w){if(w.ents.some(o=>o.type==='ship'&&o.alive&&hostile(f,o.side)&&o.role!=='drone'&&d3(o,e)<5000))m+=.6;if(w.t-(e.lastHit||-99)<90)m+=.4}
-  else if(frigatesIn(t.sector).some(o=>hostile(f,o.side)))m+=.6;return Math.min(RESUP_MAX,m)}
-function carResupply(t,P,k){P=P||S.player;k=k||pkey();if(!t||!isCar(t)||t.side==='brood')return null;const f=t.side==='player'?S.player.faction:t.side;if(P.faction!==f&&!fMine(t))return null;
+function frontMul(t){const f=t.side==='player'?sideNorm('player'):t.side;let m=1;if(!territory(f).has(t.sector))m+=.3;const e=t.live&&carEnt(t),w=WORLDS[t.sector];
+  if(e&&w){if(w.ents.some(o=>o.type==='ship'&&o.alive&&hostE(f,o)&&o.role!=='drone'&&d3(o,e)<5000))m+=.6;if(w.t-(e.lastHit||-99)<90)m+=.4}
+  else if(frigatesIn(t.sector).some(o=>hostE(f,o)))m+=.6;return Math.min(RESUP_MAX,m)}
+function carResupply(t,P,k){P=P||S.player;k=k||pkey();if(!t||!isCar(t)||t.side==='brood')return null;const f=t.side==='player'?sideNorm('player'):t.side;if(P.sworn!==f&&!fMine(t))return null;
   const need=carNeed(t),got={},own={};for(const i in need){const n=Math.min(need[i],P.cargo[i]||0);if(n>0){own[i]=Math.min(n,deliverable(P,i,[P.cargo]));inv.take(P.cargo,i,n);inv.add(t.store,i,n);got[i]=n}}if(!Object.keys(got).length)return null;
   // the base rate is what the goods would sell for here: a friendly station in the carrier's system pays its own local price
   const fm=frontMul(t),mk=S.econ.stock[f]||{},Rs=S.stations[t.sector],rate=i=>price(mk,i)*.94*(Rs&&Rs.owner===f?locF(Rs,i):1);let pay=0;for(const i in got){let v=rate(i)*got[i]*fm;const c=S.contracts.find(c=>c.car===t.id&&c.item===i&&c.n>0);if(c&&own[i]>0){const share=c.reward*Math.min(1,own[i]/c.n);v=Math.max(v,share+rate(i)*(got[i]-own[i])*fm);c.reward=Math.max(0,Math.round(c.reward-share));c.n-=own[i];if(c.n<=0)S.contracts=S.contracts.filter(x=>x!==c)}pay+=v}
@@ -244,7 +246,7 @@ function clsF(list){if(!list||!list.length)return 1;let s=0;for(const c of list)
 function crPow(c){return isBmb(c)?1.6:c==='heavy'?1.2:c==='interceptor'?.85:1}
 function sortieSide(ev){return sideNorm(ev.side)}
 function sortieTgtName(ev){if(ev.tgt==='st'){const Rs=S.stations[ev.to];return Rs?Rs.name:'the station'}const o=(S.frigates||[]).find(x=>'c'+x.id===ev.tgt);return o?o.name:'the target'}
-function sortieTgtLive(ev){const sd=sortieSide(ev);if(ev.tgt==='st')return hostileStationAt(ev.to,sd);const o=(S.frigates||[]).find(x=>'c'+x.id===ev.tgt);return!!o&&o.sector===ev.to&&hostile(sd,o.side)}
+function sortieTgtLive(ev){const sd=sortieSide(ev);if(ev.tgt==='st')return hostileStationAt(ev.to,sd);const o=(S.frigates||[]).find(x=>'c'+x.id===ev.tgt);return!!o&&o.sector===ev.to&&hostE(sd,o)}
 // order: every flying craft without its own Guard order (and everything in the hangar) heads for the gate
 function sortieStart(t,E,to,tgt,wg){if(sortiesOf(t).length>=SORTIE.max||!NEIGH[t.sector].includes(to))return 0;const gate=W.ents.find(x=>x.type==='gate'&&x.to===to);if(!gate)return 0;wg=WINGS.includes(wg)?wg:null;
   if(wg&&sortiesOf(t).some(v=>v.wg===wg))return 0;
@@ -277,7 +279,7 @@ function sortieTick(){for(const ev of S.events){if(ev.type!=='sortie'||ev.stage=
         for(const c of ev.craft){const ld=carKit(c),got={};for(const k in ld){const m=Math.min(ld[k],ev.force[k]||0);if(m>0)got[k]=inv.take(ev.force,k,m)}const sg=ev.tgt==='st'&&!isBmb(c),e=makeNPC(sg?'strike':'raider',sd,c,factionTier(sd),got,'ev:'+ev.id);if(sg)e.ai.siege=1;e.fac=sd;e.sortieEv=ev.id;e.x=g.x*.93+rnd(-80,80);e.y=g.y*.93+rnd(-40,40);e.z=g.z*.93+rnd(-80,80);if(TE&&TE.type==='ship')e.ai.tgt=TE;fxWarp(e,sideCol(sd));W.ents.push(e)}})}}
     if(w&&ev.spawned){if(!BAL2.on)sortieLiveHit(ev,w,sd)}
     else{if(ev.spawned)ev.spawned=0;   // the system closed: the craft's kits are back in ev.force; survivors are what's left in ev.craft
-      const pw=ev.craft.reduce((a,c)=>a+crPow(c),0)*(t&&fOwn(t)||BAL2.on?1:WING_K),k=strikeK(pw),Rs=S.stations[ev.to],caps=frigatesIn(ev.to).filter(o=>hostile(sd,o.side));
+      const pw=ev.craft.reduce((a,c)=>a+crPow(c),0)*(t&&fOwn(t)||BAL2.on?1:WING_K),k=strikeK(pw),Rs=S.stations[ev.to],caps=frigatesIn(ev.to).filter(o=>hostE(sd,o));
       if(ev.tgt==='st'&&Rs&&hostileStationAt(ev.to,sd)){distressCall(ev.to,Rs.name,Rs.owner,sd);offReboot(Rs);if(Rs.shield>0){const d=Math.min(Rs.shield,700*k);Rs.shield-=d;ev.dmg+=d}else{const d=rnd(320,420)*k;Rs.hull-=d;ev.dmg+=d;wkAbstractHit(ev.to,sd,.3)}
         if(Rs.hull<=0){if(Rs.kind==='depot'){if(Rs.owner!=='brood'&&sd!=='brood'&&ev.mode!=='raze'){const g=garrison(Rs);if(capLoads(ev.to,sd)>=g){useLoads(ev.to,sd,g,Rs);captureDepot(ev.to,sd)}else Rs.hull=1}else razeStation(ev.to,sd)}else if(Rs.kind==='free')razeStation(ev.to,'brood');else Rs.hull=1}}
       else if(ev.tgt!=='st'){const o=caps.find(x=>'c'+x.id===ev.tgt);if(o){const d=pw*rnd(40,70);o.hull-=d;ev.dmg+=d;if(o.hull<=0)killFrigateToken(o,`by ${t?t.name+"'s":'a carrier'} strike`)}}
@@ -327,9 +329,9 @@ function hostileStationAt(sid,side){const Rs=S.stations[sid];return!!(Rs&&(Rs.ow
 function makeEscort(side,sector,load,owner){const t={id:S.nextId++,side,sector,dest:null,cls:'escort',hull:ESC_HULL,shield:1800,load,name:escName(side),hold:0,aload:0};if(owner)t.owner=owner;S.frigates.push(t);capRefill(t);if(WORLDS[sector])inW(WORLDS[sector],()=>spawnFrigate(t,true));return t}
 const HULL_COST={interceptor:{},striker:{plate:10,wire:8,coil:3},heavy:{plate:20,wire:12,coil:6,lattice:1},bomber:{plate:18,wire:10,coil:8,lattice:2},
   skiff:{},prospector:{plate:10,wire:8,coil:2},dredger:{plate:22,wire:14,coil:6,lattice:1},courier:{},freighter:{plate:12,wire:6,coil:2},bulker:{plate:26,wire:12,coil:6,lattice:1},
-  scout:{plate:6,wire:10,coil:4},scout2:{plate:8,wire:12,coil:6,lattice:1},constructor:{plate:24,wire:14,coil:6},gunboat:{plate:16,wire:10,coil:5,lattice:1},wraith:{}},HULL_FEE=250,START_HULLS=['interceptor','skiff','courier','scout'];
+  scout:{plate:6,wire:10,coil:4},scout2:{plate:8,wire:12,coil:6,lattice:1},constructor:{plate:24,wire:14,coil:6},gunboat:{plate:16,wire:10,coil:5,lattice:1},wraith:{}},HULL_FEE=250,START_HULLS=['interceptor','skiff','courier'];
 // starter hulls can be swapped for free at your faction's home station; anything else costs the yard fee
-const hullFee=(P,k)=>START_HULLS.includes(k)&&P.docked==='station'&&P.sector===FAC_HOME(P.faction)?0:HULL_FEE;
+const hullFee=(P,k)=>START_HULLS.includes(k)&&P.docked==='station'&&P.sector===pilotHome(P)?0:HULL_FEE;
 // hulls beyond the starters are bought with credits (paid to the station's faction), one ship at a time: lose it and you relaunch in
 // your role's starter hull and buy another; switch away at a shipyard and it's traded in for half its price.
 // The price follows what the frame used to cost in parts. Mk I–V components still cost materials.
@@ -338,11 +340,11 @@ const hullFee=(P,k)=>START_HULLS.includes(k)&&P.docked==='station'&&P.sector===F
 const HULL_PRICE_SET={striker:2400,prospector:2100,freighter:2100,heavy:4400,bomber:4800,dredger:4600,bulker:4700,scout2:4000,gunboat:5500};
 const HULL_PRICE=Object.create(null);function hullPrice(k){if(START_HULLS.includes(k)||k==='wraith')return 0;if(HULL_PRICE_SET[k])return HULL_PRICE_SET[k];if(HULL_PRICE[k]==null){const r=HULL_COST[k]||{};let v=0;for(const i in r)v+=baseValue(i)*r[i];HULL_PRICE[k]=Math.max(500,Math.round((v*1.5+HULL_FEE)/50)*50)}return HULL_PRICE[k]}
 function hullsOwned(P){return P.cls?[P.cls]:[]}
-const ROLE_START={combat:'interceptor',mining:'skiff',hauling:'courier',scouting:'scout'};
+const ROLE_START={combat:'interceptor',mining:'skiff',hauling:'courier',scouting:'interceptor'};
 function starterFor(cls){if(S&&S.unb)return'raider';return START_HULLS.includes(cls)?cls:cls==='constructor'?'courier':ROLE_START[roleOf(cls)]||'interceptor'}
 const TRADE_IN=.5;
 // gunboats come only from orbital docks: a constructed capital shipyard (yours or your faction's) in the system you're docked in
-function atDocks(P){const Y=(S.yards||{})[yk()]||(S.yards||{})[P.faction];return!!(Y&&Y.sector===P.sector&&P.docked==='station')}
+function atDocks(P){const Y=(S.yards||{})[yk()]||(P.sworn&&(S.yards||{})[P.sworn]);return!!(Y&&Y.sector===P.sector&&P.docked==='station')}
 const DOCKS_ONLY=[];   // the Heavy Bomber is sold at any core shipyard for credits
 function droneTopUp(P,store,fac,pay){const cap=(CLASSES[P.cls]&&CLASSES[P.cls].drones)||0;P.bay=P.bay||{};let need=cap-(P.bay.drone||0),got=0;if(need<0){inv.add(store||P.vault,'drone',-need);P.bay.drone=cap;return 0}if(need<=0)return 0;
   for(const h of[store,fac&&S.econ.stock[fac],fac&&S.econ.fleet[fac]]){if(!h||need<=0)continue;let want=need;if(pay&&h!==store){const pr=Math.round(baseValue('drone'));want=Math.min(need,Math.floor(P.credits/Math.max(1,pr)))}const n=inv.take(h,'drone',want);if(n){if(pay&&h!==store)transfer('player',fac,n*Math.round(baseValue('drone')));inv.add(P.bay,'drone',n);need-=n;got+=n}}return got}
@@ -359,21 +361,23 @@ function shipStrip(R,into){for(const sl of SLOTS){const t=R.tiers[sl.id]||1;if(t
     const l=(R.tune||{})[sl.id]||0;if(l){inv.add(into,'tune',tuneItems(l));R.tune[sl.id]=0}}if(R.tune&&R.tune.rf)R.tune.rf={};if(R.tune&&R.tune.vr){inv.addAll(into,vrInv(R));R.tune.vr={}}}
 // a fresh starter frame needs its Mk I components: the station you're docked at supplies them from its own store (with the free
 // hull), then its faction's warehouse, then your own faction's, then your hold and vault
-function kitSrcs(store,fac,mkt){const P=S.player,pf=FAC_IDS.includes(P.faction)&&!S.unb?P.faction:null;return[mkt,fac&&S.econ.stock[fac],fac&&S.econ.fleet[fac],pf&&S.econ.stock[pf],P.cargo,store].filter((x,i,a)=>x&&a.indexOf(x)===i)}
+function kitSrcs(store,fac,mkt){const P=S.player,pf=FAC_IDS.includes(P.sworn)&&!S.unb?P.sworn:null;return[mkt,fac&&S.econ.stock[fac],fac&&S.econ.fleet[fac],pf&&S.econ.stock[pf],P.cargo,store].filter((x,i,a)=>x&&a.indexOf(x)===i)}
 function issueKit(store,fac,mkt){const k=baseKit(),srcs=kitSrcs(store,fac,mkt);if(!haveIn(k,srcs))return false;takeFrom(k,srcs);return true}
 function shipsCount(P){return(P.ships||[]).length}
 function hullOwned(P,k){return START_HULLS.includes(k)}
 function stationName(owner,kind,sid){if(owner==='player')return`${DEF[sid].name} Depot`;if(owner==='neutral')return`${DEF[sid].name.split(' ')[0]} Freeport`;const F=FACTIONS[owner];if(kind==='core'||kind==='hive')return F.station;if(DEF[sid].home===owner)return F.depot;return owner==='brood'?`Bloom Node · ${DEF[sid].name}`:`${F.short} Depot · ${DEF[sid].name}`}
 function makeStation(sid,owner,kind,pos,fort){const k=STN[kind];return S.stations[sid]={sid,owner,kind,name:stationName(owner,kind,sid),x:pos.x,y:pos.y,z:pos.z,sMax:k.sMax,shield:k.sMax,hMax:k.hMax,hull:k.hMax,fort:fort||{},stock:{},built:S.T}}
 function stationSite(sid){const gs=GATES[sid];for(let k=0;k<40;k++){const d=rdir(.5),r=rnd(800,1400),p={x:Math.round(d.x*r),y:Math.round(d.y*r),z:Math.round(d.z*r)};if(gs.some(g=>d3(g,p)<900))continue;if(S.sectors[sid].ast.some(a=>d3(a,p)<astR(a)+200))continue;return p}return{x:900,y:0,z:0}}
-function canBuildIn(sid,side){const d=DEF[sid];if(S.stations[sid]||d.kind==='hive')return false;if(side!=='brood'&&FREEPORTS.some(f=>f.sid===sid))return false;if(d.home&&d.home!==side)return false;const oid=OUT_BY_SECTOR[sid];if(oid&&side!=='brood'){const ow=S.outposts[oid].owner;if(ow&&ow!==side&&hostile(side,ow)&&!(side==='player'&&ow===S.player.faction))return false}return true}
+function canBuildIn(sid,side){const d=DEF[sid];if(S.stations[sid]||d.kind==='hive')return false;if(side!=='brood'&&FREEPORTS.some(f=>f.sid===sid))return false;if(d.home&&d.home!==side)return false;const oid=OUT_BY_SECTOR[sid];if(oid&&side!=='brood'){const ow=S.outposts[oid].owner;if(ow&&ow!==side&&hostile(side,ow)&&!(side==='player'&&!!S.player.sworn&&ow===S.player.sworn))return false}return true}
 function yardHome(f){return f==='brood'?'bl':FAC_HOME(f)}   // the Brood grow their Leviathans at the Bloom
 function FAC_HOME(f){return SECTOR_DEFS.find(d=>d.home===f&&d.kind==='core').id}
-function newGame(fac,cls,pname){
+// fac: the design faction (and allegiance, for training and the Unbound); port: a freeport sector for an independent contractor
+function newGame(fac,cls,pname,port){
   WORLDS={};LW=null;W=null;   // worlds left open from a previous galaxy would hand their ships' cargo to the new one when closed
-  S={v:2,nuV:1,T:0,nextId:1,sectors:{},outposts:{},econ:{stock:{},treasury:{},fleet:{}},events:[],contracts:[],gateDown:{},ai:{},timers:{tick:2,event:35,contract:12},tollAcc:0,
-    player:{faction:fac,cls,hullInv:{},bay:{drone:CLASSES[cls].drones||0},tiers:{engine:1,power:1,shield:1,weapon:1,armor:1,drill:1,cargo:1,payload:1},cargo:{},vault:{plate:6,wire:6},rack:rackCapC(cls,1),magV:1,swarm:(CLASSES[cls]&&CLASSES[cls].swarm)||0,wpn:'kinetic',credits:1800,sector:FAC_HOME(fac),docked:'station',x:0,y:0,z:0,vx:0,vy:0,vz:0,q:[0,0,0,1],hull:0,shield:0,energy:0,fa:true,kills:0,tune:{}}};
+  S={v:3,nuV:1,T:0,nextId:1,sectors:{},outposts:{},econ:{stock:{},treasury:{},fleet:{}},events:[],contracts:[],gateDown:{},ai:{},timers:{tick:2,event:35,contract:12},tollAcc:0,
+    player:{faction:fac,sworn:fac,home:null,job:null,stand:{halcyon:0,varkesh:0,ostrova:0,neutral:0},cls,hullInv:{},bay:{drone:CLASSES[cls].drones||0},tiers:{engine:1,power:1,shield:1,weapon:1,armor:1,drill:1,cargo:1,payload:1},cargo:{},vault:{plate:6,wire:6},rack:rackCapC(cls,1),magV:1,swarm:(CLASSES[cls]&&CLASSES[cls].swarm)||0,wpn:'kinetic',credits:1800,sector:FAC_HOME(fac),docked:'station',x:0,y:0,z:0,vx:0,vy:0,vz:0,q:[0,0,0,1],hull:0,shield:0,energy:0,fa:true,kills:0,tune:{}}};
   for(const d of SECTOR_DEFS)S.sectors[d.id]=genSector(d);
+  if(port&&FREEPORTS.some(F=>F.sid===port)){const P=S.player;P.sworn=null;P.home=port;P.sector=port;P.docked='station'}
   S.seamV=2;   // home systems carry no xenocrystal: it has to be won from contested, deep and den space
   S.stations={};S.scouts=[];S.beacons={};beaconInit();S.frigates=[];S.yards={};for(const d of SECTOR_DEFS)if(d.home)makeStation(d.id,d.home,d.kind==='core'?'core':'depot',{x:0,y:0,z:0},d.kind==='core'?{}:{...DEPOT_COST});makeStation('bl','brood','hive',{x:0,y:0,z:0},{});
   for(const id in OUTPOST_DEFS){const D=OUTPOST_DEFS[id],L=id==='wrack'?3:1;const fort={fe:0,cu:0,ir:0,xc:0,au:0,nu:0};for(let l=1;l<=L;l++)invVec(fortRecipe(l),fort);
@@ -381,7 +385,7 @@ function newGame(fac,cls,pname){
   for(const f of FAC_IDS){S.econ.stock[f]={fe:260,cu:260,ir:90,xc:10,plate:70,wire:70,coil:24,missile:20,torpedo:8,drone:16};S.econ.fleet[f]={plate:30,wire:24,coil:8,missile:6,torpedo:4};S.econ.treasury[f]=250000;S.ai[f]={next:40+rnd(40)}}
   S.econ.stock.pirate={fe:60,cu:30,plate:40,wire:30,coil:8,lattice:2,missile:4,torpedo:2};S.econ.fleet.pirate={};S.econ.treasury.pirate=20000;S.ai.pirate={next:110};
   broodInit();neutralInit();S.drift={fe:0,cu:0,ir:0,xc:0,au:0,nu:0};for(const f of FAC_IDS)S.ai[f].build=rnd(70,160);
-  {const lg=loadLegacy(),f=lg.last;if(f&&f!=='brood'&&S.econ.stock[f]){const st=S.econ.stock[f];for(const k in st)st[k]=Math.round(st[k]*1.4);if(FAC_IDS.includes(f))inv.addAll(st,yardCost(f));if(f===fac){S.player.credits+=4000;inv.addAll(S.player.vault,{plate:20,wire:20,coil:8,lattice:2})}S.legacy=f}if(lg.vb)S.vbPend=1}
+  {const lg=loadLegacy(),f=lg.last;if(f&&f!=='brood'&&S.econ.stock[f]){const st=S.econ.stock[f];for(const k in st)st[k]=Math.round(st[k]*1.4);if(FAC_IDS.includes(f))inv.addAll(st,yardCost(f));if(f===S.player.sworn){S.player.credits+=4000;inv.addAll(S.player.vault,{plate:20,wire:20,coil:8,lattice:2})}S.legacy=f}if(lg.vb)S.vbPend=1}
   if(pname){S.player.name=pname;legendStart(S.player,legPack(pname))}
   const st=shipStats(fac,S.player.cls,S.player.tiers,S.player.tune);S.player.hull=st.hull;S.player.shield=st.sCap;S.player.energy=st.eCap;
   const l=ledger();S.ledger0={tot:l.tot,credits:l.credits};
@@ -394,7 +398,7 @@ function mkCapMigrate(){const pl=[S.player,...Object.values(S.pilots||{})].filte
   for(const P of pl){const to=P.vault||(P.vault={});for(const R of[P,...(P.ships||[])]){if(!R.tiers)continue;for(const sl of SLOTS){const t=R.tiers[sl.id]||1;if(t<=MK_TOP)continue;
     const a=compInv(sl.id,t),b=compInv(sl.id,MK_TOP);for(const k in a){const d=a[k]-(b[k]||0);if(d>0)inv.add(to,k,d)}R.tiers[sl.id]=MK_TOP;n++}}}
   if(n&&S.player)feed(`Mk IV and V are retired: ${n} system${n>1?'s were':' was'} set to Mk III and the extra parts went into your vault. Build a variant with them in Upgrades.`,'info')}
-function migrate(st){S=st;mkCapMigrate();for(const ev of S.events||[])if(ev.type==='wingfly'&&ev.stage!=='done'){const f=sideNorm(ev.side);inv.addAll(S.econ.stock[f]||S.econ.stock.pirate,ev.force||{});ev.force={};ev.stage='done'}if(!S.capV&&S.frigates){S.capV=1;for(const t of S.frigates.slice()){if(isEsc(t)||isCar(t))continue;const h=t.owner&&S.pilots&&S.pilots[t.owner]?S.pilots[t.owner].vault:t.side==='player'?S.player.vault:S.econ.stock[t.side];if(h)inv.addAll(h,t.load);else toDebris(S.sectors[t.sector],t.load);t.load={};S.frigates.splice(S.frigates.indexOf(t),1)}for(const ev of S.events||[])if(ev.type==='frigbuild'&&ev.stage==='building'){const h=S.econ.stock[ev.att]||S.player.vault;inv.addAll(h,ev.force);ev.force={};ev.stage='done'}}for(const P of[S.player,...Object.values(S.pilots||{})])if(P&&P.cls==='constructor')P.cls='courier';fpMigrate();beaconInit();if((S.seamV||0)<2&&S.sectors){S.seamV=2;seamClear()}for(const P of[S.player,...Object.values(S.pilots||{})])if(P&&P.tiers&&!P.tiers.payload)P.tiers.payload=1;magInit(S.player);for(const k in S.pilots||{})magInit(S.pilots[k]);S.frigates=S.frigates||[];for(const t of S.frigates)t.live=false;S.yards=S.yards||{brood:{sector:'bl'}};S.player.hullInv=S.player.hullInv||{};S.player.bay=S.player.bay||{};S.scouts=S.scouts||[];for(const t of S.scouts)t.live=false;for(const e of RAWS)if(S.ledger0.tot[e]===undefined)S.ledger0.tot[e]=0;for(const id in S.sectors){if(S.sectors[id].debris.au===undefined)S.sectors[id].debris.au=0}for(const id in S.outposts){if(S.outposts[id].fort.au===undefined)S.outposts[id].fort.au=0}S.player.tune=S.player.tune||{};for(const id in S.sectors){const sc=S.sectors[id];if(sc.debris.nu===undefined)sc.debris.nu=0}for(const id in S.outposts){const o=S.outposts[id];if(o.fort.nu===undefined)o.fort.nu=0}if(S.drift&&S.drift.nu===undefined)S.drift.nu=0;const L0=ledger();let ch=false;
+function migrate(st){S=st;for(const P of[S.player,...Object.values(S.pilots||{})])standInit(P);mkCapMigrate();for(const ev of S.events||[])if(ev.type==='wingfly'&&ev.stage!=='done'){const f=sideNorm(ev.side);inv.addAll(S.econ.stock[f]||S.econ.stock.pirate,ev.force||{});ev.force={};ev.stage='done'}if(!S.capV&&S.frigates){S.capV=1;for(const t of S.frigates.slice()){if(isEsc(t)||isCar(t))continue;const h=t.owner&&S.pilots&&S.pilots[t.owner]?S.pilots[t.owner].vault:t.side==='player'?S.player.vault:S.econ.stock[t.side];if(h)inv.addAll(h,t.load);else toDebris(S.sectors[t.sector],t.load);t.load={};S.frigates.splice(S.frigates.indexOf(t),1)}for(const ev of S.events||[])if(ev.type==='frigbuild'&&ev.stage==='building'){const h=S.econ.stock[ev.att]||S.player.vault;inv.addAll(h,ev.force);ev.force={};ev.stage='done'}}for(const P of[S.player,...Object.values(S.pilots||{})])if(P&&P.cls==='constructor')P.cls='courier';fpMigrate();beaconInit();if((S.seamV||0)<2&&S.sectors){S.seamV=2;seamClear()}for(const P of[S.player,...Object.values(S.pilots||{})])if(P&&P.tiers&&!P.tiers.payload)P.tiers.payload=1;magInit(S.player);for(const k in S.pilots||{})magInit(S.pilots[k]);S.frigates=S.frigates||[];for(const t of S.frigates)t.live=false;S.yards=S.yards||{brood:{sector:'bl'}};S.player.hullInv=S.player.hullInv||{};S.player.bay=S.player.bay||{};S.scouts=S.scouts||[];for(const t of S.scouts)t.live=false;for(const e of RAWS)if(S.ledger0.tot[e]===undefined)S.ledger0.tot[e]=0;for(const id in S.sectors){if(S.sectors[id].debris.au===undefined)S.sectors[id].debris.au=0}for(const id in S.outposts){if(S.outposts[id].fort.au===undefined)S.outposts[id].fort.au=0}S.player.tune=S.player.tune||{};for(const id in S.sectors){const sc=S.sectors[id];if(sc.debris.nu===undefined)sc.debris.nu=0}for(const id in S.outposts){const o=S.outposts[id];if(o.fort.nu===undefined)o.fort.nu=0}if(S.drift&&S.drift.nu===undefined)S.drift.nu=0;const L0=ledger();let ch=false;
   for(const d of SECTOR_DEFS)if(!S.sectors[d.id]){S.sectors[d.id]=genSector(d);ch=true}
   if(!S.stations){S.stations={};for(const d of SECTOR_DEFS)if(d.home)makeStation(d.id,d.home,d.kind==='core'?'core':'depot',{x:0,y:0,z:0},d.kind==='core'?{}:{...DEPOT_COST});ch=true}
   if(!S.stations.bl){makeStation('bl','brood','hive',{x:0,y:0,z:0},{});ch=true}

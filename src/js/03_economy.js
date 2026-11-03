@@ -39,7 +39,7 @@ function bmbPick(f,i,role,tier,srcs){return facVet(f)&&i%2===0&&haveIn(loadout(r
 function pickFighter(role){return wpick(role==='raider'?{interceptor:2,striker:1.4,heavy:.4}:role==='pirate'?{interceptor:1.4,striker:2,heavy:.7}:{interceptor:1,striker:2,heavy:1.1})}
 function wallet(side){return side==='player'?{get:()=>S.player.credits,add:n=>{S.player.credits+=n}}:{get:()=>S.econ.treasury[side]||0,add:n=>{S.econ.treasury[side]=(S.econ.treasury[side]||0)+n}}}
 function transfer(from,to,n){n=Math.floor(n);if(n<=0)return 0;const a=wallet(from),b=wallet(to);n=Math.min(n,a.get());if(n<=0)return 0;a.add(-n);b.add(n);return n}
-function hasIntel(){const h=S.outposts.hollow.owner;return h==='player'||h===S.player.faction}
+function hasIntel(){const h=S.outposts.hollow.owner;return h==='player'||(!!S.player.sworn&&h===S.player.sworn)}
 function holderIn(st,path){if(typeof path!=='string'||!path)return null;const p=path.split(':');if(p[0]==='stock')return st.econ.stock[p[1]];if(p[0]==='out')return st.outposts[p[1]].stock;if(p[0]==='frig'){const t=(st.frigates||[]).find(x=>String(x.id)===p[1]);return t?t.load:(st.econ.stock[p[2]]||st.player.vault)}if(p[0]==='pbay'){const R=p[1]&&st.pilots&&st.pilots[p[1]]||st.player;return R.bay=R.bay||{}}if(p[0]==='scout'){const t=(st.scouts||[]).find(x=>String(x.id)===p[1]);return t?t.load:st.econ.stock[p[2]]}if(p[0]==='trader'){const t=(st.traders||[]).find(x=>String(x.id)===p[1]);return t?t.load:st.econ.stock[p[2]]}if(p[0]==='raid'){const r=(st.raids||[]).find(x=>String(x.id)===p[1]);return r?r.kit:(st.econ.stock[p[2]]||st.econ.stock.pirate)}if(p[0]==='ev'){const ev=st.events.find(v=>String(v.id)===p[1]);return ev&&ev.force?ev.force:st.econ.stock[p[2]]}return st.econ.stock.pirate}
 const holder=path=>holderIn(S,path);
 function stockTarget(id){return RAWS.includes(id)?300:id==='plate'||id==='wire'?90:id==='coil'?40:id==='seal'?6:16}
@@ -101,12 +101,12 @@ function mkTick(){if(NET.cl)return;const L=mkStations();if(L.length<2)return;
   tradersTick();
   for(const P of allPilots())intelTick(P)}
 // price intel: live where you are, where your faction holds the beacon, where a friendly scout is (and next door when you fly a scout)
-function intelSectors(P){const s=new Set([P.sector]);for(const id in S.beacons||{})if(S.beacons[id].owner===P.faction)s.add(id);
-  for(const t of S.scouts||[])if(t.side===P.faction)s.add(t.sector);
-  for(const t of S.traders||[])if(t.side===P.faction)s.add(t.sector);   // your faction's freighters and traders read the markets they pass
-  for(const Q of allPilots())if(Q!==P&&!Q.off&&Q.faction===P.faction&&isScoutCls(Q.cls))s.add(Q.sector);if(isScoutCls(P.cls)||P.cls==='wraith')for(const n of NEIGH[P.sector]||[])s.add(n);
-  if(S.outposts.hollow&&(S.outposts.hollow.owner===P.faction))for(const d of SECTOR_DEFS)s.add(d.id);return s}
-function intelTick(P){const first=!P.pintel;P.pintel=P.pintel||{};const live=intelSectors(P);if(first)for(const R of mkStations())if(R.owner===P.faction)live.add(R.sid);for(const R of mkStations()){if(!live.has(R.sid))continue;if(hostile(P.faction,R.owner)&&R.owner!=='neutral')continue;mkOf(R);
+function intelSectors(P){const s=new Set([P.sector]);for(const id in S.beacons||{})if(intelSide(P,S.beacons[id].owner))s.add(id);
+  for(const t of S.scouts||[])if(intelSide(P,t.side))s.add(t.sector);
+  for(const t of S.traders||[])if(intelSide(P,t.side))s.add(t.sector);   // your faction's freighters and traders read the markets they pass
+  for(const Q of allPilots())if(Q!==P&&!Q.off&&!!Q.sworn&&intelSide(P,Q.sworn)&&isScoutCls(Q.cls))s.add(Q.sector);if(isScoutCls(P.cls)||P.cls==='wraith')for(const n of NEIGH[P.sector]||[])s.add(n);
+  if(S.outposts.hollow&&P.sworn&&S.outposts.hollow.owner===P.sworn)for(const d of SECTOR_DEFS)s.add(d.id);return s}
+function intelTick(P){const first=!P.pintel;P.pintel=P.pintel||{};const live=intelSectors(P);if(first)for(const R of mkStations())if(intelSide(P,R.owner))live.add(R.sid);for(const R of mkStations()){if(!live.has(R.sid))continue;if(pilotHostile(P,R.owner)&&R.owner!=='neutral')continue;mkOf(R);
   const st=mkStock(R),b={},sl={},n={};for(const k of TRADE_ITEMS){const pr=stPrice(R,k);b[k]=Math.ceil(pr*(1+mFee(P.cls)));sl[k]=Math.max(1,Math.floor(pr*(1-mFee(P.cls))));n[k]=st[k]||0}P.pintel[R.sid]={T:first&&R.sid!==P.sector?S.T-600:S.T,b,s:sl,n}}}
 function intelAge(e){if(!e)return'no data';const a=S.T-e.T;return a<15?'live':a<90?Math.round(a)+' s ago':Math.round(a/60)+' min ago'}
 // ---- AI traders: real trade runs. A faction merchant buys a load where a good is cheap, flies it jump by jump to where it's
@@ -145,9 +145,9 @@ function cvPay(t,hops){return Math.round((ESC_CV.base+ESC_CV.hop*hops+invValue(t
 function cvSign(t,k,name){const n=cvLeft(t);t.esc={k,name,hops:0,need:Math.max(1,Math.ceil(n*ESC_CV.need))};return t.esc}
 function cvStep(t,prev){const E=t.esc;if(!E)return;const ps=pSect(E.k);if(ps===prev||ps===t.sector)E.hops++}
 function cvEnd(t,ok,sid){const E=t.esc;if(!E)return;t.esc=null;const f=t.side;
-  if(!ok){keyFeed(E.k,`✖ Escort failed: the ${FACTIONS[f].short} convoy you were escorting was destroyed in ${DEF[sid].name}.`,'bad');return}
+  if(!ok){keyFeed(E.k,`✖ Escort failed: the ${FACTIONS[f].short} convoy you were escorting was destroyed in ${DEF[sid].name}.`,'bad');standAdd(f,-STAND.escort*STAND.war,'a failed escort',xPilotOfKey(E.k));return}
   if(E.hops<E.need){keyFeed(E.k,`The convoy reached ${DEF[t.to].name}, but you were with it for only ${E.hops} of the ${E.need} jumps the contract needs. No pay.`,'warn');return}
-  const got=payKey(E.k,f,cvPay(t,E.hops));weAdd(f,ESC_CV.we+.5*E.hops);keyFeed(E.k,`✔ Escort complete: the convoy docked at ${DEF[t.to].name}. Command pays +${fmt(got)} cr.`,'good');legBonus(E.k,f,'a convoy escort')}
+  const got=payKey(E.k,f,cvPay(t,E.hops));weAdd(f,ESC_CV.we+.5*E.hops);keyFeed(E.k,`✔ Escort complete: the convoy docked at ${DEF[t.to].name}. Command pays +${fmt(got)} cr.`,'good');legBonus(E.k,f,'a convoy escort');standWork(xPilotOfKey(E.k),f,STAND.escort+E.hops*.5,'a convoy escort')}
 function haulLost(t,sid,by){cvEnd(t,false,sid);shipLostFeed(t,sid);const s=S.sectors[sid],inv2={},rest={};for(const k in t.load){const m=Math.floor(t.load[k]*.5+Math.random()*.6);if(m>0)inv2[k]=m;if(t.load[k]-m>0)rest[k]=t.load[k]-m}t.load={};toDebris(s,rest);if(Object.keys(inv2).length){const o=rdir(.4);s.crates.push({id:S.nextId++,x:Math.round(o.x*1600),y:Math.round(o.y*300),z:Math.round(o.z*1600),inv:inv2,until:S.T+900})}
   if(friendSide(t.side))feed(`⚠ A ${FACTIONS[t.side].short} supply convoy was destroyed in ${DEF[sid].name}. Half its cargo is drifting there as salvage.`,'bad');else if(covered(sid))feed(`A ${FACTIONS[t.side].short} supply convoy was destroyed in ${DEF[sid].name}; some salvage is drifting there.`,'news')}
 // the per-tick logistics: depot industry, surplus ore home, and life support from the depot's own store
@@ -195,19 +195,19 @@ function traderArrive(t){if(t.kind==='haul'){haulArrive(t);return}const B=S.stat
   if(!n){return}
   if(!trCanUse(t.side,B)){inv.addAll(S.econ.stock[t.side],t.load);t.load={};return}   // market gone or turned: the goods go home
   const pr=Math.max(1,Math.floor(stPrice(B,k)*.94));inv.add(mkStock(B),k,n);if(B.owner==='neutral')transfer('neutral',t.side,pr*n);mkOf(B)[k]+=n;t.load={};
-  if(t.side===S.player.faction&&covered(t.to))feed(`${FACTIONS[t.side].short} trader delivered ${n} ${ITEMS[k].name} to ${B.name}.`,'news')}
+  if(t.side===S.player.sworn&&covered(t.to))feed(`${FACTIONS[t.side].short} trader delivered ${n} ${ITEMS[k].name} to ${B.name}.`,'news')}
 // ---- shipping your own goods: from a dock with your vault, pay your faction to send a freighter for the goods in one of your
 // vaults elsewhere. It flies like any supply convoy (raidable, escortable from Jobs; a lost one spills half as salvage) and
 // unloads into the vault where you ordered it. The fee goes to the faction treasury.
 const SHIP_T=120,SHIP_BASE=60,SHIP_PER=2;   // tonnes per shipment, flat cr, cr per tonne per jump
 const shipFee=(m,j)=>Math.round(SHIP_BASE+SHIP_PER*m*Math.max(1,j));
 function shipPick(inv0){const out={};let m=0;for(const k of Object.keys(inv0).filter(k=>inv0[k]>0).sort((a,b)=>baseValue(b)/mass(b)-baseValue(a)/mass(a))){const n=Math.min(inv0[k],Math.floor((SHIP_T-m)/mass(k)));if(n>0){out[k]=n;m+=n*mass(k)}}return out}
-function shipQuote(P,k){if(P===S.player&&S.player.docked&&typeof dockCtx==='function'){try{const c=dockCtx();if(c&&c.storage!==P.vault)return{why:'Goods ship only to a station with your vault.'}}catch(e){}}const to=vaultKey(P),src=P.vaults&&P.vaults[k],sid=vaultSid(k);if(!to||!src||!sid||k===to||!FAC_IDS.includes(P.faction)||S.unb)return null;if(!vaultOpen(k,P))return{why:vaultWhy(k,P)};
+function shipQuote(P,k){if(P===S.player&&S.player.docked&&typeof dockCtx==='function'){try{const c=dockCtx();if(c&&c.storage!==P.vault)return{why:'Goods ship only to a station with your vault.'}}catch(e){}}const to=vaultKey(P),src=P.vaults&&P.vaults[k],sid=vaultSid(k);if(!to||!src||!sid||k===to||!FAC_IDS.includes(P.sworn)||S.unb)return null;if(!vaultOpen(k,P))return{why:vaultWhy(k,P)};
   const load=shipPick(src),m=invMass(load);if(!m)return null;const j=HOP[sid][P.sector]||0;return{load,m,j,fee:shipFee(m,j),all:m>=invMass(src)}}
 function shipOrder(P,k){const q=shipQuote(P,k);if(!q||q.why)return q&&q.why?`Can't ship from there: ${q.why}.`:'Nothing to ship.';if(P.credits<q.fee)return`Shipping costs ${fmt(q.fee)} cr.`;
-  const src=P.vaults[k];for(const i in q.load)inv.take(src,i,q.load[i]);if(!invMass(src))delete P.vaults[k];transfer('player',P.faction,q.fee);
-  const t=haulSend(P.faction,vaultSid(k),P.sector,q.load,'ship:'+S.nextId,`${P.name||'a pilot'}'s goods`,null);if(!t){inv.addAll(src,q.load);return'No route.'}t.own={k:pkey(),to:vaultKey(P),from:k};
-  return`✓ A ${FACTIONS[P.faction].short} freighter is bringing ${fmt(q.m)} t from ${vaultName(k)} (${q.j} jump${q.j===1?'':'s'}) for ${fmt(q.fee)} cr.${q.all?'':' That was a full load: order again for the rest.'} It can be raided on the way; pilots can escort it from Jobs.`}
+  const src=P.vaults[k];for(const i in q.load)inv.take(src,i,q.load[i]);if(!invMass(src))delete P.vaults[k];transfer('player',P.sworn,q.fee);
+  const t=haulSend(P.sworn,vaultSid(k),P.sector,q.load,'ship:'+S.nextId,`${P.name||'a pilot'}'s goods`,null);if(!t){inv.addAll(src,q.load);return'No route.'}t.own={k:pkey(),to:vaultKey(P),from:k};
+  return`✓ A ${FACTIONS[P.sworn].short} freighter is bringing ${fmt(q.m)} t from ${vaultName(k)} (${q.j} jump${q.j===1?'':'s'}) for ${fmt(q.fee)} cr.${q.all?'':' That was a full load: order again for the rest.'} It can be raided on the way; pilots can escort it from Jobs.`}
 function shipArrive(t){const o=t.own,P=isMe(o.k)?S.player:S.pilots&&S.pilots[o.k];if(!P){inv.addAll(S.econ.stock[t.side]||S.econ.stock.pirate,t.load);t.load={};return}
   const what=haulWhat(t);if(P.vaultAt===o.to)inv.addAll(P.vault,t.load);else{P.vaults=P.vaults||{};inv.addAll(P.vaults[o.to]=P.vaults[o.to]||{},t.load)}t.load={};
   keyFeed(o.k,`📦 Your shipment reached your vault at ${vaultName(o.to)}: ${what}.`,'good')}
@@ -228,10 +228,10 @@ function traderThink(e,dt){const D=e.ai.dest,hit=W.t-e.lastHit<5;e.boosting=hit;
 function traderLost(e){const id=e.home.split(':')[1],t=(S.traders||[]).find(x=>String(x.id)===id);if(!t)return;S.traders=S.traders.filter(x=>x!==t);
   if(t.kind==='haul'){cvEnd(t,false,W.sid);shipLostFeed(t,W.sid);if(friendSide(e.side))feed(`⚠ A ${FACTIONS[e.side].short} supply convoy was destroyed in ${DEF[W.sid].name}. Half its cargo is drifting there as salvage.`,'bad');else if(W===LW)feed(`${FACTIONS[e.side].short} supply convoy destroyed: half its hold is drifting free.`,'good');return}
   if(friendSide(e.side))feed(`${FACTIONS[e.side].short} trader carrying ${ITEMS[t.item].name} was destroyed in ${DEF[W.sid].name}.`,'bad');else if(W===LW)feed(`${FACTIONS[e.side].short} trader destroyed: its ${ITEMS[t.item].name} is drifting free.`,'good')}
-function tradersEnRoute(P){return(S.traders||[]).filter(t=>t.side===P.faction||covered(t.sector))}
+function tradersEnRoute(P){return(S.traders||[]).filter(t=>intelSide(P,t.side)||covered(t.sector))}
 // the trade screen: best runs between stations you have prices for, and the demand board for every friendly market
-function tradeHtml(c,P){intelTick(P);const I=P.pintel||{},p=W.player,cap=p.st.cargo,free=Math.max(0,cap-invMass(P.cargo)),mk=mkStations().filter(R=>R.owner===P.faction||R.owner==='neutral');
-  const known=mk.filter(R=>I[R.sid]);let h=`<p class="note" style="margin:0 0 12px">Prices are live where you are docked, where ${esc(FAC(P.faction).short)} holds the sector beacon and where a friendly scout is (and the next systems over when you fly a scout). Elsewhere you see the last reading and its age. Every sale goes at the price you see, up to the lot the market can absorb at that price; the market moves after it. Faction traders fly the same gaps for real: they only move a price when they dock.</p>`;
+function tradeHtml(c,P){intelTick(P);const I=P.pintel||{},p=W.player,cap=p.st.cargo,free=Math.max(0,cap-invMass(P.cargo)),mk=mkStations().filter(R=>tradeOK(P,R.owner));
+  const known=mk.filter(R=>I[R.sid]);let h=`<p class="note" style="margin:0 0 12px">Prices are live where you are docked, where ${P.sworn?esc(FAC(P.sworn).short):'any power'} holds the sector beacon and where a friendly scout is (and the next systems over when you fly a scout). Elsewhere you see the last reading and its age. Every sale goes at the price you see, up to the lot the market can absorb at that price; the market moves after it. Faction traders fly the same gaps for real: they only move a price when they dock.</p>`;
   const runs=[];for(const k of TRADE_ITEMS){const m=mass(k);for(const A of known)for(const B of known){if(A===B)continue;const a=I[A.sid],b=I[B.sid];if(!(a.n[k]>0))continue;const per=b.s[k]-a.b[k];if(per<=0)continue;
       const units=Math.min(a.n[k],Math.floor(cap/m)),tot=per*units,j=HOP[A.sid][B.sid]||0,j0=HOP[P.sector][A.sid]||0;runs.push({k,A,B,per,units,tot,j,j0,score:tot/(1+j+j0*.5),age:Math.max(S.T-a.T,S.T-b.T)})}}
   runs.sort((x,y)=>y.score-x.score);const seen=new Set(),top=[];for(const r of runs){const key=r.k+r.A.sid;if(seen.has(key))continue;seen.add(key);top.push(r);if(top.length>=8)break}

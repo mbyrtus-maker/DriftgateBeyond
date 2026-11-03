@@ -6,7 +6,7 @@ function step(dt){if(S&&S.won)return;legFlownTick(dt);
   S.T+=dt;
   S.timers.tick-=dt;if(S.timers.tick<=0){S.timers.tick=10;STRAT=true;try{strategicTick()}finally{STRAT=false}}
   S.timers.event-=dt;if(S.timers.event<=0){S.timers.event=rnd(45,80);scheduleEvent()}
-  S.timers.contract-=dt;if(S.timers.contract<=0){S.timers.contract=rnd(40,70);scheduleContract()}}
+  standDrift(dt);S.timers.contract-=dt;if(S.timers.contract<=0){S.timers.contract=rnd(20,35);scheduleContract()}}
   if(!NET.cl){STRAT=true;try{updateEvents()}finally{STRAT=false}}
   if(NET.cl)magTick(S.player,dt);else for(const P of allPilots())magTick(P,dt);
   for(const w of Object.values(WORLDS)){if(!WORLDS[w.sid])continue;W=w;MUTE=w!==LW;try{worldUpdate(dt)}finally{MUTE=false}}
@@ -44,7 +44,7 @@ function boot(data){
   try{const bc=new BroadcastChannel('dgbeyond');MP.bc=bc;bc.onmessage=e=>{const m=e.data||{};if(m.t==='hello'&&running)bc.postMessage({t:'here',code:NET.on?MP.code:'',host:NET.host});if(m.t==='here'&&!running){const el=$('ver');if(el){el.style.opacity=1;el.style.color='var(--amber)';el.textContent=`Driftgate is already open in another tab of this browser${m.code?` (${m.host?'hosting':'in'} galaxy “${m.code}”)`:''}. Close that tab first, or use it instead: two tabs in one browser share the same pilot.`}}};bc.postMessage({t:'hello'})}catch(e){}
   mpConfig();{const q=new URLSearchParams(location.search);let n='',c='';try{n=localStorage.getItem('dgbeyond.mpname')||'';c=localStorage.getItem('dgbeyond.mpcode')||''}catch(e){}$('mpName').value=q.get('name')||n;$('mpCode').value=q.get('galaxy')||c;showInvite();if(q.get('galaxy')&&!q.get('auto'))mpStatus(`You've been invited to the galaxy <b>${esc(q.get('galaxy'))}</b>. Choose a callsign, faction and ship, then press <b>Launch</b> to join your friends.`);if((window.claude||!mpOK())&&!q.get('sig')){$('mpBox').hidden=false;$('mpBox').querySelector('.mprow').hidden=true;mpStatus(`Multiplayer runs from the shareable copy at <a href="${MP_HOME}" target="_blank" rel="noopener" style="color:var(--amber)">${MP_HOME.replace('https://','')}</a>${window.claude?' (this preview can\'t open peer-to-peer connections)':' (this browser can\'t open peer-to-peer connections)'}. Open it there, press Create a galaxy for friends, and send your friends the invite link.`)}if(q.get('auto')&&mpOK())setTimeout(mpJoin,50)}
   const saved=data&&data.save;
-  if(saved&&saved.v===2)startWith(saved);else showStart();
+  if(saved&&saved.v===3)startWith(saved);else showStart();
   requestAnimationFrame(frame);
 }
 try{window.claude?.hot?.snapshot?.(()=>({save:S?serialize():null}))}catch(e){}

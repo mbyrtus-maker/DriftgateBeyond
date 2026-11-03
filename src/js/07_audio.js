@@ -213,7 +213,7 @@ const musNow=()=>performance.now()/1000;
 // a fight starts the battle track when your shots land on shields or your own shields take fire; any further hit either way keeps it going
 function musHit(shieldUp){const t=musNow();if(shieldUp||t-MZ.bt<MUS_BHOLD)MZ.bt=t}
 function musBattle(){if(!S||!W||!W.player||!W.player.alive||S.player.docked)return false;return musNow()-MZ.bt<MUS_BHOLD}
-function musKey(){if(!W||!W.sid||!S)return'open';if(musBattle())return'battle';try{if(isFreeport(W.sid))return'freeport'}catch(e){}let o=null;try{o=sectorOwner(W.sid)}catch(e){}if(o==='player')o=S.player.faction;if(DEF[W.sid]&&DEF[W.sid].kind==='hive')o='brood';return o&&o!=='open'&&MUS_TRK[o]?o:'open'}
+function musKey(){if(!W||!W.sid||!S)return'open';if(musBattle())return'battle';try{if(isFreeport(W.sid))return'freeport'}catch(e){}let o=null;try{o=sectorOwner(W.sid)}catch(e){}if(o==='player')o=S.player.sworn||'neutral';if(DEF[W.sid]&&DEF[W.sid].kind==='hive')o='brood';return o&&o!=='open'&&MUS_TRK[o]?o:'open'}
 function musGen(){return!!MZ.bad[musKey()]}   // the generated score fills in only where the recorded track failed
 function musEl(k){let a=MZ.el[k];if(a)return a;a=new Audio();a.loop=false;a.preload='auto';a.volume=0;a._v=0;a._gap=0;a.addEventListener('error',()=>{MZ.bad[k]=1});a.addEventListener('ended',()=>{a._v=0;a._gap=MUS_GAP});a.src=MUS_TRK[k];return MZ.el[k]=a}
 function musRecTick(dt){if(NET.cl&&W&&W.player){const sh=W.player.shield;if(MZ.lsh>0&&sh<MZ.lsh-.5&&W.player.alive)musHit(true);MZ.lsh=sh}   // a client's own shield hits arrive from the host

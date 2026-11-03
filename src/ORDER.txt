@@ -5,6 +5,7 @@ data/mdlbin.html
 script_open.html
 js/01_core.js
 js/02_state.js
+js/02b_standing.js
 js/03_economy.js
 js/04_strategy.js
 js/05_freeports_campaigns.js
