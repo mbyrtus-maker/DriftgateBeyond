@@ -1761,7 +1761,7 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - two lines of green approach lights running 70 m out from it.
 
   It's tinted red where you may not dock. The flight markers stay as well.
-- **Turrets:** a station's turrets went on the outermost hull point in each turret's direction, which on the freeports is often a docking arm's head. They now take the outermost point at least 30% of the station's size away from every port, so no turret sits on a docking port.
+- **Turrets:** a station's turrets went on the outermost hull point in each turret's direction, which on the freeports is often a docking arm's head. They now take the outermost point at least 38% of the station's size (and never under 55 m) away from every port, so no turret sits on or beside a docking port. Measured nearest turret to any port: depots 55–64 m, cores 65–74 m, freeports 80 m, Scrapheart 95 m.
 
 ### A lived-in market at launch (3 Nov 2026)
 - **The user's ask:** randomize the markets at the start of a galaxy, so that parts from various makers are spread around. Local makers should have more; you don't need one piece from every maker at each station, just a good random selection.

@@ -33,7 +33,7 @@ function prtMesh(){if(PRT_MESH)return PRT_MESH;const g=new GB(),H=[.52,.55,.6],D
     const L=portsW(E);if(!L||!L.length)continue;const m=prtMesh();for(const q of L){qLook(q.dx,q.dy,q.dz,0,1,0,_qs);mModel(MM,q.x+q.dx*3,q.y+q.dy*3,q.z+q.dz*3,_qs,1,1,1);drawMesh(m,MM,ok?ONE3:[1,.42,.36])}}}catch(e){}return r}}
 // ---- turrets never sit on a docking port: the outermost hull point in each turret's direction that is clear of the ports
 {const o=stSurf;stSurf=function(name,size,n){const key='px:'+name+':'+size+':'+n;stSurf.c=stSurf.c||{};if(stSurf.c[key])return stSurf.c[key];const PT=mdlPorts(name);if(!PT||!PT.length)return o.apply(this,arguments);
-  const M=MDL.i[name],P=new Int16Array(MDL.b,M.o,M.n*9),h=(M.h||1)/32767,s=size/(M.h||1),ex=size*.3,ps=PT.map(v=>v.map(x=>x*size/(M.s||size))),out=[];
+  const M=MDL.i[name],P=new Int16Array(MDL.b,M.o,M.n*9),h=(M.h||1)/32767,s=size/(M.h||1),ex=Math.max(size*.38,55),ps=PT.map(v=>v.map(x=>x*size/(M.s||size))),out=[];
   for(let i=0;i<n;i++){const a=i/n*TAU+.4,dx=Math.cos(a),dy=i%2?.55:-.25,dz=Math.sin(a),l=Math.hypot(dx,dy,dz);let best=null,bd=-1e9;
     for(let t=0;t<M.n;t++){const q=t*9;const x=(P[q]+P[q+3]+P[q+6])/3*h*s,y=(P[q+1]+P[q+4]+P[q+7])/3*h*s,z=(P[q+2]+P[q+5]+P[q+8])/3*h*s;if(ps.some(v=>Math.hypot(v[0]-x,v[1]-y,v[2]-z)<ex))continue;const d=(x*dx+y*dy+z*dz)/l;if(d>bd){bd=d;best=[x,y,z]}}
     out.push(best||[0,size*.3,0])}return stSurf.c[key]=out}}
