@@ -1663,3 +1663,13 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - **Claiming:** hold a fitted beacon in an unclaimed or breached outpost's ring (as before). The claim uses the beacon up and leaves the slot empty: fit your landing kit back.
   - **Buying:** the Market's tiles list the Claim Beacons sold here, one per power, with what you have and which is fitted. The job board's claim jobs say to fit one.
 - **Tests:** `claimfit.py`.
+
+### Docking ports you can see (3 Nov 2026)
+- **The user's report:** the docking ports on stations and depots weren't obvious.
+- **In flight** (`16zw_ports.js`), within 4 km of a station, depot or outpost, every docking port is marked:
+  - a ring on the port, with a pulse spreading out from it;
+  - a line of approach lights running out from the port the way you come in, chasing inward;
+  - **green** where you may dock, **red** where you're refused.
+- **The port nearest you is labelled:** DOCK and its distance, then "DOCK · PRESS E" once you're in range, or NO DOCKING.
+- A base without arm ports (you set down over its hangar) shows one port above it.
+- The marks fade in over the last 800 m of that 4 km and hide while you're docking.
