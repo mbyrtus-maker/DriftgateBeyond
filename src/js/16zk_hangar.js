@@ -40,6 +40,9 @@ DOCK_TOP[1][2]=DOCK_TOP[1][2].filter(k=>k!=='storage');{const i=DOCK_TOP[3][2].i
   h+=`<div class="h3" style="margin-top:18px">Cargo</div>`;$('dBody').insertAdjacentHTML('afterbegin',h);hgWords();return r}}
 // the bay view inside the Hangar drops its own intro and the "In the bay" heading (the berth heading replaces them)
 function hgWords(r){try{const B=$('dBody');if(!B)return r;for(const el of B.querySelectorAll('.hgbay > p.note:first-child'))el.remove();
+  // (user, 3 Nov 2026) one list under "Ships berthed here": the ship you fly first, then the others, with no second heading
+  for(const el of B.querySelectorAll('.hgbay > .h3'))if(/^(Your current ship|In the bay|Your other ships here)/.test(el.textContent))el.remove();
+  for(const el of B.querySelectorAll('.hgbay > .empty'))if(/No ships stored yet/.test(el.textContent))el.textContent='No other ships berthed here.';
   const tw=document.createTreeWalker(B,NodeFilter.SHOW_TEXT);const L=[];while(tw.nextNode())L.push(tw.currentNode);
   for(const n of L){const t=n.nodeValue;if(!/[Vv]ault|In the bay|the bay|Store this ship in the bay/.test(t))continue;n.nodeValue=t.replace(/Store this ship in the bay/g,'Berth this ship here').replace(/In the bay · \d+ \/ \d+/g,'Your other ships here').replace(/\bthe bay\b/g,'the hangar').replace(/\bvaults\b/g,'hangars').replace(/\bVaults\b/g,'Hangars').replace(/\bvault\b/g,'hangar').replace(/\bVault\b/g,'Hangar')}
   const M=$('dMeta');if(M)for(const d of M.querySelectorAll('div'))if(d.firstChild&&d.firstChild.nodeType===3&&d.firstChild.nodeValue==='Vault')d.firstChild.nodeValue='Hangar';

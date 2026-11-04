@@ -30,3 +30,16 @@ function wrPeace(P){return!!P&&!P.sworn&&!(P.aggro&&P.aggro.pirate>S.T)}
 {const o=stHostile;stHostile=function(SE,e){if(!S.unb&&SE&&SE.fac==='pirate'&&W&&W.sid===WRACK.sid){const P=pilotOfEnt(e);if(P&&wrPeace(P))return false}return o.apply(this,arguments)}}
 // attacking the Unbound breaks the peace for a minute
 {const o=standHit;standHit=function(P,f){if(f==='pirate'&&P&&!S.unb)(P.aggro||(P.aggro={})).pirate=S.T+STAND.aggro;return o.apply(this,arguments)}}
+// ---- (user, 3 Nov 2026) the Rusty Tankard also whispers about convoys: the powers' supply convoys within four jumps of the
+// Wrack, to raid for the Unbound. Destroy the freighter (half its hold spills as salvage) or hook its hold; the Unbound pay
+// 60% of a power's raid bounty on top of the plunder to whoever took the job. The power whose convoy it was will remember.
+const WR_RAID={hops:4,k:.6};
+function wrRaidPay(t){return Math.round(raidBounty(t)*WR_RAID.k/10)*10}
+{const o=jobsList;jobsList=function(c,P,srcs){const out=o.apply(this,arguments);if(!c||!c.rum||S.unb)return out;try{
+  for(const t of(S.traders||[]).filter(t=>t.kind==='haul'&&FAC_IDS.includes(t.side)&&HOP[WRACK.sid]&&HOP[WRACK.sid][t.sector]!=null&&HOP[WRACK.sid][t.sector]<=WR_RAID.hops)){const j=HOP[P.sector][t.sector],fs=FACTIONS[t.side].short,pay=wrRaidPay(t);
+    out.push({id:'cv:'+t.id,by:'pirate',sid:t.sector,ty:'fight',title:`Rumour at the Rusty Tankard: plunder a ${esc(fs)} supply convoy`,sub:`${esc(haulWhat(t))} · now in ${esc(DEF[t.sector].name)}, bound for ${esc(DEF[t.to].name)}`,hops:j,where:j?`${j} jump${j>1?'s':''}`:'here',payN:pay,pay:`${fmt(pay)} cr + plunder`,btn:t.sector===P.sector?null:['cvint',t.id,'Intercept'],
+      detail:()=>`<p class="note" style="margin:0">Word is a ${esc(fs)} freighter is hauling ${esc(haulWhat(t))} to ${esc(DEF[t.to].name)}. Destroy it (half its hold spills as salvage) or hook its hold. The Unbound pay ${fmt(pay)} cr on top of the plunder. ${esc(fs)} will remember it: your standing with them drops, and their escorts shoot.</p>`})}}catch(err){console.error(err)}return out}}
+{const o=payKill;payKill=function(e,src,at){const t=e&&e.role==='trader'&&e.tradeT&&e.tradeT.kind==='haul'?e.tradeT:null,D=t?{...(e.dmg||{})}:null;const r=o.apply(this,arguments);
+  try{if(t&&!NET.cl){let tot=0;for(const k in D)tot+=D[k];const kp=at&&at.gk?at.gk:at&&at.src&&at.src.rp,killer=kp||(src==='player'?'me':null);if(killer&&!(tot>0)){D[killer]=1;tot=1}
+    for(const k in D){if(k==='_ai'||!(D[k]/tot>=.05))continue;const P=isMe(k)?S.player:(S.pilots||{})[k];if(!P||!P.job||P.job.by!=='pirate'||P.job.id!=='cv:'+t.id)continue;
+      runAs(isMe(k)?null:k,()=>{const got=transfer('pirate','player',Math.round(wrRaidPay(t)*D[k]/tot));if(got)feed(`☠ The Unbound pay ${fmt(got)} cr for the ${FACTIONS[t.side].short} convoy.`,'good');S.player.job=null})}}}catch(err){console.error(err)}return r}}

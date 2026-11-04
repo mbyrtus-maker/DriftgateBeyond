@@ -5,9 +5,9 @@
 // tile: buy, sell and galaxy-average prices (from your scans), the price here while you've watched it, a quantity slider with
 // Buy and Sell, Load and Store against your hangar, and the best places to sell from your scans. "Table" shows the old list
 // (every button it had, Claim Beacons included); the makers' works and salvage sales stay underneath.
-let mkSel=null,mkFilter='all',mkView='tiles',mkQty=1;
+let mkSel=null,mkFilter='none',mkView='tiles',mkQty=1;
 function mkGroup(k){const g=giKind(k);return g==='msl'||g==='chg'||g==='rnd'?'pay':g==='con'?'ore':g}
-const MK_GN={ore:'Ore',comp:'Components',wpn:'Weapons',util:'Utility parts',pay:'Payload'};
+const MK_GN={ore:'Ore',comp:'Components',wpn:'Weapons',util:'Utility parts',bcn:'Beacons',pay:'Payload'};
 // prices seen here, while docked (a minute apart, 30 readings)
 function mkWatch(){const P=S.player;if(!P||!P.docked||S.unb)return;let c;try{c=dockCtx()}catch(e){return}if(!c||!c.market)return;const key=P.sector;P.pxh=P.pxh||{};const H=P.pxh[key]=P.pxh[key]||{T:0,p:{}};if(S.T-H.T<60)return;H.T=S.T;
   for(const k of Object.keys(c.market)){if(!(c.market[k]>0)||!ITEMS[k])continue;const a=H.p[k]=H.p[k]||[];a.push(mSell(c,k));if(a.length>30)a.shift()}}
@@ -18,7 +18,16 @@ function mkHtml(c,P){const st=c.market,srcs=[P.cargo,c.storage],p=W.player,cap=p
   if(!mkSel||!items.includes(mkSel))mkSel=items[0]||null;
   let bar='';for(const k of Object.keys(P.cargo)){const m=(P.cargo[k]||0)*mass(k);if(m>0)bar+=`<i title="${esc(ITEMS[k].name)} ${P.cargo[k]}" style="display:block;height:100%;width:${m/cap*100}%;background:${giCol(k)};margin-right:1px"></i>`}
   let h=`<div class="mkbar"><span class="lab">Hold</span><span class="mkhold">${bar}</span><span class="note" style="margin:0">${used} / ${cap} t</span><span style="flex:1"></span>`;
-  h+=['all','ore','comp','wpn','util','pay'].map(g=>`<button class="mkf${mkFilter===g?' on':''}" type="button" data-act="mkf" data-arg="${g}">${g==='all'?'All':MK_GN[g]}</button>`).join('')+`<button class="mkf" type="button" data-act="mkview" data-arg="table" style="margin-left:14px">Table</button></div>`;
+  // (user, 3 Nov 2026) first pick a category (Ore, Components, Weapons, Utility parts, Beacons; Payload when stocked), then its goods
+  const cnt=g=>g==='bcn'?((typeof fbSold==='function'?fbSold(c,P).length:0)+(claimSold(c,P)?1:0)):items.filter(k=>mkGroup(k)===g).length,CATS=['ore','comp','wpn','util','bcn','pay'].filter(g=>g!=='pay'||cnt(g));
+  if(mkFilter==='all')mkFilter='none';
+  h+=`<button class="mkf" type="button" data-act="mkview" data-arg="table" style="margin-left:14px">Table</button></div>`;
+  // (user) the categories stay across the top as orange boxes, the picked one filled, so you can move between them
+  h+=`<div class="obox-row">${CATS.map(g=>`<button class="obox${mkFilter===g?' on':''}" type="button" data-act="mkf" data-arg="${g}" ${cnt(g)?'':'disabled'} aria-pressed="${mkFilter===g}">${MK_GN[g]} <span>${cnt(g)}</span></button>`).join('')}</div>`;
+  if(mkFilter==='none'){h+=`<div class="note" style="margin:10px 0 0">Pick a category to see what this market has.</div>`;return h}
+  if(mkFilter!=='bcn'&&!items.some(k=>mkGroup(k)===mkFilter)){mkFilter='none';return mkHtml(c,P)}
+  if(mkSel&&mkFilter!=='bcn'&&mkGroup(mkSel)!==mkFilter)mkSel=items.find(k=>mkGroup(k)===mkFilter)||null;
+  if(mkFilter==='bcn')mkSel=null;
   h+=`<div class="mkwrap"><div class="mktiles">`;
   for(const g of['ore','comp','wpn','util','pay']){if(mkFilter!=='all'&&mkFilter!==g)continue;const L=items.filter(k=>mkGroup(k)===g);if(!L.length)continue;
     h+=`<div class="mkgrp"><div class="lab">${MK_GN[g]}</div><div class="mkrow">`;
@@ -26,7 +35,7 @@ function mkHtml(c,P){const st=c.market,srcs=[P.cargo,c.storage],p=W.player,cap=p
       h+=`<button class="mkt${on?' on':''}" type="button" data-act="mksel" data-arg="${k}"><span class="mktt">${gIcon(k,22)}<span><b>${esc(ITEMS[k].name)}</b><br><span class="mono amber">${fmt(mBuy(c,k))}</span>${dm==='high'?' <span style="color:#7ad9a7">▲</span>':dm==='low'?' <span style="color:#ff9a4a">▼</span>':''}</span></span>
         <span class="mkm"><i style="width:${Math.min(100,Math.round(r*50))}%;background:${dm==='high'?'#7ad9a7':dm==='low'?'#ff9a4a':'#5a647c'}"></i></span><span class="mass" style="margin:0">${stk} in stock · you ${countIn(k,srcs)||'·'}</span></button>`}
     h+=`</div></div>`}
-  if(!items.length)h+=`<div class="empty">Nothing in stock.</div>`;
+  if(!items.length&&mkFilter!=='bcn')h+=`<div class="empty">Nothing in stock.</div>`;
   h+=`</div><div class="mkdet">`;
   if(mkSel){const k=mkSel,b=mBuy(c,k),s=mSell(c,k),sc=mkScan(P,k),avg=sc.length?Math.round(sc.reduce((a,x)=>a+x.s,0)/sc.length):null,stk=st[k]||0,hold=P.cargo[k]||0,hv=c.storage[k]||0,have=hold+hv;
     const room=Math.max(0,Math.floor((cap-used)/mass(k))),maxQ=Math.max(1,stk,have);mkQty=Math.min(Math.max(1,mkQty),maxQ);
@@ -43,7 +52,7 @@ function mkHtml(c,P){const st=c.market,srcs=[P.cargo,c.storage],p=W.player,cap=p
       <div class="lab">Sells best at (your scans)</div>${best.length?best.map(x=>`<div class="mkbest"><span>${esc(S.stations[x.sid]?S.stations[x.sid].name:DEF[x.sid].name)} <span class="mass" style="margin:0">${HOP[P.sector][x.sid]??'?'} jumps · ${fmtT(Math.max(0,S.T-x.T))} ago</span></span><span class="mono" style="color:${x.s>s?'#7ad9a7':'inherit'}">${fmt(x.s)}</span></div>`).join(''):`<div class="note">No other prices scanned yet.</div>`}`}
   h+=`</div></div>`;
   // Claim Beacons, where they're sold: a line under the tiles (the buy, load and hull-fix buttons the table had)
-  if(claimSold(c,P))h+=`<div class="mkbest" style="margin-top:14px;align-items:center;gap:10px"><span style="display:inline-flex;gap:8px;align-items:center">${gIcon('beacon',18)}<b>Claim Beacon</b> <span class="mass" style="margin:0">${mass('beacon')} t · takes an unclaimed or breached outpost · you ${P.cargo.beacon||0} · hangar ${c.storage.beacon||0}</span></span><span class="act"><button class="btn sm" data-act="buybeacon" ${P.credits>=CLAIM_PRICE?'':'disabled'}>Buy 1 · ${fmt(CLAIM_PRICE)} cr</button>${P.cargo.beacon?'':(c.storage.beacon?(beaconCls(P.cls)?`<button class="btn sm" data-act="mv" data-arg="beacon:out:1">Load</button>`:(f=>f?`<button class="btn sm" data-act="${f[0]}" data-arg="${f[1]}">${esc(f[2])}</button>`:'<span class="mass" style="margin:0">fighters and bombers only</span>')(hullFix(c,P,beaconCls,'interceptor'))):'')}</span></div>`;
+  if(mkFilter==='bcn'&&claimSold(c,P))h+=`<div class="mkbest" style="margin-top:14px;align-items:center;gap:10px"><span style="display:inline-flex;gap:8px;align-items:center">${gIcon('beacon',18)}<b>Claim Beacon</b> <span class="mass" style="margin:0">${mass('beacon')} t · takes an unclaimed or breached outpost · you ${P.cargo.beacon||0} · hangar ${c.storage.beacon||0}</span></span><span class="act"><button class="btn sm" data-act="buybeacon" ${P.credits>=CLAIM_PRICE?'':'disabled'}>Buy 1 · ${fmt(CLAIM_PRICE)} cr</button>${P.cargo.beacon?'':(c.storage.beacon?(beaconCls(P.cls)?`<button class="btn sm" data-act="mv" data-arg="beacon:out:1">Load</button>`:(f=>f?`<button class="btn sm" data-act="${f[0]}" data-arg="${f[1]}">${esc(f[2])}</button>`:'<span class="mass" style="margin:0">fighters and bombers only</span>')(hullFix(c,P,beaconCls,'interceptor'))):'')}</span></div>`;
   return h}
 {const o=renderDock;renderDock=function(){const r=o.apply(this,arguments);try{if(dockTab!=='market'||S.unb||mkView!=='tiles')return r;const c=dockCtx(),P=S.player,B=$('dBody');if(!c||!c.market||!B)return r;
   const keep=[];let seen=false;for(const el of B.children){if(/Makers' works here/.test(el.textContent||'')&&el.classList.contains('h3'))seen=true;if(seen)keep.push(el)}
@@ -51,6 +60,6 @@ function mkHtml(c,P){const st=c.market,srcs=[P.cargo,c.storage],p=W.player,cap=p
   const host=document.createElement('div');host.innerHTML=mkHtml(c,P);const tailBox=document.createElement('div');tailBox.style.marginTop='18px';
   for(const el of keep)tailBox.appendChild(el);if(salv[0]){tailBox.appendChild(salv[0]);if(salvAct)tailBox.appendChild(salvAct)}
   B.innerHTML='';B.appendChild(host);B.appendChild(tailBox);const q=$('mkQ');if(q){q.addEventListener('change',e=>{mkQty=+e.target.value;renderDock()});q.addEventListener('input',e=>{const l=q.previousElementSibling&&q.previousElementSibling.querySelector('b');if(l)l.textContent=e.target.value})}}catch(err){console.error(err)}return r}}
-{const o=dockClick;dockClick=function(act,arg){if(act==='mksel'){mkSel=arg;mkQty=1;renderDock();return}if(act==='mkf'){mkFilter=arg;renderDock();return}if(act==='mkview'){mkView=arg;renderDock();return}return o.apply(this,arguments)}}
+{const o=dockClick;dockClick=function(act,arg){if(act==='fabk'){fabKind=arg||null;renderDock();return}if(act==='mksel'){mkSel=arg;mkQty=1;renderDock();return}if(act==='mkf'){mkFilter=arg;renderDock();return}if(act==='mkview'){mkView=arg;renderDock();return}return o.apply(this,arguments)}}
 // the table view gets a way back
 {const o=renderDock;renderDock=function(){const r=o.apply(this,arguments);try{if(dockTab==='market'&&!S.unb&&mkView==='table'){const B=$('dBody');if(B)B.insertAdjacentHTML('afterbegin',`<div class="act" style="margin-bottom:8px"><button class="btn sm" data-act="mkview" data-arg="tiles">Tiles view</button></div>`)}}catch(e){}return r}}

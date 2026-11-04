@@ -1866,3 +1866,38 @@ The user's asks, with their choices (Drone controller on drone-bay hulls only; d
   - Drones in a hold stay ordinary goods. A station's materials become the drones, so the ledger stays exact.
 - **Tests:** `drones.py` (new, in the quick suite), `claimfit.py` and `loadout.py` updated.
 
+### Market and Fabricate by category, the Loadout's first view, Varkesh stacks, mixed freeport yards, one hangar list, Tankard raids (3 Nov 2026)
+- **Market** (user): the categories sit across the top as **orange boxes**: Ore, Components, Weapons, Utility parts, Beacons (and Payload when a market stocks any), each with how many kinds are here. They stay there with the picked one filled, so you move between them. Nothing is shown until you pick one. Beacons holds the powers' Claim Beacons (and the old generic beacon where it's sold).
+- **Fabricate** (user; names kept as they are, user's choice): the Market's menu without Ore: orange boxes for **Components** (alloy plate, wire, coils, lattice and the other building stock), **Weapons** (mining tools included), **Utility parts** and **Beacons**, each showing what you can make now out of all its recipes. The recipe table shows the picked kind only.
+- **Loadout's first view** (user): the right-hand panel opens on **Your parts**, the parts in your hold and hangar this ship can take. Each has **Fit** into the best slot for it (an empty one first, then one holding the same kind, then the first that takes it), saying which slot and what it replaces. Pick a slot on the ship for its part, grades and choices (a "‹ Your parts" link goes back). Each **system** (Drive, Reactor, Shield Emitter, Weapons, Armor, Blast Rig, Cargo Hold, Payload Bay) has a small **+** beside it that opens its grades. It's amber when you have what the next grade takes.
+- **Varkesh work ships** (user: floating orange rings above their backs): the exhaust stacks on the Pick, Gouge and Sledge were vertical tubes. The model builder's tube collapses to nothing when it runs straight up (its reference axis was vertical too), which left only the stacks' amber bands floating. The builder now takes another reference for a vertical tube, so all 11 vertical tubes across the models appear (the stacks, and a few masts and pylons on other hulls). The stacks are rebuilt as square columns with an amber band and a dark mouth, and are a little lower.
+- **Freeport shipyards** (user): every hull a freeport builds, miners, haulers and scouts included, is rolled to one power's line per freeport. Each freeport offers a mix, not one faction's ships, favouring the nearest power (user): its line half the time, each of the other two a quarter. Taking a hull there takes that power's design line, as fighters already did. Older galaxies fill in the classes their roll lacked.
+- **Hangar** (user: what does "Your other ships here" give that "Ships berthed here" doesn't?): nothing; they were the same list split in two. It is now one list under **Ships berthed here · n / berths**: the ship you fly first, then the others ("No other ships berthed here" when none).
+- **The Rusty Tankard's rumours** (user) now include **convoy raids**: each power's supply convoy within four jumps of the Wrack, with what it hauls, where it is and where it's bound. Intercept it, then destroy the freighter (half its hold spills as salvage) or hook its hold. The Unbound pay **60% of a power's raid bounty on top of the plunder** to whoever took the job (shared by damage). The power whose convoy it was remembers: standing drops as for any attack on its ships.
+- **Training:** the first course's dock lesson now opens Trade → Fabricate (Station is hidden away from your own base), and its text names the new tabs.
+
+### An audience with a power's leader (designed and built 3 Nov 2026)
+- **The user's ask:** at a faction station you can request an audience with its power's leader. It tells you how long until the leader docks there to grant it; then you spend allegiance points on requests (non-aggression pact, allies against someone, open trade, ceasefire, war, anything else that fits). It opens once you have your own faction.
+- **The user's choices:** you pay in your **standing with that power**; **all the requests**, plus others that fit; agreements **last a set time**; leaders **can refuse**, swayed by their traits.
+- **As built** (`16zzf_audience.js`), on the **Allegiance** tab when docked at a power's station:
+  - **Before you've declared a faction:** an Audience panel names the leader and explains that leaders grant audiences only to the heads of factions (declare yours from Company → Holdings with a Station of your own). Nothing to press.
+  - **Request an audience:** the leader's flagship sets course for this station, a jump at a time, and the panel shows where it is and **about how long until it docks** (30 s, plus 45 s a jump). It won't come if you're Hostile with that power or the leader isn't flying. A leader holds one audience at a time.
+  - **The audience** opens when the flagship docks (you're told) and lasts **five minutes**, while you're docked there. Each request shows its price in standing, how long it lasts, the standing it needs, and the leader's mood on it (keen, open to it, reluctant, won't hear of it). Ask, and the leader grants or refuses. A refusal costs nothing, but that request waits three minutes. Afterwards the leader won't receive you for ten minutes.
+  - **Requests:**
+
+    | Request | Standing | Lasts | Needs | What it does |
+    |---|---|---|---|---|
+    | Non-aggression pact | −15 | 30 min | Unwelcome | Their ships and strikes leave you alone. |
+    | Ceasefire | −10 | 20 min | (only when they're hostile or aggressive to you) | Ends their aggression and lifts your standing out of Hostile. |
+    | Open trade | −20 | 30 min | Neutral | Their markets buy from you 10% higher and sell to you 10% lower. |
+    | Trade pact | −15 | 30 min | Neutral (0) | Their merchants call at your bases. |
+    | Aid shipment | −20 | once | Neutral (0) | 20 alloy plate, 10 wire and 6 coils from their warehouse to your Station (what they have). |
+    | Joint defence | −20 | 15 min | +10 | A wing of three of theirs guards your Station's system. |
+    | Shared intel | −10 | 30 min | Neutral (0) | Their sensors show you every system they watch. |
+    | Pardon | −15 | once | Unwelcome | Clears your heat and their aggression. |
+    | Yard access | −15 | 30 min | +10 | Their yards sell you hulls one Contractor Rating above yours. |
+    | Alliance against (a power or the Brood) | −30 | 30 min | Trusted | They turn on the side you name (relations fall, strikes aimed there) and treat you as allies. |
+    | War on (a power) | −35 | 30 min | Trusted | They declare war on the power you name. |
+  - **The leader's mood:** a base chance, plus 15 points for each of their traits that leans to the request, plus your standing with them, and for war or alliance how they already feel about the target. Some traits never agree: an Ambitious leader won't sign a non-aggression pact, an Isolationist won't trade, ally or send aid, a Vengeful one won't pardon, and a Vengeful leader won't make peace with someone deep in their bad books. Granted agreements go in the News box and the chronicle, and the panel lists those in force with time left.
+- **Test:** `audience.py` (in the quick suite).
+- **Intel work for** (Jobs, user): clicking the power already picked sets it back to nobody.

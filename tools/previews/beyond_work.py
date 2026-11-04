@@ -29,9 +29,15 @@ def vents(M,pts,r):[M.vent(p,r) for p in pts]
 def sqdrive(M,c,s):box(M,c,(s,s*.9,s*.7),DARK);M.vent((c[0],c[1],c[2]-s*.38),s*.38)
 def hatch(M,c,w,l,y=None):plate(M,[(c[0]-w/2,c[1],c[2]+l/2),(c[0]+w/2,c[1],c[2]+l/2),(c[0]+w/2,c[1],c[2]-l/2),(c[0]-w/2,c[1],c[2]-l/2)],.012,DARK,.95)
 def stacks(M,base,n,sp=.16,h=.3):
-    # exhaust stacks standing up off the back
+    # exhaust stacks standing up off the back: square Varkesh columns on a footing, an amber band near the top and a dark
+    # mouth (built from boxes: a vertical tube collapsed to nothing in the exporter, which left the bands floating)
+    h=h*.55
     for k in range(n):
-        b=np.array(base,float)+[k*sp-(n-1)*sp/2,0,0];box(M,tuple(b+[0,.03,0]),(.13,.06,.13),DARK);tube(M,[b,b+[0,h,0]],[.065,.06],MID,1.0,8,cap1=True);ring(M,tuple(b+[0,h*.75,0]),.07,.014,ACC,seg=12,sides=4,axis='y');M.blob(tuple(b+[0,h+.005,0]),.045,DARK,sub=1,squash=(1,.3,1),noise=0)
+        b=np.array(base,float)+[k*sp-(n-1)*sp/2,0,0]
+        box(M,tuple(b+[0,.03,0]),(.14,.06,.14),DARK)
+        box(M,tuple(b+[0,.03+h/2,0]),(.09,h,.09),MID)
+        box(M,tuple(b+[0,.03+h*.78,0]),(.118,.03,.118),ACC)
+        box(M,tuple(b+[0,.03+h+.006,0]),(.08,.014,.08),DARK)
 def lights(M,pts,r=.035):
     # floodlights
     for p in pts:M.blob(p,r,WIN,sub=1,noise=0)

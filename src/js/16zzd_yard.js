@@ -7,7 +7,7 @@
 const YARD_CAT=[['fighters','Fighters',['interceptor','striker','heavy','wraith']],['bombers','Bombers',['bomber','gunboat']],['haulers','Haulers',['courier','freighter','bulker']],['miners','Miners',['skiff','prospector','dredger']],['scouts','Scouts',['scout','scout2']]];
 let yardSel=null,yardRaf=0;
 function yardCatOf(k){const c=YARD_CAT.find(x=>x[2].includes(k));return c?c[0]:'other'}
-function yardFac(c,P,k){return(typeof yardDesign==='function'&&yardDesign(c,k))||P.faction}
+function yardFac(c,P,k){if(k===P.cls)return P.faction;return(typeof yardDesign==='function'&&yardDesign(c,k))||P.faction}
 function yardPrice(P,k){if(P.cls===k)return'yours';const pr=hullOwned(P,k)?0:hullPrice(k)-vchOf(P,k),t=pr>0?`${fmt(pr)} cr`:'free';return hullRatingOK(P,k)?t:`${t} · needs Rating ${HULL_RATING[k]}`}
 function yardStats(c,P,k){const st=k===P.cls?shipStats(P.faction,P.cls,P.tiers,P.tune):shipStats(yardFac(c,P,k),k,baseTiers()),C=CLASSES[k],D=slotsOf(k,designOf(yardFac(c,P,k),k)?yardFac(c,P,k):null);
   return{hull:Math.round(st.hull),shield:Math.round(st.sCap),speed:Math.round(st.maxSpd),hold:st.cargo,drones:C.drones||0,w:D.w.length,u:D.u.length}}

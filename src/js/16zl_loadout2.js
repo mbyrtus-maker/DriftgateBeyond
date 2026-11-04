@@ -9,7 +9,7 @@
 //     Aurora tuning and its variant, exactly as the old Systems tab offered them.
 // Below the systems: ammunition, missiles and charges, and Rearm. The ship's stats stay in the header line.
 // The old Loadout block in the Shipyard tab goes (it lives here now).
-let ldSel='sys:engine';
+let ldSel='parts';
 const LD_EFF={gun:'+10% damage a grade',laser:'+10% damage a grade',missile:'one more missile a grade',torpedo:'one more torpedo a grade',charge:'one more charge a grade',mlaser:'+15% cutting rate a grade',cargo:'+5% hold a grade',scanner:'+20% reach a grade',dronec:'+25% drone hull and +15% drone damage a grade',land:'one grade only',hide:'+4 t hidden a grade',bdev:'one more beacon device a grade',lrack:'one more limpet a grade'};
 function ldShape(cls){if(blHull(cls))return'M0,-120 L40,-96 L52,40 L36,110 L-36,110 L-52,40 L-40,-96 Z M-52,-10 L-96,0 L-96,50 L-52,52 Z M52,-10 L96,0 L96,50 L52,52 Z';
   if(isHaulCls(cls))return'M0,-130 L36,-104 L40,110 L-40,110 L-36,-104 Z M-40,-60 L-92,-56 L-92,70 L-40,74 Z M40,-60 L92,-56 L92,70 L40,74 Z';
@@ -41,7 +41,10 @@ function ldLeft(c,P){const F=fitOf(P),W0=640,H0=380,cx=W0/2,cy=H0/2-10,st=W.play
     svg+=`<line x1="${s.ax}" y1="${s.ay}" x2="${s.x+71}" y2="${s.y>H0/2?s.y:s.y+44}" stroke="${on?'#f0b24a':'#2b3a52'}"/><circle cx="${s.ax}" cy="${s.ay}" r="3.5" fill="${on?'#f0b24a':'#2b3a52'}"/>`;
     btns+=`<button class="ldslot${on?' on':''}" type="button" data-act="ldsel" data-arg="${s.g}:${s.i}" style="left:${s.x}px;top:${s.y}px"><span class="lab" style="font-size:10px">${s.g==='w'?'Weapon':'Utility'} ${s.i+1}</span><span class="ldsn">${id?gIcon(id,13)+esc(ITEMS[id].name):'<span style="color:var(--dim)">empty</span>'}</span><span>${id?ldPips(gr):''}</span></button>`}
   svg+=`</svg>`;
-  let sys='';for(const sl of SLOTS){if(sl.id==='drill'&&!blHull(P.cls))continue;const t=P.tiers[sl.id]||1,on=ldSel==='sys:'+sl.id;sys+=`<button class="ldsys${on?' on':''}" type="button" data-act="ldsel" data-arg="sys:${sl.id}"><span class="lab" style="font-size:10px">${esc(sl.name)}</span><span>${ldPips(t)}${(P.tune||{})[sl.id]?' '+'✦'.repeat(P.tune[sl.id]):''}</span></button>`}
+  // (user, 3 Nov 2026) a small + on each system opens its grades: amber when you have what the next grade takes
+  const srcs0=[P.cargo,c.storage||P.vault];
+  let sys='';for(const sl of SLOTS){if(sl.id==='drill'&&!blHull(P.cls))continue;const t=P.tiers[sl.id]||1,on=ldSel==='sys:'+sl.id,top=t>=MK_TOP,rc=top?null:upgRecipe(sl.id,t+1),ok=rc&&haveIn(rc,srcs0)&&(typeof gradeCap!=='function'||t+1<=gradeCap(P));
+    sys+=`<span class="ldsysw"><button class="ldsys${on?' on':''}" type="button" data-act="ldsel" data-arg="sys:${sl.id}"><span class="lab" style="font-size:10px">${esc(sl.name)}</span><span>${ldPips(t)}${(P.tune||{})[sl.id]?' '+'✦'.repeat(P.tune[sl.id]):''}</span></button>${top?'':`<button class="ldplus${ok?' ok':''}" type="button" data-act="ldsel" data-arg="sys:${sl.id}" title="${esc(sl.name)}: grade ${t+1}${ok?' (you have what it takes)':''}" aria-label="Upgrade ${esc(sl.name)}">+</button>`}</span>`}
   const q=rearmQuote(P),t=isTorpHull(P.cls),rows=[ammoCap(P)?`Rounds ${fmt(P.ammo||0)} / ${fmt(ammoCap(P))}`:'',pRack(P)?`${t?'Torpedoes':'Missiles'} ${P.rack||0} / ${pRack(P)}`:'',blCap(P)?`Charges ${P.blN||0} / ${blCap(P)}`:'',typeof drnCap==='function'&&drnCap(P)?`Drones ${(P.bay&&P.bay.drone)||0} / ${drnCap(P)}`:''].filter(Boolean);
   return`<div class="ldhead"><b>${esc((FAC(P.faction)||{hulls:{}}).hulls[P.cls]||CLASSES[P.cls].name)}</b> <span class="note" style="margin:0">${esc(CLASSES[P.cls].name)} · ${F.w.length} weapon, ${F.u.length} utility${st?` · ${Math.round(st.maxSpd)} m/s · ${Math.round(st.sCap)} shield · ${Math.round(st.hull)} hull · ${st.cargo} t`:''}</span></div>
     <div class="ldmap"><div style="position:relative;width:${W0}px;height:${H0}px">${svg}${btns}</div></div>
@@ -53,9 +56,22 @@ function ldLeft(c,P){const F=fitOf(P),W0=640,H0=380,cx=W0/2,cy=H0/2-10,st=W.play
   const T=$('dTabs');if(T&&!S.unb)for(const b of T.querySelectorAll('button[data-arg="upg"]:not(.mtab)'))if(b.firstChild&&b.firstChild.nodeType===3)b.firstChild.nodeValue='Loadout';
   if(dockTab!=='upg'||S.unb||S.training||!loadOn())return r;const c=dockCtx(),P=S.player,B=$('dBody');if(!c||!B)return r;
   const slotEls=[...B.querySelectorAll('.slots > *')],intro=B.querySelector('.grid2 .note');
-  const F=fitOf(P);if(ldSel.startsWith('w:')&&!(+ldSel.slice(2)<F.w.length))ldSel='sys:engine';if(ldSel.startsWith('u:')&&!(+ldSel.slice(2)<F.u.length))ldSel='sys:engine';
-  let right='';if(ldSel.startsWith('sys:')){const id=ldSel.slice(4),sl=SLOT[id];right=`<div class="lab">System</div><div class="ldname"><b>${esc(sl?sl.name:id)}</b></div><div class="note" style="margin:4px 0 10px">Built into the hull and upgraded in place: it never comes out, and it carries over with the ship in your hangar.</div><div id="ldSysHost"></div>`}
+  const F=fitOf(P);if(ldSel.startsWith('w:')&&!(+ldSel.slice(2)<F.w.length))ldSel='parts';if(ldSel.startsWith('u:')&&!(+ldSel.slice(2)<F.u.length))ldSel='parts';
+  let right='';if(ldSel==='parts')right=ldPartsHtml(c,P);else if(ldSel.startsWith('sys:')){const id=ldSel.slice(4),sl=SLOT[id];right=`<div class="lab">System</div><div class="ldname"><b>${esc(sl?sl.name:id)}</b></div><div class="note" style="margin:4px 0 10px">Built into the hull and upgraded in place: it never comes out, and it carries over with the ship in your hangar.</div><div id="ldSysHost"></div>`}
   else{const[g,i]=ldSel.split(':');right=ldSlotHtml(c,P,g,+i)}
+  if(ldSel!=='parts')right=`<button class="mkf" type="button" data-act="ldsel" data-arg="parts" style="margin:0 0 10px">‹ Your parts</button>`+right;
   const host=document.createElement('div');host.className='ldwrap';host.innerHTML=`<div class="ldl">${ldLeft(c,P)}</div><div class="ldr">${right}</div>`;
   if(ldSel.startsWith('sys:')){const idx=SLOTS.findIndex(s=>s.id===ldSel.slice(4)),el=slotEls[idx];const H=host.querySelector('#ldSysHost');if(el&&H){H.appendChild(el);el.classList.add('ldsysdetail')}if(intro&&H){const n=document.createElement('div');n.className='note';n.style.marginTop='14px';n.innerHTML=intro.innerHTML;H.appendChild(n)}}
   B.innerHTML='';B.appendChild(host)}catch(err){console.error(err)}return r}}
+// ---- the Loadout's first view (user, 3 Nov 2026): the parts in your hold and hangar that this ship can take, each with Fit
+// into the best slot for it (an empty one first, then one holding the same kind, then the first that takes it); pick a slot
+// on the ship for its grades and the rest, or a system's + for its grades
+function ldTarget(P,it){const k=ITEMS[it]&&ITEMS[it].part;if(!k)return null;const F=fitOf(P),ws=!!WPN[k],A=ws?F.w:F.u;
+  const ok=i=>ws?wpnOK(P.cls,k,i):!(k==='dronec'&&!drnHull(P.cls))&&!(k==='claim'&&!beaconCls(P.cls))&&!(['bdev','lrack'].includes(k)&&!isScoutCls(P.cls))&&!!UTIL[k];
+  let i=A.findIndex((x,j)=>!x&&ok(j));if(i<0)i=A.findIndex((x,j)=>x===k&&ok(j));if(i<0)i=A.findIndex((x,j)=>ok(j));return i<0?null:{g:ws?'w':'u',i,was:A[i]}}
+function ldPartsHtml(c,P){const srcs=[P.cargo,c.storage||P.vault],L=ITEM_ORDER.filter(it=>ITEMS[it]&&ITEMS[it].part&&countIn(it,srcs)>0);
+  let h=`<div class="lab">Your parts</div><div class="ldname"><b>Fit from your hold and hangar</b></div><div class="note" style="margin:4px 0 12px">Parts you have that this ship can take. Pick a slot on the ship to see its part, grades and other choices, or a system's + to raise its grade.</div>`;
+  let rows='',no=0;for(const it of L){const T=ldTarget(P,it);if(!T){no++;continue}const was=T.was?ITEMS[(((T.g==='w'?fitOf(P).wi:fitOf(P).ui)||[])[T.i])||PART[T.was]]:null;
+    rows+=`<div class="ldopt">${gIcon(it,15)}<span style="flex:1;min-width:0"><span>${esc(ITEMS[it].name)}</span><br><span class="mass" style="margin:0">${esc(ITEMS[it].trTxt||'standard')} · ${countIn(it,srcs)} on hand · ${T.g==='w'?'Weapon':'Utility'} ${T.i+1}${was?` (replaces ${esc(was.name)})`:' (empty)'}</span></span><button class="btn sm" data-act="fit" data-arg="${T.g}:${T.i}:${it}">Fit</button></div>`}
+  h+=rows||`<div class="empty">No parts for this ship in your hold or hangar.${c.market?' Buy parts on the Market (Trade), then fit them here.':''}</div>`;
+  if(no)h+=`<div class="note" style="margin-top:10px">${no} other part${no>1?'s':''} you have won't fit this ship.</div>`;return h}

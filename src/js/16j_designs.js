@@ -22,12 +22,17 @@ function designOf(fac,cls){return(DESIGN[fac]||{})[cls]||null}
   B.hull*=k('hull');B.sCap*=k('shield');B.eCap*=k('energy');B.eRegen*=d.regen||k('energy');B.maxSpd*=k('speed');B.thrust*=k('acc');B.turn*=k('turn');B.radius*=k('radius');B.dmg*=k('dmg');B.design=d.name;return B}}
 {const o=vK;vK=function(P,key){const v=o.apply(this,arguments);if(key==='lockK'&&P){const d=designOf(P.faction,P.cls);if(d&&d.lock)return v*d.lock}return v}}
 // the design a dock's yard builds for a class: a power's yard its own, a freeport's the one rolled for it
-function yardRoll(){S.yardRoll=S.yardRoll||{};for(const id in S.stations||{}){const R=S.stations[id];if(!R||R.owner!=='neutral'||S.yardRoll[id])continue;const o={};for(const k of FIGHTERS)if(DESIGN.halcyon[k])o[k]=pick(FAC_IDS);S.yardRoll[id]=o}}
-function yardDesign(c,cls){if(!designOf('halcyon',cls)||!c||c.kind!=='station')return null;if(FAC_IDS.includes(c.owner))return c.owner;if(c.owner==='neutral'){yardRoll();const r=(S.yardRoll||{})[S.player.sector];return r&&r[cls]||null}return null}
+// (Beyond, 3 Nov 2026, the user: each freeport a random mix of hulls) every hull a freeport's yard builds is rolled to one
+// power's line, work ships and scouts too, so each freeport offers a mix; older saves fill in the classes they lack
+// (user) favouring the nearest power: its line half the time, the other two a quarter each
+function yardNear(id){let best=null,bd=1e9;for(const f of FAC_IDS){const h=HOP[id]&&HOP[id][FAC_HOME(f)];if(h!=null&&h<bd){bd=h;best=f}}return best}
+function yardPick(id){const n=yardNear(id);if(!n)return pick(FAC_IDS);if(Math.random()<.5)return n;return pick(FAC_IDS.filter(f=>f!==n))}
+function yardRoll(){S.yardRoll=S.yardRoll||{};for(const id in S.stations||{}){const R=S.stations[id];if(!R||R.owner!=='neutral')continue;const o=S.yardRoll[id]=S.yardRoll[id]||{};for(const k of YARD_IDS)if(!o[k])o[k]=yardPick(id)}}
+function yardDesign(c,cls){if(!c||c.kind!=='station')return null;if(c.owner==='neutral'){yardRoll();const r=(S.yardRoll||{})[S.player.sector];return r&&r[cls]||null}if(!designOf('halcyon',cls))return null;if(FAC_IDS.includes(c.owner))return c.owner;return null}
 {const o=newGame;newGame=function(){const r=o.apply(this,arguments);if(S)yardRoll();return r}}
 // buying a fighter takes this yard's design: your design line becomes that power's (it goes back if the purchase fails)
 {const o=dockAction;dockAction=function(act,arg){if(act==='hull'&&!S.unb){const c=dockCtx(),P=S.player,f=yardDesign(c,arg);if(f&&f!==P.faction){const f0=P.faction;P.faction=f;dockErr='';o.apply(this,arguments);
-      if(!String(dockErr).startsWith('✓')){P.faction=f0;return}fitOf(P);if(W&&W.player){refreshPlayerStats();W.player.fac=f}dockErr+=` It's ${/^[AEIOU]/.test(FACTIONS[f].short)?'an':'a'} ${FACTIONS[f].short} design: the ${designOf(f,arg).name}.`;return}}return o.apply(this,arguments)}}
+      if(!String(dockErr).startsWith('✓')){P.faction=f0;return}fitOf(P);if(W&&W.player){refreshPlayerStats();W.player.fac=f}dockErr+=` It's ${/^[AEIOU]/.test(FACTIONS[f].short)?'an':'a'} ${FACTIONS[f].short} design: the ${designOf(f,arg)?designOf(f,arg).name:FAC(f).hulls[arg]}.`;return}}return o.apply(this,arguments)}}
 // every freeport has a yard (Beyond): it builds the faction designs rolled for it, for anyone who can dock
 {const o=dockCtx;dockCtx=function(){const c=o.apply(this,arguments);if(c&&c.kind==='station'&&c.owner==='neutral'&&!S.unb)c.hulls=true;return c}}
 // ---- the powers' work ships (miners and haulers): their own approved models (tools/previews/beyond_work.py, packed as dz_*).

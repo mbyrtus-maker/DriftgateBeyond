@@ -25,7 +25,7 @@ let cbBuyOK=false;
 {const o=ldSlotHtml;ldSlotHtml=function(c,P,g,i){const ok=beaconCls(P.cls),U=UTIL.claim;if(!ok)delete UTIL.claim;let h;try{h=o.apply(this,arguments)}finally{UTIL.claim=U}
   return h}}
 // the Market's tiles: the beacons sold here
-{const o=mkHtml;mkHtml=function(c,P){let h=o.apply(this,arguments);try{const L=fbSold(c,P);if(!L.length)return h;const srcs=[P.cargo,c.storage];
+{const o=mkHtml;mkHtml=function(c,P){let h=o.apply(this,arguments);try{const L=fbSold(c,P);if(!L.length||mkFilter!=='bcn')return h;const srcs=[P.cargo,c.storage];
   h+=`<div class="mkgrp" style="margin-top:14px"><div class="lab">Claim Beacons · single use · fit one in a utility slot (fighters and bombers) and hold it in an outpost's ring to claim it for that power</div><div class="mkrow">${L.map(f=>{const k='bc_'+f,n=countIn(k,srcs);
     return`<div class="mkt" style="cursor:default">${''}<span class="mktt">${gIcon(k,22)}<span><b style="color:${FACTIONS[f].col}">${esc(FACTIONS[f].short)}</b><br><span class="mono amber">${fmt(CLAIM_PRICE)}</span></span></span><span class="mass" style="margin:0">single use (ammo: 1) · you ${n||'·'}${cbFitted(P).some(x=>x.f===f)?' · fitted':''}</span><button class="btn sm" type="button" data-act="buyfb" data-arg="${f}" ${P.credits>=CLAIM_PRICE?'':'disabled'}>Buy</button></div>`}).join('')}</div></div>`}catch(e){console.error(e)}return h}}
 // the job board says where the beacon goes

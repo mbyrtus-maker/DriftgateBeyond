@@ -78,7 +78,7 @@ function fpDeliverable(P,c,srcs){return Math.max(0,Math.min(countIn(c.item,srcs)
 function fpBuyable(c,P,k){if(!c.market||k.st===P.sector||!(c.market[k.item]>0))return null;const p=W.player,free=Math.max(0,p.st.cargo-invMass(P.cargo)),need=Math.max(0,k.n-fpDeliverable(P,k,[P.cargo,P.vault])),pr=mBuy(c,k.item);return{stock:c.market[k.item],pr,need,n:Math.min(need,c.market[k.item],Math.floor(free/mass(k.item)),Math.floor(P.credits/Math.max(1,pr)))}}
 function deliverable(P,k,srcs,res){return Math.max(0,Math.min(countIn(k,srcs),ownedOf(P,k)-boughtOf(P,k)-(res===undefined?consOf(P,k):res)))}
 // ============================================================ dock UI
-let dockTab='home',dockErr='',dockG=[],csAsk=0;const dockSubMem={};
+let dockTab='home',dockErr='',dockG=[],csAsk=0,fabKind=null;const dockSubMem={};
 function holdFree(p,P){return Math.max(0,((p&&p.st&&p.st.cargo)||0)-invMass(P.cargo))}
 // selling the ship you fly: half the hull's price, plus half the value of its upgrade parts (they go with it), and you
 // step into a fresh starter
@@ -257,11 +257,18 @@ function renderDock(){
     if(salv.length)h+=`<p class="note" style="margin:12px 0 6px">Missiles, torpedoes and swarm pods aren't traded: your launchers reload on a cooldown. Salvaged ones you carry can be sold off as scrap.</p><div class="act">${salv.map(k=>`<button class="btn sm" data-act="sell" data-arg="${k}:all">Sell ${countIn(k,srcs)} ${esc(ITEMS[k].name)} · ${fmt(mSell(c,k))} cr each</button>`).join('')}</div>`;
   }else if(dockTab==='fab'){
     h+=`<p class="note" style="margin:0 0 12px">Fabrication draws from your hold and ${c.storageName.toLowerCase()} and puts the result in your ${c.storageName.toLowerCase()}. Mass is conserved: a part weighs exactly what went into it.${c.fee?' This dock charges a 6% labour fee.':''}${c.forge?'':' Crystal Lattice and Resonance Cores need a Forge.'}</p>`;
-    h+=`<div class="tblw"><table class="t"><thead><tr><th>Part</th><th>Recipe</th><th class="r">Have</th><th></th></tr></thead><tbody>`;
-    for(const k of CRAFTABLE.filter(k=>!MUNITIONS.has(k)).sort(byName)){const r=ITEMS[k].recipe,ok=!ITEMS[k].forge||c.forge||c.fab;const can=ok&&haveIn(r,srcs);
+    // (Beyond, 3 Nov 2026) first choose Components (plates, wire, coils and the like) or Parts (weapons and utility gear)
+    const fabAll=CRAFTABLE.filter(k=>!MUNITIONS.has(k)),fabOf=k=>k==='beacon'||String(k).startsWith('bc_')?'bcn':typeof mkGroup==='function'&&['wpn','util'].includes(mkGroup(k))?mkGroup(k):ITEMS[k].part?(WPN[ITEMS[k].part]?'wpn':'util'):'comp',fabN=g=>fabAll.filter(k=>fabOf(k)===g),fabCan=g=>fabN(g).filter(k=>(!ITEMS[k].forge||c.forge||c.fab)&&haveIn(ITEMS[k].recipe,srcs)).length;
+    // (user) the Market's menu without Ore: Components, Weapons, Utility parts, Beacons
+    const FABK=[['comp','Components'],['wpn','Weapons'],['util','Utility parts'],['bcn','Beacons']].filter(([g])=>fabN(g).length);if(fabKind&&!FABK.some(x=>x[0]===fabKind))fabKind=null;
+    h+=`<div class="obox-row" style="margin-bottom:12px">${FABK.map(([g,n])=>`<button class="obox${fabKind===g?' on':''}" type="button" data-act="fabk" data-arg="${g}" aria-pressed="${fabKind===g}">${n} <span>${fabCan(g)} / ${fabN(g).length}</span></button>`).join('')}</div>`;
+    if(!fabKind)h+=`<div class="note" style="margin:0">Pick what to make. The numbers are what you can make now, of all the recipes of that kind.</div>`;
+    else{
+    h+=`<div class="tblw"><table class="t"><thead><tr><th>${({comp:'Component',wpn:'Weapon',util:'Utility part',bcn:'Beacon'})[fabKind]||'Item'}</th><th>Recipe</th><th class="r">Have</th><th></th></tr></thead><tbody>`;
+    for(const k of fabN(fabKind).sort(byName)){const r=ITEMS[k].recipe,ok=!ITEMS[k].forge||c.forge||c.fab;const can=ok&&haveIn(r,srcs);
       h+=`<tr><td class="iname">${sw(k)}${esc(ITEMS[k].name)}<span class="mass">${mass(k)} t</span></td><td>${Object.keys(r).map(i=>chip(i,r[i],countIn(i,srcs))).join('')}${ok?'':'<span class="req no">Forge or home station</span>'}</td><td class="r num">${countIn(k,srcs)}</td>
       <td><div class="act"><button class="btn sm" data-act="make" data-arg="${k}:1" ${can?'':'disabled'}>Make 1</button><button class="btn sm" data-act="make" data-arg="${k}:max" ${can?'':'disabled'}>Make max</button></div></td></tr>`}
-    h+=`</tbody></table></div>`;
+    h+=`</tbody></table></div>`}
   }else if(dockTab==='ship'||dockTab==='upg'){
     const st=p.st;if(dockTab==='upg'){
     h+=`<div class="grid2" style="margin-bottom:10px"><div class="note">Upgrading folds parts permanently into a component. Grades 2 and 3 fit at any friendly dock, and from grade 2 each system takes one variant: a part that buys a strength with a weakness, free to swap here. Upgrades belong to this ship: store it in the Hangar to keep it, and if it's destroyed its upgrades are left in the wreck.${(u=>u?`<br><br><b>Upgrade stock here:</b> ${u.plate||0} Alloy Plate · ${u.wire||0} Conduit · ${u.coil||0} Flux Coil, kept for pilots and refilling slowly. Parts your hold and vault don't have come from it at base price.`:'')(upgStockOf(c,P))}</div>

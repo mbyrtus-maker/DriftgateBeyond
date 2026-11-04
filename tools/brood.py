@@ -18,7 +18,13 @@ class Mesh:
     def tube(s,pts,rad,sides,role,cap0=True,cap1=True,noise=0.0,up=(0,1,0),twist=0.0):
         pts=np.array(pts,float);m=len(pts);rad=np.array([(r,r) if np.isscalar(r) else r for r in rad],float)
         T=np.gradient(pts,axis=0);T/=np.linalg.norm(T,axis=1,keepdims=True)+1e-12
-        u=np.array(up,float);u=u-T[0]*(u@T[0]);u/=np.linalg.norm(u)+1e-12;U=[u]
+        u=np.array(up,float);u=u-T[0]*(u@T[0])
+        if np.linalg.norm(u)<1e-6:
+            # a tube along the up axis: take another reference, or its rings collapse to nothing (Beyond, 3 Nov 2026)
+            import os
+            if os.environ.get('TUBECOUNT'):print('TUBE-COLLAPSE',tuple(np.round(pts[0],3)))
+            u=np.array((1.0,0,0))-T[0]*T[0][0]
+        u/=np.linalg.norm(u)+1e-12;U=[u]
         for i in range(1,m):
             v=U[-1]-T[i]*(U[-1]@T[i]);n=np.linalg.norm(v);U.append(v/n if n>1e-9 else U[-1])
         rings=[]
