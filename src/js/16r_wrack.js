@@ -30,10 +30,10 @@ function wrPeace(P){return!!P&&!P.sworn&&!(P.aggro&&P.aggro.pirate>S.T)}
 {const o=stHostile;stHostile=function(SE,e){if(!S.unb&&SE&&SE.fac==='pirate'&&W&&W.sid===WRACK.sid){const P=pilotOfEnt(e);if(P&&wrPeace(P))return false}return o.apply(this,arguments)}}
 // attacking the Unbound breaks the peace for a minute
 {const o=standHit;standHit=function(P,f){if(f==='pirate'&&P&&!S.unb)(P.aggro||(P.aggro={})).pirate=S.T+STAND.aggro;return o.apply(this,arguments)}}
-// ---- (user, 3 Nov 2026) the Rusty Tankard also whispers about convoys: the powers' supply convoys within four jumps of the
+// ---- (user, 3 Nov 2026) the Rusty Tankard also whispers about convoys: the powers' supply convoys within five jumps of the
 // Wrack, to raid for the Unbound. Destroy the freighter (half its hold spills as salvage) or hook its hold; the Unbound pay
 // 60% of a power's raid bounty on top of the plunder to whoever took the job. The power whose convoy it was will remember.
-const WR_RAID={hops:4,k:.6};
+const WR_RAID={hops:5,k:.6};
 function wrRaidPay(t){return Math.round(raidBounty(t)*WR_RAID.k/10)*10}
 {const o=jobsList;jobsList=function(c,P,srcs){const out=o.apply(this,arguments);if(!c||!c.rum||S.unb)return out;try{
   for(const t of(S.traders||[]).filter(t=>t.kind==='haul'&&FAC_IDS.includes(t.side)&&HOP[WRACK.sid]&&HOP[WRACK.sid][t.sector]!=null&&HOP[WRACK.sid][t.sector]<=WR_RAID.hops)){const j=HOP[P.sector][t.sector],fs=FACTIONS[t.side].short,pay=wrRaidPay(t);

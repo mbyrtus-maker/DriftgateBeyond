@@ -1873,7 +1873,7 @@ The user's asks, with their choices (Drone controller on drone-bay hulls only; d
 - **Varkesh work ships** (user: floating orange rings above their backs): the exhaust stacks on the Pick, Gouge and Sledge were vertical tubes. The model builder's tube collapses to nothing when it runs straight up (its reference axis was vertical too), which left only the stacks' amber bands floating. The builder now takes another reference for a vertical tube, so all 11 vertical tubes across the models appear (the stacks, and a few masts and pylons on other hulls). The stacks are rebuilt as square columns with an amber band and a dark mouth, and are a little lower.
 - **Freeport shipyards** (user): every hull a freeport builds, miners, haulers and scouts included, is rolled to one power's line per freeport. Each freeport offers a mix, not one faction's ships, favouring the nearest power (user): its line half the time, each of the other two a quarter. Taking a hull there takes that power's design line, as fighters already did. Older galaxies fill in the classes their roll lacked.
 - **Hangar** (user: what does "Your other ships here" give that "Ships berthed here" doesn't?): nothing; they were the same list split in two. It is now one list under **Ships berthed here · n / berths**: the ship you fly first, then the others ("No other ships berthed here" when none).
-- **The Rusty Tankard's rumours** (user) now include **convoy raids**: each power's supply convoy within four jumps of the Wrack, with what it hauls, where it is and where it's bound. Intercept it, then destroy the freighter (half its hold spills as salvage) or hook its hold. The Unbound pay **60% of a power's raid bounty on top of the plunder** to whoever took the job (shared by damage). The power whose convoy it was remembers: standing drops as for any attack on its ships.
+- **The Rusty Tankard's rumours** (user) now include **convoy raids**: each power's supply convoy within five jumps of the Wrack (four at first; five at the user's word), with what it hauls, where it is and where it's bound. Intercept it, then destroy the freighter (half its hold spills as salvage) or hook its hold. The Unbound pay **60% of a power's raid bounty on top of the plunder** to whoever took the job (shared by damage). The power whose convoy it was remembers: standing drops as for any attack on its ships.
 - **Training:** the first course's dock lesson now opens Trade → Fabricate (Station is hidden away from your own base), and its text names the new tabs.
 
 ### An audience with a power's leader (designed and built 3 Nov 2026)
@@ -1901,3 +1901,26 @@ The user's asks, with their choices (Drone controller on drone-bay hulls only; d
   - **The leader's mood:** a base chance, plus 15 points for each of their traits that leans to the request, plus your standing with them, and for war or alliance how they already feel about the target. Some traits never agree: an Ambitious leader won't sign a non-aggression pact, an Isolationist won't trade, ally or send aid, a Vengeful one won't pardon, and a Vengeful leader won't make peace with someone deep in their bad books. Granted agreements go in the News box and the chronicle, and the panel lists those in force with time left.
 - **Test:** `audience.py` (in the quick suite).
 - **Intel work for** (Jobs, user): clicking the power already picked sets it back to nobody.
+
+### Scrapheart's own tabs; letters of marque (3 Nov 2026)
+- **The user's ask:** the tabs at the Wrack get their own names, and the last one becomes a place to take a power's letter of marque.
+- **Tabs at Scrapheart** (`16zzg_marque.js`): **Overview**, **Plunder** (Trade: its market and fabricating), **Tavern** (Jobs: the Rusty Tankard's rumours), **Ship**, **Marques** (Allegiance). Only the names change; every other station keeps the usual ones.
+- **Letters of marque** (on Marques): an independent pilot (not sworn, not leading a declared faction) can fly any power's **privateer flag** if it stands them Unwelcome or better. While flying it:
+  - **You count as one of that power's own.** Its ships are friendly. The ships of anyone it's hostile to (and the Brood) attack you, and their stations refuse you; its stations take you in.
+  - **The Unbound see a privateer** and leave you be (unless you've just attacked them).
+  - **Your sponsor pays the bounty** for every ship you destroy of a power it's **at war** with, and of **the Brood**.
+  - The HUD's system line shows "⚑ Varkesh privateer".
+  - Each power's row on Marques lists who it pays for and your standing. **Strike the flag** there any time. It's struck for you if you swear to a faction, declare your own, or fall to Hostile with your sponsor (you're told).
+- **Spelling:** the user wrote both "Marquees" and "Marques". The tab reads **Marques**, after letters of marque; one word to change if they'd rather have the other.
+- **Test:** `marque.py` (in the quick suite).
+- **The black market at Scrapheart** (user): **Plunder** has a **Black market** tab beside the Market: the Company screen's Black market (every offer your contacts have, runs, contraband buys, quiet buyers and fences, with heat ratings; take a run, give it to a crew or broker it; request work). The **Tavern** lists those offers as jobs too, beside the Rusty Tankard's own runs and the convoy raids, each opening the Black market tab. Comms' Jobs here leaves them off (they're worked from the dock).
+
+### Freeports never fall (3 Nov 2026)
+- **The user's report:** at Coldwater Drift there was no freeport. All three freeports are made in every new galaxy; theirs had almost certainly been razed by the Brood, which razes a freeport when it takes a system (Driftgate 1's rule). The Compact rebuilt it only after 20 minutes, with materials, and with no Brood capital ship there.
+- **The user's call:** the Brood can assault a freeport and disable it, but it turns back on in five minutes and is never destroyed.
+- **Now** (`16zzh_fpdark.js`): where a freeport would be razed (the Brood taking its system, or its hull broken), it is **knocked out** instead, like Scrapheart. For **five minutes** it's dark: no docking, no market, no jobs, its guns silent, and it takes no more damage. Then it **relights** at half hull with full shields (announced in Recent). A freeport an older galaxy lost is rebuilt as soon as the game loads.
+- **Test:** `fpdark.py` (in the quick suite).
+- **Distress and defences** (user: freeports should call for help and be well defended):
+  - A freeport already sent a distress call when hit: the powers answer with wings, and every pilot hears it ("Press O to respond"). Now one also goes out when the Brood's swarm closes on a freeport's system (a minute out, or engaged) and when the Brood knocks one out.
+  - Defences doubled: shields 3,600 → **7,200**, hull 10,000 → **20,000**, **twelve turrets** (from six), placed on the hull clear of the docking ports, hitting harder (16 → **22**) and reaching further (1,500 → **2,000 m**). Older galaxies' freeports take the new numbers on load.
+

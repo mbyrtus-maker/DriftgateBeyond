@@ -72,5 +72,7 @@ js/16zzb_mpfix.js
 js/16zzc_drones.js
 js/16zzd_yard.js
 js/16zzf_audience.js
+js/16zzg_marque.js
+js/16zzh_fpdark.js
 js/17_main.js
 end.html

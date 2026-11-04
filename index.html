@@ -6812,7 +6812,7 @@ function renderDock(){
   $('dTitle').textContent=c.name;$('dTitle').style.color=sideCol(c.owner);$('dSub').textContent=c.sub;
   $('dMeta').innerHTML=`<div>Credits<b class="amber">${fmt(P.credits)}</b></div><div>Hold<b>${invMass(P.cargo)}/${p.st.cargo} t</b></div><div>${c.storageName}<b>${invMass(c.storage)} t</b></div>${c.wallet?`<div>${sideName(c.wallet)} treasury<b>${fmt(S.econ.treasury[c.wallet])}</b></div>`:''}`;
   const hasOrders=!S.unb&&c.contracts||(c.wallet&&!!P.sworn&&c.wallet===P.sworn&&S.plans&&S.plans[P.sworn]),hasMis=!!FACTIONS[P.sworn];
-  const tabs=[['home','Overview']];if(c.haven)tabs.push(['fence','Fence'],['black','Hulls'],['marks','Marks'],['wanted','Wanted'],['works','Works']);if(c.market)tabs.push(['market','Market']);if(!c.haven)tabs.push(['trade','Best runs']);if(hasOrders||hasMis)tabs.push(['jobs','Jobs']);tabs.push(['fab','Fabricate'],['upg','Systems']);if(c.refit)tabs.push(['refit','Refits']);if(c.works)tabs.push(['works','Station works']);if(patOK(c,P))tabs.push(['patron','Patronage']);if(hireOK(c,P))tabs.push(['hire','Hire pilots']);if(c.fortify)tabs.push(['outpost','Outpost']);if(!c.haven&&!S.unb)tabs.push(['ship','Shipyard']);tabs.push(['storage',c.storageName]);if(c.lair){}else if(c.storage===P.vault&&!S.unb)tabs.push(['bay',`Hangar ${shipsCount(P)}/${BAY_MAX}`]);
+  const tabs=[['home','Overview']];if(c.haven)tabs.push(['fence','Fence'],['black','Hulls'],['marks','Marks'],['wanted','Wanted'],['works','Works']);if(c.market)tabs.push(['market','Market']);if(c.rum)tabs.push(['bmk','Black market']);if(!c.haven)tabs.push(['trade','Best runs']);if(hasOrders||hasMis)tabs.push(['jobs','Jobs']);tabs.push(['fab','Fabricate'],['upg','Systems']);if(c.refit)tabs.push(['refit','Refits']);if(c.works)tabs.push(['works','Station works']);if(patOK(c,P))tabs.push(['patron','Patronage']);if(hireOK(c,P))tabs.push(['hire','Hire pilots']);if(c.fortify)tabs.push(['outpost','Outpost']);if(!c.haven&&!S.unb)tabs.push(['ship','Shipyard']);tabs.push(['storage',c.storageName]);if(c.lair){}else if(c.storage===P.vault&&!S.unb)tabs.push(['bay',`Hangar ${shipsCount(P)}/${BAY_MAX}`]);
   if(!S.unb&&(!S.training||S.training.by))tabs.push(['allegiance','Allegiance']);
   if(dockTab==='orders'||dockTab==='missions')dockTab='jobs';
   if(!tabs.some(t=>t[0]===dockTab))dockTab=tabs[0][0];
@@ -10550,10 +10550,10 @@ function wrPeace(P){return!!P&&!P.sworn&&!(P.aggro&&P.aggro.pirate>S.T)}
 {const o=stHostile;stHostile=function(SE,e){if(!S.unb&&SE&&SE.fac==='pirate'&&W&&W.sid===WRACK.sid){const P=pilotOfEnt(e);if(P&&wrPeace(P))return false}return o.apply(this,arguments)}}
 // attacking the Unbound breaks the peace for a minute
 {const o=standHit;standHit=function(P,f){if(f==='pirate'&&P&&!S.unb)(P.aggro||(P.aggro={})).pirate=S.T+STAND.aggro;return o.apply(this,arguments)}}
-// ---- (user, 3 Nov 2026) the Rusty Tankard also whispers about convoys: the powers' supply convoys within four jumps of the
+// ---- (user, 3 Nov 2026) the Rusty Tankard also whispers about convoys: the powers' supply convoys within five jumps of the
 // Wrack, to raid for the Unbound. Destroy the freighter (half its hold spills as salvage) or hook its hold; the Unbound pay
 // 60% of a power's raid bounty on top of the plunder to whoever took the job. The power whose convoy it was will remember.
-const WR_RAID={hops:4,k:.6};
+const WR_RAID={hops:5,k:.6};
 function wrRaidPay(t){return Math.round(raidBounty(t)*WR_RAID.k/10)*10}
 {const o=jobsList;jobsList=function(c,P,srcs){const out=o.apply(this,arguments);if(!c||!c.rum||S.unb)return out;try{
   for(const t of(S.traders||[]).filter(t=>t.kind==='haul'&&FAC_IDS.includes(t.side)&&HOP[WRACK.sid]&&HOP[WRACK.sid][t.sector]!=null&&HOP[WRACK.sid][t.sector]<=WR_RAID.hops)){const j=HOP[P.sector][t.sector],fs=FACTIONS[t.side].short,pay=wrRaidPay(t);
@@ -12591,7 +12591,7 @@ function newsRender(){const el=$('hNews');if(!el)return;const L=(S&&!S.training&
 // here instead: the powers' and freeports' freighters, traders and miners in this system, with the cargo scanner's
 // reading, biggest haul first; picking one targets it. Guests use the messages the board and Comms already send
 // (job, plan, cvesc), so the host keeps the ledger.
-const CJ={per:4,dockOnly:['bmr','find','dpw'],hint:{k:'deliver at the dock',pj:'deliver at the dock',b:'deliver at the dock',r:'deliver at the dock',s:'land on its deck',ce:'fly with it',cv:'kill the freighter',op:'join the fight',bm:'hold the beacon',cl:'fire a Claim Beacon',dp:'shoot him down'}};
+const CJ={per:4,dockOnly:['bmr','find','dpw','bmo'],hint:{k:'deliver at the dock',pj:'deliver at the dock',b:'deliver at the dock',r:'deliver at the dock',s:'land on its deck',ce:'fly with it',cv:'kill the freighter',op:'join the fight',bm:'hold the beacon',cl:'fire a Claim Beacon',dp:'shoot him down'}};
 function cjTxt(s){return String(s||'').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>')}
 // the board you'd hail from here
 function cjCtx(P){const sid=P.sector,R=S.stations[sid];
@@ -12889,6 +12889,86 @@ function audHtml(c,P){const R=S.stations[P.sector];if(!P.docked||P.docked!=='sta
 function audDealsHtml(P,f){const L=(P.deals||[]).filter(d=>d.f===f&&S.T<d.until);if(!L.length)return'';return`<div class="lab" style="margin-top:12px">In force with ${esc(FACTIONS[f].short)}</div>`+L.map(d=>`<div class="coln"><span style="flex:1">${esc(AUD_REQ[d.k].n)}${d.x?' '+esc(d.x==='brood'?'the Brood':FACTIONS[d.x].short):''}</span><span class="mono">${fmtT(d.until-S.T)}</span></div>`).join('')}
 {const o=allegianceHtml;allegianceHtml=function(P){P=P||S.player;let a='';try{const c=P.docked?dockCtx():null;a=c?audHtml(c,P):''}catch(e){console.error(e)}return a+o.apply(this,arguments)}}
 {const o=dockAction;dockAction=function(act,arg){const P=S.player;if(act==='audreq'){dockErr=audRequest(P,String(arg));return}if(act==='audask'){const[f,k,x]=String(arg).split(':');dockErr=audAsk(P,f,k,x||null);return}return o.apply(this,arguments)}}
+
+//@src 16zzg_marque.js
+// ============================================================ Scrapheart's own tabs; letters of marque (Beyond, 3 Nov 2026)
+// The user's asks: docked at Scrapheart (the Wrack), the top tabs have their own names: Overview, Plunder (Trade), Tavern
+// (Jobs), Ship, Marques (Allegiance). On Marques an independent pilot can take a power's letter of marque and fly its
+// privateer flag: while flying it you count as one of that power's own (its ships are friends; its enemies' ships attack you
+// and their stations refuse you; its stations take you in), except that the Unbound see a privateer, not a power's pilot,
+// and leave you be. The sponsor pays the bounty for every ship you destroy of a power it's at war with, and of the Brood.
+// Strike the flag at Scrapheart any time; it's struck for you if you swear to a faction, declare your own, or fall to
+// Hostile with your sponsor.
+const MARQ={min:-10};
+function marqOf(P){P=P||S.player;const f=P&&P.marque;if(!f||!FAC_IDS.includes(f)||P.sworn||P.decl||S.unb)return null;return f}
+function marqWar(f,x){return x==='brood'||(FAC_IDS.includes(x)&&x!==f&&warWith(f,x))}
+{const o=pilotHostile;pilotHostile=function(P,x){P=P||S.player;const f=marqOf(P);if(f&&x&&x!=='player'){if(x==='pirate'){if(P.aggro&&P.aggro.pirate>S.T)return true;return false}if(x===f)return false;if(FAC_IDS.includes(x))return hostile(f,x)||o.apply(this,arguments);if(x==='brood')return true}return o.apply(this,arguments)}}
+{const o=tradeOK;tradeOK=function(P,owner){P=P||S.player;const f=marqOf(P);if(f&&FAC_IDS.includes(owner)){if(owner===f)return true;if(hostile(f,owner))return false}return o.apply(this,arguments)}}
+{const o=bountyPayer;bountyPayer=function(victim,P){P=P||S.player;const f=marqOf(P);if(f&&marqWar(f,victim))return f;return o.apply(this,arguments)}}
+{const o=standAdd;standAdd=function(f,n,why,P){const r=o.apply(this,arguments);try{P=P||S.player;if(P&&P.marque===f&&standOf(f,P)<=STAND.hostile){P.marque=null;const m=`⚑ ${FACTIONS[f].short} revokes your letter of marque: you're Hostile with them.`;if(P===S.player)feed(m,'bad')}}catch(e){}return r}}
+function marqTake(P,f){if(P.sworn)return'You fly for a faction: privateers are independents.';if(P.decl)return'You lead your own faction.';if(!FAC_IDS.includes(f))return'';
+  if(P.marque===f){P.marque=null;return`You strike the ${FACTIONS[f].short} flag: you fly as an independent again.`}
+  if(standOf(f,P)<MARQ.min)return`${FACTIONS[f].short} won't sponsor you: your standing with them is ${standName(standOf(f,P))}.`;
+  const was=P.marque;P.marque=f;const foes=[...FAC_IDS.filter(g=>g!==f&&warWith(f,g)).map(g=>FACTIONS[g].short),'the Brood'].join(', ');
+  return`✓ You fly the ${FACTIONS[f].short} privateer flag${was&&was!==f?` (the ${FACTIONS[was].short} flag struck)`:''}. ${FACTIONS[f].short} pays for every ship you destroy of ${foes}; its enemies' ships will come for you.`}
+function marqHtml(P){const f=marqOf(P);let h=`<div class="ldbox" style="margin:0 0 18px;border-left:3px solid ${f?FACTIONS[f].col:'#f0b24a'}"><div class="lab">Letters of marque</div><div class="ldname"><b>${f?`Flying the ${esc(FACTIONS[f].short)} flag`:'No flag'}</b></div>`;
+  h+=`<div class="note" style="margin:4px 0 10px">A power's privateer counts as one of its own: its ships are friends, its enemies' ships attack you and their stations refuse you. The Unbound see a privateer and leave you be. Your sponsor pays the bounty for every ship you destroy of a power it's at war with, and of the Brood.${P.sworn?' <b>You fly for a faction: privateers are independents.</b>':P.decl?' <b>You lead your own faction.</b>':''}</div>`;
+  if(P.sworn||P.decl)return h+'</div>';
+  for(const g of FAC_IDS){const st=standOf(g,P),foes=[...FAC_IDS.filter(x=>x!==g&&warWith(g,x)).map(x=>FACTIONS[x].short),'Brood'],on=f===g;
+    h+=`<div class="ldopt"><span style="flex:1;min-width:0"><b style="color:${FACTIONS[g].col}">${esc(FACTIONS[g].name)}</b><br><span class="mass" style="margin:0">pays for: ${esc(foes.join(', '))} · your standing ${esc(standName(st))}</span></span><button class="btn sm${on?'':' pri'}" type="button" data-act="marque" data-arg="${g}" ${on||st>=MARQ.min?'':'disabled'}>${on?'Strike the flag':'Fly this flag'}</button></div>`}
+  return h+'</div>'}
+{const o=allegianceHtml;allegianceHtml=function(P){P=P||S.player;let a='';try{const c=P.docked?dockCtx():null;if(c&&c.rum)a=marqHtml(P)}catch(e){}return a+o.apply(this,arguments)}}
+{const o=dockAction;dockAction=function(act,arg){if(act==='marque'){const c=dockCtx();if(!c||!c.rum){dockErr='Letters of marque are had at Scrapheart.';return}dockErr=marqTake(S.player,String(arg));return}return o.apply(this,arguments)}}
+// Scrapheart's tab names
+const WR_TABS={trade:'Plunder',jobs:'Tavern',allegiance:'Marques'};
+{const o=renderDock;renderDock=function(){let c=null;try{c=S&&S.player&&S.player.docked?dockCtx():null}catch(e){}if(!c||!c.rum)return o.apply(this,arguments);
+  const keep=DOCK_TOP.map(g=>g[1]);for(const g of DOCK_TOP)if(WR_TABS[g[0]])g[1]=WR_TABS[g[0]];try{return o.apply(this,arguments)}finally{DOCK_TOP.forEach((g,i)=>g[1]=keep[i])}}}
+// the HUD's ship line shows the flag
+{const o=hudUpdate;hudUpdate=function(){const r=o.apply(this,arguments);try{const f=marqOf(S.player),el=$('hSub');if(el&&f&&!/privateer/.test(el.textContent))el.insertAdjacentHTML('beforeend',` · <span style="color:${FACTIONS[f].col}">⚑ ${esc(FACTIONS[f].short)} privateer</span>`)}catch(e){}return r}}
+// ---- (user) the black market at Scrapheart: under Plunder, a Black market tab (the Company screen's Black market: every offer
+// your contacts have, runs, buys, quiet buyers and fences, to take, assign or broker); and the Tavern lists those offers as jobs
+{const T=DOCK_TOP.find(g=>g[0]==='trade');if(T&&!T[2].includes('bmk')){const i=T[2].indexOf('market');T[2].splice(i>=0?i+1:0,0,'bmk')}}
+{const o=renderDock;renderDock=function(){const r=o.apply(this,arguments);try{if(dockTab!=='bmk'||S.unb)return r;const c=dockCtx(),B=$('dBody');if(!c||!c.rum||!B)return r;
+  B.innerHTML=`<p class="note" style="margin:0 0 12px">The Rusty Tankard's back room: every offer your contacts have for you, from Scrapheart and every station where you've met a fixer or a quiet buyer. Take a run yourself, give it to one of your crews, or broker it to a contractor.</p>`+bmxHtml(S.player)}catch(e){console.error(e)}return r}}
+{const B=$('dBody');if(B)B.addEventListener('click',e=>{if(dockTab!=='bmk')return;const b=e.target.closest('[data-co]');if(!b||b.disabled)return;e.stopPropagation();try{coClick(b.dataset.co,b.dataset.arg)}catch(x){console.error(x)}dockErr=coErr||'';renderDock()})}
+{const o=jobsList;jobsList=function(c,P,srcs){const out=o.apply(this,arguments);if(!c||!c.rum||S.unb)return out;try{
+  for(const x of bmOffers(P)){if(x.rum&&!x.kind&&x.from===WRACK.sid)continue;const at=x.kind?x.from:x.from,h=HOP[P.sector]&&HOP[P.sector][at]!=null?HOP[P.sector][at]:0,pay=bmPay(x);
+    out.push({id:'bmo:'+x.id,by:'pirate',sid:at,ty:'haul',title:`Black market · ${esc(bmKind(x))}: ${bmDesc(x)}`,sub:`${x.rating||'None'} heat${x.f&&FACTIONS[x.f]?' with '+esc(FACTIONS[x.f].short):''} · ${Math.max(0,Math.round((x.until-S.T)/60))} min left`,hops:h,where:h?`${h} jump${h>1?'s':''}`:'here',payN:pay,pay:`${pay<0?'−':''}${fmt(Math.abs(pay))} cr`,btn:['tab','bmk','Open in the Black market'],
+      detail:()=>`<p class="note" style="margin:0">${bmDesc(x)}. Take it, give it to a crew or broker it from Plunder → Black market. ${x.rating&&x.rating!=='None'?`Caught, it adds <b>${esc(x.rating)}</b> heat${x.f&&FACTIONS[x.f]?' with '+esc(FACTIONS[x.f].short):''}.`:''}</p>`})}}catch(err){console.error(err)}return out}}
+
+//@src 16zzh_fpdark.js
+// ============================================================ freeports never fall (Beyond, 3 Nov 2026)
+// The user's call: the Brood can assault a freeport and disable it, but it comes back on in five minutes and is never
+// destroyed. Where the Brood (taking a system, or breaking its hull) would raze a freeport, it goes dark instead: no
+// docking, market or jobs and its guns silent, for five minutes; then it relights at half hull with full shields. A
+// freeport an older galaxy lost is rebuilt when the game loads. (Scrapheart works the same way, for 30 minutes.)
+const FPD={down:300,back:.5};
+function fpDark(sid){const D=S&&S.fpDark;return!!(D&&D[sid]&&S.T<D[sid])}
+function fpKnock(sid){S.fpDark=S.fpDark||{};if(fpDark(sid))return;try{const R0=S.stations[sid];if(R0)distressCall(sid,R0.name,'neutral','brood')}catch(e){}S.fpDark[sid]=S.T+FPD.down;const R=S.stations[sid];if(R){R.hull=1;R.shield=0}
+  allFeed(`⚠ ${R?R.name:'A freeport'} is knocked out by the Brood: dark for ${FPD.down/60} minutes.`,'warn');if(W&&W.sid===sid&&W.stationEnt)W.stationEnt.offline=W.t+FPD.down;
+  for(const P of[S.player,...Object.values(S.pilots||{})])if(P&&P.sector===sid&&P.docked==='station'){P.docked=null}}
+function fpIs(sid){return FREEPORTS.some(f=>f.sid===sid)}
+{const o=razeStation;razeStation=function(sid,by){const R=S.stations[sid];if(R&&R.owner==='neutral'&&fpIs(sid)){fpKnock(sid);return}return o.apply(this,arguments)}}
+{const o=damageStation;damageStation=function(E,dmg,by,kind,src){if(E&&E.rec&&E.rec.owner==='neutral'&&fpIs(E.rec.sid)&&fpDark(E.rec.sid))return;const r=o.apply(this,arguments);
+  try{const R=E&&E.rec;if(!NET.cl&&R&&R.owner==='neutral'&&fpIs(R.sid)&&R.hull<=1&&!fpDark(R.sid))fpKnock(R.sid)}catch(e){console.error(e)}return r}}
+{const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{if(NET.cl||!S)return r;
+    for(const sid in S.fpDark||{}){if(S.T<S.fpDark[sid])continue;delete S.fpDark[sid];const R=S.stations[sid];if(R){R.hull=Math.max(R.hull,Math.round(R.hMax*FPD.back));R.shield=R.sMax}if(W&&W.sid===sid&&W.stationEnt)W.stationEnt.offline=0;allFeed(`${R?R.name:'The freeport'} is lit again: open for trade.`,'good')}
+    // an older galaxy's lost freeport comes back at once
+    for(const F of FREEPORTS){if(S.stations[F.sid])continue;const R=makeStation(F.sid,'neutral','free',{x:0,y:0,z:0},{});R.dev={life:0,def:0,store:0,prod:0,armor:0};applyDev(R);R.hull=Math.round(R.hMax*FPD.back);if(S.fpDown)delete S.fpDown[F.sid];
+      if(WORLDS[F.sid])inW(WORLDS[F.sid],()=>{if(!W.stationEnt)addStationEnt(R)});allFeed(`The Freeport Compact has rebuilt ${R.name} in ${DEF[F.sid].name}. It's open for trade again.`,'good')}}catch(e){console.error(e)}return r}}
+// dark: no docking, market or jobs; its guns hold
+{const o=dockCtx;dockCtx=function(){const c=o.apply(this,arguments);try{const P=S.player;if(c&&c.kind==='station'&&c.owner==='neutral'&&fpDark(P.sector)){c.market=null;c.contracts=false;c.hulls=false;c.sub=`${c.name} · knocked out · back in ${fmtT(Math.max(0,S.fpDark[P.sector]-S.T))}`}}catch(e){}return c}}
+{const o=canDock;canDock=function(E){if(E&&E.rec&&E.rec.owner==='neutral'&&fpDark(E.rec.sid))return false;return o.apply(this,arguments)}}
+{const o=stHostile;stHostile=function(SE,e){if(SE&&SE.rec&&SE.rec.owner==='neutral'&&fpDark(SE.rec.sid))return false;return o.apply(this,arguments)}}
+// ---- (user) freeports call for help and are hard to break: they already send a distress call when hit (the powers answer
+// with wings, and every pilot hears it); now one goes out too when the Brood knocks one out or its swarm closes in, and
+// their defences double: shields 3,600 → 7,200, hull 10,000 → 20,000, twelve turrets (from six) hitting harder (16 → 22)
+// and reaching further (1,500 → 2,000 m)
+Object.assign(STN.free,{sMax:7200,hMax:20000,tur:12,dmg:22,range:2000});
+{const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{if(!NET.cl&&S&&S.fpDef!==2){S.fpDef=2;for(const F of FREEPORTS){const R=S.stations[F.sid];if(R&&R.owner==='neutral')applyDev(R)}}
+  if(!NET.cl&&S&&S.events)for(const ev of S.events){if(ev.att!=='brood'||ev.stage==='done'||ev.fpCall||!fpIs(ev.sector))continue;const R=S.stations[ev.sector];if(!R||R.owner!=='neutral')continue;if(ev.stage==='engaged'||(ev.eta&&ev.eta-S.T<60)){ev.fpCall=1;distressCall(ev.sector,R.name,'neutral','brood')}}}catch(e){console.error(e)}return r}}
+// twelve turrets: the station's base list holds six, so a freeport gets the rest (placed on its hull with the others)
+{const o=addStationEnt;addStationEnt=function(R){const r=o.apply(this,arguments);try{const E=(r&&r.type==='station')?r:W.stationEnt;if(E&&R&&R.kind==='free'){while(E.turrets.filter(t=>!t.mod).length<STN.free.tur)E.turrets.push({p:[0,0,0],aim:{x:0,y:0,z:1},cool:rnd(.6)})}}catch(e){}return r}}
 
 //@src 17_main.js
 // ============================================================ main loop

@@ -10,7 +10,7 @@
 // here instead: the powers' and freeports' freighters, traders and miners in this system, with the cargo scanner's
 // reading, biggest haul first; picking one targets it. Guests use the messages the board and Comms already send
 // (job, plan, cvesc), so the host keeps the ledger.
-const CJ={per:4,dockOnly:['bmr','find','dpw'],hint:{k:'deliver at the dock',pj:'deliver at the dock',b:'deliver at the dock',r:'deliver at the dock',s:'land on its deck',ce:'fly with it',cv:'kill the freighter',op:'join the fight',bm:'hold the beacon',cl:'fire a Claim Beacon',dp:'shoot him down'}};
+const CJ={per:4,dockOnly:['bmr','find','dpw','bmo'],hint:{k:'deliver at the dock',pj:'deliver at the dock',b:'deliver at the dock',r:'deliver at the dock',s:'land on its deck',ce:'fly with it',cv:'kill the freighter',op:'join the fight',bm:'hold the beacon',cl:'fire a Claim Beacon',dp:'shoot him down'}};
 function cjTxt(s){return String(s||'').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>')}
 // the board you'd hail from here
 function cjCtx(P){const sid=P.sector,R=S.stations[sid];
