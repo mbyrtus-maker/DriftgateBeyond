@@ -1829,3 +1829,16 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - **Also fixed on the way:** the scanner read a supply freighter's own hold, which is empty: a convoy's goods are in its trade record. It now reads the convoy's load, for everyone. Comms Prey here says "empty hold" for an empty exact scan.
 - **Test:** `mp_remote.py` (multiplayer, run with the page's path).
 
+### Claim jobs carry Buy & fit; mining hulls come equipped; the mining laser made easier (3 Nov 2026)
+- **Claim jobs** (the user: players won't know what to do otherwise). A Claim job on the Jobs board now has the button that gets you its beacon, as its first button: **Buy & fit a Halcyon beacon · 450 cr** where that power's beacons are sold, or **Fit the Halcyon beacon** when one is in your hold or vault. It goes into a utility slot: an empty one first, otherwise the landing kit's, which goes to your vault. The job's details say which slot, where the displaced part goes, and what to do next (fly there, break its defences if it's held, hold inside its ring). Once fitted, the job reads "Halcyon beacon fitted". In a hull that can't carry a beacon, the job offers the board's hull switch ("Switch to a Swift here · free"), as other jobs do. (Select job used to wipe the old Buy button, so it never showed.)
+- **Ledger fix:** a fitted Claim Beacon wasn't counted in the ledger (fitted parts were counted only for the standard part kinds), so fitting one looked like goods vanishing. Fitted beacons now count.
+- **Mining hulls come equipped** (the user: a Light Miner had no mining laser). A new game was already right; the gap was taking a mining hull at a shipyard, which carried your old weapons across into its slots. Now a hull taken at a shipyard:
+  - gets the standard mining tools it's designed for (mining laser, charge launcher) if they aren't fitted: your own from the hold or vault first (any maker's), otherwise the shipyard builds standard ones from the station's own stores; what they displace goes to your vault;
+  - takes your own parts of its standard kinds back into empty slots from the hold or vault (switching back to a Light Fighter now refits its guns);
+  - comes with a full drone bay: drones from your hold or vault first, otherwise built from the station's stores (freeports sell no drones, so a miner taken there launched with none).
+  - Goods only move, so the ledger stays exact.
+- **The mining laser** (the user: no sound, and it wouldn't hit the rings):
+  - **Sound:** the mining hum and crackle now play while the laser cuts (they only followed the old scoop beam).
+  - **Targeting:** holding F with the laser and no rock targeted targets the rock ahead for you (the nearest whose surface is in range, within 35 degrees of your nose). The beam's ring assist now reaches 45 degrees from your nose (was 25) and works over the rock's rim, so it finds the ring from close in too: pointing at a rock from 60 m off its surface hit the ring 36% of the time before, 100% now (and 100% from 150 m and 250 m, as before).
+- **Tests:** `claimfit.py` (the board's Buy & fit, the hull switch in a miner, the ledger with a beacon fitted), `loadout.py` (taking a Light Miner from a Light Fighter: tools, vault, drone bay; and back).
+

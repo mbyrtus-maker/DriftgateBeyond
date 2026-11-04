@@ -3807,7 +3807,7 @@ function mineCrackle(t,k){const c=AU.ctx;if(!AU.white||MUTE||!AU.on.sfx)return;c
 function auFrame(){if(!auOK())return;const c=AU.ctx,t=c.currentTime,E=AU.eng,fdt=Math.min(.1,Math.max(0,t-(AU.lastFT||t)));AU.lastFT=t;bridgeHum(t);let g=0,ng=0,f=34,lg=0,ml=0;
   if(running&&W&&W.player&&!S.player.docked&&!W.dead&&AU.on.sfx){const p=W.player,sp=hyp(p.vx,p.vy,p.vz),k=clamp(sp/(p.st.maxSpd*1.9),0,1);
     const on=p.thrusting||p.boosting;g=on?.05+.02*k+(p.boosting?.03:0):0;ng=on?.05+(p.boosting?.09:0)+k*.012:0;f=41+k*3+(p.boosting?2:0);if(AU.lasW===W&&W.t>=AU.lasT&&W.t-AU.lasT<.14)lg=.1;   // stamped per system: each system's clock restarts at 0, so a stamp from the last one held the laser hum on after a jump
-    if(p.mining){ml=.075+.012*Math.sin(t*2.3);const m=invMass(S.player.cargo);if(AU.mineM!=null&&m>AU.mineM+.5){AU.oreN=(AU.oreN||0)+1;SFX.ore(AU.oreN)}AU.mineM=m}}
+    if(p.mining||(p.mlSnd!=null&&W.t-p.mlSnd<.2&&W.t>=p.mlSnd)){ml=.075+.012*Math.sin(t*2.3);const m=invMass(S.player.cargo);if(AU.mineM!=null&&m>AU.mineM+.5){AU.oreN=(AU.oreN||0)+1;SFX.ore(AU.oreN)}AU.mineM=m}}
   const mOn=ml>0;if(mOn!==!!AU.mineOn){AU.mineOn=mOn;if(mOn)SFX.mineOn();else{SFX.mineOff();AU.mineM=null}}if(!mOn)AU.mineM=null;
   AU.mine.g.gain.setTargetAtTime(ml,t,mOn?.06:.09);if(mOn){let k=0;while(k<3&&Math.random()<fdt*24){mineCrackle(t+Math.random()*.04);k++}}
   E.g.gain.setTargetAtTime(g,t,g>0?.1:.25);E.ng.gain.setTargetAtTime(ng,t,ng>0?.08:.22);E.o1.frequency.setTargetAtTime(f,t,.8);E.o2.frequency.setTargetAtTime(f*1.51,t,.8);E.nf.frequency.setTargetAtTime(240+ng*1800,t,.4);
@@ -9795,7 +9795,7 @@ for(const k in PART){ITEMS[PART[k]]={name:(WPN[k]||UTIL[k]).name,recipe:PART_RC[
 const PG={dmg:.1,ammo:.25,ml:.15,cargo:.05,scan:.2};
 function partUpg(t){const r={...UPG[t]};if(t>=3)r.matrix=1;return r}
 function partToStore(st,k,g,it){inv.add(st,it||PART[k],1);for(let t=2;t<=(g||1);t++)inv.addAll(st,partUpg(t))}
-function fitItems(F){const o={};if(!F||!Array.isArray(F.w))return o;const add=(k,g,it)=>{if(!k||!PART[k])return;inv.add(o,it||PART[k],1);for(let t=2;t<=(g||1);t++)inv.addAll(o,partUpg(t))};
+function fitItems(F){const o={};if(!F||!Array.isArray(F.w))return o;const add=(k,g,it)=>{if(!k||!(PART[k]||(it&&ITEMS[it])))return;inv.add(o,it||PART[k],1);for(let t=2;t<=(g||1);t++)inv.addAll(o,partUpg(t))};
   F.w.forEach((k,i)=>add(k,F.g&&F.g[i],F.wi&&F.wi[i]));(F.u||[]).forEach((k,i)=>add(k,F.ug&&F.ug[i],F.ui&&F.ui[i]));return o}
 // the fit a pilot is created with; afterwards parts only move, so the ledger stays exact
 function fitNew(cls,fac){const D=slotsOf(cls,fac);return{cls,d:fac||null,w:D.w.slice(),u:D.u.slice(),g:D.w.map(()=>1),ug:D.u.map(()=>1),wi:D.w.map(()=>null),ui:D.u.map(()=>null)}}
@@ -12304,7 +12304,19 @@ fbHeld=function(P,o){for(const x of cbFitted(P))if(o.owner!==x.f)return x.f;retu
   h+=`<div class="mkgrp" style="margin-top:14px"><div class="lab">Claim Beacons · single use · fit one in a utility slot (fighters and bombers) and hold it in an outpost's ring to claim it for that power</div><div class="mkrow">${L.map(f=>{const k='bc_'+f,n=countIn(k,srcs);
     return`<div class="mkt" style="cursor:default">${''}<span class="mktt">${gIcon(k,22)}<span><b style="color:${FACTIONS[f].col}">${esc(FACTIONS[f].short)}</b><br><span class="mono amber">${fmt(CLAIM_PRICE)}</span></span></span><span class="mass" style="margin:0">single use (ammo: 1) · you ${n||'·'}${cbFitted(P).some(x=>x.f===f)?' · fitted':''}</span><button class="btn sm" type="button" data-act="buyfb" data-arg="${f}" ${P.credits>=CLAIM_PRICE?'':'disabled'}>Buy</button></div>`}).join('')}</div></div>`}catch(e){console.error(e)}return h}}
 // the job board says where the beacon goes
-{const o=jobsList;jobsList=function(c,P,srcs){const out=o.apply(this,arguments);try{for(const j of out)if(String(j.id).startsWith('cl:')){if(!beaconCls(P.cls))j.need='Needs a fighter or bomber with a Claim Beacon fitted';else{const f=String(j.id).split(':')[2];if(!cbFitted(P).some(x=>x.f===f))j.sub+=` · fit a ${FACTIONS[f].short} beacon (Loadout)`}}}catch(e){}return out}}
+// (user, 3 Nov 2026) a claim job carries the button that gets you its beacon: "Buy & fit" where that power's beacons are
+// sold (or "Fit the beacon" when one is in your hold or vault), straight into a utility slot (an empty one first, else the
+// landing kit's, which goes to your vault); in a hull that can't carry one, the board's hull switch, as other jobs have.
+// It rides in the job's fix slot (the board's first button), which Select job and Drop job leave alone.
+function cbSlot(P){const U=fitOf(P).u||[];if(!U.length)return -1;let i=U.findIndex(k=>!k);if(i<0)i=U.indexOf('land');if(i<0)i=U.findIndex(k=>k!=='claim');return i<0?0:i}
+{const o=jobsList;jobsList=function(c,P,srcs){const out=o.apply(this,arguments);try{for(const j of out)if(String(j.id).startsWith('cl:')){const f=String(j.id).split(':')[2],sh=FACTIONS[f].short,bc='bc_'+f;
+    if(!beaconCls(P.cls)){j.need='Needs a fighter or bomber with a Claim Beacon fitted';try{const fx=hullFix(c,P,beaconCls,'interceptor');if(fx)j.fix=fx}catch(e){}continue}
+    if(cbFitted(P).some(x=>x.f===f)){j.sub+=` · ${sh} beacon fitted`;continue}
+    const i=cbSlot(P),have=countIn(bc,[P.cargo,(c&&c.storage)||P.vault])>0,sold=fbSold(c,P).includes(f),was=i>=0?(fitOf(P).u||[])[i]:'';
+    if(i<0){j.sub+=` · needs a utility slot for the beacon`;continue}
+    j.btn2=null;if(have)j.fix=['fit',`u:${i}:${bc}`,`Fit the ${sh} beacon`];else if(sold)j.fix=['fit',`u:${i}:${bc}`,`Buy & fit a ${sh} beacon · ${fmt(CLAIM_PRICE)} cr`];
+    j.sub+=have?` · your ${sh} beacon isn't fitted`:` · needs a ${sh} beacon`;
+    const d0=j.detail;j.detail=()=>(d0?d0():'')+`<p class="note" style="margin:8px 0 0">${have||sold?`${have?'Fit the':'Buy & fit puts a'} ${esc(sh)} Claim Beacon in utility slot ${i+1}${was?` (your ${esc((UTIL[was]||{}).name||was)} goes to your ${c&&c.storage&&c.storage!==P.vault?esc(c.storageName||'store'):'vault'})`:''}. Then fly to the outpost, break its defences if it's held, and hold position inside its ring: the beacon claims it for ${esc(sh)} and is used up.`:`${esc(sh)} Claim Beacons aren't sold here: buy one at a freeport or a ${esc(sh)} station, then fit it on the Loadout.`}</p>`}}catch(e){console.error(e)}return out}}
 {const o=fbBuy;fbBuy=function(c,P,f){const r=o.apply(this,arguments);return typeof r==='string'?r.replace(/Carry it into an unclaimed or breached outpost's ring in a fighter or bomber and hold there/,"Fit it in a utility slot on the Loadout (fighters and bombers), then hold it in an unclaimed or breached outpost's ring"):r}}
 // why you can't claim this outpost from its ring, in words that match the fitted beacons (it used to ask for one in the hold)
 function cbWhy(P,o){const own=o.owner?(FACTIONS[o.owner]?FACTIONS[o.owner].short:sideName(o.owner)):null,pre=o.owner?'Defenses down. ':'Unclaimed outpost. ';if(!P)return pre+'Fit a Claim Beacon (Loadout) to claim it.';
@@ -12358,20 +12370,20 @@ function prtMesh(){if(PRT_MESH)return PRT_MESH;const g=new GB(),H=[.52,.55,.6],D
 // cuts about twice as fast, the beam's spot on the ring carries a ring that fills as the next tonne comes free, with the ore's
 // name, each tonne that lands in the hold is called out, and the key hint reads "hold: cut the ring" with the laser picked.
 // Held right on the ring yourself, the laser cuts twice as fast ("ON THE RING · ×2"); swung there by the beam, at the base rate.
-// The beam also finds the ring for you: when it strikes the rock off the ring and the nearest point of the ring is within 25
-// degrees of your nose (and in range), it swings onto the ring and cuts there. Aiming at the rock is enough; you no longer
+// The beam also finds the ring for you: when it strikes the rock off the ring and the nearest point of the ring is within 45
+// degrees of your nose (and in range, on your side of the rock or just over its rim), it swings onto the ring and cuts there. Aiming at the rock is enough; you no longer
 // have to hold the nose on the thin band.
 LOAD.ml.rate={skiff:.35,prospector:.5,dredger:.65};
 // held right on the ring yourself (not swung there by the beam), the laser cuts twice as fast
 const ML={ringK:2};let mlK=1;
 {const o=mlRate;mlRate=function(P){return o.apply(this,arguments)*mlK}}
-{const o=mlCut;mlCut=function(e,P,a,dt,sec,show){let B=null;try{B=mlBeam(e,a)}catch(err){}mlK=B&&B.on&&!B.assist?ML.ringK:1;try{return o.apply(this,arguments)}finally{mlK=1}}}LOAD.ml.assist=Math.cos(25*Math.PI/180);
+{const o=mlCut;mlCut=function(e,P,a,dt,sec,show){let B=null;try{B=mlBeam(e,a)}catch(err){}mlK=B&&B.on&&!B.assist?ML.ringK:1;try{return o.apply(this,arguments)}finally{mlK=1}}}LOAD.ml.assist=Math.cos(45*Math.PI/180);
 {const o=mlBeam;mlBeam=function(e,a){const B=o.apply(this,arguments);try{if(B&&B.on)return B;const n=ringN(a),R=astR(a);qRot(e.q,0,0,1,_f);
   // candidates on the ring: the point nearest the ship, and the point nearest where the beam strikes; the first within the cone wins
   const r=e.st.radius,sx=e.x+_f.x*r,sy=e.y+_f.y*r,sz=e.z+_f.z*r,C=[[sx-a.x,sy-a.y,sz-a.z]];if(B)C.unshift([B.x-a.x,B.y-a.y,B.z-a.z]);
   for(let[px,py,pz]of C){const dn=px*n.x+py*n.y+pz*n.z;px-=dn*n.x;py-=dn*n.y;pz-=dn*n.z;const l=Math.hypot(px,py,pz);if(l<1e-6)continue;
     const qx=a.x+px/l*R,qy=a.y+py/l*R,qz=a.z+pz/l*R,dx=qx-sx,dy=qy-sy,dz=qz-sz,d=Math.hypot(dx,dy,dz);if(d>LOAD.ml.range||(dx*_f.x+dy*_f.y+dz*_f.z)/d<LOAD.ml.assist)continue;
-    if(((qx-a.x)*(sx-a.x)+(qy-a.y)*(sy-a.y)+(qz-a.z)*(sz-a.z))<0)continue;
+    if(((qx-a.x)*(sx-a.x)+(qy-a.y)*(sy-a.y)+(qz-a.z)*(sz-a.z))<-.3*R*Math.hypot(sx-a.x,sy-a.y,sz-a.z))continue;
     return{x:qx,y:qy,z:qz,d,on:true,off:0,assist:true}}return B}catch(err){return B}}}
 {const o=mlCut;mlCut=function(e,P,a,dt,sec,show){const k0=e.isPlayer?invMass(P.cargo):0,r=o.apply(this,arguments);
   try{if(e.isPlayer&&r==='cut'&&invMass(P.cargo)>k0){const k=mainOre(a)||'';W.mlGot=(W.mlGot||0)+1;if(W.t-(W.mlSaid||-9)>1.2){W.mlSaid=W.t;flash(`+${W.mlGot} t ${k&&ITEMS[k]?ITEMS[k].name:'ore'} · hold ${invMass(P.cargo)} / ${e.st.cargo} t`);W.mlGot=0}}}catch(err){}return r}}
@@ -12383,6 +12395,40 @@ const ML={ringK:2};let mlK=1;
 // the rock's target panel tells you how to work it with the tool you have picked
 {const o=hudUpdate;hudUpdate=function(){const r=o.apply(this,arguments);try{if(W&&W.tgt&&W.tgt.kind==='ast'&&loadOn()&&mtoolOf(S.player)==='mlaser'){for(const d of $('hTgt').querySelectorAll('.ts'))if(/^Fire charges/.test(d.textContent)){const a=W.tgt.ref;
   d.textContent=ringOK(a)?`Mining laser: hold ${kb('mine')} with the rock ahead (within ${LOAD.ml.range} m). The beam finds its ring and cuts ore into your hold, slow and safe. ${kb('mtool')} switches to charges.`:`Its ring is broken (a blast cracked it): the laser can't cut it. Switch to charges (${kb('mtool')}) or find another rock.`}}}catch(e){}return r}}
+// ---- a new mining hull comes with its tools (user, 3 Nov 2026): taking a mining hull at a shipyard used to carry your old
+// weapons across into its slots (a Light Fighter's guns in a Light Miner), so it arrived without a mining laser. Now any
+// standard mining tool the hull is designed for (the mining laser and charge launcher) that isn't fitted is fitted for you:
+// your own from the hold or vault first (any maker's), otherwise the shipyard builds a standard one from the station's own
+// stores (goods only move, so the ledger stays exact). The part it displaces goes to your vault as before.
+function mlTools(c,P){if(!P||S.unb||!loadOn()||!blHull(P.cls))return'';const F=fitOf(P),D=slotsOf(P.cls,designOf(P.faction,P.cls)?P.faction:null),st=c.storage||P.vault,R=S.stations[P.sector];
+  let mk=null;try{mk=R?(R.owner==='player'?R.stock:mkStock(R)):null}catch(e){}const out=[];
+  D.w.forEach((k,i)=>{if(k!=='mlaser'&&k!=='charge')return;if(F.w.includes(k))return;
+    let id=partItems(k).find(x=>countIn(x,[P.cargo,st])>0);
+    if(!id&&mk&&haveIn(PART_RC[k],[mk])){takeFrom(PART_RC[k],[mk]);inv.add(P.cargo,PART[k],1);id=PART[k]}
+    if(!id)return;const was=F.w[i];const m=fitDo(c,P,`w:${i}:${id}`);if(F.w[i]===k)out.push(`${ITEMS[id].name}${was&&was!==k?` (your ${(WPN[was]||{}).name||was} went to your ${c.storage&&c.storage!==P.vault?(c.storageName||'store'):'vault'})`:''}`);else if(m)out.push(m)});
+  if(!out.length)return'';try{refreshPlayerStats()}catch(e){}if(F.w.includes('mlaser'))P.mtool='mlaser';return` Fitted for mining: ${out.join(', ')}.`}
+// and its drone bay comes full: drones from your hold or vault first, otherwise the shipyard builds them from the station's
+// stores (freeports sell none, so a Light Miner taken there used to launch with an empty bay)
+function hullDrones(c,P){const cap=(CLASSES[P.cls]&&CLASSES[P.cls].drones)||0;P.bay=P.bay||{};let need=cap-(P.bay.drone||0);if(need<=0)return'';const st=c.storage||P.vault,R=S.stations[P.sector];
+  let mk=null;try{mk=R?(R.owner==='player'?R.stock:mkStock(R)):null}catch(e){}let n=0;
+  for(const h of[P.cargo,st]){if(need<=0)break;const k=inv.take(h,'drone',need);n+=k;need-=k}
+  const rc=ITEMS.drone.recipe;while(need>0&&mk&&haveIn(rc,[mk])){takeFrom(rc,[mk]);n++;need--}
+  if(!n)return'';inv.add(P.bay,'drone',n);return` Drone bay ${P.bay.drone}/${cap}.`}
+// empty slots on a new hull take your own parts of the hull's standard kinds back from the hold or vault (switching a Light
+// Miner back to a Light Fighter used to leave it with no guns, the guns sitting in the vault)
+function hullRefit(c,P){if(!P||S.unb||!loadOn())return'';const F=fitOf(P),D=slotsOf(P.cls,designOf(P.faction,P.cls)?P.faction:null),st=c.storage||P.vault,out=[];
+  for(const g of['w','u'])(D[g]||[]).forEach((k,i)=>{const A=g==='w'?F.w:F.u;if(!k||A[i])return;const id=partItems(k).find(x=>countIn(x,[P.cargo,st])>0);if(!id)return;fitDo(c,P,`${g}:${i}:${id}`);if(A[i]===k)out.push(ITEMS[id].name)});
+  if(!out.length)return'';try{refreshPlayerStats()}catch(e){}return` Refitted from your vault: ${out.join(', ')}.`}
+{const o=dockAction;dockAction=function(act,arg){const r=o.apply(this,arguments);if(act==='hull'&&String(dockErr||'').startsWith('✓')){try{const t=mlTools(dockCtx(),S.player)+hullRefit(dockCtx(),S.player)+hullDrones(dockCtx(),S.player);if(t){dockErr=dockErr.replace(/ ?Drone bay \d+\/\d+ \(the station is out of drones[^)]*\)\.?/,'')+t}}catch(e){console.error(e)}}return r}}
+// ---- easier to use (user, 3 Nov 2026: "no sound and does not target properly"): holding F with the laser and no rock
+// targeted targets the rock ahead for you (the nearest whose surface is in range and within 35 degrees of your nose); the
+// beam's hum and crackle play while it cuts (07_audio keys on p.mlSnd, stamped each frame the beam is on a rock).
+function mlAutoTgt(p){const sec=S.sectors[W.sid];if(!sec)return null;qRot(p.q,0,0,1,_f);let best=null,bs=1e9;
+  for(const a of sec.ast){if(!ringOK(a))continue;const dx=a.x-p.x,dy=a.y-p.y,dz=a.z-p.z,d=Math.hypot(dx,dy,dz)||1,R=astR(a);if(d-R>LOAD.ml.range)continue;const c=(dx*_f.x+dy*_f.y+dz*_f.z)/d;if(c<Math.cos(35*Math.PI/180)&&d>R)continue;const sc=d*(2-c);if(sc<bs){bs=sc;best=a}}
+  return best}
+{const o=blPilotUpdate;blPilotUpdate=function(p,P,st,sec,dt){try{if(loadOn()&&blHull(P.cls)&&mtoolOf(P)==='mlaser'&&(keys.KeyF||mouse.r||touch.mine)&&!(W.tgt&&W.tgt.kind==='ast'&&validTgt(W.tgt))&&!blCloudNear(p,sec)){const a=mlAutoTgt(p);if(a){W.tgt={kind:'ast',ref:a};flash('Mining laser: targeted the rock ahead.')}}}catch(e){}
+  const r=o.apply(this,arguments);try{if(p.mlRock&&p.blHeld&&p.mlSay0!=='aim')p.mlSnd=W.t}catch(e){}return r}}
+{const o=mlSay;mlSay=function(e,P,r){if(e)e.mlSay0=r;return o.apply(this,arguments)}}
 
 //@src 16zy_corps.js
 // ============================================================ every item has a maker (Beyond, 3 Nov 2026)

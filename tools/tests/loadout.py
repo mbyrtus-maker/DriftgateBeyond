@@ -35,6 +35,9 @@ async def main():
     print('auto rearm on dock',await ev("""(()=>{const P=S.player;P.ammo=5;openDock('ship');return JSON.stringify({ammo:P.ammo,cap:ammoCap(P),feed:(FEED[0]||{}).t||(FEED[0]||{}).msg||''})})()"""))
     print('loadout tab',await ev("""(()=>{dockTab='ship';renderDock();const t=document.querySelector('#dBody').innerText;const i=t.indexOf('LOADOUT')>=0?t.indexOf('LOADOUT'):t.indexOf('Loadout');return t.slice(i,i+300).replace(/\\n/g,' | ')})()"""))
     print('ledger',await ev(LED))
+    # a mining hull taken at the shipyard comes with its mining laser and charge launcher (user, 3 Nov 2026)
+    print('take a light miner',await ev("""(()=>{const P=S.player;P.docked='station';const c=dockCtx();const before=JSON.stringify(fitOf(P).w);dockErr='';dockAction('hull','skiff');const F=fitOf(P);const r={hulls:!!c.hulls,before,cls:P.cls,w:F.w,mtool:P.mtool,bay:(P.bay||{}).drone||0,msg:dockErr.slice(0,220),vault:Object.keys(P.vault).filter(k=>/^pt_|^mp_|^mq_/.test(k))};dockAction('hull','interceptor');r.back=fitOf(P).w;r.backMsg=dockErr.slice(0,200);return JSON.stringify(r)})()"""))
+    print('ledger',await ev(LED))
     # a courier's cargo module
     print('cargo module',await ev("""(()=>{const P=S.player,c0=P.cls;P.cls='courier';const F=fitOf(P);const moved={w:F.w.slice(),u:F.u.slice(),vault:{laser:P.vault.pt_laser||0,msl:P.vault.pt_msl||0}};give('pt_cargo');const m=fitDo(FC,P,'u:1:cargo');const a=W.player.st.cargo;fitDo(FC,P,'u:1:');const b=W.player.st.cargo;
       P.cls=c0;fitOf(P);fitDo(FC,P,'w:1:laser');fitDo(FC,P,'w:2:missile');refreshPlayerStats();return JSON.stringify({moved,msg:m,withModule:a,without:b,base:CLASSES.courier.cargo,back:fitOf(P).w})})()"""))

@@ -48,7 +48,7 @@ for(const k in PART){ITEMS[PART[k]]={name:(WPN[k]||UTIL[k]).name,recipe:PART_RC[
 const PG={dmg:.1,ammo:.25,ml:.15,cargo:.05,scan:.2};
 function partUpg(t){const r={...UPG[t]};if(t>=3)r.matrix=1;return r}
 function partToStore(st,k,g,it){inv.add(st,it||PART[k],1);for(let t=2;t<=(g||1);t++)inv.addAll(st,partUpg(t))}
-function fitItems(F){const o={};if(!F||!Array.isArray(F.w))return o;const add=(k,g,it)=>{if(!k||!PART[k])return;inv.add(o,it||PART[k],1);for(let t=2;t<=(g||1);t++)inv.addAll(o,partUpg(t))};
+function fitItems(F){const o={};if(!F||!Array.isArray(F.w))return o;const add=(k,g,it)=>{if(!k||!(PART[k]||(it&&ITEMS[it])))return;inv.add(o,it||PART[k],1);for(let t=2;t<=(g||1);t++)inv.addAll(o,partUpg(t))};
   F.w.forEach((k,i)=>add(k,F.g&&F.g[i],F.wi&&F.wi[i]));(F.u||[]).forEach((k,i)=>add(k,F.ug&&F.ug[i],F.ui&&F.ui[i]));return o}
 // the fit a pilot is created with; afterwards parts only move, so the ledger stays exact
 function fitNew(cls,fac){const D=slotsOf(cls,fac);return{cls,d:fac||null,w:D.w.slice(),u:D.u.slice(),g:D.w.map(()=>1),ug:D.u.map(()=>1),wi:D.w.map(()=>null),ui:D.u.map(()=>null)}}

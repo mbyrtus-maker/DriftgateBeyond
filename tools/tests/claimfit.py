@@ -23,6 +23,13 @@ async def main():
     print('fitted claims',await ev("(()=>{return String(fbHeld(S.player,{owner:null}))+' / owned by varkesh: '+String(fbHeld(S.player,{owner:'varkesh'}))})()"))
     print('miner refused',await ev("(()=>{const P=S.player,c0=P.cls;P.cls='prospector';const r=fitDo(dockCtx(),P,'u:0:bc_halcyon');P.cls=c0;return r})()"))
     print('claim',await ev("""(()=>{const P=S.player;const o=Object.values(S.outposts).find(o=>!o.owner);if(!o)return 'no unclaimed outpost';const c0=P.credits;fbClaim(o,'varkesh','me');const F=fitOf(P);return JSON.stringify({owner:o.owner,u:F.u,ui:F.ui,paid:P.credits-c0,hold:P.cargo.bc_varkesh||0})})()"""))
+    # the claim job on the board carries Buy & fit (user, 3 Nov 2026): clear the fit, open Jobs, press it
+    print('board buy & fit',await ev("""(()=>{const P=S.player;dockAction('fit','u:0:');devLedger(()=>{for(const f of FAC_IDS){delete P.cargo['bc_'+f];delete P.vault['bc_'+f]}});dockTab='jobs';jobFilter='all';renderDock();
+      const j=(JOBS_LAST||[]).find(x=>String(x.id).startsWith('cl:'));if(!j)return 'no claim job';jobSel=j.id;renderDock();const b=[...document.querySelectorAll('#dBody .jdet2 button,#dBody .codet button')].find(x=>/Buy & fit/.test(x.textContent));if(!b)return 'no button: '+JSON.stringify(j.btn2)+' direct '+JSON.stringify(jobsList(dockCtx(),P,[P.cargo,P.vault],true,false).filter(x=>String(x.id).startsWith('cl:')).map(x=>[x.id,x.btn2]))+' sold '+JSON.stringify(fbSold(dockCtx(),P))+' docked '+P.docked+' slot '+cbSlot(P)+' cls '+P.cls+' '+(document.querySelector('#dBody .jdet2')||{innerText:'no jdet2'}).innerText.slice(0,400);
+      const f=j.id.split(':')[2],lab=b.textContent,c0=P.credits;b.click();return JSON.stringify({lab,fitted:cbFitted(P).map(x=>x.f),f,paid:c0-P.credits,err:dockErr.slice(0,80)})})()"""))
+    print('ledger with the beacon fitted',await ev(LED))
+    print('board after',await ev("(()=>{dockTab='jobs';renderDock();const j=(JOBS_LAST||[]).find(x=>String(x.id).startsWith('cl:'));return j?j.sub.replace(/<[^>]+>/g,''):'none'})()"))
+    print('board in a miner',await ev("(()=>{const P=S.player,c=P.cls;P.cls='skiff';const L=jobsList(dockCtx(),P,[P.cargo,P.vault]).filter(x=>String(x.id).startsWith('cl:'));P.cls=c;return L.length?JSON.stringify({need:L[0].need,fix:L[0].fix&&L[0].fix[2]}):'none'})()"))
     print('ledger',await ev(LED))
     print('errors',errs[:4]);await b.close()
 asyncio.run(main())

@@ -189,7 +189,7 @@ function mineCrackle(t,k){const c=AU.ctx;if(!AU.white||MUTE||!AU.on.sfx)return;c
 function auFrame(){if(!auOK())return;const c=AU.ctx,t=c.currentTime,E=AU.eng,fdt=Math.min(.1,Math.max(0,t-(AU.lastFT||t)));AU.lastFT=t;bridgeHum(t);let g=0,ng=0,f=34,lg=0,ml=0;
   if(running&&W&&W.player&&!S.player.docked&&!W.dead&&AU.on.sfx){const p=W.player,sp=hyp(p.vx,p.vy,p.vz),k=clamp(sp/(p.st.maxSpd*1.9),0,1);
     const on=p.thrusting||p.boosting;g=on?.05+.02*k+(p.boosting?.03:0):0;ng=on?.05+(p.boosting?.09:0)+k*.012:0;f=41+k*3+(p.boosting?2:0);if(AU.lasW===W&&W.t>=AU.lasT&&W.t-AU.lasT<.14)lg=.1;   // stamped per system: each system's clock restarts at 0, so a stamp from the last one held the laser hum on after a jump
-    if(p.mining){ml=.075+.012*Math.sin(t*2.3);const m=invMass(S.player.cargo);if(AU.mineM!=null&&m>AU.mineM+.5){AU.oreN=(AU.oreN||0)+1;SFX.ore(AU.oreN)}AU.mineM=m}}
+    if(p.mining||(p.mlSnd!=null&&W.t-p.mlSnd<.2&&W.t>=p.mlSnd)){ml=.075+.012*Math.sin(t*2.3);const m=invMass(S.player.cargo);if(AU.mineM!=null&&m>AU.mineM+.5){AU.oreN=(AU.oreN||0)+1;SFX.ore(AU.oreN)}AU.mineM=m}}
   const mOn=ml>0;if(mOn!==!!AU.mineOn){AU.mineOn=mOn;if(mOn)SFX.mineOn();else{SFX.mineOff();AU.mineM=null}}if(!mOn)AU.mineM=null;
   AU.mine.g.gain.setTargetAtTime(ml,t,mOn?.06:.09);if(mOn){let k=0;while(k<3&&Math.random()<fdt*24){mineCrackle(t+Math.random()*.04);k++}}
   E.g.gain.setTargetAtTime(g,t,g>0?.1:.25);E.ng.gain.setTargetAtTime(ng,t,ng>0?.08:.22);E.o1.frequency.setTargetAtTime(f,t,.8);E.o2.frequency.setTargetAtTime(f*1.51,t,.8);E.nf.frequency.setTargetAtTime(240+ng*1800,t,.4);
