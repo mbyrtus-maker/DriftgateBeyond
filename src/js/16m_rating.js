@@ -20,6 +20,8 @@ function hullsAt(r){return Object.keys(HULL_RATING).filter(k=>HULL_RATING[k]===r
 // ---- hulls by Rating: a yard won't sell a hull above your Rating (the free starters and the Wraith aside)
 function hullRatingOK(P,k){return S.unb||S.training||!!P.sworn||ratingOf(P)>=(HULL_RATING[k]||1)}
 {const o=dockAction;dockAction=function(act,arg){if((act==='hull'||act==='hullsw')&&!hullRatingOK(S.player,arg)){dockErr=`The ${CLASSES[arg].name} needs Contractor Rating ${HULL_RATING[arg]} (you're ${ratingOf(S.player)}).`;return}
+  // (4 Nov 2026, a guest test) a part's next grade above your Rating says so, as a system's does (it said the part couldn't be upgraded further)
+  if(act==='pup'&&!S.unb&&!S.training){const P=S.player,[g,i0]=String(arg).split(':'),F=fitOf(P),k=((g==='w'?F.w:F.u)||[])[+i0],t=(((g==='w'?F.g:F.ug)||[])[+i0]||1)+1;if(k&&k!=='land'&&k!=='claim'&&t<=MK_TOP&&t>gradeCap(P)){dockErr=`Grade ${t} parts need Contractor Rating ${GRADE_RATING[t]} (you're ${ratingOf(P)}).`;return}}
   if(act==='upg'&&!S.unb&&!S.training){const P=S.player,t=(P.tiers[arg]||1)+1;if(t>gradeCap(P)){dockErr=`Grade ${t} needs Contractor Rating ${GRADE_RATING[t]} (you're ${ratingOf(P)}).`;return}}return o.apply(this,arguments)}}
 {const o=upgReady;upgReady=function(c,P,srcs){const u=o.apply(this,arguments);if(u&&!S.unb&&!S.training&&u.t+1>gradeCap(P))return null;return u}}
 // ---- part grades by Rating; a maker's grade 4 and 5 parts also need Trusted standing with its power
