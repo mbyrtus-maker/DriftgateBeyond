@@ -1819,3 +1819,13 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - Guard drones (the Aegis, Ward and Halo, and the Brood's mite drones on its miners and haulers) were radius 9, three quarters of a light fighter (12). They are now radius 5, a little over half their old size, both as drawn and as a target (`CLASSES.drone.radius`). Their engine glows shrink with them.
 - Limpets keep their own size (radius 5, set when they launch).
 
+### Multiplayer audit of this pass (3 Nov 2026)
+- **The user's question:** is all the multiplayer code in place?
+- **Checked:** every system built in this pass, from a guest's side, plus the six multiplayer tests (contractor, faction guest, guest jump, sub-targets, signature hulls, Beyond's late additions), which all pass.
+- **Already fine:** the news box, the lived-in markets, corporations, docking fees and turret placement are all host state that reaches guests in the sync; port markers, the map labels, engine glows, drone size and the title screen are drawn on each screen; charges aim with the guest's sight (sent with the shot); the mining laser assist runs on the host for a guest (`mp_beyond` cuts with it); Comms Jobs here uses the board's and Comms' own messages.
+- **Two gaps, now closed** (`16zzb_mpfix.js`):
+  - **Running your company from flight.** The host can manage its company from anywhere, but a guest's orders went as dock actions, which the host refuses unless the guest is docked. So a flying guest couldn't set a crew's job or send guards to intercept from the map, set fees, send a capital on patrol or escort, upgrade or build a depot or Station, post or cancel a job, run a black-market deal, save a brand or declare a faction. These company actions now run for a guest wherever they are, as they do for the host. Everything else (trading, fitting, repairs, the vault) still needs the dock. The Company screen and the map panel show the host's answer instead of staying on "Working…".
+  - **The cargo scanner for guests.** It only ever worked for the host. A guest now scans with the same range and timing on their own screen; the host checks their scanner and range, sends back the hold's contents (the rough reading at once, the exact one when the scan completes), and runs the noticing and the heat for them.
+- **Also fixed on the way:** the scanner read a supply freighter's own hold, which is empty: a convoy's goods are in its trade record. It now reads the convoy's load, for everyone. Comms Prey here says "empty hold" for an empty exact scan.
+- **Test:** `mp_remote.py` (multiplayer, run with the page's path).
+

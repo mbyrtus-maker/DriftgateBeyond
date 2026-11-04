@@ -68,5 +68,6 @@ js/16zx_mlaser.js
 js/16zy_corps.js
 js/16zz_news.js
 js/16zza_cjobs.js
+js/16zzb_mpfix.js
 js/17_main.js
 end.html

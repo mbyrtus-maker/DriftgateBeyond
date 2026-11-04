@@ -27,7 +27,7 @@ function cjList(){const P=S.player;if(!W||!P||S.training||S.unb)return{jobs:[],o
   const near=all.filter(j=>!here(j)&&F.includes(j.ty)&&!CJ.dockOnly.includes(pre(j))&&j.sid&&DEF[j.sid]&&(j.hops||0)>0).sort((a,b)=>a.hops-b.hops||(b.payN||0)-(a.payN||0))[0]||null;
   return{jobs,other,dock:dock.length,near,all}}
 // ---- the Unbound: prey in this system
-function cjPreyRead(T){const R=T._csc;let C={};try{C=cscLoad(T)}catch(e){}if(R&&R.done)return{txt:`${fmt(invMass(C))} t · about ${fmt(Math.round(invValue(C)))} cr`,v:invValue(C),known:2};if(R&&R.seen)return{txt:cscRough(C),v:invValue(C),known:1};return{txt:'cargo unknown',v:0,known:0}}
+function cjPreyRead(T){const R=T._csc;let C={};try{C=cscLoad(T)}catch(e){}if(R&&R.done)return{txt:invMass(C)>0?`${fmt(invMass(C))} t · about ${fmt(Math.round(invValue(C)))} cr`:'empty hold',v:invValue(C),known:2};if(R&&R.seen)return{txt:cscRough(C),v:invValue(C),known:1};return{txt:'cargo unknown',v:0,known:0}}
 function cjPrey(){if(!W||!W.player||!S.unb)return[];const p=W.player,out=[];
   for(const e of W.ents){if(e.type!=='ship'||!e.alive||e.isPlayer||e.rp)continue;if(!['trader','hauler','miner','flee'].includes(e.role))continue;const sd=sideNorm(e.side);if(!(FAC_IDS.includes(sd)||sd==='neutral'))continue;
     const t=e.tradeT||null,r=cjPreyRead(e);out.push({e,sd,t,r,d:d3(e,p)})}

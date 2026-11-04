@@ -12241,7 +12241,8 @@ function feeLine(R){const F=feeOf(R);return`Fees: sell ${feeFmt('sell',F.sell)} 
 // (4 s, half a second less a grade, at least 2 s) the exact manifest. Hidden cargo containers keep their share out. The
 // scanned ship notices: pilots are warned; AI freighters, traders and miners notice half the time and run for the gate;
 // finishing a scan of a power's ship in that power's own space adds a little heat with it. Readings stay with each ship
-// while it's in the system. Local pilot only (guests in multiplayer don't hold other ships' cargo yet).
+// while it's in the system. In multiplayer a guest scans with the same timing on its own screen and the host sends the
+// reading (and runs the notice and the heat for them): see 16zzb_mpfix.js.
 const CSC={r:1200,rG:150,t:4,tG:.5,tMin:2,notice:.5,heat:6};
 UTIL.cscan={name:'Cargo scanner',desc:'Target a ship in range (1.2 km, +150 m a grade) and hold it: a rough reading at once, the exact manifest after the scan (4 s, faster at better grades). Built into every Unbound hull.'};
 PART.cscan='pt_cscan';PART_RC.cscan={wire:1,coil:1};PART_COL.cscan='#f5e663';ITEMS.pt_cscan={name:UTIL.cscan.name,recipe:PART_RC.cscan,col:PART_COL.cscan,part:'cscan'};ITEM_ORDER.push('pt_cscan');CRAFTABLE.push('pt_cscan');
@@ -12250,7 +12251,7 @@ function cscG(P){if(!P)return 0;const g=loadOn()?fitUG(P,'cscan'):0;return Math.
 function cscR(g){return CSC.r+CSC.rG*(g-1)}
 function cscT(g){return Math.max(CSC.tMin,CSC.t-CSC.tG*(g-1))}
 // what a ship carries, as a scan sees it (a pilot's hidden container keeps its share, the contraband first)
-function cscLoad(T){let C={};if(T.isPlayer)C=S.player.cargo;else if(T.rp&&S.pilots&&S.pilots[T.rp])C=S.pilots[T.rp].cargo;else C=hookSrc(T)||{};C={...C};
+function cscLoad(T){if(NET.cl)return{...(T._cscC||{})};let C={};if(T.isPlayer)C=S.player.cargo;else if(T.rp&&S.pilots&&S.pilots[T.rp])C=S.pilots[T.rp].cargo;else{const t=T.tradeT;C=t&&t.load&&Object.keys(t.load).length?t.load:hookSrc(T)||{}}C={...C};
   const P=T.isPlayer?S.player:T.rp&&S.pilots?S.pilots[T.rp]:null;let cap=P&&typeof hideCap==='function'?hideCap(P):0;
   if(cap>0){const ks=Object.keys(C).sort((a,b)=>(giKind(b)==='con')-(giKind(a)==='con'));for(const k of ks){if(cap<=0)break;const n=Math.min(C[k],Math.floor(cap/mass(k)));if(n>0){C[k]-=n;cap-=n*mass(k)}}}
   for(const k in C)if(!(C[k]>0)||!ITEMS[k])delete C[k];return C}
@@ -12260,17 +12261,17 @@ function cscRough(C){const m=invMass(C),v=invValue(C),kinds=[...new Set(Object.k
 function cscExact(C){const ks=Object.keys(C).sort((a,b)=>C[b]*mass(b)-C[a]*mass(a));if(!ks.length)return'Empty hold.';
   return ks.map(k=>`<span style="display:inline-flex;gap:4px;align-items:center;margin-right:8px">${gIcon(k,12)}${esc(ITEMS[k].name)} <b>${C[k]}</b></span>`).join('')+`<div class="ts" style="margin-top:2px">${fmt(invMass(C))} t · worth about ${fmt(Math.round(invValue(C)))} cr</div>`}
 // the scan, run each HUD update for the local pilot
-function cscTick(){if(!W||!W.player||S.training||NET.cl)return null;const P=S.player,g=cscG(P);if(!g||P.docked){W.csc=null;return null}
+function cscTick(){if(!W||!W.player||S.training)return null;const P=S.player,g=cscG(P);if(!g||P.docked){W.csc=null;return null}
   const T=W.tgt&&W.tgt.kind==='ship'?W.tgt.ref:null;if(!T||!T.alive||T.isPlayer||T.role==='limpet'){return null}
   const R=T._csc||(T._csc={p:0,done:false,seen:false});const inR=d3(T,W.player)<=cscR(g)+(T.st&&T.st.radius||0);
   const now=W.t,dt=Math.min(.5,Math.max(0,now-(R.last||now)));R.last=now;
-  if(inR&&!R.done){if(!R.seen){R.seen=true;cscNotice(T,P)}R.p+=dt/cscT(g);if(R.p>=1){R.p=1;R.done=true;cscDone(T,P)}}
+  if(inR&&!R.done){if(!R.seen){R.seen=true;if(NET.cl)netSend({t:'cscan',id:T.id,k:'seen'});else cscNotice(T,P)}R.p+=dt/cscT(g);if(R.p>=1){R.p=1;R.done=true;if(NET.cl)netSend({t:'cscan',id:T.id,k:'done'});else cscDone(T,P)}}
   return{T,R,g,inR}}
 function cscNotice(T,P){if(T.rp){try{netMsg(T.rp,'flash',`${P.name||'A pilot'} is scanning your cargo.`)}catch(e){}return}
   if(['hauler','trader','miner'].includes(T.role)&&!T.npcFled&&Math.random()<CSC.notice){T.npcFled=1;T.role='flee';if(T.ai)T.ai.tgt=null;feed(`${hullName(T.side,T.cls)} noticed your scan and is running for the gate.`,'warn')}}
 function cscDone(T,P){if(FAC_IDS.includes(T.side)&&sectorOwner(W.sid)===T.side&&typeof smHeat==='function')smHeat(P,T.side,CSC.heat,'scanning its ships')}
 {const o=hudUpdate;hudUpdate=function(){const r=o.apply(this,arguments);try{const s=cscTick();if(s){const tp=$('hTgt').querySelector('.tp');if(tp){const C=cscLoad(s.T),R=s.R;
-      tp.insertAdjacentHTML('beforeend',`<div class="ts" style="margin-top:6px;color:#f5e663">Cargo scan${R.done?'':` · ${s.inR?Math.round(R.p*100)+'%':`out of range (${fmt(cscR(s.g))} m)`}`}</div><div class="ts">${R.done?cscExact(C):R.seen?esc(cscRough(C)):'Close in to scan its hold.'}</div>`)}}}catch(e){}return r}}
+      tp.insertAdjacentHTML('beforeend',`<div class="ts" style="margin-top:6px;color:#f5e663">Cargo scan${R.done?'':` · ${s.inR?Math.round(R.p*100)+'%':`out of range (${fmt(cscR(s.g))} m)`}`}</div><div class="ts">${NET.cl&&R.seen&&!s.T._cscC?'Reading…':R.done?cscExact(C):R.seen?esc(cscRough(C)):'Close in to scan its hold.'}</div>`)}}}catch(e){}return r}}
 
 //@src 16zv_claimfit.js
 // ============================================================ Claim Beacons are fitted, one per utility slot (Beyond, 3 Nov 2026)
@@ -12508,7 +12509,7 @@ function cjList(){const P=S.player;if(!W||!P||S.training||S.unb)return{jobs:[],o
   const near=all.filter(j=>!here(j)&&F.includes(j.ty)&&!CJ.dockOnly.includes(pre(j))&&j.sid&&DEF[j.sid]&&(j.hops||0)>0).sort((a,b)=>a.hops-b.hops||(b.payN||0)-(a.payN||0))[0]||null;
   return{jobs,other,dock:dock.length,near,all}}
 // ---- the Unbound: prey in this system
-function cjPreyRead(T){const R=T._csc;let C={};try{C=cscLoad(T)}catch(e){}if(R&&R.done)return{txt:`${fmt(invMass(C))} t · about ${fmt(Math.round(invValue(C)))} cr`,v:invValue(C),known:2};if(R&&R.seen)return{txt:cscRough(C),v:invValue(C),known:1};return{txt:'cargo unknown',v:0,known:0}}
+function cjPreyRead(T){const R=T._csc;let C={};try{C=cscLoad(T)}catch(e){}if(R&&R.done)return{txt:invMass(C)>0?`${fmt(invMass(C))} t · about ${fmt(Math.round(invValue(C)))} cr`:'empty hold',v:invValue(C),known:2};if(R&&R.seen)return{txt:cscRough(C),v:invValue(C),known:1};return{txt:'cargo unknown',v:0,known:0}}
 function cjPrey(){if(!W||!W.player||!S.unb)return[];const p=W.player,out=[];
   for(const e of W.ents){if(e.type!=='ship'||!e.alive||e.isPlayer||e.rp)continue;if(!['trader','hauler','miner','flee'].includes(e.role))continue;const sd=sideNorm(e.side);if(!(FAC_IDS.includes(sd)||sd==='neutral'))continue;
     const t=e.tradeT||null,r=cjPreyRead(e);out.push({e,sd,t,r,d:d3(e,p)})}
@@ -12561,6 +12562,36 @@ let cjCnt={t:-9,n:0};
 {const o=hudUpdate;hudUpdate=function(){const r=o.apply(this,arguments);try{if(!cjOn())return r;const k=$('cKeys');if(!k)return r;
   if(W.t-cjCnt.t>2){cjCnt.t=W.t;cjCnt.n=S.unb?cjPrey().length:cjList().jobs.length}let el=k.querySelector('.cjc');if(!el){el=document.createElement('div');el.className='sub cjc';k.appendChild(el)}
   const t=cjCnt.n?`<kbd>I</kbd><kbd>I</kbd> ${S.unb?'Prey':'Jobs'} here: ${cjCnt.n}`:'';if(el.innerHTML!==t)el.innerHTML=t;el.hidden=!t}catch(e){}return r}}
+
+//@src 16zzb_mpfix.js
+// ============================================================ multiplayer gaps closed (Beyond, 3 Nov 2026)
+// The user asked whether all the multiplayer code was in place. An audit of the systems built this pass found two gaps:
+//  1. Company and map orders from flight: the host can run its company from anywhere (the Company screen and the map's
+//     side panel call dockAction directly), but a guest's same orders went as {t:'act'}, which the host refuses unless the
+//     guest is docked. So a flying guest couldn't set crews' jobs, order guards to intercept, set fees, send capitals on
+//     patrol or escort, upgrade or build depots and stations, post jobs, run black-market deals, save a brand or declare.
+//     Those company actions (CO_REMOTE) now run for a guest wherever they are, exactly as they do for the host; everything
+//     else still needs the dock. The answer reaches the Company screen and the map panel (they sat on "Working…").
+//  2. The cargo scanner was the host's only: a guest scans on its own screen with the same range and timing, and asks the
+//     host for the reading ({t:'cscan'} when the scan starts and when it completes); the host checks the guest's scanner
+//     and range, sends the hold back ({t:'cscr'}), and runs the noticing and the heat for that guest.
+const CO_REMOTE=new Set(['crewjob','crewhire','crewfire','hgguard','feeset','mkset','depotup','depotbuild','staup','stabld','capbld','zmpatrol','zmescort','pjpost','pjcancel','bmassign','bmdeal','bmreq','brsave','declare','prop']);
+function mpDockedNow(P){return P.docked==='station'||P.docked==='lair'||!!(S.outposts&&S.outposts[P.docked])}
+{const o=hostRecv;hostRecv=function(L,m){try{const c=MP.cl[L.peer],P=c&&c.ready&&S&&S.pilots&&S.pilots[c.pid];
+    if(P&&m&&m.t==='act'&&CO_REMOTE.has(m.act)&&!mpDockedNow(P)){const pid=c.pid;let err='';
+      try{err=runAs(pid,()=>{dockErr='';dockAction(m.act,String(m.arg||''));return dockErr})}catch(x){err='That did not work.';frameErr('guest company action',x)}
+      send(L,{t:'actr',err,co:1});sendPR(c,false,true);send(L,syncMsg(c));return}
+    if(P&&m&&m.t==='cscan'){const pid=c.pid,e0=MP.rp[pid],w=e0?worldOf(e0):WORLDS[P.sector],E=w&&entInWorld(w,String(m.id)),g=cscG(P);
+      if(!E||!E.alive||!g||!e0||d3(E,e0)>cscR(g)+(E.st&&E.st.radius||0)*1.5+200)return;
+      const oW=W;W=w;let C={};try{C=cscLoad(E)}finally{W=oW}
+      runAs(pid,()=>{if(m.k==='seen')cscNotice(E,S.player);else if(m.k==='done')cscDone(E,S.player)});
+      send(L,{t:'cscr',id:m.id,C});return}}catch(x){frameErr('guest message',x)}
+  return o.apply(this,arguments)}}
+{const o=clientRecv;clientRecv=function(m){try{
+    if(m&&m.t==='cscr'){const E=W&&W.ents.find(e=>String(e.id)===String(m.id));if(E)E._cscC=m.C||{};return}
+    if(m&&m.t==='actr'){const r=o.apply(this,arguments);if(typeof coErr!=='undefined'&&$('company')&&!$('company').hidden){coErr=m.err||'';try{renderCompany()}catch(e){}}
+      if($('map')&&!$('map').hidden){if(typeof mpMsg!=='undefined'&&m.err)mpMsg=m.err;try{renderMapSide()}catch(e){}}return r}}catch(x){}
+  return o.apply(this,arguments)}}
 
 //@src 17_main.js
 // ============================================================ main loop
