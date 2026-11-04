@@ -1807,3 +1807,8 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - **As built** (`16zza_cjobs.js`): the page reads the board's own job list (`jobsList`) for a board built for this system without docking. The same convoy offered by two issuers shows once, at the better pay. The quick-keys line in the Comms panel reads "I I Jobs here: 2" (or "Prey here"). Picking a convoy raid targets the freighter if it's in range of your sensors; picking an escort also points Comms at the freighter.
 - **Test:** `comms_jobs.py` (in the quick suite): a fighter and a miner in the same freeport system see their own kinds first; picking an escort signs on, and picking a contract tracks it; jobs for other hulls and dock-only jobs stay off with their count line; an Unbound pilot sees Prey here with scanner readings; a guest's pick runs on the host; the ledger stays exact.
 
+### Engine glows round over their nozzles (3 Nov 2026)
+- **The user's report:** the engine glows on Varkesh ships didn't look rounded to match the circular nozzles they come out of.
+- **Why:** an engine glow is a disc turned to face the camera. The chase camera sits behind and above, so the disc leaned forward into the hull. On the Varkesh hulls the nozzles sit recessed in square housings, and the housing cut the top of the glow off flat, leaving a D shape.
+- **Now** (`engGlow` in `12_render.js`): the glow is pulled towards the camera by its own size, in proportion to how far behind the engine the camera sits. From behind it shows as a whole round glow over the nozzle (checked on the Fang, Halberd and Bulwark, and the Halcyon Swift is unchanged). From the side or the front it stays on the nozzle, so the hull still hides it as before. This applies to every ship.
+

@@ -435,6 +435,12 @@ function useMesh(){G.useProgram(PM.p);G.uniformMatrix4fv(PM.u.uVP,false,VP);G.un
 function drawMesh(m,model,tint,em,alpha){G.uniformMatrix4fv(PM.u.uM,false,model);G.uniform3fv(PM.u.uTint,tint||ONE3);G.uniform3fv(PM.u.uEm,em||ZERO3);G.uniform1f(PM.u.uA,alpha===undefined?1:alpha);if(curMesh!==m){G.bindBuffer(G.ARRAY_BUFFER,m.buf);attribs([3,3,4],10);curMesh=m}G.drawArrays(m.mode,0,m.n)}
 let BBn=0;const BBmax=12000;
 function bbPush(ax,ay,az,r,g,b,a,u,v){const A=GEN.bb.arr,i=BBn*9;A[i]=ax;A[i+1]=ay;A[i+2]=az;A[i+3]=r;A[i+4]=g;A[i+5]=b;A[i+6]=a;A[i+7]=u;A[i+8]=v;BBn++}
+// an engine's glow (Beyond, 3 Nov 2026): the glow is a camera-facing disc, and seen from behind and above it leaned into the
+// hull round a recessed nozzle (the Varkesh drives sit in square housings), which cut its top off flat. It is now drawn
+// pulled towards the camera by its own size as far as the camera sits behind the engine, so it shows as a whole round
+// glow over the nozzle's circle; from the side or the front it stays on the nozzle, so the hull still hides it.
+function engGlow(ex,ey,ez,rr,fl,c){let dx=cam.x-ex,dy=cam.y-ey,dz=cam.z-ez;const l=hyp(dx,dy,dz)||1;dx/=l;dy/=l;dz/=l;const k=Math.max(0,dx*_f.x+dy*_f.y+dz*_f.z),o=rr*3*fl*k;
+  sprite(ex+dx*o,ey+dy*o,ez+dz*o,rr*3*fl,c,.85);sprite(ex+dx*o*1.02,ey+dy*o*1.02,ez+dz*o*1.02,rr*1.3*fl,[1,1,1],.75)}
 function sprite(x,y,z,s,c,a){if(BBn>=BBmax*6-6)return;const rx=-cX.x*s,ry=-cX.y*s,rz=-cX.z*s,ux=cY.x*s,uy=cY.y*s,uz=cY.z*s;
   bbPush(x-rx-ux,y-ry-uy,z-rz-uz,c[0],c[1],c[2],a,-1,-1);bbPush(x+rx-ux,y+ry-uy,z+rz-uz,c[0],c[1],c[2],a,1,-1);bbPush(x+rx+ux,y+ry+uy,z+rz+uz,c[0],c[1],c[2],a,1,1);
   bbPush(x-rx-ux,y-ry-uy,z-rz-uz,c[0],c[1],c[2],a,-1,-1);bbPush(x+rx+ux,y+ry+uy,z+rz+uz,c[0],c[1],c[2],a,1,1);bbPush(x-rx+ux,y-ry+uy,z-rz+uz,c[0],c[1],c[2],a,-1,1)}
@@ -507,7 +513,7 @@ function draw3D(){
     G.useProgram(PP.p);G.uniformMatrix4fv(PP.u.uVP,false,VP);G.uniform3f(PP.u.uOff,0,0,0);G.uniform1f(PP.u.uPx,DPR);G.bindBuffer(G.ARRAY_BUFFER,D.buf);G.bufferData(G.ARRAY_BUFFER,A,G.DYNAMIC_DRAW);attribs([3,4,1],8);G.drawArrays(G.POINTS,0,D.base.length);curMesh=null}
   for(const e of W.ents){if(e.type!=='ship'||!e.alive)continue;if(e.isPlayer&&(S.player.docked||W.dead||cam.mode==='cockpit'))continue;if(W.bridge&&e===W.bridge.f)continue;const sc=e.st.radius*1.25;if(e.role==='limpet'){if((t*2.2+e.x*.01)%1<.45){qRot(e.q,0,.66*sc,0,_u);sprite(e.x+_u.x,e.y+_u.y,e.z+_u.z,sc*1.1,rgb(sideCol(e.side)),.95)}continue}const m=shipMesh(e.side==='pirate'?'pirate':e.fac,e.cls),c=rgb((e.isPlayer?S.player.trail:e.trail)||(e.isPlayer?FAC(e.fac).col:sideCol(e.side)));
     const fl=e.thrusting?(e.boosting?1.9:1.25)+Math.sin(t*50+sc)*.15:.5;qRot(e.q,0,0,-1,_f);
-    for(const en of m.eng){qRot(e.q,en[0]*sc,en[1]*sc,en[2]*sc,_u);const ex=e.x+_u.x,ey=e.y+_u.y,ez=e.z+_u.z,rr=en[3]*sc;sprite(ex,ey,ez,rr*3*fl,c,.85);sprite(ex,ey,ez,rr*1.3*fl,[1,1,1],.75);
+    for(const en of m.eng){qRot(e.q,en[0]*sc,en[1]*sc,en[2]*sc,_u);const ex=e.x+_u.x,ey=e.y+_u.y,ez=e.z+_u.z,rr=en[3]*sc;engGlow(ex,ey,ez,rr,fl,c);
       if(e.thrusting){const Lt=rr*(e.boosting?16:9);streak(ex,ey,ez,ex+_f.x*Lt,ey+_f.y*Lt,ez+_f.z*Lt,rr*.8,c,.32)}}
     if(e.isPlayer)sprite(e.x,e.y+sc*.3,e.z,sc*.18,rgb(PLAYER_COL),.6);
     {const gk=e.gj?e.gj.t/GATE_HOLD:e.gjc?((W.t*.6)%1):(e.isPlayer&&W.gc?W.gc.t/GATE_HOLD:-1);if(gk>=0){sprite(e.x,e.y,e.z,sc*(2.2+3*gk)+6*Math.sin(t*9),[.6,.8,1],.18+.35*gk);sprite(e.x,e.y,e.z,sc*(1+gk),c,.25+.3*gk)}}}
