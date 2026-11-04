@@ -7,7 +7,7 @@
 // torpedoes or charges per launcher), lock (lock time), ml (mining-laser rate), cargo (cargo-module hold), scan (scanner reach),
 // speed (the whole ship's top speed); maxG: the top grade its parts take.
 const MAKERS={
-  tcy:{name:'Teal & Corvane Yards',short:'Corvane',home:'halcyon',parts:{cargo:{cargo:.06,speed:-.01}}},
+  tcy:{name:'Teal & Corvane Yards',short:'Corvane',home:'halcyon',parts:{cargo:{cargo:.06,speed:-.01},dronec:{dh:.2}}},
   bl:{name:'Brightline Emitters',short:'Brightline',home:'halcyon',parts:{laser:{dmg:.1,e:.1}}},
   hf:{name:'Hold Foundry',short:'Foundry',home:'varkesh',parts:{charge:{mag:1,speed:-.01}}},
   mg:{name:'Marchgun Ordnance',short:'Marchgun',home:'varkesh',parts:{gun:{dmg:.12,ammo:-.15},missile:{mag:1,lock:.1}}},
@@ -16,11 +16,11 @@ const MAKERS={
   mwa:{name:'Mirrorwater Arms',short:'Mirrorwater',home:'mw',parts:{gun:{ammo:.1},laser:{},missile:{},torpedo:{}}},
   qs:{name:'Quicksilver Hullworks',short:'Quicksilver',home:'mw',parts:{cargo:{cargo:.03},land:{}}},
   cr:{name:'Coldwater Refit',short:'Refit',home:'cw',maxG:3,parts:{gun:{dmg:-.05},laser:{dmg:-.05},missile:{}}},
-  cp:{name:'Coldwater Prospecting',short:'Prospecting',home:'cw',parts:{mlaser:{ml:.12},charge:{mag:1},scanner:{scan:.1}}},
+  cp:{name:'Coldwater Prospecting',short:'Prospecting',home:'cw',parts:{mlaser:{ml:.12},charge:{mag:1},scanner:{scan:.1},dronec:{dd:.15}}},
   ewd:{name:'Ember Wake Drives',short:'Ember',home:'ew',parts:{cargo:{cargo:.08,speed:-.02}}},
   wf:{name:'Wakefire Munitions',short:'Wakefire',home:'ew',parts:{missile:{mag:1},torpedo:{mag:1}}}};
 const MK_WORKS={every:90,cap:4,seed:2};
-const TR_TXT={dmg:'damage',e:'energy draw',ammo:'rounds',mag:'per launcher',lock:'lock time',ml:'cutting rate',cargo:'hold',scan:'scanner reach',speed:'top speed'};
+const TR_TXT={dmg:'damage',e:'energy draw',ammo:'rounds',mag:'per launcher',lock:'lock time',ml:'cutting rate',cargo:'hold',scan:'scanner reach',speed:'top speed',dh:'drone hull',dd:'drone damage'};
 function trText(tr){return Object.keys(tr).map(k=>k==='mag'?`${tr[k]>0?'+':''}${tr[k]} ${TR_TXT[k]}`:`${tr[k]>0?'+':'−'}${Math.round(Math.abs(tr[k])*100)}% ${TR_TXT[k]}`).join(', ')}
 const MK_ITEMS={};
 for(const m in MAKERS)for(const k in MAKERS[m].parts){const id=`mp_${m}_${k}`,tr=MAKERS[m].parts[k];ITEMS[id]={name:`${MAKERS[m].short} ${(WPN[k]||UTIL[k]).name.replace(/^./,x=>x.toLowerCase())}`.replace(/^./,x=>x.toUpperCase()),recipe:{...PART_RC[k]},col:PART_COL[k],part:k,maker:m,tr,trTxt:trText(tr)?`${MAKERS[m].name}: ${trText(tr)}.`:`${MAKERS[m].name}: standard.`};

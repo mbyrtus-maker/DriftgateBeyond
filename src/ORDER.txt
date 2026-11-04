@@ -69,5 +69,7 @@ js/16zy_corps.js
 js/16zz_news.js
 js/16zza_cjobs.js
 js/16zzb_mpfix.js
+js/16zzc_drones.js
+js/16zzd_yard.js
 js/17_main.js
 end.html

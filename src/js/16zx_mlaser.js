@@ -34,20 +34,18 @@ const ML={ringK:2};let mlK=1;
 // standard mining tool the hull is designed for (the mining laser and charge launcher) that isn't fitted is fitted for you:
 // your own from the hold or vault first (any maker's), otherwise the shipyard builds a standard one from the station's own
 // stores (goods only move, so the ledger stays exact). The part it displaces goes to your vault as before.
-function mlTools(c,P){if(!P||S.unb||!loadOn()||!blHull(P.cls))return'';const F=fitOf(P),D=slotsOf(P.cls,designOf(P.faction,P.cls)?P.faction:null),st=c.storage||P.vault,R=S.stations[P.sector];
+function mlTools(c,P){if(!P||S.unb||!loadOn()||!(blHull(P.cls)||drnHull(P.cls)))return'';const F=fitOf(P),D=slotsOf(P.cls,designOf(P.faction,P.cls)?P.faction:null),st=c.storage||P.vault,R=S.stations[P.sector];
   let mk=null;try{mk=R?(R.owner==='player'?R.stock:mkStock(R)):null}catch(e){}const out=[];
-  D.w.forEach((k,i)=>{if(k!=='mlaser'&&k!=='charge')return;if(F.w.includes(k))return;
+  D.w.forEach((k,i)=>{if(k!=='mlaser'&&k!=='charge')return;if(F.w.includes(k)||!blHull(P.cls))return;
     let id=partItems(k).find(x=>countIn(x,[P.cargo,st])>0);
     if(!id&&mk&&haveIn(PART_RC[k],[mk])){takeFrom(PART_RC[k],[mk]);inv.add(P.cargo,PART[k],1);id=PART[k]}
     if(!id)return;const was=F.w[i];const m=fitDo(c,P,`w:${i}:${id}`);if(F.w[i]===k)out.push(`${ITEMS[id].name}${was&&was!==k?` (your ${(WPN[was]||{}).name||was} went to your ${c.storage&&c.storage!==P.vault?(c.storageName||'store'):'vault'})`:''}`);else if(m)out.push(m)});
-  if(!out.length)return'';try{refreshPlayerStats()}catch(e){}if(F.w.includes('mlaser'))P.mtool='mlaser';return` Fitted for mining: ${out.join(', ')}.`}
+  (D.u||[]).forEach((k,i)=>{if(k!=='dronec'||F.u.includes('dronec')||F.u[i])return;let id=partItems(k).find(x=>countIn(x,[P.cargo,st])>0);
+    if(!id&&mk&&haveIn(PART_RC[k],[mk])){takeFrom(PART_RC[k],[mk]);inv.add(P.cargo,PART[k],1);id=PART[k]}if(!id)return;fitDo(c,P,`u:${i}:${id}`);if(F.u[i]===k)out.push(ITEMS[id].name)});
+  if(!out.length)return'';try{refreshPlayerStats()}catch(e){}if(F.w.includes('mlaser'))P.mtool='mlaser';return` Fitted as standard: ${out.join(', ')}.`}
 // and its drone bay comes full: drones from your hold or vault first, otherwise the shipyard builds them from the station's
 // stores (freeports sell none, so a Light Miner taken there used to launch with an empty bay)
-function hullDrones(c,P){const cap=(CLASSES[P.cls]&&CLASSES[P.cls].drones)||0;P.bay=P.bay||{};let need=cap-(P.bay.drone||0);if(need<=0)return'';const st=c.storage||P.vault,R=S.stations[P.sector];
-  let mk=null;try{mk=R?(R.owner==='player'?R.stock:mkStock(R)):null}catch(e){}let n=0;
-  for(const h of[P.cargo,st]){if(need<=0)break;const k=inv.take(h,'drone',need);n+=k;need-=k}
-  const rc=ITEMS.drone.recipe;while(need>0&&mk&&haveIn(rc,[mk])){takeFrom(rc,[mk]);n++;need--}
-  if(!n)return'';inv.add(P.bay,'drone',n);return` Drone bay ${P.bay.drone}/${cap}.`}
+function hullDrones(c,P){const D=drnRefill(c,P);return D.n?` Drone bay ${P.bay.drone}/${drnCap(P)}${D.paid?` (${fmt(D.paid)} cr)`:''}.`:''}
 // empty slots on a new hull take your own parts of the hull's standard kinds back from the hold or vault (switching a Light
 // Miner back to a Light Fighter used to leave it with no guns, the guns sitting in the vault)
 function hullRefit(c,P){if(!P||S.unb||!loadOn())return'';const F=fitOf(P),D=slotsOf(P.cls,designOf(P.faction,P.cls)?P.faction:null),st=c.storage||P.vault,out=[];

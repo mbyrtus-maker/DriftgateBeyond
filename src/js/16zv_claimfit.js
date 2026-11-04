@@ -14,16 +14,16 @@ function cbFitted(P){const F=P&&fitOf(P),out=[];if(!F)return out;(F.u||[]).forEa
 fbHeld=function(P,o){for(const x of cbFitted(P))if(o.owner!==x.f)return x.f;return null};
 {const o=fbClaim;fbClaim=function(o2,f,by){const me=by==='me'||isMe(by),P=me?S.player:(S.pilots||{})[by];if(!P)return;const x=cbFitted(P).find(y=>y.f===f);if(!x)return;
   const F=fitOf(P);F.u[x.i]='';F.ui[x.i]=null;F.ug[x.i]=1;inv.add(P.cargo,'bc_'+f,1);const r=o.apply(this,arguments);try{if(me&&W&&W.player)refreshPlayerStats()}catch(e){}return r}}
-// fitting: fighters and bombers only; a beacon you don't have is bought here if this station sells that power's
+// fitting: fighters and bombers only; the Loadout fits only beacons you have; the Jobs board's Buy & fit (cbfit) buys one first
+let cbBuyOK=false;
 {const o=fitDo;fitDo=function(c,P,arg){const[g,i0,k]=String(arg).split(':'),I=k&&ITEMS[k];if(I&&I.part==='claim'){if(!beaconCls(P.cls))return'Claim Beacons fit fighters and bombers only.';
-    const srcs=[P.cargo,c.storage||P.vault];if(countIn(k,srcs)<1){if(!fbSold(c,P).includes(I.fb))return`No ${I.name} on hand: buy one where ${FACTIONS[I.fb].short} beacons are sold.`;const m=fbBuy(c,P,I.fb);if(!String(m).startsWith('✓'))return m}}
+    const srcs=[P.cargo,c.storage||P.vault];if(countIn(k,srcs)<1){if(!cbBuyOK)return`No ${I.name} in your hold or hangar: buy one on the Market (where ${FACTIONS[I.fb].short} beacons are sold), then fit it.`;if(!fbSold(c,P).includes(I.fb))return`${FACTIONS[I.fb].short} beacons aren't sold here.`;const m=fbBuy(c,P,I.fb);if(!String(m).startsWith('✓'))return m}}
   return o.apply(this,arguments)}}
 // no grades for beacons
 {const o=pupQuote;pupQuote=function(c,P,arg){const[g,i0]=String(arg).split(':'),F=fitOf(P);if(g==='u'&&(F.u||[])[+i0]==='claim')return null;return o.apply(this,arguments)}}
-// the Loadout slot panel: beacons only for hulls that carry them, and the ones you can buy here offered as Buy & fit
+// the Loadout slot panel: beacons only for hulls that carry them (only the ones you have are offered, as for every part)
 {const o=ldSlotHtml;ldSlotHtml=function(c,P,g,i){const ok=beaconCls(P.cls),U=UTIL.claim;if(!ok)delete UTIL.claim;let h;try{h=o.apply(this,arguments)}finally{UTIL.claim=U}
-  try{if(g==='u'&&ok){const srcs=[P.cargo,c.storage||P.vault],cur=((fitOf(P).ui)||[])[i];const rows=fbSold(c,P).map(f=>'bc_'+f).filter(it=>it!==cur&&!countIn(it,srcs)).map(it=>`<div class="ldopt">${gIcon(it,15)}<span style="flex:1;min-width:0"><span>${esc(ITEMS[it].name)}</span><br><span class="mass" style="margin:0">single use · claims for ${esc(FACTIONS[ITEMS[it].fb].short)} · ${fmt(CLAIM_PRICE)} cr here</span></span><button class="btn sm" data-act="fit" data-arg="u:${i}:${it}" ${P.credits>=CLAIM_PRICE?'':'disabled'}>Buy & fit</button></div>`).join('');
-    if(rows)h+=(/Fit instead/.test(h)?'':`<div class="lab" style="margin-top:12px">Fit instead</div>`)+rows}}catch(e){console.error(e)}return h}}
+  return h}}
 // the Market's tiles: the beacons sold here
 {const o=mkHtml;mkHtml=function(c,P){let h=o.apply(this,arguments);try{const L=fbSold(c,P);if(!L.length)return h;const srcs=[P.cargo,c.storage];
   h+=`<div class="mkgrp" style="margin-top:14px"><div class="lab">Claim Beacons · single use · fit one in a utility slot (fighters and bombers) and hold it in an outpost's ring to claim it for that power</div><div class="mkrow">${L.map(f=>{const k='bc_'+f,n=countIn(k,srcs);
@@ -39,7 +39,7 @@ function cbSlot(P){const U=fitOf(P).u||[];if(!U.length)return -1;let i=U.findInd
     if(cbFitted(P).some(x=>x.f===f)){j.sub+=` · ${sh} beacon fitted`;continue}
     const i=cbSlot(P),have=countIn(bc,[P.cargo,(c&&c.storage)||P.vault])>0,sold=fbSold(c,P).includes(f),was=i>=0?(fitOf(P).u||[])[i]:'';
     if(i<0){j.sub+=` · needs a utility slot for the beacon`;continue}
-    j.btn2=null;if(have)j.fix=['fit',`u:${i}:${bc}`,`Fit the ${sh} beacon`];else if(sold)j.fix=['fit',`u:${i}:${bc}`,`Buy & fit a ${sh} beacon · ${fmt(CLAIM_PRICE)} cr`];
+    j.btn2=null;if(have)j.fix=['cbfit',`${f}:${i}`,`Fit the ${sh} beacon`];else if(sold)j.fix=['cbfit',`${f}:${i}`,`Buy & fit a ${sh} beacon · ${fmt(CLAIM_PRICE)} cr`];
     j.sub+=have?` · your ${sh} beacon isn't fitted`:` · needs a ${sh} beacon`;
     const d0=j.detail;j.detail=()=>(d0?d0():'')+`<p class="note" style="margin:8px 0 0">${have||sold?`${have?'Fit the':'Buy & fit puts a'} ${esc(sh)} Claim Beacon in utility slot ${i+1}${was?` (your ${esc((UTIL[was]||{}).name||was)} goes to your ${c&&c.storage&&c.storage!==P.vault?esc(c.storageName||'store'):'vault'})`:''}. Then fly to the outpost, break its defences if it's held, and hold position inside its ring: the beacon claims it for ${esc(sh)} and is used up.`:`${esc(sh)} Claim Beacons aren't sold here: buy one at a freeport or a ${esc(sh)} station, then fit it on the Loadout.`}</p>`}}catch(e){console.error(e)}return out}}
 {const o=fbBuy;fbBuy=function(c,P,f){const r=o.apply(this,arguments);return typeof r==='string'?r.replace(/Carry it into an unclaimed or breached outpost's ring in a fighter or bomber and hold there/,"Fit it in a utility slot on the Loadout (fighters and bombers), then hold it in an unclaimed or breached outpost's ring"):r}}
@@ -48,3 +48,4 @@ function cbWhy(P,o){const own=o.owner?(FACTIONS[o.owner]?FACTIONS[o.owner].short
   const fit=cbFitted(P);if(fit.length){if(!beaconCls(P.cls))return pre+'Claim Beacons work only on fighters and bombers: switch hulls to claim it.';if(fit.every(x=>x.f===o.owner))return`${o.name} is already ${own}'s: your beacon claims for ${own} too.`}
   const hold=FAC_IDS.filter(f=>countIn('bc_'+f,[P.cargo,P.vault||{}])>0);if(hold.length)return pre+`Your ${hold.map(f=>FACTIONS[f].short).join(' and ')} Claim Beacon is in your hold, not fitted: fit it in a utility slot (Loadout) to claim.`;
   return pre+'Fit a Claim Beacon in a utility slot (buy one at a freeport or a power\'s station, then Loadout) to claim it.'}
+{const o=dockAction;dockAction=function(act,arg){if(act==='cbfit'){const[f,i]=String(arg).split(':');if(!FAC_IDS.includes(f)){dockErr='';return}const c=dockCtx(),P=S.player;cbBuyOK=true;try{dockErr=fitDo(c,P,`u:${+i}:bc_${f}`)}finally{cbBuyOK=false}return}return o.apply(this,arguments)}}

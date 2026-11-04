@@ -1,5 +1,5 @@
 # Beyond: Claim Beacons are fitted parts. Bought for a power at a freeport (the Market tiles list them, in the power's colour);
-# fitted in a utility slot from the Loadout (Buy & fit, or from the hold); refused on a miner; in the hold they don't claim,
+# fitted in a utility slot from the Loadout (only beacons you have; the Jobs board's Buy & fit buys one); refused on a miner; in the hold they don't claim,
 # fitted they do; the claim uses the fitted beacon up and empties the slot; no grades; the ledger stays exact
 import asyncio,json,os
 from playwright.async_api import async_playwright
@@ -18,7 +18,7 @@ async def main():
     print('hold only',await ev("(()=>{const o={owner:null};return String(fbHeld(S.player,o))})()"))
     print('loadout',await ev("(()=>{dockTab='upg';ldSel='u:0';renderDock();const t=$('dBody').innerText;return JSON.stringify({fitRow:/Claim Beacon \\(Varkesh\\)/.test(t),buyFit:(t.match(/Buy & fit/gi)||[]).length})})()"))
     print('fit',await ev("(()=>{dockAction('fit','u:0:bc_varkesh');const F=fitOf(S.player);return dockErr.slice(0,90)+' | '+JSON.stringify({u:F.u,ui:F.ui,hold:S.player.cargo.bc_varkesh||0,pup:pupQuote(dockCtx(),S.player,'u:0')})})()"))
-    print('buy & fit',await ev("(()=>{const c0=S.player.credits;dockAction('fit','u:0:bc_ostrova');const F=fitOf(S.player);return dockErr.slice(0,90)+' | '+JSON.stringify({ui:F.ui,paid:c0-S.player.credits,vault:S.player.vault.bc_varkesh||0})})()"))
+    print('buy & fit',await ev("(()=>{const c0=S.player.credits;dockAction('fit','u:0:bc_ostrova');const refused=dockErr.slice(0,40);dockAction('cbfit','ostrova:0');const F=fitOf(S.player);return 'loadout: '+refused+' · board: '+dockErr.slice(0,60)+' | '+JSON.stringify({ui:F.ui,paid:c0-S.player.credits,vault:S.player.vault.bc_varkesh||0})})()"))
     print('refit varkesh',await ev("(()=>{dockAction('fit','u:0:bc_varkesh');return dockErr.slice(0,70)+' | '+JSON.stringify(fitOf(S.player).ui)})()"))
     print('fitted claims',await ev("(()=>{return String(fbHeld(S.player,{owner:null}))+' / owned by varkesh: '+String(fbHeld(S.player,{owner:'varkesh'}))})()"))
     print('miner refused',await ev("(()=>{const P=S.player,c0=P.cls;P.cls='prospector';const r=fitDo(dockCtx(),P,'u:0:bc_halcyon');P.cls=c0;return r})()"))

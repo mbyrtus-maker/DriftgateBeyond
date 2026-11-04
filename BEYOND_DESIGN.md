@@ -1842,3 +1842,27 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - **Targeting:** holding F with the laser and no rock targeted targets the rock ahead for you (the nearest whose surface is in range, within 35 degrees of your nose). The beam's ring assist now reaches 45 degrees from your nose (was 25) and works over the rock's rim, so it finds the ring from close in too: pointing at a rock from 60 m off its surface hit the ring 36% of the time before, 100% now (and 100% from 150 m and 250 m, as before).
 - **Tests:** `claimfit.py` (the board's Buy & fit, the hull switch in a miner, the ledger with a beacon fitted), `loadout.py` (taking a Light Miner from a Light Fighter: tools, vault, drone bay; and back).
 
+### Shipyard, Loadout, Station works, the Drone controller and drones as ammunition (3 Nov 2026)
+The user's asks, with their choices (Drone controller on drone-bay hulls only; drones refilled at Rearm with credits; Station works hidden unless it's yours; Rating shown plainly):
+- **Shipyard** (`16zzd_yard.js`, reworked the same evening at the user's second pass):
+  - **A dropdown of hulls** grouped by kind (Fighters, Bombers, Haulers, Miners, Scouts, Other), each with its name, class and price ("2,100 cr", "free", "yours"), plus "needs Rating 2" where your Rating doesn't reach it.
+  - Under it, **the picked hull's full card** (description, tags, requirement) and **a button to take it** ("Take the Wren · free"), or why you can't: "Needs Contractor Rating 2 (you're 1)", not enough credits, or orbital docks only. It starts on the hull you fly.
+  - **On the right, the picked hull turning in a box**, with its hull, shield, top speed, hold, drones and slots, each against your current hull (+76 in green, −77 m/s in red).
+  - A hull above your Rating says, in plain words, "needs Contractor Rating 4 (you're 2): earned by work for any power". Rating isn't held with one power: it's one Contractor Rating, earned by work for any of them.
+  - The miners' cards describe their new fits (a mining laser and a charge launcher; drones with a controller).
+- **Station works** shows only at your own Depot or Station. Anywhere else it was read-only information with nothing to do. Scrapheart's Works (Unbound) is unchanged.
+- **The dock's top menu** (user): **Fabricate** moves under **Trade** (after Best runs); **Patronage** (sponsoring a power's projects) moves under **Allegiance**; the order is Overview 1, Trade 2, Jobs 3, Ship 4, **Allegiance 5**, **Station 6**. **Station** (Station works, your outpost) shows only at your own base.
+- **Loadout: fit only what you have.** A slot's "Fit instead" list offers only the parts in your hold or hangar, each with **Fit**. When there are none it says so and points to the Market. Fitting never buys any more. The Market is where you buy parts, Claim Beacons included. The Jobs board's Claim job keeps its **Buy & fit** (it buys the beacon and fits it in one go).
+- **The Drone controller** (`pt_dronec`, a utility part, `16zzc_drones.js`):
+  - It launches and commands your guard drones: without one fitted, the drones stay in the bay. It fits only hulls with a drone bay (the miners and haulers).
+  - The hull sets how many drones it carries. Each grade above 1 makes them tougher (+25% hull) and harder-hitting (+15% damage).
+  - Every miner and hauler gets one more utility slot for it and comes with one fitted: new pilots, and hulls taken at a shipyard (your own controller from the hold or vault first, otherwise the shipyard builds a standard one from the station's stores).
+  - Two makers build their own: **Coldwater Prospecting** (Coldwater Drift: +15% drone damage) and **Teal & Corvane Yards** (Halcyon: +20% drone hull). A plain one is built in a workshop (2 wire, 1 coil). The powers' core stations now sell their makers' controllers.
+  - Older pilots: a miner or hauler fit from before gets the new slot and, once, a standard controller fitted in it, so their drones keep flying.
+- **Guard drones are ammunition.** Lost drones are gone. The bay refills at **Rearm**, which happens automatically when you dock, like missiles and charges:
+  - your own Guard Drones from the hold or vault go in first, free;
+  - then drones the station builds from its own stores, paid in credits at the drone's value (154 cr) to the station's treasury (free at your own base);
+  - if the station can't supply them all, Rearm says how many it couldn't.
+  - Drones in a hold stay ordinary goods. A station's materials become the drones, so the ledger stays exact.
+- **Tests:** `drones.py` (new, in the quick suite), `claimfit.py` and `loadout.py` updated.
+

@@ -17,7 +17,8 @@ const WPN={gun:{name:'Machine gun',desc:'Kinetic: lead your shots; strong agains
   charge:{name:'Charge launcher',desc:'Mining hulls only. Blast charges at fault points for a big, fast yield. Charges are payload.'}};
 const UTIL={land:{name:'Landing kit',desc:'Land on a rock (E): systems down, off enemy sensors beyond close range.'},
   cargo:{name:'Cargo module',desc:'+20% hold.'},
-  scanner:{name:'Scanner',desc:'Rock scans reach every rock within 1.5 km and last longer.'}};
+  scanner:{name:'Scanner',desc:'Rock scans reach every rock within 1.5 km and last longer.'},
+  dronec:{name:'Drone controller',desc:'Miners and haulers only. Launches and commands your guard drones: without one they stay in the bay. Each grade makes tougher drones that hit harder.'}};
 // slot counts and the fit a new hull comes with (the design's starting proposal; they will vary by power's design in stage 6)
 const HULL_SLOTS={interceptor:{w:['gun','laser','missile'],u:['land']},striker:{w:['gun','laser','missile','gun'],u:['land']},
   heavy:{w:['gun','gun','laser','missile','missile'],u:['land','scanner']},bomber:{w:['torpedo','gun','laser'],u:['land']},gunboat:{w:['torpedo','gun','gun','laser'],u:['land','cargo']},
@@ -39,9 +40,9 @@ function wpnOK(cls,k,i){if(!WPN[k])return false;if(isTorpHull(cls)){if(i===0)ret
   if(k==='torpedo')return false;if(k==='mlaser'||k==='charge')return!!blHull(cls);return true}
 const FIT_T=new WeakMap();
 // ---- parts as items (stage 4): each part is built from components; an upgrade to the next grade feeds in the grade's components
-const PART={gun:'pt_gun',laser:'pt_laser',missile:'pt_msl',torpedo:'pt_torp',mlaser:'pt_mlaser',charge:'pt_charge',land:'pt_land',cargo:'pt_cargo',scanner:'pt_scan'};
-const PART_RC={gun:{plate:2,wire:1},laser:{wire:2,coil:1},missile:{plate:2,wire:2},torpedo:{plate:3,coil:1},mlaser:{plate:1,wire:1,coil:1},charge:{plate:1,wire:2},land:{plate:2},cargo:{plate:4},scanner:{wire:1,coil:1}};
-const PART_COL={gun:'#e8b070',laser:'#a5deff',missile:'#ff8f6b',torpedo:'#ffcf5a',mlaser:'#7ad9a7',charge:'#f0b24a',land:'#bba98d',cargo:'#d6ccb4',scanner:'#c99cff'};
+const PART={gun:'pt_gun',laser:'pt_laser',missile:'pt_msl',torpedo:'pt_torp',mlaser:'pt_mlaser',charge:'pt_charge',land:'pt_land',cargo:'pt_cargo',scanner:'pt_scan',dronec:'pt_dronec'};
+const PART_RC={gun:{plate:2,wire:1},laser:{wire:2,coil:1},missile:{plate:2,wire:2},torpedo:{plate:3,coil:1},mlaser:{plate:1,wire:1,coil:1},charge:{plate:1,wire:2},land:{plate:2},cargo:{plate:4},scanner:{wire:1,coil:1},dronec:{wire:2,coil:1}};
+const PART_COL={gun:'#e8b070',laser:'#a5deff',missile:'#ff8f6b',torpedo:'#ffcf5a',mlaser:'#7ad9a7',charge:'#f0b24a',land:'#bba98d',cargo:'#d6ccb4',scanner:'#c99cff',dronec:'#9fe0c8'};
 for(const k in PART){ITEMS[PART[k]]={name:(WPN[k]||UTIL[k]).name,recipe:PART_RC[k],col:PART_COL[k],part:k};ITEM_ORDER.push(PART[k]);CRAFTABLE.push(PART[k])}
 // what each grade above 1 adds: damage for guns and lasers, rounds, a missile or charge per launcher, mining-laser rate,
 // cargo-module hold and scanner reach. Landing kits have one grade.
@@ -159,8 +160,7 @@ function fitDo(c,P,arg){let[g,i0,k]=String(arg).split(':');const i=+i0,F=fitOf(P
   const ids=ws?(F.wi||(F.wi=F.w.map(()=>null))):(F.ui||(F.ui=F.u.map(()=>null)));
   if(!(i>=0&&i<arr.length))return'No such slot.';if(k&&(ws?!wpnOK(P.cls,k,i):!UTIL[k]))return'That part doesn\'t fit that slot.';const it=k&&(pick||PART[k]);if((k||'')===(arr[i]||'')&&(ids[i]||PART[k]||null)===(it||null))return'';
   const st=c.storage||P.vault,srcs=[P.cargo,st];
-  if(k&&countIn(it,srcs)<1){if(c.market&&(c.market[it]||0)>0){dockErr='';dockActionBase('buy',it+':1');if(countIn(it,srcs)<1)return dockErr&&!String(dockErr).startsWith('✓')?dockErr:'Could not buy one.'}
-    else return`No ${ITEMS[it].name} on hand: build one (Fabricate) or buy one where it's sold.`}
+  if(k&&countIn(it,srcs)<1)return`No ${ITEMS[it].name} in your hold or hangar: buy one on the Market or build one (Fabricate), then fit it.`;
   const out=arr[i],outIt=out&&(ids[i]||PART[out]);if(out)partToStore(st,out,gr[i],ids[i]);arr[i]='';gr[i]=1;ids[i]=null;if(k){takeFrom({[it]:1},srcs);arr[i]=k;gr[i]=1;ids[i]=it===PART[k]?null:it}
   if(P.tune&&typeof P.tune==='object')FIT_T.set(P.tune,F);if(W&&W.player)refreshPlayerStats();mtoolOf(P);if(P.ammo>ammoCap(P))P.ammo=ammoCap(P);if(P.rack>pRack(P))P.rack=pRack(P);if(P.blN>blCap(P))P.blN=blCap(P);
   return k?`✓ ${ITEMS[it].name} fitted${out?`; the ${ITEMS[outIt].name} went to your ${String(c.storageName||'vault').toLowerCase()}`:''}.`:`✓ ${ITEMS[outIt].name} taken out and put in your ${String(c.storageName||'vault').toLowerCase()}.`}

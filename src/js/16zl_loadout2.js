@@ -10,7 +10,7 @@
 // Below the systems: ammunition, missiles and charges, and Rearm. The ship's stats stay in the header line.
 // The old Loadout block in the Shipyard tab goes (it lives here now).
 let ldSel='sys:engine';
-const LD_EFF={gun:'+10% damage a grade',laser:'+10% damage a grade',missile:'one more missile a grade',torpedo:'one more torpedo a grade',charge:'one more charge a grade',mlaser:'+15% cutting rate a grade',cargo:'+5% hold a grade',scanner:'+20% reach a grade',land:'one grade only',hide:'+4 t hidden a grade',bdev:'one more beacon device a grade',lrack:'one more limpet a grade'};
+const LD_EFF={gun:'+10% damage a grade',laser:'+10% damage a grade',missile:'one more missile a grade',torpedo:'one more torpedo a grade',charge:'one more charge a grade',mlaser:'+15% cutting rate a grade',cargo:'+5% hold a grade',scanner:'+20% reach a grade',dronec:'+25% drone hull and +15% drone damage a grade',land:'one grade only',hide:'+4 t hidden a grade',bdev:'one more beacon device a grade',lrack:'one more limpet a grade'};
 function ldShape(cls){if(blHull(cls))return'M0,-120 L40,-96 L52,40 L36,110 L-36,110 L-52,40 L-40,-96 Z M-52,-10 L-96,0 L-96,50 L-52,52 Z M52,-10 L96,0 L96,50 L52,52 Z';
   if(isHaulCls(cls))return'M0,-130 L36,-104 L40,110 L-40,110 L-36,-104 Z M-40,-60 L-92,-56 L-92,70 L-40,74 Z M40,-60 L92,-56 L92,70 L40,74 Z';
   return'M0,-150 L18,-80 L26,-20 L110,20 L150,34 L150,56 L110,58 L34,66 L28,110 L50,136 L0,128 L-50,136 L-28,110 L-34,66 L-110,58 L-150,56 L-150,34 L-110,20 L-26,-20 L-18,-80 Z'}
@@ -28,9 +28,10 @@ function ldSlotHtml(c,P,g,i){const F=fitOf(P),kind=(g==='w'?F.w:F.u)[i],gr=((g==
   else h+=`<div class="ldname"><b style="color:var(--dim)">Empty slot</b></div>`;
   const kinds=g==='w'?Object.keys(WPN).filter(k=>wpnOK(P.cls,k,i)):Object.keys(UTIL).filter(k=>!['bdev','lrack'].includes(k)||isScoutCls(P.cls));
   const cur=kind?(((g==='w'?F.wi:F.ui)||[])[i]||PART[kind]):null;let rows='';
-  for(const k of kinds)for(const it of partItems(k)){if(it===cur)continue;const have=countIn(it,srcs),mk=c.market&&(c.market[it]||0)>0?mBuy(c,it):0;if(it!==PART[k]&&!have&&!mk)continue;
-    rows+=`<div class="ldopt">${gIcon(it,15)}<span style="flex:1;min-width:0"><span>${esc(ITEMS[it].name)}</span><br><span class="mass" style="margin:0">${esc(ITEMS[it].trTxt||'standard')} · ${have?`${have} on hand`:mk?`${fmt(mk)} cr here`:'none here'}</span></span><button class="btn sm" data-act="fit" data-arg="${g}:${i}:${it}" ${have||mk&&P.credits>=mk?'':'disabled'}>${have?'Fit':'Buy & fit'}</button></div>`}
-  if(rows)h+=`<div class="lab" style="margin-top:12px">Fit instead</div>${rows}`;return h}
+  // (user, 3 Nov 2026) only the parts you have, in your hold or hangar: buying is the Market's job
+  for(const k of kinds)for(const it of partItems(k)){if(it===cur)continue;const have=countIn(it,srcs);if(!have)continue;
+    rows+=`<div class="ldopt">${gIcon(it,15)}<span style="flex:1;min-width:0"><span>${esc(ITEMS[it].name)}</span><br><span class="mass" style="margin:0">${esc(ITEMS[it].trTxt||'standard')} · ${have} on hand</span></span><button class="btn sm" data-act="fit" data-arg="${g}:${i}:${it}">Fit</button></div>`}
+  if(rows)h+=`<div class="lab" style="margin-top:12px">Fit instead · from your hold and hangar</div>${rows}`;else h+=`<div class="note" style="margin-top:12px">No other parts for this slot in your hold or hangar.${c.market?' Buy parts on the Market, then fit them here.':''}</div>`;return h}
 function ldLeft(c,P){const F=fitOf(P),W0=640,H0=380,cx=W0/2,cy=H0/2-10,st=W.player&&W.player.st;
   const nW=F.w.length,nU=F.u.length,slots=[];
   F.w.forEach((k,i)=>{const side=i%2?1:-1,row=Math.floor(i/2),ny=Math.ceil(nW/2);slots.push({g:'w',i,x:side<0?8:W0-150,y:30+row*(H0-150)/Math.max(1,ny-1||1),ax:cx+side*(40+row*18),ay:cy-60+row*40})});
@@ -41,7 +42,7 @@ function ldLeft(c,P){const F=fitOf(P),W0=640,H0=380,cx=W0/2,cy=H0/2-10,st=W.play
     btns+=`<button class="ldslot${on?' on':''}" type="button" data-act="ldsel" data-arg="${s.g}:${s.i}" style="left:${s.x}px;top:${s.y}px"><span class="lab" style="font-size:10px">${s.g==='w'?'Weapon':'Utility'} ${s.i+1}</span><span class="ldsn">${id?gIcon(id,13)+esc(ITEMS[id].name):'<span style="color:var(--dim)">empty</span>'}</span><span>${id?ldPips(gr):''}</span></button>`}
   svg+=`</svg>`;
   let sys='';for(const sl of SLOTS){if(sl.id==='drill'&&!blHull(P.cls))continue;const t=P.tiers[sl.id]||1,on=ldSel==='sys:'+sl.id;sys+=`<button class="ldsys${on?' on':''}" type="button" data-act="ldsel" data-arg="sys:${sl.id}"><span class="lab" style="font-size:10px">${esc(sl.name)}</span><span>${ldPips(t)}${(P.tune||{})[sl.id]?' '+'✦'.repeat(P.tune[sl.id]):''}</span></button>`}
-  const q=rearmQuote(P),t=isTorpHull(P.cls),rows=[ammoCap(P)?`Rounds ${fmt(P.ammo||0)} / ${fmt(ammoCap(P))}`:'',pRack(P)?`${t?'Torpedoes':'Missiles'} ${P.rack||0} / ${pRack(P)}`:'',blCap(P)?`Charges ${P.blN||0} / ${blCap(P)}`:''].filter(Boolean);
+  const q=rearmQuote(P),t=isTorpHull(P.cls),rows=[ammoCap(P)?`Rounds ${fmt(P.ammo||0)} / ${fmt(ammoCap(P))}`:'',pRack(P)?`${t?'Torpedoes':'Missiles'} ${P.rack||0} / ${pRack(P)}`:'',blCap(P)?`Charges ${P.blN||0} / ${blCap(P)}`:'',typeof drnCap==='function'&&drnCap(P)?`Drones ${(P.bay&&P.bay.drone)||0} / ${drnCap(P)}`:''].filter(Boolean);
   return`<div class="ldhead"><b>${esc((FAC(P.faction)||{hulls:{}}).hulls[P.cls]||CLASSES[P.cls].name)}</b> <span class="note" style="margin:0">${esc(CLASSES[P.cls].name)} · ${F.w.length} weapon, ${F.u.length} utility${st?` · ${Math.round(st.maxSpd)} m/s · ${Math.round(st.sCap)} shield · ${Math.round(st.hull)} hull · ${st.cargo} t`:''}</span></div>
     <div class="ldmap"><div style="position:relative;width:${W0}px;height:${H0}px">${svg}${btns}</div></div>
     <div class="ldsysrow">${sys}</div>

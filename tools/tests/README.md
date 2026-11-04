@@ -49,6 +49,7 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 | corps.py | Beyond: every item has a maker: the makers' lines with plain parts, no unbranded parts on the makers' markets, every slot covered at a freeport, the works build plain parts, made-by labels in the Market; ledger exact |
 | news.py | Beyond: the leaders' news box: a leader's declaration (war, embargo, pact) and the Dread Pirate's fortunes go in under their faction and name, a relations band change doesn't, the newest three stay, they fade and go after three minutes, the box renders in the HUD |
 | comms_jobs.py | Beyond: Comms Jobs here: I, I opens it; a fighter sees the convoy raid and escort, a miner the ore contracts; other hulls' jobs counted not listed; picking an escort signs on, a contract tracks; More pages; the quick-keys count; an Unbound pilot's Prey here with the scanned ship first and picking targets it; ledger exact |
+| drones.py | Beyond: the Drone controller: a new Light Miner has one fitted in its own slot; without one no drones launch; a fighter can't fit one; lost drones refill at Rearm (built by the station, paid to its treasury); a maker's grade 2 controller makes tougher drones; an older miner's fit gets the slot and a controller; where the makers' controllers are sold; ledger exact |
 | start_screen.py | the Training button stands out without moving the other buttons |
 | keys.py | key list, rebinding with swap, saved bindings, the keys strip |
 | brood_ui.py | Brood HUD chip, alerts at 5/6/7 systems, map meter |

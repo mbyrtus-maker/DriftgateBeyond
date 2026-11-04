@@ -11,7 +11,7 @@
 const CORP_HOME={halcyon:['tcy','bl'],varkesh:['hf','mg'],ostrova:['sw','ad'],mw:['qs','mwa'],cw:['cp','cr'],ew:['ewd','wf']};
 const CORP_W=new Set(['gun','laser','missile','torpedo','mlaser','charge']);
 const CORP_PAY=new Set(['missile','torpedo','ammo','rounds','charges','chg','drone','limpet','mine','decoy']);
-function corpSells(h){if(FAC_IDS.includes(h))return['gun','laser','missile','torpedo','land','cargo','scanner',...(h==='ostrova'?['bdev','lrack']:[])];return Object.keys(PART)}
+function corpSells(h){if(FAC_IDS.includes(h))return['gun','laser','missile','torpedo','land','cargo','scanner','dronec',...(h==='ostrova'?['bdev','lrack']:[])];return Object.keys(PART)}
 const MK_LINE={},MK_PLAIN={};
 (function(){for(const h in CORP_HOME){const L=CORP_HOME[h];
   const plain=(m,k)=>{MK_PLAIN[m]=MK_PLAIN[m]||{};if(MK_PLAIN[m][k])return;const P0=MAKERS[m].parts[k];let id;

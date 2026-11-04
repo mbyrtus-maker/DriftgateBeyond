@@ -144,7 +144,7 @@ kbd{font-family:var(--f-mono);font-size:10px;padding:1px 4px;border:1px solid va
 
 #comms{position:absolute;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:7;width:min(300px,calc(100% - 32px));display:flex;flex-direction:column;gap:4px;padding:10px 12px 12px;background:rgba(10,16,30,.92);border:1px solid #7ad9a7;box-shadow:0 8px 24px rgba(0,0,0,.45)}
 #comms[hidden]{display:none}.cm-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-family:var(--f-display);font-weight:800;font-size:16px;letter-spacing:.14em;text-transform:uppercase;color:#7ad9a7;margin-bottom:4px}.cm-h b{font-family:var(--f-ui);font-weight:600;font-size:13px;letter-spacing:.02em;text-transform:none;color:var(--ivory);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cm-o{display:flex;gap:10px;align-items:center;background:transparent;border:1px solid var(--line-hi);color:var(--ivory);font:inherit;font-size:14px;padding:6px 8px;cursor:pointer;text-align:left}.cm-o:hover{border-color:#7ad9a7;color:#7ad9a7}.cm-o kbd{min-width:30px;text-align:center}.cm-l{display:flex;flex-direction:column;gap:4px}.cm-o:disabled{opacity:.5;cursor:default}.cm-o:disabled:hover{border-color:var(--line-hi);color:var(--ivory)}.cm-n{font-size:12px;color:var(--dim);margin-top:2px}#comms.cj{width:min(440px,calc(100% - 32px))}#comms.cj .cm-o span{font-size:13px;line-height:1.3}#comms .cm-o.cjdim{opacity:.6}
+.cm-o{display:flex;gap:10px;align-items:center;background:transparent;border:1px solid var(--line-hi);color:var(--ivory);font:inherit;font-size:14px;padding:6px 8px;cursor:pointer;text-align:left}.cm-o:hover{border-color:#7ad9a7;color:#7ad9a7}.cm-o kbd{min-width:30px;text-align:center}.cm-l{display:flex;flex-direction:column;gap:4px}.cm-o:disabled{opacity:.5;cursor:default}.cm-o:disabled:hover{border-color:var(--line-hi);color:var(--ivory)}.cm-n{font-size:12px;color:var(--dim);margin-top:2px}.yd2{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px;align-items:start}.ydsel{width:100%;max-width:520px;font:inherit;font-size:14px;padding:8px 10px;background:#0b1222;color:var(--ivory);border:1px solid var(--line-hi);border-radius:0}.ydsel optgroup{font-style:normal;color:var(--amber)}.ydsel option{color:var(--ivory)}.ydcard{margin-top:12px;max-width:520px}.ydcard .cls{cursor:default;width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px 14px}.ydcard .cls em{display:block}.ydcard .cls,.ydcard .cls *{white-space:normal;overflow-wrap:anywhere}.ydcard .req{display:inline-block;max-width:100%;line-height:1.35}.ydpic{border:1px solid var(--line);background:radial-gradient(ellipse at 50% 40%,rgba(40,52,84,.55),rgba(5,7,13,0) 70%);padding:10px 12px 12px;position:sticky;top:0}.ydpic canvas{width:100%;height:200px;display:block}.ydinfo .kv{margin:2px 0}@media (max-width:760px){.yd2{grid-template-columns:1fr}.ydpic{position:static}}#comms.cj{width:min(440px,calc(100% - 32px))}#comms.cj .cm-o span{font-size:13px;line-height:1.3}#comms .cm-o.cjdim{opacity:.6}
 #dev{position:absolute;top:calc(118px + env(safe-area-inset-top,0px));max-height:calc(100% - 140px);overflow:auto;left:50%;transform:translateX(-50%);z-index:8;width:min(340px,calc(100% - 32px));display:flex;flex-direction:column;gap:8px;padding:12px 14px 14px;background:var(--sheet);border:1px solid var(--amber);box-shadow:0 10px 30px rgba(0,0,0,.5)}
 #dev[hidden]{display:none}.dv-sec{font-family:var(--f-display);font-weight:700;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--danger);margin-top:6px;border-top:1px solid var(--line);padding-top:8px}.dv-l{font-size:12px;color:var(--dim);align-self:center;white-space:nowrap}.dv-s input[type=number]{width:64px;background:var(--sheet-2);color:var(--ivory);border:1px solid var(--line-hi);font:inherit;font-size:13px;padding:4px 6px}#dev .dv-s .btn{flex:1}.dv-types{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-size:12.5px;color:var(--ivory)}.dv-types label{display:flex;gap:6px;align-items:center;cursor:pointer}.dv-s{display:flex;gap:6px}.dv-s.wr{flex-wrap:wrap}#dev .dv-s.wr .btn{flex:1 1 calc(50% - 3px);width:auto}.dv-s select{flex:1;min-width:0;background:var(--sheet-2);color:var(--ivory);border:1px solid var(--line-hi);font:inherit;font-size:13px;padding:4px 6px}#dev .dv-s .btn{width:auto;flex:none}#dev .btn{max-width:none;width:100%;text-align:left;white-space:normal;font-size:13px;letter-spacing:.08em}#dev .btn:hover{border-color:var(--amber);color:var(--amber)}
 .dv-h{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-display);font-weight:800;font-size:18px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
@@ -9764,7 +9764,8 @@ const WPN={gun:{name:'Machine gun',desc:'Kinetic: lead your shots; strong agains
   charge:{name:'Charge launcher',desc:'Mining hulls only. Blast charges at fault points for a big, fast yield. Charges are payload.'}};
 const UTIL={land:{name:'Landing kit',desc:'Land on a rock (E): systems down, off enemy sensors beyond close range.'},
   cargo:{name:'Cargo module',desc:'+20% hold.'},
-  scanner:{name:'Scanner',desc:'Rock scans reach every rock within 1.5 km and last longer.'}};
+  scanner:{name:'Scanner',desc:'Rock scans reach every rock within 1.5 km and last longer.'},
+  dronec:{name:'Drone controller',desc:'Miners and haulers only. Launches and commands your guard drones: without one they stay in the bay. Each grade makes tougher drones that hit harder.'}};
 // slot counts and the fit a new hull comes with (the design's starting proposal; they will vary by power's design in stage 6)
 const HULL_SLOTS={interceptor:{w:['gun','laser','missile'],u:['land']},striker:{w:['gun','laser','missile','gun'],u:['land']},
   heavy:{w:['gun','gun','laser','missile','missile'],u:['land','scanner']},bomber:{w:['torpedo','gun','laser'],u:['land']},gunboat:{w:['torpedo','gun','gun','laser'],u:['land','cargo']},
@@ -9786,9 +9787,9 @@ function wpnOK(cls,k,i){if(!WPN[k])return false;if(isTorpHull(cls)){if(i===0)ret
   if(k==='torpedo')return false;if(k==='mlaser'||k==='charge')return!!blHull(cls);return true}
 const FIT_T=new WeakMap();
 // ---- parts as items (stage 4): each part is built from components; an upgrade to the next grade feeds in the grade's components
-const PART={gun:'pt_gun',laser:'pt_laser',missile:'pt_msl',torpedo:'pt_torp',mlaser:'pt_mlaser',charge:'pt_charge',land:'pt_land',cargo:'pt_cargo',scanner:'pt_scan'};
-const PART_RC={gun:{plate:2,wire:1},laser:{wire:2,coil:1},missile:{plate:2,wire:2},torpedo:{plate:3,coil:1},mlaser:{plate:1,wire:1,coil:1},charge:{plate:1,wire:2},land:{plate:2},cargo:{plate:4},scanner:{wire:1,coil:1}};
-const PART_COL={gun:'#e8b070',laser:'#a5deff',missile:'#ff8f6b',torpedo:'#ffcf5a',mlaser:'#7ad9a7',charge:'#f0b24a',land:'#bba98d',cargo:'#d6ccb4',scanner:'#c99cff'};
+const PART={gun:'pt_gun',laser:'pt_laser',missile:'pt_msl',torpedo:'pt_torp',mlaser:'pt_mlaser',charge:'pt_charge',land:'pt_land',cargo:'pt_cargo',scanner:'pt_scan',dronec:'pt_dronec'};
+const PART_RC={gun:{plate:2,wire:1},laser:{wire:2,coil:1},missile:{plate:2,wire:2},torpedo:{plate:3,coil:1},mlaser:{plate:1,wire:1,coil:1},charge:{plate:1,wire:2},land:{plate:2},cargo:{plate:4},scanner:{wire:1,coil:1},dronec:{wire:2,coil:1}};
+const PART_COL={gun:'#e8b070',laser:'#a5deff',missile:'#ff8f6b',torpedo:'#ffcf5a',mlaser:'#7ad9a7',charge:'#f0b24a',land:'#bba98d',cargo:'#d6ccb4',scanner:'#c99cff',dronec:'#9fe0c8'};
 for(const k in PART){ITEMS[PART[k]]={name:(WPN[k]||UTIL[k]).name,recipe:PART_RC[k],col:PART_COL[k],part:k};ITEM_ORDER.push(PART[k]);CRAFTABLE.push(PART[k])}
 // what each grade above 1 adds: damage for guns and lasers, rounds, a missile or charge per launcher, mining-laser rate,
 // cargo-module hold and scanner reach. Landing kits have one grade.
@@ -9906,8 +9907,7 @@ function fitDo(c,P,arg){let[g,i0,k]=String(arg).split(':');const i=+i0,F=fitOf(P
   const ids=ws?(F.wi||(F.wi=F.w.map(()=>null))):(F.ui||(F.ui=F.u.map(()=>null)));
   if(!(i>=0&&i<arr.length))return'No such slot.';if(k&&(ws?!wpnOK(P.cls,k,i):!UTIL[k]))return'That part doesn\'t fit that slot.';const it=k&&(pick||PART[k]);if((k||'')===(arr[i]||'')&&(ids[i]||PART[k]||null)===(it||null))return'';
   const st=c.storage||P.vault,srcs=[P.cargo,st];
-  if(k&&countIn(it,srcs)<1){if(c.market&&(c.market[it]||0)>0){dockErr='';dockActionBase('buy',it+':1');if(countIn(it,srcs)<1)return dockErr&&!String(dockErr).startsWith('✓')?dockErr:'Could not buy one.'}
-    else return`No ${ITEMS[it].name} on hand: build one (Fabricate) or buy one where it's sold.`}
+  if(k&&countIn(it,srcs)<1)return`No ${ITEMS[it].name} in your hold or hangar: buy one on the Market or build one (Fabricate), then fit it.`;
   const out=arr[i],outIt=out&&(ids[i]||PART[out]);if(out)partToStore(st,out,gr[i],ids[i]);arr[i]='';gr[i]=1;ids[i]=null;if(k){takeFrom({[it]:1},srcs);arr[i]=k;gr[i]=1;ids[i]=it===PART[k]?null:it}
   if(P.tune&&typeof P.tune==='object')FIT_T.set(P.tune,F);if(W&&W.player)refreshPlayerStats();mtoolOf(P);if(P.ammo>ammoCap(P))P.ammo=ammoCap(P);if(P.rack>pRack(P))P.rack=pRack(P);if(P.blN>blCap(P))P.blN=blCap(P);
   return k?`✓ ${ITEMS[it].name} fitted${out?`; the ${ITEMS[outIt].name} went to your ${String(c.storageName||'vault').toLowerCase()}`:''}.`:`✓ ${ITEMS[outIt].name} taken out and put in your ${String(c.storageName||'vault').toLowerCase()}.`}
@@ -10059,7 +10059,7 @@ const WORK_MDL={halcyon:{skiff:'dz_wren',prospector:'dz_plover',dredger:'dz_hero
 // torpedoes or charges per launcher), lock (lock time), ml (mining-laser rate), cargo (cargo-module hold), scan (scanner reach),
 // speed (the whole ship's top speed); maxG: the top grade its parts take.
 const MAKERS={
-  tcy:{name:'Teal & Corvane Yards',short:'Corvane',home:'halcyon',parts:{cargo:{cargo:.06,speed:-.01}}},
+  tcy:{name:'Teal & Corvane Yards',short:'Corvane',home:'halcyon',parts:{cargo:{cargo:.06,speed:-.01},dronec:{dh:.2}}},
   bl:{name:'Brightline Emitters',short:'Brightline',home:'halcyon',parts:{laser:{dmg:.1,e:.1}}},
   hf:{name:'Hold Foundry',short:'Foundry',home:'varkesh',parts:{charge:{mag:1,speed:-.01}}},
   mg:{name:'Marchgun Ordnance',short:'Marchgun',home:'varkesh',parts:{gun:{dmg:.12,ammo:-.15},missile:{mag:1,lock:.1}}},
@@ -10068,11 +10068,11 @@ const MAKERS={
   mwa:{name:'Mirrorwater Arms',short:'Mirrorwater',home:'mw',parts:{gun:{ammo:.1},laser:{},missile:{},torpedo:{}}},
   qs:{name:'Quicksilver Hullworks',short:'Quicksilver',home:'mw',parts:{cargo:{cargo:.03},land:{}}},
   cr:{name:'Coldwater Refit',short:'Refit',home:'cw',maxG:3,parts:{gun:{dmg:-.05},laser:{dmg:-.05},missile:{}}},
-  cp:{name:'Coldwater Prospecting',short:'Prospecting',home:'cw',parts:{mlaser:{ml:.12},charge:{mag:1},scanner:{scan:.1}}},
+  cp:{name:'Coldwater Prospecting',short:'Prospecting',home:'cw',parts:{mlaser:{ml:.12},charge:{mag:1},scanner:{scan:.1},dronec:{dd:.15}}},
   ewd:{name:'Ember Wake Drives',short:'Ember',home:'ew',parts:{cargo:{cargo:.08,speed:-.02}}},
   wf:{name:'Wakefire Munitions',short:'Wakefire',home:'ew',parts:{missile:{mag:1},torpedo:{mag:1}}}};
 const MK_WORKS={every:90,cap:4,seed:2};
-const TR_TXT={dmg:'damage',e:'energy draw',ammo:'rounds',mag:'per launcher',lock:'lock time',ml:'cutting rate',cargo:'hold',scan:'scanner reach',speed:'top speed'};
+const TR_TXT={dmg:'damage',e:'energy draw',ammo:'rounds',mag:'per launcher',lock:'lock time',ml:'cutting rate',cargo:'hold',scan:'scanner reach',speed:'top speed',dh:'drone hull',dd:'drone damage'};
 function trText(tr){return Object.keys(tr).map(k=>k==='mag'?`${tr[k]>0?'+':''}${tr[k]} ${TR_TXT[k]}`:`${tr[k]>0?'+':'−'}${Math.round(Math.abs(tr[k])*100)}% ${TR_TXT[k]}`).join(', ')}
 const MK_ITEMS={};
 for(const m in MAKERS)for(const k in MAKERS[m].parts){const id=`mp_${m}_${k}`,tr=MAKERS[m].parts[k];ITEMS[id]={name:`${MAKERS[m].short} ${(WPN[k]||UTIL[k]).name.replace(/^./,x=>x.toLowerCase())}`.replace(/^./,x=>x.toUpperCase()),recipe:{...PART_RC[k]},col:PART_COL[k],part:k,maker:m,tr,trTxt:trText(tr)?`${MAKERS[m].name}: ${trText(tr)}.`:`${MAKERS[m].name}: standard.`};
@@ -11674,7 +11674,7 @@ function hgWords(r){try{const B=$('dBody');if(!B)return r;for(const el of B.quer
 // Below the systems: ammunition, missiles and charges, and Rearm. The ship's stats stay in the header line.
 // The old Loadout block in the Shipyard tab goes (it lives here now).
 let ldSel='sys:engine';
-const LD_EFF={gun:'+10% damage a grade',laser:'+10% damage a grade',missile:'one more missile a grade',torpedo:'one more torpedo a grade',charge:'one more charge a grade',mlaser:'+15% cutting rate a grade',cargo:'+5% hold a grade',scanner:'+20% reach a grade',land:'one grade only',hide:'+4 t hidden a grade',bdev:'one more beacon device a grade',lrack:'one more limpet a grade'};
+const LD_EFF={gun:'+10% damage a grade',laser:'+10% damage a grade',missile:'one more missile a grade',torpedo:'one more torpedo a grade',charge:'one more charge a grade',mlaser:'+15% cutting rate a grade',cargo:'+5% hold a grade',scanner:'+20% reach a grade',dronec:'+25% drone hull and +15% drone damage a grade',land:'one grade only',hide:'+4 t hidden a grade',bdev:'one more beacon device a grade',lrack:'one more limpet a grade'};
 function ldShape(cls){if(blHull(cls))return'M0,-120 L40,-96 L52,40 L36,110 L-36,110 L-52,40 L-40,-96 Z M-52,-10 L-96,0 L-96,50 L-52,52 Z M52,-10 L96,0 L96,50 L52,52 Z';
   if(isHaulCls(cls))return'M0,-130 L36,-104 L40,110 L-40,110 L-36,-104 Z M-40,-60 L-92,-56 L-92,70 L-40,74 Z M40,-60 L92,-56 L92,70 L40,74 Z';
   return'M0,-150 L18,-80 L26,-20 L110,20 L150,34 L150,56 L110,58 L34,66 L28,110 L50,136 L0,128 L-50,136 L-28,110 L-34,66 L-110,58 L-150,56 L-150,34 L-110,20 L-26,-20 L-18,-80 Z'}
@@ -11692,9 +11692,10 @@ function ldSlotHtml(c,P,g,i){const F=fitOf(P),kind=(g==='w'?F.w:F.u)[i],gr=((g==
   else h+=`<div class="ldname"><b style="color:var(--dim)">Empty slot</b></div>`;
   const kinds=g==='w'?Object.keys(WPN).filter(k=>wpnOK(P.cls,k,i)):Object.keys(UTIL).filter(k=>!['bdev','lrack'].includes(k)||isScoutCls(P.cls));
   const cur=kind?(((g==='w'?F.wi:F.ui)||[])[i]||PART[kind]):null;let rows='';
-  for(const k of kinds)for(const it of partItems(k)){if(it===cur)continue;const have=countIn(it,srcs),mk=c.market&&(c.market[it]||0)>0?mBuy(c,it):0;if(it!==PART[k]&&!have&&!mk)continue;
-    rows+=`<div class="ldopt">${gIcon(it,15)}<span style="flex:1;min-width:0"><span>${esc(ITEMS[it].name)}</span><br><span class="mass" style="margin:0">${esc(ITEMS[it].trTxt||'standard')} · ${have?`${have} on hand`:mk?`${fmt(mk)} cr here`:'none here'}</span></span><button class="btn sm" data-act="fit" data-arg="${g}:${i}:${it}" ${have||mk&&P.credits>=mk?'':'disabled'}>${have?'Fit':'Buy & fit'}</button></div>`}
-  if(rows)h+=`<div class="lab" style="margin-top:12px">Fit instead</div>${rows}`;return h}
+  // (user, 3 Nov 2026) only the parts you have, in your hold or hangar: buying is the Market's job
+  for(const k of kinds)for(const it of partItems(k)){if(it===cur)continue;const have=countIn(it,srcs);if(!have)continue;
+    rows+=`<div class="ldopt">${gIcon(it,15)}<span style="flex:1;min-width:0"><span>${esc(ITEMS[it].name)}</span><br><span class="mass" style="margin:0">${esc(ITEMS[it].trTxt||'standard')} · ${have} on hand</span></span><button class="btn sm" data-act="fit" data-arg="${g}:${i}:${it}">Fit</button></div>`}
+  if(rows)h+=`<div class="lab" style="margin-top:12px">Fit instead · from your hold and hangar</div>${rows}`;else h+=`<div class="note" style="margin-top:12px">No other parts for this slot in your hold or hangar.${c.market?' Buy parts on the Market, then fit them here.':''}</div>`;return h}
 function ldLeft(c,P){const F=fitOf(P),W0=640,H0=380,cx=W0/2,cy=H0/2-10,st=W.player&&W.player.st;
   const nW=F.w.length,nU=F.u.length,slots=[];
   F.w.forEach((k,i)=>{const side=i%2?1:-1,row=Math.floor(i/2),ny=Math.ceil(nW/2);slots.push({g:'w',i,x:side<0?8:W0-150,y:30+row*(H0-150)/Math.max(1,ny-1||1),ax:cx+side*(40+row*18),ay:cy-60+row*40})});
@@ -11705,7 +11706,7 @@ function ldLeft(c,P){const F=fitOf(P),W0=640,H0=380,cx=W0/2,cy=H0/2-10,st=W.play
     btns+=`<button class="ldslot${on?' on':''}" type="button" data-act="ldsel" data-arg="${s.g}:${s.i}" style="left:${s.x}px;top:${s.y}px"><span class="lab" style="font-size:10px">${s.g==='w'?'Weapon':'Utility'} ${s.i+1}</span><span class="ldsn">${id?gIcon(id,13)+esc(ITEMS[id].name):'<span style="color:var(--dim)">empty</span>'}</span><span>${id?ldPips(gr):''}</span></button>`}
   svg+=`</svg>`;
   let sys='';for(const sl of SLOTS){if(sl.id==='drill'&&!blHull(P.cls))continue;const t=P.tiers[sl.id]||1,on=ldSel==='sys:'+sl.id;sys+=`<button class="ldsys${on?' on':''}" type="button" data-act="ldsel" data-arg="sys:${sl.id}"><span class="lab" style="font-size:10px">${esc(sl.name)}</span><span>${ldPips(t)}${(P.tune||{})[sl.id]?' '+'✦'.repeat(P.tune[sl.id]):''}</span></button>`}
-  const q=rearmQuote(P),t=isTorpHull(P.cls),rows=[ammoCap(P)?`Rounds ${fmt(P.ammo||0)} / ${fmt(ammoCap(P))}`:'',pRack(P)?`${t?'Torpedoes':'Missiles'} ${P.rack||0} / ${pRack(P)}`:'',blCap(P)?`Charges ${P.blN||0} / ${blCap(P)}`:''].filter(Boolean);
+  const q=rearmQuote(P),t=isTorpHull(P.cls),rows=[ammoCap(P)?`Rounds ${fmt(P.ammo||0)} / ${fmt(ammoCap(P))}`:'',pRack(P)?`${t?'Torpedoes':'Missiles'} ${P.rack||0} / ${pRack(P)}`:'',blCap(P)?`Charges ${P.blN||0} / ${blCap(P)}`:'',typeof drnCap==='function'&&drnCap(P)?`Drones ${(P.bay&&P.bay.drone)||0} / ${drnCap(P)}`:''].filter(Boolean);
   return`<div class="ldhead"><b>${esc((FAC(P.faction)||{hulls:{}}).hulls[P.cls]||CLASSES[P.cls].name)}</b> <span class="note" style="margin:0">${esc(CLASSES[P.cls].name)} · ${F.w.length} weapon, ${F.u.length} utility${st?` · ${Math.round(st.maxSpd)} m/s · ${Math.round(st.sCap)} shield · ${Math.round(st.hull)} hull · ${st.cargo} t`:''}</span></div>
     <div class="ldmap"><div style="position:relative;width:${W0}px;height:${H0}px">${svg}${btns}</div></div>
     <div class="ldsysrow">${sys}</div>
@@ -12289,16 +12290,16 @@ function cbFitted(P){const F=P&&fitOf(P),out=[];if(!F)return out;(F.u||[]).forEa
 fbHeld=function(P,o){for(const x of cbFitted(P))if(o.owner!==x.f)return x.f;return null};
 {const o=fbClaim;fbClaim=function(o2,f,by){const me=by==='me'||isMe(by),P=me?S.player:(S.pilots||{})[by];if(!P)return;const x=cbFitted(P).find(y=>y.f===f);if(!x)return;
   const F=fitOf(P);F.u[x.i]='';F.ui[x.i]=null;F.ug[x.i]=1;inv.add(P.cargo,'bc_'+f,1);const r=o.apply(this,arguments);try{if(me&&W&&W.player)refreshPlayerStats()}catch(e){}return r}}
-// fitting: fighters and bombers only; a beacon you don't have is bought here if this station sells that power's
+// fitting: fighters and bombers only; the Loadout fits only beacons you have; the Jobs board's Buy & fit (cbfit) buys one first
+let cbBuyOK=false;
 {const o=fitDo;fitDo=function(c,P,arg){const[g,i0,k]=String(arg).split(':'),I=k&&ITEMS[k];if(I&&I.part==='claim'){if(!beaconCls(P.cls))return'Claim Beacons fit fighters and bombers only.';
-    const srcs=[P.cargo,c.storage||P.vault];if(countIn(k,srcs)<1){if(!fbSold(c,P).includes(I.fb))return`No ${I.name} on hand: buy one where ${FACTIONS[I.fb].short} beacons are sold.`;const m=fbBuy(c,P,I.fb);if(!String(m).startsWith('✓'))return m}}
+    const srcs=[P.cargo,c.storage||P.vault];if(countIn(k,srcs)<1){if(!cbBuyOK)return`No ${I.name} in your hold or hangar: buy one on the Market (where ${FACTIONS[I.fb].short} beacons are sold), then fit it.`;if(!fbSold(c,P).includes(I.fb))return`${FACTIONS[I.fb].short} beacons aren't sold here.`;const m=fbBuy(c,P,I.fb);if(!String(m).startsWith('✓'))return m}}
   return o.apply(this,arguments)}}
 // no grades for beacons
 {const o=pupQuote;pupQuote=function(c,P,arg){const[g,i0]=String(arg).split(':'),F=fitOf(P);if(g==='u'&&(F.u||[])[+i0]==='claim')return null;return o.apply(this,arguments)}}
-// the Loadout slot panel: beacons only for hulls that carry them, and the ones you can buy here offered as Buy & fit
+// the Loadout slot panel: beacons only for hulls that carry them (only the ones you have are offered, as for every part)
 {const o=ldSlotHtml;ldSlotHtml=function(c,P,g,i){const ok=beaconCls(P.cls),U=UTIL.claim;if(!ok)delete UTIL.claim;let h;try{h=o.apply(this,arguments)}finally{UTIL.claim=U}
-  try{if(g==='u'&&ok){const srcs=[P.cargo,c.storage||P.vault],cur=((fitOf(P).ui)||[])[i];const rows=fbSold(c,P).map(f=>'bc_'+f).filter(it=>it!==cur&&!countIn(it,srcs)).map(it=>`<div class="ldopt">${gIcon(it,15)}<span style="flex:1;min-width:0"><span>${esc(ITEMS[it].name)}</span><br><span class="mass" style="margin:0">single use · claims for ${esc(FACTIONS[ITEMS[it].fb].short)} · ${fmt(CLAIM_PRICE)} cr here</span></span><button class="btn sm" data-act="fit" data-arg="u:${i}:${it}" ${P.credits>=CLAIM_PRICE?'':'disabled'}>Buy & fit</button></div>`).join('');
-    if(rows)h+=(/Fit instead/.test(h)?'':`<div class="lab" style="margin-top:12px">Fit instead</div>`)+rows}}catch(e){console.error(e)}return h}}
+  return h}}
 // the Market's tiles: the beacons sold here
 {const o=mkHtml;mkHtml=function(c,P){let h=o.apply(this,arguments);try{const L=fbSold(c,P);if(!L.length)return h;const srcs=[P.cargo,c.storage];
   h+=`<div class="mkgrp" style="margin-top:14px"><div class="lab">Claim Beacons · single use · fit one in a utility slot (fighters and bombers) and hold it in an outpost's ring to claim it for that power</div><div class="mkrow">${L.map(f=>{const k='bc_'+f,n=countIn(k,srcs);
@@ -12314,7 +12315,7 @@ function cbSlot(P){const U=fitOf(P).u||[];if(!U.length)return -1;let i=U.findInd
     if(cbFitted(P).some(x=>x.f===f)){j.sub+=` · ${sh} beacon fitted`;continue}
     const i=cbSlot(P),have=countIn(bc,[P.cargo,(c&&c.storage)||P.vault])>0,sold=fbSold(c,P).includes(f),was=i>=0?(fitOf(P).u||[])[i]:'';
     if(i<0){j.sub+=` · needs a utility slot for the beacon`;continue}
-    j.btn2=null;if(have)j.fix=['fit',`u:${i}:${bc}`,`Fit the ${sh} beacon`];else if(sold)j.fix=['fit',`u:${i}:${bc}`,`Buy & fit a ${sh} beacon · ${fmt(CLAIM_PRICE)} cr`];
+    j.btn2=null;if(have)j.fix=['cbfit',`${f}:${i}`,`Fit the ${sh} beacon`];else if(sold)j.fix=['cbfit',`${f}:${i}`,`Buy & fit a ${sh} beacon · ${fmt(CLAIM_PRICE)} cr`];
     j.sub+=have?` · your ${sh} beacon isn't fitted`:` · needs a ${sh} beacon`;
     const d0=j.detail;j.detail=()=>(d0?d0():'')+`<p class="note" style="margin:8px 0 0">${have||sold?`${have?'Fit the':'Buy & fit puts a'} ${esc(sh)} Claim Beacon in utility slot ${i+1}${was?` (your ${esc((UTIL[was]||{}).name||was)} goes to your ${c&&c.storage&&c.storage!==P.vault?esc(c.storageName||'store'):'vault'})`:''}. Then fly to the outpost, break its defences if it's held, and hold position inside its ring: the beacon claims it for ${esc(sh)} and is used up.`:`${esc(sh)} Claim Beacons aren't sold here: buy one at a freeport or a ${esc(sh)} station, then fit it on the Loadout.`}</p>`}}catch(e){console.error(e)}return out}}
 {const o=fbBuy;fbBuy=function(c,P,f){const r=o.apply(this,arguments);return typeof r==='string'?r.replace(/Carry it into an unclaimed or breached outpost's ring in a fighter or bomber and hold there/,"Fit it in a utility slot on the Loadout (fighters and bombers), then hold it in an unclaimed or breached outpost's ring"):r}}
@@ -12323,6 +12324,7 @@ function cbWhy(P,o){const own=o.owner?(FACTIONS[o.owner]?FACTIONS[o.owner].short
   const fit=cbFitted(P);if(fit.length){if(!beaconCls(P.cls))return pre+'Claim Beacons work only on fighters and bombers: switch hulls to claim it.';if(fit.every(x=>x.f===o.owner))return`${o.name} is already ${own}'s: your beacon claims for ${own} too.`}
   const hold=FAC_IDS.filter(f=>countIn('bc_'+f,[P.cargo,P.vault||{}])>0);if(hold.length)return pre+`Your ${hold.map(f=>FACTIONS[f].short).join(' and ')} Claim Beacon is in your hold, not fitted: fit it in a utility slot (Loadout) to claim.`;
   return pre+'Fit a Claim Beacon in a utility slot (buy one at a freeport or a power\'s station, then Loadout) to claim it.'}
+{const o=dockAction;dockAction=function(act,arg){if(act==='cbfit'){const[f,i]=String(arg).split(':');if(!FAC_IDS.includes(f)){dockErr='';return}const c=dockCtx(),P=S.player;cbBuyOK=true;try{dockErr=fitDo(c,P,`u:${+i}:bc_${f}`)}finally{cbBuyOK=false}return}return o.apply(this,arguments)}}
 
 //@src 16zw_ports.js
 // ============================================================ docking ports you can see (Beyond, 3 Nov 2026)
@@ -12400,20 +12402,18 @@ const ML={ringK:2};let mlK=1;
 // standard mining tool the hull is designed for (the mining laser and charge launcher) that isn't fitted is fitted for you:
 // your own from the hold or vault first (any maker's), otherwise the shipyard builds a standard one from the station's own
 // stores (goods only move, so the ledger stays exact). The part it displaces goes to your vault as before.
-function mlTools(c,P){if(!P||S.unb||!loadOn()||!blHull(P.cls))return'';const F=fitOf(P),D=slotsOf(P.cls,designOf(P.faction,P.cls)?P.faction:null),st=c.storage||P.vault,R=S.stations[P.sector];
+function mlTools(c,P){if(!P||S.unb||!loadOn()||!(blHull(P.cls)||drnHull(P.cls)))return'';const F=fitOf(P),D=slotsOf(P.cls,designOf(P.faction,P.cls)?P.faction:null),st=c.storage||P.vault,R=S.stations[P.sector];
   let mk=null;try{mk=R?(R.owner==='player'?R.stock:mkStock(R)):null}catch(e){}const out=[];
-  D.w.forEach((k,i)=>{if(k!=='mlaser'&&k!=='charge')return;if(F.w.includes(k))return;
+  D.w.forEach((k,i)=>{if(k!=='mlaser'&&k!=='charge')return;if(F.w.includes(k)||!blHull(P.cls))return;
     let id=partItems(k).find(x=>countIn(x,[P.cargo,st])>0);
     if(!id&&mk&&haveIn(PART_RC[k],[mk])){takeFrom(PART_RC[k],[mk]);inv.add(P.cargo,PART[k],1);id=PART[k]}
     if(!id)return;const was=F.w[i];const m=fitDo(c,P,`w:${i}:${id}`);if(F.w[i]===k)out.push(`${ITEMS[id].name}${was&&was!==k?` (your ${(WPN[was]||{}).name||was} went to your ${c.storage&&c.storage!==P.vault?(c.storageName||'store'):'vault'})`:''}`);else if(m)out.push(m)});
-  if(!out.length)return'';try{refreshPlayerStats()}catch(e){}if(F.w.includes('mlaser'))P.mtool='mlaser';return` Fitted for mining: ${out.join(', ')}.`}
+  (D.u||[]).forEach((k,i)=>{if(k!=='dronec'||F.u.includes('dronec')||F.u[i])return;let id=partItems(k).find(x=>countIn(x,[P.cargo,st])>0);
+    if(!id&&mk&&haveIn(PART_RC[k],[mk])){takeFrom(PART_RC[k],[mk]);inv.add(P.cargo,PART[k],1);id=PART[k]}if(!id)return;fitDo(c,P,`u:${i}:${id}`);if(F.u[i]===k)out.push(ITEMS[id].name)});
+  if(!out.length)return'';try{refreshPlayerStats()}catch(e){}if(F.w.includes('mlaser'))P.mtool='mlaser';return` Fitted as standard: ${out.join(', ')}.`}
 // and its drone bay comes full: drones from your hold or vault first, otherwise the shipyard builds them from the station's
 // stores (freeports sell none, so a Light Miner taken there used to launch with an empty bay)
-function hullDrones(c,P){const cap=(CLASSES[P.cls]&&CLASSES[P.cls].drones)||0;P.bay=P.bay||{};let need=cap-(P.bay.drone||0);if(need<=0)return'';const st=c.storage||P.vault,R=S.stations[P.sector];
-  let mk=null;try{mk=R?(R.owner==='player'?R.stock:mkStock(R)):null}catch(e){}let n=0;
-  for(const h of[P.cargo,st]){if(need<=0)break;const k=inv.take(h,'drone',need);n+=k;need-=k}
-  const rc=ITEMS.drone.recipe;while(need>0&&mk&&haveIn(rc,[mk])){takeFrom(rc,[mk]);n++;need--}
-  if(!n)return'';inv.add(P.bay,'drone',n);return` Drone bay ${P.bay.drone}/${cap}.`}
+function hullDrones(c,P){const D=drnRefill(c,P);return D.n?` Drone bay ${P.bay.drone}/${drnCap(P)}${D.paid?` (${fmt(D.paid)} cr)`:''}.`:''}
 // empty slots on a new hull take your own parts of the hull's standard kinds back from the hold or vault (switching a Light
 // Miner back to a Light Fighter used to leave it with no guns, the guns sitting in the vault)
 function hullRefit(c,P){if(!P||S.unb||!loadOn())return'';const F=fitOf(P),D=slotsOf(P.cls,designOf(P.faction,P.cls)?P.faction:null),st=c.storage||P.vault,out=[];
@@ -12443,7 +12443,7 @@ function mlAutoTgt(p){const sec=S.sectors[W.sid];if(!sec)return null;qRot(p.q,0,
 const CORP_HOME={halcyon:['tcy','bl'],varkesh:['hf','mg'],ostrova:['sw','ad'],mw:['qs','mwa'],cw:['cp','cr'],ew:['ewd','wf']};
 const CORP_W=new Set(['gun','laser','missile','torpedo','mlaser','charge']);
 const CORP_PAY=new Set(['missile','torpedo','ammo','rounds','charges','chg','drone','limpet','mine','decoy']);
-function corpSells(h){if(FAC_IDS.includes(h))return['gun','laser','missile','torpedo','land','cargo','scanner',...(h==='ostrova'?['bdev','lrack']:[])];return Object.keys(PART)}
+function corpSells(h){if(FAC_IDS.includes(h))return['gun','laser','missile','torpedo','land','cargo','scanner','dronec',...(h==='ostrova'?['bdev','lrack']:[])];return Object.keys(PART)}
 const MK_LINE={},MK_PLAIN={};
 (function(){for(const h in CORP_HOME){const L=CORP_HOME[h];
   const plain=(m,k)=>{MK_PLAIN[m]=MK_PLAIN[m]||{};if(MK_PLAIN[m][k])return;const P0=MAKERS[m].parts[k];let id;
@@ -12638,6 +12638,106 @@ function mpDockedNow(P){return P.docked==='station'||P.docked==='lair'||!!(S.out
     if(m&&m.t==='actr'){const r=o.apply(this,arguments);if(typeof coErr!=='undefined'&&$('company')&&!$('company').hidden){coErr=m.err||'';try{renderCompany()}catch(e){}}
       if($('map')&&!$('map').hidden){if(typeof mpMsg!=='undefined'&&m.err)mpMsg=m.err;try{renderMapSide()}catch(e){}}return r}}catch(x){}
   return o.apply(this,arguments)}}
+
+//@src 16zzc_drones.js
+// ============================================================ the Drone controller; guard drones as ammunition (Beyond, 3 Nov 2026)
+// The user's asks and choices:
+//  - A utility part, the Drone controller (pt_dronec), gives a pilot's ship its guard drones: without one fitted the drones
+//    stay in the bay. It fits the hulls with a drone bay only (the miners and haulers); the hull sets how many drones it
+//    carries, and each grade above 1 makes the drones tougher (+25% hull) and harder-hitting (+15% damage). Every miner and
+//    hauler has a slot for it (one more utility slot) and comes with one fitted. Two makers build their own: Coldwater
+//    Prospecting (+15% drone damage) and Teal & Corvane Yards (+20% drone hull); a plain one is built in a workshop.
+//  - Guard drones are ammunition: lost drones are gone, and the bay is refilled at Rearm (automatically when you dock) like
+//    missiles and charges: your own Guard Drones from the hold or vault first, then drones the station builds from its own
+//    stores, paid in credits at the drone's value to the station's treasury (free at your own base). Drones in a hold stay
+//    ordinary goods; the station's materials become the drones, so the ledger stays exact.
+//  - Pilots from before this change: a miner or hauler without the new slot gets it, and (once) a standard controller
+//    fitted in it, so their drones keep flying.
+const DRN={hullG:.25,dmgG:.15};
+function drnHull(cls){return((CLASSES[cls]&&CLASSES[cls].drones)||0)>0}
+for(const k in HULL_SLOTS)if(drnHull(k)&&!HULL_SLOTS[k].u.includes('dronec'))HULL_SLOTS[k].u.push('dronec');
+function drnCtl(P){if(!P||!loadOn())return{on:true,g:1,dh:0,dd:0};const F=fitOf(P);let best=null;
+  (F.u||[]).forEach((k,i)=>{if(k!=='dronec')return;const g=(F.ug&&F.ug[i])||1,it=F.ui&&F.ui[i],tr=(it&&ITEMS[it]&&ITEMS[it].tr)||{};if(!best||g>best.g)best={on:true,g,dh:tr.dh||0,dd:tr.dd||0}});
+  return best||{on:false,g:0,dh:0,dd:0}}
+function drnCap(P){return drnCtl(P).on?((CLASSES[P.cls]&&CLASSES[P.cls].drones)||0):0}
+function drnPrice(){return Math.max(1,Math.round(baseValue('drone')))}
+// fitting: drone-bay hulls only
+{const o=fitDo;fitDo=function(c,P,arg){const[g,i0,k]=String(arg).split(':'),I=k&&ITEMS[k];if(g==='u'&&(k==='dronec'||(I&&I.part==='dronec'))&&!drnHull(P.cls))return'A Drone controller fits miners and haulers only (ships with a drone bay).';return o.apply(this,arguments)}}
+// new fits are marked; an older miner's or hauler's fit gets the slot and, once, a standard controller
+{const o=fitNew;fitNew=function(){const F=o.apply(this,arguments);F.dcg=1;return F}}
+{const o=fitOf;fitOf=function(P){const F=o.apply(this,arguments);try{if(P&&P.cls&&drnHull(P.cls)&&Array.isArray(F.u)){const D=slotsOf(P.cls,designOf(P.faction,P.cls)?P.faction:null);
+    while(F.u.length<D.u.length){F.u.push('');(F.ug=F.ug||[]).push(1);(F.ui=F.ui||[]).push(null)}
+    if(!F.dcg&&!NET.cl&&S&&S.ledger0){F.dcg=1;if(!F.u.includes('dronec')){const i=F.u.lastIndexOf('');if(i>=0)devLedger(()=>{F.u[i]='dronec';F.ug[i]=1;F.ui[i]=null})}}}}catch(e){}return F}}
+// launching: no controller, no drones; a controller's grade and maker make them tougher
+function drnBuff(P,L){const C=drnCtl(P);if(!C.on)return;const kh=(1+DRN.hullG*(C.g-1))*(1+C.dh),kd=(1+DRN.dmgG*(C.g-1))*(1+C.dd);if(kh===1&&kd===1)return;
+  for(const d of L||[]){if(!d||d._dbuf)continue;d._dbuf=1;d.st={...d.st,hull:d.st.hull*kh,dmg:d.st.dmg*kd};d.hull=d.st.hull}}
+{const o=launchPlayerDrones;launchPlayerDrones=function(){const P=S&&S.player;if(P&&loadOn()&&!drnCtl(P).on)return;const r=o.apply(this,arguments);try{drnBuff(P,W&&W.player&&W.player.drones)}catch(e){}return r}}
+{const o=spawnRP;spawnRP=function(pid){const P=S.pilots&&S.pilots[pid];let kept=0;if(P&&loadOn()&&!drnCtl(P).on){P.bay=P.bay||{};kept=P.bay.drone||0;P.bay.drone=0}
+  let r;try{r=o.apply(this,arguments)}finally{if(kept&&P)P.bay.drone=(P.bay.drone||0)+kept}
+  try{const e=MP.rp[pid];if(e&&P){const L=[];for(const w of Object.values(WORLDS))for(const d of w.ents)if(d.role==='drone'&&d.mom===e)L.push(d);drnBuff(P,L)}}catch(e){}return r}}
+// ---- Rearm: the drone bay refills like the magazines
+function drnNeed(P){P.bay=P.bay||{};return Math.max(0,drnCap(P)-(P.bay.drone||0))}
+let drnInQ=true;
+{const o=rearmQuote;rearmQuote=function(P){const q=o.apply(this,arguments);try{if(drnInQ&&loadOn()){const n=drnNeed(P);q.drn=n;q.cr.drn=n*drnPrice();q.tot+=q.cr.drn;q.n+=n}}catch(e){}return q}}
+function drnRefill(c,P){const need=drnNeed(P);if(!need)return{n:0,paid:0,short:0};const st=(c&&c.storage)||P.vault;let own=0;
+  for(const h of[P.cargo,st]){if(own>=need)break;own+=inv.take(h,'drone',need-own)}
+  const R=S.stations[P.sector],mine=R&&R.owner==='player';let mk=null;try{mk=R&&P.docked==='station'?(mine?R.stock:mkStock(R)):null}catch(e){}
+  const pr=mine?0:drnPrice(),rc=ITEMS.drone.recipe;let b=0,paid=0;
+  while(own+b<need&&mk&&haveIn(rc,[mk])&&P.credits-paid>=pr){takeFrom(rc,[mk]);b++;paid+=pr}
+  if(paid)transfer('player',(c&&c.wallet)||(R&&R.owner)||'neutral',paid);if(own+b)inv.add(P.bay,'drone',own+b);return{n:own+b,own,paid,short:need-own-b}}
+{const o=rearmDo;rearmDo=function(c,P){let D={n:0,paid:0,short:0};try{if(loadOn())D=drnRefill(c,P)}catch(e){console.error(e)}
+  drnInQ=false;let m;try{m=o.apply(this,arguments)}finally{drnInQ=true}
+  if(!D.n&&!D.short)return m;const cap=drnCap(P),dm=D.n?`${D.n} guard drone${D.n>1?'s':''}${D.paid?` (${fmt(D.paid)} cr)`:''} · bay ${P.bay.drone||0}/${cap}`:'',sm=D.short?` The station couldn't supply ${D.short} more drone${D.short>1?'s':''}.`:'';
+  if(/^Nothing to rearm|^Not enough credits/.test(m))return D.n?`✓ Rearmed: ${dm}.${sm}`:(m+sm);return m.replace(/\.$/,'')+(dm?` · ${dm}`:'')+'.'+sm}}
+// the Ship tab's drone bay note
+{const o=renderDock;renderDock=function(){const r=o.apply(this,arguments);try{if(loadOn()&&S.player&&drnHull(S.player.cls)){const el=$('dBody');if(el)for(const h of el.querySelectorAll('.h3'))if(/^Drone bay/.test(h.textContent)){const n=h.nextElementSibling;if(n&&n.classList.contains('note')){const C=drnCtl(S.player);
+  n.textContent=C.on?`Guard drones launch with you and defend your ship (Drone controller, grade ${C.g}). They're ammunition: lost drones are gone, and the bay refills at Rearm when you dock, from your own drones first, then built by the station for ${fmt(drnPrice())} cr each.`:'No Drone controller fitted: your drones stay in the bay. Fit one in a utility slot on the Loadout.'}}}}catch(e){}return r}}
+
+//@src 16zzd_yard.js
+// ============================================================ the shipyard, reorganised (Beyond, 3 Nov 2026)
+// The user's asks: the hull picked in a dropdown (grouped by kind: Fighters, Bombers, Haulers, Miners, Scouts, Other, with
+// prices) shows its full card and a button to take it, and turns in a box on the right with its numbers against yours; a hull your Rating
+// doesn't reach says what it needs in plain words (one Contractor Rating, earned by work for any power, not a power's own).
+// Station works shows only at your own base: elsewhere it had nothing to do.
+const YARD_CAT=[['fighters','Fighters',['interceptor','striker','heavy','wraith']],['bombers','Bombers',['bomber','gunboat']],['haulers','Haulers',['courier','freighter','bulker']],['miners','Miners',['skiff','prospector','dredger']],['scouts','Scouts',['scout','scout2']]];
+let yardSel=null,yardRaf=0;
+function yardCatOf(k){const c=YARD_CAT.find(x=>x[2].includes(k));return c?c[0]:'other'}
+function yardFac(c,P,k){return(typeof yardDesign==='function'&&yardDesign(c,k))||P.faction}
+function yardPrice(P,k){if(P.cls===k)return'yours';const pr=hullOwned(P,k)?0:hullPrice(k)-vchOf(P,k),t=pr>0?`${fmt(pr)} cr`:'free';return hullRatingOK(P,k)?t:`${t} · needs Rating ${HULL_RATING[k]}`}
+function yardStats(c,P,k){const st=k===P.cls?shipStats(P.faction,P.cls,P.tiers,P.tune):shipStats(yardFac(c,P,k),k,baseTiers()),C=CLASSES[k],D=slotsOf(k,designOf(yardFac(c,P,k),k)?yardFac(c,P,k):null);
+  return{hull:Math.round(st.hull),shield:Math.round(st.sCap),speed:Math.round(st.maxSpd),hold:st.cargo,drones:C.drones||0,w:D.w.length,u:D.u.length}}
+function yardInfo(c,P,k){const a=yardStats(c,P,k),b=k===P.cls?null:yardStats(c,P,P.cls),C=CLASSES[k],d=(x,y,u)=>b&&x!==y?` <span class="mass" style="margin:0;color:${x>y?'#7ad9a7':'var(--danger)'}">${x>y?'+':'−'}${fmt(Math.abs(x-y))}${u||''}</span>`:'',kv=(n,x,y,u)=>`<div class="kv"><span>${n}</span><b>${fmt(x)}${u||''}${d(x,y,u)}</b></div>`;
+  return`<div class="lab">${k===P.cls?'You fly':'Selected'}</div><div style="font-size:20px;font-weight:700;line-height:1.1">${esc(FAC(yardFac(c,P,k)).hulls[k]||C.name)}</div><div class="note" style="margin:2px 0 8px">${esc(C.name)}${b?' · compared with yours':''}</div>`+
+    kv('Hull',a.hull,b&&b.hull)+kv('Shield',a.shield,b&&b.shield)+kv('Top speed',a.speed,b&&b.speed,' m/s')+kv('Hold',a.hold,b&&b.hold,' t')+(a.drones||(b&&b.drones)?kv('Drones',a.drones,b&&b.drones):'')+kv('Weapon slots',a.w,b&&b.w)+kv('Utility slots',a.u,b&&b.u)}
+function yardSpin(){yardRaf=0;const cv=$('yardPic');if(!cv||$('dock').hidden||!G||!MDL.ready)return;const w=cv.clientWidth,h=cv.clientHeight;if(w&&h){if(cv.width!==w*DPR){cv.width=w*DPR;cv.height=h*DPR}
+    const c=cv.getContext('2d');c.setTransform(DPR,0,0,DPR,0,0);c.clearRect(0,0,w,h);const P=S.player,k=yardSel||P.cls,f=cv.dataset.fac||P.faction;
+    try{const d=shipMesh(f,k).hull.data,a=performance.now()/1000*.6,q=qMul(qAxis(1,0,0,.38,q0()),qAxis(0,1,0,a,q0()),q0()),s=Math.min(w,h)*.46/stR(d);stDraw(c,d,q,w/2,h/2,s,1)}catch(e){}}
+  yardRaf=requestAnimationFrame(yardSpin)}
+// the user's second pass: a dropdown of hulls in their kinds, with prices; the picked hull's full card and a button to take it
+// on the left; the turning picture and its numbers (against your current hull) on the right
+{const o=renderDock;renderDock=function(){const r=o.apply(this,arguments);try{if(dockTab!=='ship'||S.unb)return r;const body=$('dBody'),box=body&&body.querySelector('.ships');if(!box||box.dataset.yd)return r;
+  const btns=[...box.querySelectorAll('button.cls[data-act="hull"]')];if(!btns.length)return r;const P=S.player,c=dockCtx(),keys=btns.map(b=>b.dataset.arg);if(!yardSel||!keys.includes(yardSel))yardSel=P.cls;
+  for(const b of btns)for(const t of b.querySelectorAll('.req.no'))t.textContent=t.textContent.replace(/^needs Rating (\d+)$/,(m,n)=>`needs Contractor Rating ${n} (you're ${ratingOf(P)}): earned by work for any power`);
+  const cats=[...YARD_CAT,['other','Other',[]]];let opts='';
+  for(const[k,n]of cats){const L=keys.filter(x=>yardCatOf(x)===k);if(!L.length)continue;opts+=`<optgroup label="${n}">${L.map(x=>`<option value="${x}"${x===yardSel?' selected':''}>${esc(FAC(yardFac(c,P,x)).hulls[x]||CLASSES[x].name)} · ${esc(CLASSES[x].name)} · ${esc(yardPrice(P,x))}</option>`).join('')}</optgroup>`}
+  const sb=btns.find(b=>b.dataset.arg===yardSel),k=yardSel,can=sb&&!sb.disabled&&P.cls!==k,pr=yardPrice(P,k);
+  const wrap=document.createElement('div');wrap.className='yd2';
+  wrap.innerHTML=`<div class="ydleft"><label class="lab" for="yardSelEl" style="display:block;margin-bottom:4px">Hull</label><select id="yardSelEl" class="ydsel">${opts}</select><div class="ydcard"></div>
+      <div class="act" style="margin-top:10px;justify-content:flex-start"><button class="btn${can?' pri':''}" type="button" data-act="hull" data-arg="${k}" ${can?'':'disabled'}>${P.cls===k?'Your current hull':can?`Take the ${esc(FAC(yardFac(c,P,k)).hulls[k]||CLASSES[k].name)} · ${esc(pr)}`:(!hullRatingOK(P,k)?`Needs Contractor Rating ${HULL_RATING[k]} (you're ${ratingOf(P)})`:sb&&/orbital docks/.test(sb.textContent)?'Sold at orbital docks only':P.credits<(hullPrice(k)-vchOf(P,k))?`${esc(pr)}: not enough credits`:`Not available here`)}</button></div></div>
+    <div class="ydpic"><canvas id="yardPic" data-fac="${yardFac(c,P,k)}" aria-label="The selected ship"></canvas><div class="ydinfo">${yardInfo(c,P,k)}</div></div>`;
+  if(sb){const card=document.createElement('div');card.className='cls ydc'+(P.cls===k?' on':'');card.innerHTML=sb.innerHTML;wrap.querySelector('.ydcard').appendChild(card)}
+  wrap.querySelector('#yardSelEl').addEventListener('change',e=>{yardSel=e.target.value;renderDock()});
+  box.dataset.yd=1;box.replaceWith(wrap);if(!yardRaf)yardRaf=requestAnimationFrame(yardSpin)}catch(e){console.error(e)}return r}}
+// Station works: your own base (or your power's station when sworn) only
+{const o=dockCtx;dockCtx=function(){const c=o.apply(this,arguments);try{if(c&&c.works&&!c.haven&&c.owner!=='player'){c.works=false;if(dockTab==='works')dockTab='home'}}catch(e){}return c}}
+// the dock's top menu (user, 3 Nov 2026): Fabricate moves under Trade; Patronage (sponsoring a power's projects) under
+// Allegiance; Allegiance becomes 5 and Station 6, and Station (works, your outpost) shows only at your own base
+{const T=DOCK_TOP,g=k=>T.find(x=>x[0]===k),tr=g('trade'),st=g('station'),al=g('allegiance');
+  if(tr&&!tr[2].includes('fab')){const i=tr[2].indexOf('trade');tr[2].splice(i>=0?i+1:tr[2].length,0,'fab')}
+  if(st)st[2]=st[2].filter(k=>k!=='fab'&&k!=='patron');if(al&&!al[2].includes('patron'))al[2].push('patron');
+  if(st&&al){T.splice(T.indexOf(st),1);T.splice(T.indexOf(al),1);T.push(al,st)}}
+CLASSES.prospector.desc='A charge launcher, a mining laser and a gun, 3 guard drones (with its drone controller), mid hold.';CLASSES.dredger.desc='A charge launcher, a mining laser and a gun, 4 guard drones (with its drone controller), the deepest miner hold. Slow and armoured.';
+CLASSES.skiff.desc='A mining laser and a charge launcher, 2 guard drones (with its drone controller), small hold. Nimble enough to run.';
 
 //@src 17_main.js
 // ============================================================ main loop
