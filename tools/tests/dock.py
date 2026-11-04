@@ -23,7 +23,7 @@ async def main():
       await pg.screenshot(path=D+f'dock_k{i}.png')
     for t in ['market','trade','storage','jobs','upg','bay','ship','fab','works']:
       r=await ev(f"(()=>{{dockTab='{t}';renderDock();return dockTab+' '+document.querySelector('#dBody').innerText.length}})()");print('view',r)
-    await ev("dockTab='market';renderDock()");await pg.screenshot(path=D+'dock_market.png')
+    await ev("dockTab='market';mkFilter='bcn';renderDock()");await pg.screenshot(path=D+'dock_market.png')
     print('buy beacon',await ev("(()=>{const c0=S.player.credits;document.querySelector('[data-act=buybeacon]').click();return JSON.stringify({paid:c0-S.player.credits,vault:S.player.vault.beacon,msg:document.getElementById('dErr').textContent.slice(0,120)})})()"))
     print('sell hold',await ev("(()=>{dockTab='home';renderDock();const c0=S.player.credits;const b=document.querySelector('[data-act=sellhold]');if(!b)return 'no button';b.click();return JSON.stringify({got:S.player.credits-c0,cargo:S.player.cargo,vault:S.player.vault,msg:document.getElementById('dErr').textContent})})()"))
     print('after',await ev("document.querySelector('#dTabs').innerText.replace(/\\n/g,' | ')"))
