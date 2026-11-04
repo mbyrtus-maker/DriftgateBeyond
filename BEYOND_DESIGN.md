@@ -1812,3 +1812,8 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - **Why:** an engine glow is a disc turned to face the camera. The chase camera sits behind and above, so the disc leaned forward into the hull. On the Varkesh hulls the nozzles sit recessed in square housings, and the housing cut the top of the glow off flat, leaving a D shape.
 - **Now** (`engGlow` in `12_render.js`): the glow is pulled towards the camera by its own size, in proportion to how far behind the engine the camera sits. From behind it shows as a whole round glow over the nozzle (checked on the Fang, Halberd and Bulwark, and the Halcyon Swift is unchanged). From the side or the front it stays on the nozzle, so the hull still hides it as before. This applies to every ship.
 
+### Smaller drones (3 Nov 2026)
+- **The user's ask:** reduce the size of all drones.
+- Guard drones (the Aegis, Ward and Halo, and the Brood's mite drones on its miners and haulers) were radius 9, three quarters of a light fighter (12). They are now radius 5, a little over half their old size, both as drawn and as a target (`CLASSES.drone.radius`). Their engine glows shrink with them.
+- Limpets keep their own size (radius 5, set when they launch).
+
