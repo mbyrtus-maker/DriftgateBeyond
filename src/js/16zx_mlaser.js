@@ -38,10 +38,10 @@ function mlTools(c,P){if(!P||S.unb||!loadOn()||!(blHull(P.cls)||drnHull(P.cls)))
   let mk=null;try{mk=R?(R.owner==='player'?R.stock:mkStock(R)):null}catch(e){}const out=[];
   D.w.forEach((k,i)=>{if(k!=='mlaser'&&k!=='charge')return;if(F.w.includes(k)||!blHull(P.cls))return;
     let id=partItems(k).find(x=>countIn(x,[P.cargo,st])>0);
-    if(!id&&mk&&haveIn(PART_RC[k],[mk])){takeFrom(PART_RC[k],[mk]);inv.add(P.cargo,PART[k],1);id=PART[k]}
+    if(!id&&mk&&stBuildFrom([mk],PART[k])){inv.add(P.cargo,PART[k],1);id=PART[k]}
     if(!id)return;const was=F.w[i];const m=fitDo(c,P,`w:${i}:${id}`);if(F.w[i]===k)out.push(`${ITEMS[id].name}${was&&was!==k?` (your ${(WPN[was]||{}).name||was} went to your ${c.storage&&c.storage!==P.vault?(c.storageName||'store'):'vault'})`:''}`);else if(m)out.push(m)});
   (D.u||[]).forEach((k,i)=>{if(k!=='dronec'||F.u.includes('dronec')||F.u[i])return;let id=partItems(k).find(x=>countIn(x,[P.cargo,st])>0);
-    if(!id&&mk&&haveIn(PART_RC[k],[mk])){takeFrom(PART_RC[k],[mk]);inv.add(P.cargo,PART[k],1);id=PART[k]}if(!id)return;fitDo(c,P,`u:${i}:${id}`);if(F.u[i]===k)out.push(ITEMS[id].name)});
+    if(!id&&mk&&stBuildFrom([mk],PART[k])){inv.add(P.cargo,PART[k],1);id=PART[k]}if(!id)return;fitDo(c,P,`u:${i}:${id}`);if(F.u[i]===k)out.push(ITEMS[id].name)});
   if(!out.length)return'';try{refreshPlayerStats()}catch(e){}if(F.w.includes('mlaser'))P.mtool='mlaser';return` Fitted as standard: ${out.join(', ')}.`}
 // and its drone bay comes full: drones from your hold or vault first, otherwise the shipyard builds them from the station's
 // stores (freeports sell none, so a Light Miner taken there used to launch with an empty bay)

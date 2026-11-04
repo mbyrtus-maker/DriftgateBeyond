@@ -13,6 +13,10 @@
 //  - Pilots from before this change: a miner or hauler without the new slot gets it, and (once) a standard controller
 //    fitted in it, so their drones keep flying.
 const DRN={hullG:.25,dmgG:.15};
+// a station builds an item from its stores: from the item's own recipe, or failing that straight from the raw ore that goes
+// into it (mass is conserved either way; freeports often run short of wire and coils but keep plenty of ore)
+function stBuildFrom(H,id){const rc=ITEMS[id]&&ITEMS[id].recipe;if(!rc||!H||!H.length)return false;if(haveIn(rc,H)){takeFrom(rc,H);return true}
+  const c=comp(id),raw={};for(const e of RAWS)if(c[e]>0)raw[e]=Math.round(c[e]);if(Object.keys(raw).length&&Object.values(raw).every(v=>Number.isInteger(v))&&haveIn(raw,H)){takeFrom(raw,H);return true}return false}
 function drnHull(cls){return((CLASSES[cls]&&CLASSES[cls].drones)||0)>0}
 for(const k in HULL_SLOTS)if(drnHull(k)&&!HULL_SLOTS[k].u.includes('dronec'))HULL_SLOTS[k].u.push('dronec');
 function drnCtl(P){if(!P||!loadOn())return{on:true,g:1,dh:0,dd:0};const F=fitOf(P);let best=null;
@@ -40,9 +44,12 @@ let drnInQ=true;
 {const o=rearmQuote;rearmQuote=function(P){const q=o.apply(this,arguments);try{if(drnInQ&&loadOn()){const n=drnNeed(P);q.drn=n;q.cr.drn=n*drnPrice();q.tot+=q.cr.drn;q.n+=n}}catch(e){}return q}}
 function drnRefill(c,P){const need=drnNeed(P);if(!need)return{n:0,paid:0,short:0};const st=(c&&c.storage)||P.vault;let own=0;
   for(const h of[P.cargo,st]){if(own>=need)break;own+=inv.take(h,'drone',need-own)}
-  const R=S.stations[P.sector],mine=R&&R.owner==='player';let mk=null;try{mk=R&&P.docked==='station'?(mine?R.stock:mkStock(R)):null}catch(e){}
-  const pr=mine?0:drnPrice(),rc=ITEMS.drone.recipe;let b=0,paid=0;
-  while(own+b<need&&mk&&haveIn(rc,[mk])&&P.credits-paid>=pr){takeFrom(rc,[mk]);b++;paid+=pr}
+  // (4 Nov 2026, a guest test found freeports short of coils) the station's ready drones first, then built from its market,
+  // its own stores and (at a power's station) the power's warehouse together
+  const R=S.stations[P.sector],mine=R&&R.owner==='player';let H=[];try{if(R&&P.docked==='station')H=mine?[R.stock]:[mkStock(R),typeof isFreeF==='function'&&isFreeF(R)?dStore(R):null,typeof isDepotF==='function'&&isDepotF(R)?dStore(R):null,FAC_IDS.includes(R.owner)?S.econ.stock[R.owner]:null].filter(Boolean)}catch(e){}
+  H=[...new Set(H)];const pr=mine?0:drnPrice(),rc=ITEMS.drone.recipe;let b=0,paid=0;
+  for(const h of H)while(own+b<need&&(h.drone||0)>0&&P.credits-paid>=pr){inv.take(h,'drone',1);b++;paid+=pr}
+  while(own+b<need&&H.length&&P.credits-paid>=pr&&stBuildFrom(H,'drone')){b++;paid+=pr}
   if(paid)transfer('player',(c&&c.wallet)||(R&&R.owner)||'neutral',paid);if(own+b)inv.add(P.bay,'drone',own+b);return{n:own+b,own,paid,short:need-own-b}}
 {const o=rearmDo;rearmDo=function(c,P){let D={n:0,paid:0,short:0};try{if(loadOn())D=drnRefill(c,P)}catch(e){console.error(e)}
   drnInQ=false;let m;try{m=o.apply(this,arguments)}finally{drnInQ=true}
