@@ -1785,7 +1785,7 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - It shows every power's news whoever you serve: it's galactic news, not your own channel. The host keeps it in the state (`S.news`), so guests see the same box. On a phone it shows the newest two.
 - **Test:** `news.py` (in the quick suite).
 
-### Comms: Jobs here (proposed 3 Nov 2026, waiting for the user's OK; not built)
+### Comms: Jobs here (designed 3 Nov 2026; the user's three choices are in; not built yet)
 - **The user's question:** can Comms show the missions in the sector you're in? For example an escort job if you fly a fighter, or an ore request if you fly a miner.
 - **What Comms does today:**
   - The Command page (I) offers escort me, guard me, build, distress and your capital ship's supply run.
@@ -1795,16 +1795,14 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - **The proposal: a "Jobs here" page in Comms.**
   - **Where it sits:** I opens Command as now, I again opens **Jobs here**, and I after that steps through the ships around you as before. The Comms panel's quick-keys line shows a count when there are any ("Jobs here: 3").
   - **What it lists:** the jobs located in this system, the ones the docked board marks "here", from the same board you'd see docked at this system's station, under the same rules about who hires you (your sworn power; a contractor needs Neutral or better). In a system with no station, or one that won't deal with you, it still lists what's happening here from the powers that hire you: convoys to escort or raid, operations, beacon missions, stations to claim, a carrier needing supplies.
-  - **Your hull's jobs first,** by the same fit the board uses: a fighter sees Fight first (convoy escorts and raids, operations, claims, the Dread Pirate's bounty), a miner Mine (ore contracts), a hauler Haul (contracts, freeport requests to this freeport, posted jobs, blockade runs into this system), a scout Scout (beacon missions, intel). Within that, best pay first.
+  - **Only your hull's jobs** (the user's choice), by the same fit the board uses: a fighter sees Fight (convoy escorts and raids, operations, claims, the Dread Pirate's bounty), a miner Mine (ore contracts), a hauler Haul (contracts, freeport requests to this freeport, posted jobs, blockade runs into this system), a scout Scout (beacon missions, intel). The signature hulls see their two kinds (Vesper scout and fight, Bombard mine and fight, Gannet haul and fight). Other jobs are hidden, with one line saying how many ("3 jobs for other ships: on the station's board"). Best pay first.
   - **Each line:** the job, its pay, and a word on what it takes ("deliver at the freeport", "fly with it", "kill the freighter"). Keys 1–3 pick a job; 4 is "More ▸" when there are more than four.
   - **Picking a job** does what Select job does on the board: it signs you on and tracks it, with its marker and course. A convoy escort signs you on to the convoy at once, an operation joins you to it, and a beacon mission or claim marks its target.
   - **What still needs the dock:** handing over goods (contract and posted-job deliveries go into a store), buying goods or a beacon for a job, and the jobs that start with cargo loaded at the dock (smuggling and black-market runs) or a purchase (the Dread Pirate rumour, selling a find). Delivery jobs show "deliver at the dock"; the dock-only jobs stay off the page, with one line: "2 more on the station's board: dock to see them".
-  - **Nothing here:** "No jobs in this system for you right now", and the nearest system that has some, with its jumps.
+  - **This system only** (the user's choice). **Nothing here:** "No jobs for your ship in this system right now", and the nearest system that has some, with its jumps.
+  - **The Unbound** (the user's choice): their page is **Prey here**: the convoys and freighters of the powers in this system worth taking, each with its side, where it's bound and its cargo (the rough or exact cargo-scanner reading if you have one, otherwise "unknown"), biggest haul first. Picking one targets it.
   - **Multiplayer:** a guest's pick goes to the host as a new in-flight message, run there inside `runAs` for that pilot. It can only sign on or join; anything that moves goods stays a docked action.
   - **Training:** off.
-- **Open questions for the user:**
-  1. Jobs that don't fit your hull: listed after yours, dimmed, or hidden?
-  2. Scope: only this system, or this system and its neighbours one jump away?
-  3. The Unbound: give them the page too, listing prey in this system (convoys and freighters worth taking, with a cargo-scanner reading if they have one)?
-- **Test (when built):** `comms_jobs.py`: a fighter and a miner in the same freeport system see their own kinds first; picking an escort signs on, and picking a contract tracks it; dock-only jobs stay off; a guest's pick runs on the host; the ledger stays exact.
+- **Decided (user, 3 Nov 2026):** jobs that don't fit your hull are hidden; this system only; the Unbound get Prey here.
+- **Test (when built):** `comms_jobs.py`: a fighter and a miner in the same freeport system see their own kinds first; picking an escort signs on, and picking a contract tracks it; jobs for other hulls and dock-only jobs stay off with their count line; an Unbound pilot sees Prey here with scanner readings; a guest's pick runs on the host; the ledger stays exact.
 
