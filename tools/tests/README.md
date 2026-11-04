@@ -48,6 +48,7 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 | claimfit.py | Beyond: Claim Beacons as fitted parts: Market tiles per power in its colour, buy, Loadout Fit and Buy & fit, refused on a miner, hold-only beacons don't claim, fitted ones do and are used up; ledger exact |
 | corps.py | Beyond: every item has a maker: the makers' lines with plain parts, no unbranded parts on the makers' markets, every slot covered at a freeport, the works build plain parts, made-by labels in the Market; ledger exact |
 | news.py | Beyond: the leaders' news box: a leader's declaration (war, embargo, pact) and the Dread Pirate's fortunes go in under their faction and name, a relations band change doesn't, the newest three stay, they fade and go after three minutes, the box renders in the HUD |
+| comms_jobs.py | Beyond: Comms Jobs here: I, I opens it; a fighter sees the convoy raid and escort, a miner the ore contracts; other hulls' jobs counted not listed; picking an escort signs on, a contract tracks; More pages; the quick-keys count; an Unbound pilot's Prey here with the scanned ship first and picking targets it; ledger exact |
 | start_screen.py | the Training button stands out without moving the other buttons |
 | keys.py | key list, rebinding with swap, saved bindings, the keys strip |
 | brood_ui.py | Brood HUD chip, alerts at 5/6/7 systems, map meter |

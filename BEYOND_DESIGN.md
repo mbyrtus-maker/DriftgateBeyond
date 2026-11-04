@@ -1785,7 +1785,7 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - It shows every power's news whoever you serve: it's galactic news, not your own channel. The host keeps it in the state (`S.news`), so guests see the same box. On a phone it shows the newest two.
 - **Test:** `news.py` (in the quick suite).
 
-### Comms: Jobs here (designed 3 Nov 2026; the user's three choices are in; not built yet)
+### Comms: Jobs here (designed and built 3 Nov 2026)
 - **The user's question:** can Comms show the missions in the sector you're in? For example an escort job if you fly a fighter, or an ore request if you fly a miner.
 - **What Comms does today:**
   - The Command page (I) offers escort me, guard me, build, distress and your capital ship's supply run.
@@ -1801,8 +1801,9 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   - **What still needs the dock:** handing over goods (contract and posted-job deliveries go into a store), buying goods or a beacon for a job, and the jobs that start with cargo loaded at the dock (smuggling and black-market runs) or a purchase (the Dread Pirate rumour, selling a find). Delivery jobs show "deliver at the dock"; the dock-only jobs stay off the page, with one line: "2 more on the station's board: dock to see them".
   - **This system only** (the user's choice). **Nothing here:** "No jobs for your ship in this system right now", and the nearest system that has some, with its jumps.
   - **The Unbound** (the user's choice): their page is **Prey here**: the convoys and freighters of the powers in this system worth taking, each with its side, where it's bound and its cargo (the rough or exact cargo-scanner reading if you have one, otherwise "unknown"), biggest haul first. Picking one targets it.
-  - **Multiplayer:** a guest's pick goes to the host as a new in-flight message, run there inside `runAs` for that pilot. It can only sign on or join; anything that moves goods stays a docked action.
+  - **Multiplayer:** as built, a guest's pick uses the messages the board and Comms already send (`job` for the tracked job and its issuer, `plan` for a campaign or side order, `cvesc` for an escort, run on the host inside `runAs`), so no new message was needed. It can only sign on, track, join or target; anything that moves goods stays a docked action.
   - **Training:** off.
 - **Decided (user, 3 Nov 2026):** jobs that don't fit your hull are hidden; this system only; the Unbound get Prey here.
-- **Test (when built):** `comms_jobs.py`: a fighter and a miner in the same freeport system see their own kinds first; picking an escort signs on, and picking a contract tracks it; jobs for other hulls and dock-only jobs stay off with their count line; an Unbound pilot sees Prey here with scanner readings; a guest's pick runs on the host; the ledger stays exact.
+- **As built** (`16zza_cjobs.js`): the page reads the board's own job list (`jobsList`) for a board built for this system without docking. The same convoy offered by two issuers shows once, at the better pay. The quick-keys line in the Comms panel reads "I I Jobs here: 2" (or "Prey here"). Picking a convoy raid targets the freighter if it's in range of your sensors; picking an escort also points Comms at the freighter.
+- **Test:** `comms_jobs.py` (in the quick suite): a fighter and a miner in the same freeport system see their own kinds first; picking an escort signs on, and picking a contract tracks it; jobs for other hulls and dock-only jobs stay off with their count line; an Unbound pilot sees Prey here with scanner readings; a guest's pick runs on the host; the ledger stays exact.
 
