@@ -1783,6 +1783,8 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 - **The box** (`#hNews`, above Recent): titled News, newest first, at most three items. Each has its faction's colour on the left, the faction and the speaker's title and name in small capitals above, and the declaration under it (two lines at most; the big turns in bold).
 - **Fading:** each item stays three minutes of game time and fades over its last thirty seconds; a fourth pushes the oldest out. The box hides when empty.
 - It shows every power's news whoever you serve: it's galactic news, not your own channel. The host keeps it in the state (`S.news`), so guests see the same box. On a phone it shows the newest two.
+- **Out of Recent (user, 3 Nov 2026):** whatever goes into the box no longer also goes into the Recent ticker; relations drifting between bands and a power ignoring a demand stay in Recent.
+- **The Dread Pirate's announcements** (the ☠ lines: taking the hat, going down, flying again, a raiding season, tribute, a bounty on a contractor, a hoard sale, an open house, lying low, the Ravager sailing) now go into the box under the Unbound and the Dread Pirate's name, instead of Recent. The big ones (taking the hat, going down, shot dead) are in bold. The chronicle's shorter copy of the same event is left out of the box, so nothing shows twice. Guests see them in the box as they see the rest.
 - **Test:** `news.py` (in the quick suite).
 
 ### Comms: Jobs here (designed and built 3 Nov 2026)

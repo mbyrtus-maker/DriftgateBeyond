@@ -1,5 +1,6 @@
 # Beyond: the leaders' news box above the Recent ticker. A leader's declaration (war, embargo, a pact) goes into the box under
-# their faction and name; a relations band change doesn't; only the newest three stay; each fades and goes after three
+# their faction and name and not into Recent; a relations band change stays in Recent only; the Dread Pirate's ☠ announcements
+# go into the box (the chronicle's copy doesn't); only the newest three stay; each fades and goes after three
 # minutes; it renders in the HUD
 import asyncio,json,os
 from playwright.async_api import async_playwright
@@ -16,9 +17,10 @@ async def main():
     print('band',await ev("(()=>{chron('Halcyon and Varkesh are now Cool.','bad',['halcyon','varkesh']);return (S.news||[]).length})()"))
     print('war',await ev("(()=>{evWar('varkesh','ostrova');const x=S.news[S.news.length-1];return JSON.stringify(x)})()"))
     print('embargo',await ev("(()=>{evEmbargo('halcyon','varkesh');return S.news.length})()"))
-    print('dread',await ev("(()=>{chron(dpName()+' went down with the Ravager.');const x=S.news[S.news.length-1];return JSON.stringify(x)})()"))
+    print('dread',await ev("(()=>{const n0=S.news.length;chron(dpName()+' went down with the Ravager.');const dup=S.news.length-n0;allFeed('☠ '+dpName()+' declares a raiding season on Halcyon lanes.','warn');const x=S.news[S.news.length-1];return 'chron copy added '+dup+' · '+JSON.stringify(x)})()"))
     print('pact',await ev("(()=>{evPact('ostrova','halcyon','plate');return S.news.length+' '+S.news.map(x=>x.f).join(',')})()"))
     await pg.wait_for_timeout(1200)
+    print('recent',await ev("(()=>{const L=FEED.map(f=>f.msg);return JSON.stringify({band:L.some(m=>/now Cool/.test(m)),war:L.some(m=>/declares war/.test(m)),embargo:L.some(m=>/embargo/.test(m)),dread:L.some(m=>/Dread Pirate/.test(m)),pact:L.some(m=>/trade pact/.test(m))})})()"))
     print('hud',await ev("(()=>{const e=$('hNews');return (e.hidden?'HIDDEN ':'')+e.innerText.replace(/\\n/g,' | ')})()"))
     if SHOT:await pg.screenshot(path=SHOT)
     print('fading',await ev("(()=>{S.T+=165;hudUpdate();return [...$('hNews').querySelectorAll('.nwi')].map(e=>e.style.opacity).join(',')})()"))

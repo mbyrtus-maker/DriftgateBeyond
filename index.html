@@ -12457,8 +12457,20 @@ function newsOf(msg,kind,who){if(!msg)return null;const m=String(msg);
   if(/^the Dread Pirate/i.test(m)){let n='';try{n=dpName()}catch(e){}if(n&&m.startsWith(n+' '))return{f:'pirate',who:n.replace(/^the /,''),msg:m.slice(n.length+1).replace(/^./,c=>c.toUpperCase())};return{f:'pirate',who:'The Unbound',msg:m.replace(/^the /,'The ')}}
   if(kind==='big'&&who&&who.length&&FAC_IDS.includes(who[0])){const f=who[0],pre=FAC(f).name+': ';return{f,who:lName(f),msg:m.startsWith(pre)?m.slice(pre.length):m}}
   return null}
-{const o=chron;chron=function(msg,kind,who){const r=o.apply(this,arguments);try{if(S&&!S.training&&!(typeof STRAT_SIM==='function'&&STRAT_SIM())){const n=newsOf(msg,kind,who);
-  if(n){S.news=S.news||[];S.newsN=(S.newsN||0)+1;S.news.push({id:S.newsN,T:S.T,f:n.f,who:n.who,msg:n.msg,big:kind==='big'?1:0});while(S.news.length>NEWS.max)S.news.shift()}}}catch(e){}return r}}
+// News items leave the Recent ticker (user, 3 Nov 2026): a chronicle line that goes into the box isn't fed to Recent too.
+// The Dread Pirate's own announcements (☠ lines: taking the hat, going down, a raiding season, tribute, a bounty, a sale, an
+// open house, lying low, the Ravager sailing) go into the box under the Unbound instead of Recent; the chronicle's shorter
+// copies of the same events are left out of both.
+let newsMute=0;
+function newsOK(){return!!(S&&!S.training&&!(typeof STRAT_SIM==='function'&&STRAT_SIM()))}
+function newsAdd(n,big){S.news=S.news||[];S.newsN=(S.newsN||0)+1;S.news.push({id:S.newsN,T:S.T,f:n.f,who:n.who,msg:n.msg,big:big?1:0});while(S.news.length>NEWS.max)S.news.shift()}
+{const o=feed;feed=function(){if(newsMute)return;return o.apply(this,arguments)}}
+{const o=chron;chron=function(msg,kind,who){let n=null;try{if(newsOK())n=newsOf(msg,kind,who)}catch(e){}
+  if(!n)return o.apply(this,arguments);newsMute++;let r;try{r=o.apply(this,arguments)}finally{newsMute--}
+  try{if(n.f!=='pirate')newsAdd(n,kind==='big')}catch(e){}return r}}
+function newsDread(msg){let t=String(msg).replace(/^☠\s*/,''),n='';try{n=dpName()}catch(e){}const who=n?n.replace(/^the /,''):'The Unbound';
+  if(n&&t.startsWith(n+' '))t=t.slice(n.length+1);return{f:'pirate',who:who.replace(/^./,c=>c.toUpperCase()),msg:t.replace(/^./,c=>c.toUpperCase())}}
+{const o=allFeed;allFeed=function(msg,kind){try{if(!NET.cl&&newsOK()&&/^☠/.test(String(msg))){newsAdd(newsDread(msg),/takes the hat|is dead|went down/.test(msg));return}}catch(e){}return o.apply(this,arguments)}}
 let newsSig='';
 function newsRender(){const el=$('hNews');if(!el)return;const L=(S&&!S.training&&S.news||[]).filter(x=>S.T-x.T<NEWS.life);
   const sig=L.map(x=>x.id).join(',')+'|'+L.map(x=>Math.ceil(Math.min(NEWS.fade,NEWS.life-(S.T-x.T)))).join(',');if(sig===newsSig)return;newsSig=sig;
