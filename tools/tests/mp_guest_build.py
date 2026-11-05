@@ -71,4 +71,25 @@ async def body(K):
   # and it can still fly and dock at its own Station
   await K.undock(2500)
   check('docks at its own Station as a faction leader',await K.dock()=='station')
+  # ================= sleep mode for the guest's faction (4 Nov 2026)
+  m=await K.act('rgset','Juno Castell|Cautious|Mercantile|0.5|1',2000)
+  check('the guest appoints a stand-in (host)',await Hh("JSON.stringify(%s.regent&&%s.regent.traits)"%(HP,HP))=='["Cautious","Mercantile"]',m[:120])
+  await G("(()=>{dockTab='allegiance';renderDock();document.querySelector('[data-rg=sleep]').click();return 1})()");await K.wait(3000)
+  check('Sleep hands over on the host',await Hh("!!%s.asleep&&%s.asleep.by==='button'"%(HP,HP)))
+  check('the guest sees the overlay',await G("!!S.player.asleep&&!document.getElementById('rgOv').hidden"))
+  # the stand-in answers a demand for the guest's faction
+  await Hh("(()=>{const P=%s;P.props=P.props||[];P.props.push({id:S.nextId++,f:FAC_IDS[0],k:'demand',amt:500,until:S.T+300});strategicTick();return 1})()"%HP);await K.wait(1500)
+  lg=json.loads(await Hh("JSON.stringify(%s.asleep.log.map(x=>x.msg))"%HP))
+  check('it answers the powers for the guest',any('tribute' in l for l in lg),lg[-2:])
+  await K.wait(800);await K.C.keyboard.press('KeyW');await K.wait(3000)
+  check('a key wakes the guest: the stand-in resigns (host)',await Hh("!%s.asleep&&!!%s.rgRep"%(HP,HP)))
+  check('the guest gets the report',await G("!S.player.asleep&&!!document.getElementById('rgRepPop')&&!document.getElementById('rgRepPop').hidden"))
+  # the guest leaves the galaxy: its stand-in holds the faction, its ship berthed at its Station
+  await G("(()=>{document.getElementById('rgRepOk').click();netSend({t:'bye'});return 1})()");await K.wait(2500)
+  aw=json.loads(await Hh("JSON.stringify({asleep:%s.asleep&&%s.asleep.by,docked:%s.docked,sector:%s.sector})"%(HP,HP,HP,HP)))
+  check('leaving hands the faction to the stand-in (host)',aw['asleep']=='away' and aw['docked']=='station' and aw['sector']==sid,aw)
+  # back again: the stand-in resigns at the next turn
+  await Hh("(()=>{const c=Object.values(MP.cl).find(x=>x.pid==='clipid1');if(c)c.ready=true;else MP.cl.__back={pid:'clipid1',ready:true,L:{peer:'__back'}};strategicTick();return 1})()")
+  check('coming back, the stand-in resigns (host)',await Hh("!%s.asleep&&%s.rgRep&&%s.rgRep.by==='away'"%(HP,HP,HP)))
+  await Hh("(()=>{delete MP.cl.__back;return 1})()")
 if __name__=="__main__":run(body,gcls='courier')

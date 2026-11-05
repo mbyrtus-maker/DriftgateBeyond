@@ -1982,7 +1982,7 @@ The user's asks, with their choices (Drone controller on drone-bay hulls only; d
   - the beacon lights at the freeports' poles.
 - **Unused and left alone:** the old kit Vesper and Bombard (the faction designs replaced them).
 
-### Sleep mode: a stand-in leader for your own faction (design, 4 Nov 2026, awaiting approval)
+### Sleep mode: a stand-in leader for your own faction (designed and built 4 Nov 2026)
 **The user's ask:** when the player is asleep, their faction should still react to things. The player creates a leader, gives it two traits, and when they come back that leader resigns.
 
 **The user's choices:**
@@ -1996,11 +1996,13 @@ The user's asks, with their choices (Drone controller on drone-bay hulls only; d
 - **A reserve.** The share of your credits it may never spend, defaulting to 50%.
 - **"Take over when I'm idle"**, on by default.
 
+**The user's numbers:** 15 minutes idle, and up to 12 hours of catch-up.
+
 You can change the appointment any time you're awake. Without a stand-in nothing changes from today: proposals wait, and the galaxy waits while the game is closed.
 
 **When it takes over:**
 1. **Sleep button.** On the Allegiance tab and in the pause menu: "Hand over to <name> and sleep". The galaxy keeps running with the tab open, and a dim overlay shows "<name> holds <faction>" with a small live log. Any key or click wakes you.
-2. **Idle.** After 10 minutes with no input, with the option on, the same overlay appears. While a menu is open, the timer doesn't count.
+2. **Idle.** After 15 minutes with no input (keys, mouse, touch), with the option on, the same overlay appears. Open menus don't stop the timer: a player asleep at their dock screen is still asleep.
 3. **Multiplayer.** A guest who leads a faction disconnects. The host keeps the faction playing under the guest's stand-in, with the guest's ship docked at its Station (safe), until the guest rejoins.
 4. **Closed game (single player).** The save records when you left. On reopening, the galaxy catches up on the time you were away (capped at 12 hours) with the strategic simulation the balance checks use, behind a progress screen: "Catching up 6 h 40 min… <name> holds <faction>". You can stop it early, and the rest of the time is skipped. Your ship is docked at your Station meanwhile.
 
@@ -2008,7 +2010,7 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 - **Answers the powers.**
   - Alliance offers: accepted unless Isolationist or Wary, or the offer comes from a power that hit you recently and the stand-in is Vengeful.
   - Tribute demands: paid when Cautious, Patient or Mercantile and within the reserve. Refused when Vengeful, Zealous, Ruthless or Honourable, or when the money isn't there.
-- **Its own diplomacy** (the audience requests, paid from your standing as you would pay):
+- **Its own diplomacy** (the audience requests, made by envoy and paid from your standing as you would pay):
   - Ceasefire and non-aggression when it's losing ground (Cautious, Patient and Isolationist sooner).
   - A trade pact with a Friendly power (Mercantile).
   - War on a weak neighbour that holds systems next to yours (Ambitious, Opportunist and Ruthless; Vengeful against whoever hurt you most).
@@ -2027,5 +2029,21 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 - The stand-in resigns ("<name> hands <faction> back to you").
 - A report opens: what it accepted or refused, wars and pacts, attacks and how they ended, systems gained and lost, and credits spent and earned.
 - The report stays on the Allegiance tab, and every one of its decisions is in the Chronicle under its name.
+
+**As built:**
+- **Envoys.** The stand-in makes its requests by envoy rather than flying to an audience: the leader's answer, the odds (traits and standing) and the price in standing are the audience's own. Each request waits 15 minutes before it's asked again.
+- **Turns.** It takes a turn every strategic tick (10 s of game time): proposals and defence every turn, diplomacy every 5 minutes, the economy every 2 minutes.
+- **Defence.**
+  - It sees an attack from a distress call at your base or a drop in its hull.
+  - The base's crews go to guard it, every capital ship of yours is sent to patrol there, and it asks a friendly power for joint defence.
+  - Two minutes without a hit and the crews go back to their jobs. A Wary or Cautious stand-in keeps them home until you're back.
+- **Lost bases.** A lost base goes in the report. If the last Station falls, the faction falls with it, the stand-in resigns, and its report says so.
+- **Closed game.**
+  - The catch-up runs the galaxy's strategic simulation (the one the balance checks use) in slices behind a progress bar, with the stand-in taking its turns.
+  - It stops at the time you were away (at most 12 hours), at Stop, or when the galaxy is won.
+  - Afterwards you're docked at your Station, or at your home port if you've lost it, and the report opens.
+- **Background tab.** In single player, while you're asleep, the galaxy keeps running in a background tab: browsers stop drawing frames there, so the game steps itself.
+- **Guests' factions.** A guest's declared faction now gets the powers' proposals (and falls when it loses its last Station) on the host's tick, as the host's does. Before this, only the host's faction did.
+- **Fixed in passing:** a Vengeful power leader was meant never to offer an alliance, but the check read the wrong thing.
 
 **Not in scope:** the stand-in never flies your ship, never sells your hulls or Stations, and never declares a war its traits don't lean to. Sworn pilots, contractors and Unbound play are unchanged (sleep mode needs a declared faction).

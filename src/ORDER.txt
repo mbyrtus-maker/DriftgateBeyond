@@ -74,5 +74,6 @@ js/16zzd_yard.js
 js/16zzf_audience.js
 js/16zzg_marque.js
 js/16zzh_fpdark.js
+js/16zzi_regent.js
 js/17_main.js
 end.html
