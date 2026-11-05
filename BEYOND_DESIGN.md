@@ -2143,3 +2143,103 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 1. **Should the Brood actually eat the salvage?** Brood grazers could drift to battlefields and consume uncollected debris into their own stores, so goods move rather than vanish and the ledger stays exact. Contractors would then race them for salvage.
 2. **Count the player's own kills?** The proposal counts every destroyed ship, yours included.
 3. **Only one surge at a time?** The proposal allows one, with at least 30 minutes before the next.
+
+### Corporations with money: shares, struggles, product tweaks and market surges (proposal, 5 Nov 2026, awaiting approval)
+**The user's idea:**
+- market surges;
+- stocks in the corporations;
+- corporations with limited money, so that if their products don't sell they start to fail;
+- makers tweaking their products' stats in response.
+
+**The user's choices:**
+- **Market surges** are three things: demand spikes for goods, a maker's shares booming, and a product craze.
+- **Shares** pay dividends and can be traded.
+- **A maker that runs out of money** struggles first, then fails, and a new maker opens in its place later.
+- **Products are tweaked** by the maker itself, from its sales.
+
+**Today:** the twelve makers' works build parts from their station's components and sell them on that market. The money goes to the station's owner, and the makers themselves have no money and never change.
+
+**1. Every maker has its own money**
+- **A treasury per maker**, starting with the galaxy (proposal: 20,000 cr).
+- **Income:** every sale of its parts, on any market. The station's owner keeps a cut as market dues (proposal 15%).
+- **Costs:**
+  - Its works buy their components from the market they sit in, at that market's price, paid to the station's owner. Today the components are taken without payment.
+  - Running costs per hour (proposal: 500 cr plus 100 cr per product line).
+- **Buyers besides you** (without them most makers would fail in a single-player galaxy):
+  - **The powers refit their fleets from their home makers**, buying parts for their warehouse every hour, more at war. Each ship they build draws one or two parts from it, and its wreck spills them, so "the war uses the same stock" (stage 7's not-yet) comes true at last, and a losing power buys a lot.
+  - **Freeport merchants carry parts** between markets as they carry components today.
+  - **AI contractors** buy now and then.
+- The ledger stays exact: parts and components only move, and credits only change wallets.
+
+**2. Struggling, failing, and a new maker**
+- **Struggling.** When its treasury falls below two hours of running costs:
+  - it cuts its prices (10% to 25%);
+  - it tweaks its unsold lines (section 3);
+  - it stops building lines that don't sell;
+  - a News item says so ("Brightline Emitters is in trouble: prices cut").
+- **Failing.** At an empty treasury:
+  - its works close and its unsold stock is sold off cheaply on its market;
+  - its shares become worthless;
+  - its line leaves the markets as the last units sell;
+  - parts already made keep working and keep its name.
+- **A new maker opens in its place** later (proposal 30 to 60 minutes):
+  - a new name, at the same home;
+  - new products in its home's character (traits rolled from that power's or freeport's leanings);
+  - a fresh issue of shares at a low price, a chance to buy in early.
+
+**3. Makers tweak their products from their sales**
+- Each line's sales are counted, and every **review** (proposal: 20 minutes) the maker looks at them.
+- **A line that hasn't sold** gets one tweak, chosen at random from the ones that help:
+  - a bigger bonus (+2 to +4 points);
+  - a smaller drawback;
+  - or a lower price (−10%).
+- **A best-seller** is left alone, or its price rises a little if it keeps selling out.
+- **Tweaks only ever improve a product, never worsen it,** so they apply to every part of that line, fitted ones included, and need no versions. A part shows its tweak history ("Brightline Laser, revised twice: +14% damage, +6% energy draw").
+- **Caps** keep it sane (proposal: a bonus at most +25%, and a drawback can shrink to nothing but never turn into a bonus).
+
+**4. Shares**
+- **Each maker has 100 shares.** Its home (the power, or the Compact for a freeport maker) holds 60, and 40 trade.
+- **Price:** the maker's worth (its treasury plus a multiple of its recent profit) divided by the shares. Recalculated at each review, so it follows sales, crazes and struggles.
+- **Buying and selling.** Pilots buy and sell at the current price (a 3% spread), from the Company screen → Economy → **Corporations**.
+  - Your money goes to the maker's treasury, so **investing keeps a struggling maker alive**.
+  - Selling draws on its treasury, so a run of selling can sink it.
+- **Dividends:** at each review, a maker in profit pays out part of that period's profit (proposal 40%) per share. Its home's share goes to its treasury.
+- **Failure:** shares become worthless.
+- **The Corporations list** shows, for each maker:
+  - its home and state (thriving, steady, struggling, craze);
+  - its treasury trend and share price, with a line of its recent history;
+  - your shares and dividends paid, with buy and sell buttons.
+
+  A market tile shows its maker's state too.
+- **Multiplayer:** every pilot holds their own shares. The host runs the markets.
+
+**5. Market surges**
+- **Demand spikes.** For a while (proposal 20 to 40 minutes) a good is badly wanted somewhere:
+  - its buy price there jumps (×1.6 to ×2.5);
+  - the station posts a standing order on the Jobs board ("Wanted at Glass Shallows: 40 torpedoes");
+  - the galaxy's News and the market tile (↑) show it.
+
+  They come from what is happening:
+  - the war: munitions, plate and hull kits at the front;
+  - a Brood surge: torpedoes and missiles at the target and its neighbours;
+  - a power building a station or capital: frames and keels;
+  - a comet: its ore floods the nearby markets and the price falls, the other way round.
+
+  Proposal: one or two at a time.
+- **A product craze.** A line that sells out again and again becomes the thing pilots want:
+  - AI contractors and merchants buy it everywhere;
+  - its price climbs;
+  - its maker's treasury and share price boom.
+
+  It ends after a while (proposal 40 minutes). Often a slump follows, prices easing and the shares sliding back.
+- **A share boom.** A craze or a run of strong reviews sends a maker's share price up fast, and it can overshoot and fall back. Buying early in a craze pays; buying at the top doesn't.
+
+**Balance and checks**
+- The galaxy's credit flows change: makers' treasuries become wallets, and the powers spend on refits.
+- The powers' spending on refits feeds the war check, which must still give the Brood about 20% and the powers about 25% each.
+- A **galaxy economy check** (an AI-only run of several hours) should show some makers thriving, a few struggling, and roughly one failure and replacement in a long galaxy, not a collapse.
+
+**Open questions:**
+1. **Starting capital, running costs and market dues:** the numbers above are first guesses.
+2. **The powers' refit buying** is the biggest piece of work here: AI ships drawing parts from their warehouse when built. Do it now, or start with merchants and AI contractors as the buyers and add it later?
+3. **Your own brand:** should your Depot's brand be able to issue shares too, later, so other pilots can invest in you?
