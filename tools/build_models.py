@@ -208,6 +208,9 @@ def _fp_ports(v):
 for _v,_n in (('mw','by_freeport'),('cw','by_freeport_cw'),('ew','by_freeport_ew')):PTS[_n]=_fp_ports(_v)
 MODELS['by_haven']=('base',lambda:_BUB.scrapheart().out())
 MODELS['by_rift']=('base',lambda:_BRS.riftstone().out())
+# (5 Nov 2026) the shared assault ship (beyond_assault.py, approved 2 Nov): one model for every faction, in its colours
+import beyond_assault as _BA
+MODELS['dz_assault']=('ship',lambda:_BA.assault().out());GLOW_N['dz_assault']=0
 # Beyond: the company-style player bases (tools/previews/beyond_stations.py): Lairs, Depots by level, the Station core and its
 # six buildings. Kind 'base': no stern glow, and dark trusses stay dark. The pack keeps each one's centre and half-extent so the
 # game can put a Station's buildings back on its hardpoints at the right size.

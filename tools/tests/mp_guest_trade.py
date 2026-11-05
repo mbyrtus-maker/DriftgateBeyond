@@ -10,6 +10,10 @@ CTX="runAs('clipid1',()=>dockCtx())"
 async def body(K):
   G,Hh,check=K.G,K.Hh,K.check
   sec=await G("S.player.sector")
+  # (5 Nov 2026) assault ships flying in the guest's system reach the guest's screen too
+  n=await Hh("(()=>{const w=WORLDS[%s];if(!w)return -1;asFly({side:'halcyon',sector:%s},%s,true);return w.asl?w.asl.length:0})()"%(json.dumps(sec),json.dumps(sec),json.dumps(sec)))
+  await K.wait(1500)
+  check('an assault flight in the guest\'s system is on the guest\'s screen',n==1 and await G("(W.asl||[]).length")==1,'host %s · guest %s'%(n,await G("(W.asl||[]).length")))
   # ================= market: buy
   pick=json.loads(await Hh("""(()=>{const c=%s,P=%s;const L=Object.keys(c.market).filter(k=>c.market[k]>=6&&ITEMS[k]&&!MUNITIONS.has(k)&&!FP_ONLY.has(k)&&mass(k)<=2&&mBuy(c,k)*3<P.credits).sort((a,b)=>c.market[b]-c.market[a]);
     const sl=Object.keys(c.market).filter(k=>ITEMS[k]&&!MUNITIONS.has(k)&&k!==L[0]&&k!=='matrix'&&mass(k)<=2&&mSell(c,k)>0).sort((a,b)=>mSell(c,b)-mSell(c,a));return JSON.stringify({buy:L[0],sell:sl[0],pr:mBuy(c,L[0]),sp:mSell(c,sl[0]),stock:c.market[L[0]]})})()"""%(CTX,HP)))

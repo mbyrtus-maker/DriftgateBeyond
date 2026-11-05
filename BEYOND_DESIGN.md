@@ -2047,3 +2047,25 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 - **Fixed in passing:** a Vengeful power leader was meant never to offer an alliance, but the check read the wrong thing.
 
 **Not in scope:** the stand-in never flies your ship, never sells your hulls or Stations, and never declares a war its traits don't lean to. Sworn pilots, contractors and Unbound play are unchanged (sleep mode needs a declared faction).
+
+### All approved art live (5 Nov 2026)
+- **The user's ask:** push all approved art.
+- **What still drew as Driftgate 1's, now the approved look** (new file `16zzj_art.js`):
+  - **The constructors** (Architect, Foundry, Loom). They were mapped on 2 Nov but never drew. The class is called `constructor`, and looking that name up in a plain object finds every object's built-in constructor function, so the old model won. Lookups now check the object's own keys.
+  - **The Unbound fly only their six designs**, as decided on 2 Nov. Every class they fly now draws as one of them:
+    - fighters and pickets: Raider, Corsair and Plunderer;
+    - bombers, gunboats and their Rigger: the **Wrecker**, which flies at last;
+    - scouts, couriers and small miners: the Skiff;
+    - freighters, bulkers and big miners: the Plunderer;
+    - their capital: the Ravager.
+  - **The shared assault ship** (approved 2 Nov; Driftgate 1 never drew one) is now in the model pack (`dz_assault`, from `beyond_assault.py`).
+    - When a capital lands marines on a base in a system that's open, its assault ships fly from the capital (or in from the gate it's beyond) to the base, set down for a few seconds and fly back.
+    - The ones the existing roll shot down blow up on the way in.
+    - Guests in that system see the same flights.
+    - It only shows the outcome the rules already decide: assault ships stay loads aboard capitals and can't be targeted.
+- **No approved design yet, so still Driftgate 1's:**
+  - the Compact's own ships (freeport traffic and security);
+  - the Picket escort fighter;
+  - Unbound escorts;
+  - the station module blocks (habitat, storage, production, defence, shield works, hangars) and the capital shipyards that stand beside stations.
+- **Tests:** `art.py` (quick suite): constructors, every Unbound class, assault flights (one shot down, the others back). `mp_guest_trade.py` also checks that a flight reaches a guest's screen.
