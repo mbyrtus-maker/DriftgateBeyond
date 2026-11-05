@@ -92,7 +92,7 @@ def heron():     # heavy miner: a broad flattened lens hull with two stacked hop
         for z in (-.4,-.05,.25):ring(M,(x,.3,z),.265,.015,ACC,seg=18,sides=4)
     M.blob((0,.36,.72),.16,GLASS,sub=2,squash=(1.2,.7,1.5),noise=0)
     for sx in (1,-1):
-        drill(M,(sx*.55,-.08,.9),.55,.12)
+        drill(M,(sx*.4,-.08,.82),.55,.12)                                                                            # (4 Nov 2026: set into the bow; they hung in space beside it)
         plate(M,[(sx*.75,.0,-.1),(sx*1.25,.02,-.55),(sx*1.2,.02,-.75),(sx*.7,.0,-.7)],.06,LIGHT)
         box(M,(sx*1.15,-.04,-.6),(.18,.14,.3),MID);M.blob((sx*1.15,.08,-.6),.05,WIN,sub=1,noise=0)                # drone bays
         plate(M,[(sx*.55,.2,-.85),(sx*.65,.48,-1.12),(sx*.65,.48,-1.22),(sx*.55,.2,-1.2)],.035,ACC,.95)
@@ -292,13 +292,15 @@ def delve():     # heavy miner: a great drill spire with a lens ring at its prow
     tube(M,[(0,0,.95),(0,0,1.15)],[.14,.12],LIGHT,1.0,8);drill(M,(0,0,1.15),.75,.14,MID)
     ring(M,(0,0,1.0),.42,.035,ACC,seg=24,sides=5)
     for k in range(6):a=k*PI/3;lens_head(M,(math.cos(a)*.42,math.sin(a)*.42,1.05),.06)
+    for k in range(3):a=PI/6+k*2*PI/3;tube(M,[(math.cos(a)*.1,math.sin(a)*.1,1.0),(math.cos(a)*.4,math.sin(a)*.4,1.0)],[.025,.025],LIGHT,.9,5)   # (4 Nov 2026) spokes: the lens ring was floating
     R=.95
     for z in (-.8,.3):ring(M,(0,0,z),R,.05,ACC,seg=40,sides=6)                                               # front and back halos
     for k in range(4):
         a=PI/4+k*PI/2;dx,dy=math.cos(a)*R,math.sin(a)*R
         crystal(M,-1.0,.55,.26,.26,dx,dy)                                                                            # crystal ore hold set in the halo
-        for z in (-.8,.3):tube(M,[(math.cos(a)*.2,math.sin(a)*.2,z),(math.cos(a)*.75,math.sin(a)*.75,z)],[.035,.035],LIGHT,.9,5)
-        plate(M,[(math.cos(a)*.18,math.sin(a)*.18,-.8),(math.cos(a)*.5,math.sin(a)*.5,-1.1),(math.cos(a)*.46,math.sin(a)*.46,-1.2),(math.cos(a)*.15,math.sin(a)*.15,-1.15)],.03,MID)
+        # (4 Nov 2026) the halo spokes and fins start inside the spire: on the diagonals its diamond section is narrower, and they floated
+        for z in (-.8,.3):tube(M,[(math.cos(a)*.1,math.sin(a)*.1,z),(math.cos(a)*.75,math.sin(a)*.75,z)],[.035,.035],LIGHT,.9,5)
+        plate(M,[(math.cos(a)*.09,math.sin(a)*.09,-.8),(math.cos(a)*.5,math.sin(a)*.5,-1.1),(math.cos(a)*.46,math.sin(a)*.46,-1.2),(math.cos(a)*.06,math.sin(a)*.06,-1.15)],.03,MID)
     M.blob((0,.24,.45),.1,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
     M.vent((0,0,-1.27),.09)
     lights(M,[(.22,.15,.95),(-.22,.15,.95)])

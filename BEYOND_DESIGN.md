@@ -1938,3 +1938,94 @@ The user's asks, with their choices (Drone controller on drone-bay hulls only; d
   - **Claim beacon:** the guest's Jobs board offers the claim job's Fit / Buy & fit button, which fits the beacon. The guest flies three jumps to an unclaimed outpost and holds in its ring. The outpost goes to that power, the beacon is used up and the claim fee is paid.
   - The ledger stays exact and there are no errors.
 - **Found and fixed:** raising a part's grade above your Contractor Rating said "That part can't be upgraded further". It now says what's needed, as a system's grade does ("Grade 2 parts need Contractor Rating 2 (you're 1)").
+
+### Guest tests: market, deliveries, escorts, raids, holdings (4 Nov 2026)
+- **The user's asks:**
+  - multiplayer tests on market sales and delivery missions;
+  - then on escorts and raids;
+  - then guest code for creating lairs, depots and stations, and eventually its own faction.
+- **New tests** (multiplayer, over the faked link; shared harness `tools/tests/mpkit.py`):
+  - **`mp_guest_trade.py`:**
+    - buying and selling on a freeport's market;
+    - a freeport contract delivered from the Jobs board;
+    - a freeport request bought with the board's button, flown three jumps and delivered.
+  - **`mp_guest_convoy.py`:**
+    - a power's convoy raid selected on the board, shot down with the guest's own guns, with the issuer's bounty paid;
+    - a convoy escort signed on with Select job, the guest jumping with the convoy to its dock, and the fee paid;
+    - a Rusty Tankard rumour flown one jump out from Scrapheart, with the Unbound's share paid.
+  - **`mp_guest_build.py`:**
+    - a Lair built beside an asteroid, docked at and raised to a Depot;
+    - the Depot raised to a Station with a hangar;
+    - the guest declares its own faction and docks at its Station as a faction leader.
+  - Every step is checked on the host, and the ledger stays exact.
+- **Found and fixed:**
+  - **Convoy bounties.** A convoy's goods ride in its freighter while it flies through an open system, and its record's load is empty meanwhile. So the raid bounty, which is always paid in an open system, fell to the 400 cr base. The boards showed that figure, and their "what it carries" line was blank (host and guests alike). A 1,152 cr convoy now pays 1,380 cr as the board says. Convoys now keep a manifest per leg: a note, not goods, so the ledger is untouched.
+  - **Docking after an upgrade.** Raising a Lair to a Depot left the guest docked at the new station on the host but at the vanished Lair on its own screen. The host now tells the guest when a dock action moves its berth.
+- **Noted, unchanged:**
+  - On a Tankard raid a contractor is paid twice: by the Unbound (their share) and by a power at war with the convoy's owner (its usual raid bounty).
+  - A new contract or convoy reaches a guest's boards within 5 s of game time: the whole state is sent every 5 s.
+
+### A check of every model for collisions and overlaps (4 Nov 2026)
+- **The user's ask:** check all the art models for collisions or weird overlaps.
+- **New tool `tools/mdlcheck.py`** reads the model pack and reports, per model:
+  - **Faces that z-fight.** These are faces of different colours lying in the same plane, facing the same way and overlapping. The game draws with a depth buffer, so they flicker.
+  - **Islands.** These are parts touching nothing else, listed with their gap. The island check reads the Kenney kit pieces' open meshes poorly, so its list is a list to look at, not a list of faults: most entries under a gap of 0.05 sit flush on the hull when rendered.
+- **Z-fighting fixed in the build.** 50 models had painted-on faces in the plane of the surface under them: windows on station walls, engine discs on nozzle plates, decals on Brood shells. `build_models.py` now lifts the smaller part's face 0.3% of the model's size off the plane, and no flicker pairs remain, apart from two specks on Varkesh station and Scrapheart.
+- **Floating parts pulled in** (rendered before and after to confirm):
+  - the Medium and Heavy Miners' side barrels and the Heavy Miner's generator;
+  - the forge outpost's feet and smoke stacks;
+  - the relay outpost's corridors and transmitters;
+  - Halcyon's Heron: its two drills hung in space beside the bow and are now set into it;
+  - Ostrova's Delve: its lens ring at the prow floated around the drill and now has three spokes, and its halo spokes now start inside the spire.
+- **Floating on purpose, left alone:**
+  - the shards around the Ostrova station and depot, and around the Riftstone;
+  - the beacon lights at the freeports' poles.
+- **Unused and left alone:** the old kit Vesper and Bombard (the faction designs replaced them).
+
+### Sleep mode: a stand-in leader for your own faction (design, 4 Nov 2026, awaiting approval)
+**The user's ask:** when the player is asleep, their faction should still react to things. The player creates a leader, gives it two traits, and when they come back that leader resigns.
+
+**The user's choices:**
+- The stand-in takes over in four ways: a Sleep button, after you've been idle, when a faction-leading guest leaves a multiplayer game, and while the game is closed.
+- It may answer the powers, run its own diplomacy, defend your holdings and run the economy.
+- You appoint it on the Allegiance tab.
+
+**Appointing (Allegiance tab, own faction only).** Once you've declared, the Allegiance panel has a *Stand-in* box:
+- **Name.** Pre-filled from a short list; editable.
+- **Two traits.** Picked from the powers' fourteen (Ambitious, Vengeful, Mercantile, Cautious, Scheming, Patient, Wary, Loyal, Zealous, Honourable, Ruthless, Industrious, Isolationist, Opportunist). Each shows a line on what it will do for you.
+- **A reserve.** The share of your credits it may never spend, defaulting to 50%.
+- **"Take over when I'm idle"**, on by default.
+
+You can change the appointment any time you're awake. Without a stand-in nothing changes from today: proposals wait, and the galaxy waits while the game is closed.
+
+**When it takes over:**
+1. **Sleep button.** On the Allegiance tab and in the pause menu: "Hand over to <name> and sleep". The galaxy keeps running with the tab open, and a dim overlay shows "<name> holds <faction>" with a small live log. Any key or click wakes you.
+2. **Idle.** After 10 minutes with no input, with the option on, the same overlay appears. While a menu is open, the timer doesn't count.
+3. **Multiplayer.** A guest who leads a faction disconnects. The host keeps the faction playing under the guest's stand-in, with the guest's ship docked at its Station (safe), until the guest rejoins.
+4. **Closed game (single player).** The save records when you left. On reopening, the galaxy catches up on the time you were away (capped at 12 hours) with the strategic simulation the balance checks use, behind a progress screen: "Catching up 6 h 40 min… <name> holds <faction>". You can stop it early, and the rest of the time is skipped. Your ship is docked at your Station meanwhile.
+
+**What the stand-in does (each trait leans its choices):**
+- **Answers the powers.**
+  - Alliance offers: accepted unless Isolationist or Wary, or the offer comes from a power that hit you recently and the stand-in is Vengeful.
+  - Tribute demands: paid when Cautious, Patient or Mercantile and within the reserve. Refused when Vengeful, Zealous, Ruthless or Honourable, or when the money isn't there.
+- **Its own diplomacy** (the audience requests, paid from your standing as you would pay):
+  - Ceasefire and non-aggression when it's losing ground (Cautious, Patient and Isolationist sooner).
+  - A trade pact with a Friendly power (Mercantile).
+  - War on a weak neighbour that holds systems next to yours (Ambitious, Opportunist and Ruthless; Vengeful against whoever hurt you most).
+  - An Honourable stand-in never breaks a pact. A Loyal one joins its allies' wars.
+- **Defends your holdings.**
+  - When a Station, Depot or outpost of yours is attacked, it calls distress, sends your escorts and capital ships there, and pulls crews in that system home.
+  - Wary and Cautious stand-ins pull crews home from any contested system.
+  - Zealous and Ruthless ones send a strike back at the attacker's nearest holding when they can.
+- **Runs the economy.**
+  - Keeps crews working: it re-hires laid-up crews when wages are there and moves them off dangerous jobs.
+  - Mercantile stand-ins tune your market buy/sell settings toward the market's prices.
+  - Industrious ones add a building to a Station when the stores hold the materials.
+  - Every spend respects the reserve.
+
+**Coming back.** Waking up, reconnecting or finishing the catch-up ends it:
+- The stand-in resigns ("<name> hands <faction> back to you").
+- A report opens: what it accepted or refused, wars and pacts, attacks and how they ended, systems gained and lost, and credits spent and earned.
+- The report stays on the Allegiance tab, and every one of its decisions is in the Chronicle under its name.
+
+**Not in scope:** the stand-in never flies your ship, never sells your hulls or Stations, and never declares a war its traits don't lean to. Sworn pilots, contractors and Unbound play are unchanged (sleep mode needs a declared faction).

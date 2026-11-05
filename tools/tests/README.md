@@ -6,6 +6,7 @@ Each test opens the built game (`index.html` at the repo root) in headless Chrom
     python3 tools/build.py
     tools/tests/run.sh          # quick tests
     tools/tests/run.sh full     # plus every training course
+    tools/tests/run.sh mp       # the multiplayer guest tests (about an hour)
 
 Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (default: the temp folder).
 
@@ -77,6 +78,10 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 | mp_remote.py | Beyond: a flying guest runs its company on the host: fees from the Company screen and a crew's job from the map; a dock-only action is still refused in flight; a guest's cargo scan gets the host's reading (rough, then exact) of a supply freighter's hold; ledger: `python3 tools/tests/mp_remote.py $PWD/index.html` |
 | mp_guest_play.py | Beyond: a guest plays: every dock menu on the guest's screen (Market categories, Fabricate, Loadout's parts, shipyard dropdown, Hangar, Allegiance), takes a Light Miner through the yard (tools, controller, drones), its drones launch on the host and show on the guest, lost drones refill at Rearm on docking, Comms Jobs here and the Company screen, then a fighter fight through the real input path (aim, hold fire, the raider dies on the host, the bounty reaches the guest); ledger: `python3 tools/tests/mp_guest_play.py $PWD/index.html` |
 | mp_guest_kit.py | Beyond: a guest's kit: fit a part, a part grade and a system grade (Rating-gated, with the message), Rearm; the helm of an escort, a carrier and a frigate (board, helm/throttle/move/power orders reach the host, the frigate jumps with the guest aboard, step off); the Jobs board's beacon Buy & fit, then an outpost claimed from its ring, fee paid; ledger exact: `python3 tools/tests/mp_guest_kit.py $PWD/index.html` |
+| mp_guest_trade.py | Beyond: a guest trades: buy and sell on a freeport's market (goods, credits, stock and treasury checked on the host), a freeport contract delivered from the Jobs board, a freeport request bought with the board's button, flown three jumps and delivered; ledger exact: `python3 tools/tests/mp_guest_trade.py $PWD/index.html` |
+| mp_guest_convoy.py | Beyond: a guest's convoy jobs: a power's raid from the board shot down with its own guns (issuer's bounty, the full figure the board shows), an escort signed on with Select job and flown to the convoy's dock (fee paid), a Rusty Tankard rumour one jump out from Scrapheart (the Unbound's share); ledger exact: `python3 tools/tests/mp_guest_convoy.py $PWD/index.html` |
+| mp_guest_build.py | Beyond: a guest's holdings: a Lair built and docked at, raised to a Depot (the guest's berth follows), the Depot raised to a Station with a hangar, then the guest declares its own faction and docks at its Station; ledger exact: `python3 tools/tests/mp_guest_build.py $PWD/index.html` |
+| mpkit.py | the shared harness for the guest tests above (two pages over the faked link: a Halcyon contractor host, a Varkesh contractor guest) |
 | mp_guest_faction.py | a faction guest over the faked link: hired wingman follows, stands down when docked or dead, rejoins; insurance and a covered loss; patronage; charge reticle; ledger: `python3 tools/tests/mp_guest_faction.py $PWD/index.html` |
 
 Tests of faction behaviour open the page with `?sworn=halcyon`, which starts a pilot sworn to Halcyon as Driftgate 1 did; without it a pilot starts as an independent contractor at a freeport.

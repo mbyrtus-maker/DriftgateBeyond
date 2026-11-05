@@ -8,6 +8,7 @@ from capitals import build_carrier,build_escort
 from rockbase import build_rockbase
 from brood import BROOD_MODELS
 from works import WORKS
+from mdlcheck import zlift
 import os as _os;_K=_os.path.join(_os.path.dirname(_os.path.abspath(__file__)),'kits');KD=_os.path.join(_K,'kenney-space-kit','GLTF')+'/';QD=_os.path.join(_K,'quaternius-lowpoly-spaceships','OBJ')+'/'
 LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN=0,1,2,3,4,5,6
 def kenney_role(c):
@@ -93,14 +94,16 @@ def vesper():
     S.add('machine_generator',(0,-.55,-.9),0,.8)
     S.add('satelliteDish',(0,1.4,-1.05),math.pi,.95)
     M=S.model();GLOW_N['vesper']=len(P);return np.concatenate([np.array(P).reshape(-1,3,3),M['P']]),list(N)+list(M['N']),list(R)+[kenney_role(c) for c in M['cols']]
+# (4 Nov 2026, a model check) parts that hung in space are pulled in to touch: the Medium and Heavy Miners' side barrels and the
+# Heavy Miner's generator; the forge outpost's feet and stacks; the relay outpost's corridors and transmitters
 DARK_GLOW={'skiff','prospector','dredger','bombard'}
 H=math.pi
 MODELS={
  'interceptor':('ship',lambda:ql_model(4)),'striker':('ship',lambda:ql_model('')),'heavy':('ship',lambda:ql_model(5)),'bomber':('ship',lambda:ql_model(3)),'scout':('ship',lambda:ql_model(2)),'scout2':('ship',scout2),
  'picket':('ship',lambda:glb_model('craft_speederB')),'gunboat':('ship',lambda:glb_model('craft_speederD')),
  'skiff':('ship',lambda:aboutface(glb_model('craft_miner'))),
- 'prospector':('ship',lambda:aboutface(comp([('craft_miner',(0,0,0),0,1),('machine_barrel',(.95,.15,-.2),0,.55),('machine_barrel',(-.95,.15,-.2),0,.55)]))),
- 'dredger':('ship',lambda:aboutface(comp([('craft_miner',(0,0,0),0,1),('pipe_straight',(.75,.05,1.0),0,.6),('pipe_straight',(-.75,.05,1.0),0,.6),('machine_generator',(0,.62,-.5),0,.7),('machine_barrel',(1.05,.1,-.5),0,.6),('machine_barrel',(-1.05,.1,-.5),0,.6)]))),
+ 'prospector':('ship',lambda:aboutface(comp([('craft_miner',(0,0,0),0,1),('machine_barrel',(.85,.15,-.2),0,.55),('machine_barrel',(-.85,.15,-.2),0,.55)]))),
+ 'dredger':('ship',lambda:aboutface(comp([('craft_miner',(0,0,0),0,1),('pipe_straight',(.75,.05,1.0),0,.6),('pipe_straight',(-.75,.05,1.0),0,.6),('machine_generator',(0,.45,-.5),0,.7),('machine_barrel',(.85,.1,-.5),0,.6),('machine_barrel',(-.85,.1,-.5),0,.6)]))),
  'bombard':('ship',lambda:aboutface(bombard())),'vesper':('ship',vesper),
  'courier':('ship',lambda:glb_model('craft_cargoA')),'freighter':('ship',lambda:glb_model('craft_cargoB')),
  'bulker':('ship',lambda:comp([('craft_cargoB',(0,0,0),0,1),('barrels_rail',(.95,.1,-.1),0,.8),('barrels_rail',(-.95,.1,-.1),0,.8),('barrels',(0,.85,-.4),0,.7)])),
@@ -108,8 +111,8 @@ MODELS={
  'carrier':('ship',lambda:cap_model(build_carrier,'carrier')),'escort':('ship',lambda:cap_model(build_escort,'escort')),   # the frigate (retired) is no longer packed
  'station':('struct',lambda:comp_model(build_station,'station')),
  'depot':('struct',lambda:comp([('hangar_roundGlass',(0,0,0),0,1.3),('hangar_roundGlass',(0,0,0),H,1.3,True),('machine_generatorLarge',(0,-1.8,0),0,1.6,True),('pipe_ring',(0,-1.8,0),0,1.9,True)]+[x for i in range(3) for x in [('corridor_window',(math.sin(i*2.094)*2.4,-.5,math.cos(i*2.094)*2.4),i*2.094,1),('hangar_smallA',(math.sin(i*2.094)*4.0,-.5,math.cos(i*2.094)*4.0),i*2.094+H,1),('turret_single',(math.sin(i*2.094)*4.0,.55,math.cos(i*2.094)*4.0),i*2.094,1)]]+[('satelliteDish',(0,1.8,0),0,1.2)],'depot')),
- 'forge':('struct',lambda:comp([('machine_generatorLarge',(0,0,0),0,2.2),('machine_generatorLarge',(0,0,0),H,2.2,True),('rocket_fuelA',(0,1.5,0),0,1.6)]+[x for i in range(4) for x in [('pipe_straight',(math.sin(i*1.571)*2.0,-.3,math.cos(i*1.571)*2.0),i*1.571,1.1),('machine_barrelLarge',(math.sin(i*1.571)*3.2,-.6,math.cos(i*1.571)*3.2),i*1.571,1.1),('chimney_detailed',(math.sin(i*1.571+.785)*1.6,.9,math.cos(i*1.571+.785)*1.6),0,.9)]])),
- 'relay':('struct',lambda:comp([('structure_closed',(0,-.5,0),0,1.6),('rocket_sidesA',(0,1.1,0),0,1.2),('rocket_fuelA',(0,2.3,0),0,1.2),('satelliteDish_large',(0,2.9,0),0,2.4),('satelliteDish_large',(0,-.5,0),H,1.8,True)]+[x for i in range(3) for x in [('corridor',(math.sin(i*2.094)*1.8,-.5,math.cos(i*2.094)*1.8),i*2.094,1),('machine_wireless',(math.sin(i*2.094)*2.9,-.5,math.cos(i*2.094)*2.9),i*2.094,1.2)]])),
+ 'forge':('struct',lambda:comp([('machine_generatorLarge',(0,0,0),0,2.2),('machine_generatorLarge',(0,0,0),H,2.2,True),('rocket_fuelA',(0,1.5,0),0,1.6)]+[x for i in range(4) for x in [('pipe_straight',(math.sin(i*1.571)*2.0,-.3,math.cos(i*1.571)*2.0),i*1.571,1.1),('machine_barrelLarge',(math.sin(i*1.571)*2.9,-.6,math.cos(i*1.571)*2.9),i*1.571,1.1),('chimney_detailed',(math.sin(i*1.571+.785)*1.3,.6,math.cos(i*1.571+.785)*1.3),0,.9)]])),
+ 'relay':('struct',lambda:comp([('structure_closed',(0,-.5,0),0,1.6),('rocket_sidesA',(0,1.1,0),0,1.2),('rocket_fuelA',(0,2.3,0),0,1.2),('satelliteDish_large',(0,2.9,0),0,2.4),('satelliteDish_large',(0,-.5,0),H,1.8,True)]+[x for i in range(3) for x in [('corridor',(math.sin(i*2.094)*1.4,-.5,math.cos(i*2.094)*1.4),i*2.094,1),('machine_wireless',(math.sin(i*2.094)*2.3,-.5,math.cos(i*2.094)*2.3),i*2.094,1.2)]])),
  'rockbase':('struct',rockbase),
  'yard':('struct',lambda:comp([('hangar_largeA',(0,0,0),0,1.6),('hangar_largeA',(0,0,0),H,1.6,True),('platform_large',(2.6,-.2,0),H/2,1.3),('platform_large',(-2.6,-.2,0),H/2,1.3),('supports_high',(2.6,.0,1.1),0,1),('supports_high',(-2.6,.0,-1.1),0,1),('barrels_rail',(2.6,0,-.6),0,.9),('craft_cargoA',(-2.6,0,.5),H/2,.7),('machine_generator',(0,1.7,0),0,1)])),
 }
@@ -233,7 +236,8 @@ def pack():
             if kind=='ship' and k<GLOW_N.get(name,1<<30) and n[2]<-.8 and t[:,2].mean()<zlo+.3*L and r!=GLASS and (name not in DARK_GLOW or r==DARK):r=GLOW   # aft-facing faces at the stern glow as engines
             if kind=='struct' and r==DARK:r=WIN                                             # dark recesses on structures read as lit windows
             tris.append(t);roles.append(r);shades.append(sh)
-        T=np.array(tris);q=np.clip(np.round(T*32767),-32767,32767).astype('<i2')
+        T=np.array(tris);T,zl=zlift(T,roles,shades);T,zl2=zlift(T,roles,shades);zl+=zl2   # (4 Nov 2026) coplanar faces of different colours: lift the smaller part's off the plane (no flicker)
+        q=np.clip(np.round(T*32767),-32767,32767).astype('<i2')
         eng=[]
         if kind=='ship':
             G=[T[k].mean(0) for k in range(len(T)) if roles[k]==GLOW and (name not in AFT_GLOW or T[k].mean(0)[2]<zlo+.3*L)];cl=[]
@@ -252,7 +256,7 @@ def pack():
         pt=[[round(float(x),3) for x in (np.array(m)-c)/half] for m in PTS.get(name,[])]
         sb={k:[[round(float(x),3) for x in (np.array(m)-c)/half] for m in v] for k,v in SUBS.get(name,{}).items()}
         idx[name]={**({'c':[round(float(x),4) for x in c],'h':round(float(half),4)} if kind=='base' else {}),'o':off,'n':len(T),'k':kind,'s':FIT.get(name,1),'e':eng,'tp':tp,'top':round(float(T[:,:,1].max()),3),**({'pt':pt} if pt else {}),**({'sub':sb} if sb else {})}
-        print(name.ljust(12),kind,len(T),'tris',('eng %d'%len(eng)) if eng else '')
+        print(name.ljust(12),kind,len(T),'tris',('eng %d'%len(eng)) if eng else '',('lifted %d'%zl) if zl else '')
     return idx,bytes(blob)
 idx,blob=pack()
 for r in ENGZ:

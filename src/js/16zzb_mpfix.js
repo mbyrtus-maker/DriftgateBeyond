@@ -27,3 +27,18 @@ function mpDockedNow(P){return P.docked==='station'||P.docked==='lair'||!!(S.out
     if(m&&m.t==='actr'){const r=o.apply(this,arguments);if(typeof coErr!=='undefined'&&$('company')&&!$('company').hidden){coErr=m.err||'';try{renderCompany()}catch(e){}}
       if($('map')&&!$('map').hidden){if(typeof mpMsg!=='undefined'&&m.err)mpMsg=m.err;try{renderMapSide()}catch(e){}}return r}}catch(x){}
   return o.apply(this,arguments)}}
+// ---- (4 Nov 2026, a guest convoy test) a convoy's goods ride in its freighter while it flies through an open system, and its
+// record's load is empty meanwhile: the raid bounty (paid at the kill, which is always in an open system) fell to the 400 cr
+// base, the boards showed that, and the boards' "what it carries" was blank, for the host and for guests alike. The record now
+// keeps a manifest of what it set off with on each leg (just a note: the goods themselves are in the freighter, so the
+// ledger is untouched), and the bounty, the escort fee and the boards read it while the load is aboard.
+function cvLoad(t){const L=t&&t.load;if(L&&Object.keys(L).some(k=>L[k]>0))return L;return(t&&t.live&&t.man)||L||{}}
+{const o=spawnTrader;spawnTrader=function(t){const man={...(t.load||{})};const r=o.apply(this,arguments);if(Object.keys(man).length)t.man=man;return r}}
+{const o=raidBounty;raidBounty=function(t){return o.call(this,t?{...t,load:cvLoad(t)}:t)}}
+{const o=haulWhat;haulWhat=function(t){return o.call(this,t?{...t,load:cvLoad(t)}:t)}}
+{const o=cvPay;cvPay=function(t,hops){return o.call(this,t?{...t,load:cvLoad(t)}:t,hops)}}
+// ---- (4 Nov 2026, a guest building test) a dock action can move the guest's berth on the host (a Lair raised to a Depot leaves
+// you docked at the new Depot's station): tell the guest, so its own record and screens follow
+{const o=hostRecv;hostRecv=function(L,m){let c=null,P=null,d0;try{c=MP.cl[L.peer];P=c&&c.ready&&S&&S.pilots&&S.pilots[c.pid];if(P&&m&&m.t==='act')d0=P.docked}catch(x){}
+  const r=o.apply(this,arguments);try{if(P&&m&&m.t==='act'&&P.docked!==d0&&P.docked)send(L,{t:'dkset',d:P.docked})}catch(x){}return r}}
+{const o=clientRecv;clientRecv=function(m){if(m&&m.t==='dkset'){try{if(S&&S.player&&S.player.docked){S.player.docked=String(m.d);if(m.d!=='lair')S.player.lairId=null;if(!$('dock').hidden)renderDock()}}catch(x){}return}return o.apply(this,arguments)}}
