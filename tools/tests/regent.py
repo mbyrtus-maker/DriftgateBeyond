@@ -1,7 +1,7 @@
 # Beyond, 4 Nov 2026: sleep mode. A declared faction's stand-in (a name, two traits, a reserve) is appointed on the Allegiance
 # panel; the Sleep button hands over; asleep, it answers the powers (alliance offer, tribute), defends an attacked Station
 # (crews home, a building added by an Industrious stand-in), sends envoys; any key wakes you and it resigns with a report.
-# Idle for 15 minutes hands over on its own. A closed game catches up on the hours away under the stand-in. Ledger exact.
+# Idle for 15 minutes hands over on its own. For now a closed game waits (no catch-up while nobody plays). Ledger exact.
 import asyncio,json,os
 from playwright.async_api import async_playwright
 GAME='file://'+os.path.abspath(os.environ.get('DG_GAME',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','index.html')))
@@ -64,30 +64,15 @@ async def main():
     print('  before click',await ev("JSON.stringify({shown:performance.now()-rgShown,asleep:!!S.player.asleep,pop:document.getElementById('rgRepPop').hidden})"))
     await pg.wait_for_timeout(1500);await pg.mouse.click(400,400);await pg.wait_for_timeout(1500)
     check('a click wakes you',await ev("!S.player.asleep"))
-    # ---- a closed game: three hours away, caught up under the stand-in
+    # ---- a closed game: an hour away, then reopened
     T0=await ev("S.T")
     await ev("(()=>{save();const o=JSON.parse(localStorage.getItem(SAVE_KEY));o.savedAt=Date.now()-3600*1000;localStorage.setItem(SAVE_KEY,JSON.stringify(o));removeEventListener('beforeunload',save);save=function(){};return 1})()")
     await pg.goto(GAME+'?name=Tester',wait_until='domcontentloaded');await pg.wait_for_function('window.__dg&&__dg.ev("MDL.ready")',timeout=60000)
     ev=lambda c:pg.evaluate('c=>__dg.ev(c)',c)
-    print('  saved',await ev("(()=>{const o=loadSave();return JSON.stringify({decl:!!o.player.decl,asleep:o.player.asleep,savedAt:Date.now()-o.savedAt,st:Object.values(o.stations).filter(R=>R.owner==='player').map(R=>R.sid+':'+R.kind+':'+R.pid+':'+R.pst+':'+Math.round(R.hull))})})()"))
-    await ev("(()=>{window.__rz=[];const o=razeStation;razeStation=function(sid,by){if(sid===%s){__rz.push(['raze',sid,by,Math.round(S.T)]);return}return o.apply(this,arguments)};const c=captureDepot;captureDepot=function(sid,side){if(sid===%s){__rz.push(['cap',sid,side,Math.round(S.T)]);return}return c.apply(this,arguments)};return 1})()"%(json.dumps(SID),json.dumps(SID)))
-    await pg.evaluate("document.getElementById('bContinue').click()")
-    for i in range(4):
-      print('  t',i,await ev("JSON.stringify({decl:!!S.player.decl,sta:myStations(S.player).length,dep:myDepots(S.player).length,T:Math.round(S.T),asleep:S.player.asleep&&S.player.asleep.by,log:S.player.asleep&&S.player.asleep.log.map(x=>x.msg).slice(-3)})"))
-      await pg.wait_for_timeout(300)
-    await pg.wait_for_timeout(800)
-    print('catching up:',await ev("(()=>{const e=document.getElementById('rgOvS');return e?e.textContent:'(no overlay)'})()"))
-    for i in range(120):
-      st=await ev("JSON.stringify({decl:!!S.player.decl,reg:!!S.player.regent,sta:myStations(S.player).length,T:Math.round(S.T),cu:!!rgCU,stop:rgCU&&rgCU.stop,running,asleep:S.player.asleep&&S.player.asleep.by,won:S.won||null})")
-      if i%3==0:print('  ',st)
-      if await ev("running&&!rgCU"):break
-      await pg.wait_for_timeout(2000)
-    r=json.loads(await ev("JSON.stringify({running,T:Math.round(S.T),rep:S.player.rgRep&&{by:S.player.rgRep.by,dur:Math.round(S.player.rgRep.dur),lines:S.player.rgRep.log.length},docked:S.player.docked,sector:S.player.sector,asleep:!!S.player.asleep,pop:!!document.getElementById('rgRepPop')&&!document.getElementById('rgRepPop').hidden})"))
-    check('the closed game caught up an hour under the stand-in',r['running'] and r['rep'] and r['rep']['by']=='closed' and abs(r['rep']['dur']-3600)<30 and r['T']-T0>=3590 and not r['asleep'] and r['pop'],'%s (S.T %s -> %s)'%(r,T0,r['T']))
-    print('  razes',await ev("JSON.stringify(__rz)"))
-    print('  report',await ev("JSON.stringify({won:S.won||null,log:S.player.rgRep.log.map(x=>x.msg),counts:controlCounts()})"))
-    print('  station',await ev("JSON.stringify(Object.values(S.stations).filter(R=>R.sid==='gs'||R.owner==='player').map(R=>[R.sid,R.owner,R.kind,R.pid,Math.round(R.hull),R.hMax]))"),await ev("JSON.stringify(S.chron.slice(-30).map(c=>c.msg).filter(m=>/Glass|Tester/.test(m)))"))
-    check('docked at your Station after it',r['docked']=='station')
+    await pg.evaluate("document.getElementById('bContinue').click()");await pg.wait_for_timeout(3000)
+    r=json.loads(await ev("JSON.stringify({running,T:Math.round(S.T),asleep:!!S.player.asleep,ov:!!document.getElementById('rgOv')&&!document.getElementById('rgOv').hidden,rep:S.player.rgRep&&S.player.rgRep.by})"))
+    # (user, 4 Nov 2026) for now the galaxy waits while nobody is playing: an hour closed, and it picks up where you left it
+    check('a closed game waits: no catch-up on reopening',r['running'] and abs(r['T']-T0)<60 and not r['asleep'] and not r['ov'] and r['rep']!='closed','%s (S.T %s -> %s)'%(r,T0,r['T']))
     led=await ev(LED);check('ledger exact',led=='exact',led)
     check('no errors',not errs,errs[:4])
     await b.close()

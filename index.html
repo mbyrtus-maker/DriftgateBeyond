@@ -13006,7 +13006,9 @@ Object.assign(STN.free,{sMax:7200,hMax:20000,tur:12,dmg:22,range:2000});
 // 15 minutes idle, when a faction-leading guest leaves a multiplayer game, and while the game is closed (the galaxy catches up
 // on up to 12 hours when it's reopened). It answers the powers, makes its own diplomacy, defends your holdings and runs the
 // economy, each leaning on its traits, never spending below the reserve you set. Coming back, you get its report.
-const RG={idle:15*60,cap:12*3600,minAway:120,diplo:300,econ:120,askCool:900,calm:120,logMax:80,
+// (user, 4 Nov 2026) for now the galaxy pauses while no player is connected: a closed game doesn't catch up (catchUp off; the
+// catch-up code stays, to revisit later)
+const RG={catchUp:false,idle:15*60,cap:12*3600,minAway:120,diplo:300,econ:120,askCool:900,calm:120,logMax:80,
   names:['Ada Merrow','Cassius Vane','Imre Holt','Juno Castell','Lio Brandt','Mira Solenne','Oren Tasker','Petra Quill','Rhys Calder','Sela Wyn']};
 const RG_TXT={Ambitious:'presses a friendly power to war on a weak neighbour',Vengeful:'goes after whoever hurt you most; refuses tribute',
   Mercantile:'pays tribute when cheaper than a fight; seeks trade pacts; sells surplus ore',Cautious:'pays tribute; asks for ceasefires early; pulls crews home from any fight',
@@ -13099,7 +13101,7 @@ function rgEcon(P){const A=P.asleep,order=['hangar','defence','storage','forge',
 // ---- the Allegiance panel: appointing the stand-in, Sleep, and the last report
 function rgHtml(P){if(!rgOn(P))return'';const G=P.regent||{name:'',traits:['Cautious','Industrious'],reserve:.5,idle:true},opt=v=>TRAITS.map(t=>`<option value="${t}"${t===v?' selected':''}>${t}</option>`).join('');
   let h=`<div class="ldbox" id="rgBox" style="margin:14px 0;border-left:3px solid var(--amber)"><div class="lab">Stand-in leader (sleep mode)</div>
-    <p class="note" style="margin:4px 0 8px">While you're away, your stand-in holds ${esc(P.decl.name)}: it answers the powers, makes its own diplomacy, defends your holdings and runs the economy as its traits lean, and never spends below your reserve. It takes over when you press Sleep, after ${RG.idle/60} minutes idle (if you allow it), when you leave a multiplayer game, and while the game is closed (the galaxy catches up on up to ${RG.cap/3600} hours when you return). When you come back it resigns and reports.</p>
+    <p class="note" style="margin:4px 0 8px">While you're away, your stand-in holds ${esc(P.decl.name)}: it answers the powers, makes its own diplomacy, defends your holdings and runs the economy as its traits lean, and never spends below your reserve. It takes over when you press Sleep, after ${RG.idle/60} minutes idle (if you allow it), ${RG.catchUp?`when you leave a multiplayer game, and while the game is closed (the galaxy catches up on up to ${RG.cap/3600} hours when you return)`:'or when you leave a multiplayer game'}. ${RG.catchUp?'':'While nobody is playing, the galaxy waits.'} When you come back it resigns and reports.</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end"><label class="mass" style="margin:0">Name<br><input id="rgName" class="ydsel" style="width:170px" maxlength="28" value="${esc(G.name||'')}" placeholder="${esc(RG.names[0])}"></label>
     <label class="mass" style="margin:0">Trait<br><select id="rgT1" class="ydsel">${opt(G.traits[0])}</select></label><label class="mass" style="margin:0">Trait<br><select id="rgT2" class="ydsel">${opt(G.traits[1])}</select></label>
     <label class="mass" style="margin:0">Reserve<br><select id="rgRes" class="ydsel">${[0,.25,.5,.75,.9].map(v=>`<option value="${v}"${Math.abs(v-G.reserve)<.01?' selected':''}>${Math.round(v*100)}% of credits</option>`).join('')}</select></label>
@@ -13139,7 +13141,7 @@ setInterval(()=>{try{const P=S&&S.player;if(!running||!P){if($('rgOv')&&!rgCU)$(
 // ---- the closed game: the save notes when you left; on reopening, the galaxy catches up while the stand-in holds the faction
 {const o=serialize;serialize=function(){if(S)S.savedAt=Date.now();return o.apply(this,arguments)}}
 {const o=startWith;startWith=function(state){const r=o.apply(this,arguments);try{const P=S.player,away=S.savedAt?(Date.now()-S.savedAt)/1000:0;
-    if(!NET.on&&rgOn(P)&&P.regent&&away>=RG.minAway&&myStations(P).length)rgCatchUp(Math.min(away,RG.cap))}catch(e){console.error(e)}return r}}
+    if(RG.catchUp&&!NET.on&&rgOn(P)&&P.regent&&away>=RG.minAway&&myStations(P).length)rgCatchUp(Math.min(away,RG.cap))}catch(e){console.error(e)}return r}}
 function rgCatchUp(secs){const P=S.player,R=myStations(P)[0],T1=S.T+secs,T0=S.T;
   try{if(W&&W.docking)W.docking=null;$('dock').hidden=true}catch(e){}
   for(const w of Object.values(WORLDS))try{closeWorld(w)}catch(e){console.error(e)}WORLDS={};LW=null;W=null;running=false;
