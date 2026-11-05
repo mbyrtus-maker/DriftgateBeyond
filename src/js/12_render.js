@@ -274,7 +274,7 @@ function buildShipX(fk,cls,g,L,eng){
     }
   }
   return true}
-const MESH_BASE={scout2:'scout',picket:'interceptor',skiff:'prospector',dredger:'prospector',courier:'freighter',bulker:'freighter'};
+const MESH_BASE={scout2:'scout',skiff:'prospector',dredger:'prospector',courier:'freighter',bulker:'freighter'};
 // gunboat: stubby armoured hull, twin forward cannons, side armour pods, stub wings, twin engines and a dorsal turret ring at the back
 function buildGunboat(fk,g,L,eng,fc){const H=mixC([.7,.72,.76],fc,.14),D=[.22,.24,.28],M=[.5,.52,.56],G=[.55,.85,1],under=(k,i,p)=>p[1]<-.04?D:H,S2=f=>{f(1);f(-1)};
   g.set().loft([[-1,.2,.15],[-.72,.3,.21],[-.1,.34,.24,.02],[.5,.27,.19,.02],[.95,.12,.09],[1.12,.02,.02]],10,H,0,2.3,{colFn:under});
@@ -289,7 +289,7 @@ function gturretMesh(fac){const key='gt'+fac;if(MESH[key])return MESH[key];const
   for(const s of[-1,1]){g.set(.085*s,.03,.32).box(.045,.045,.48,M);g.set(.085*s,.03,.57).box(.06,.06,.04,fc,1);L.seg([.085*s,.03,.1],[.085*s,.03,.56],fc)}
   return MESH[key]={hull:g.upload(),rim:L.upload(true)}}
 // Brood hulls are grown models of their own in the model pack
-const BROOD_MDL={mite:'b_mite',interceptor:'b_skitter',picket:'b_mite',drone:'b_mite',striker:'b_thresher',gunboat:'b_thresher',heavy:'b_carapace',bomber:'b_sporemaw',skiff:'b_grazer',prospector:'b_grazer',dredger:'b_grazer',courier:'b_gorger',freighter:'b_gorger',bulker:'b_gorger',constructor:'b_weaver',scout:'b_watcher',scout2:'b_watcher',frigate:'b_hive',escort:'b_prowler',carrier:'b_hive'};
+const BROOD_MDL={mite:'b_mite',interceptor:'b_skitter',drone:'b_mite',striker:'b_thresher',gunboat:'b_thresher',heavy:'b_carapace',bomber:'b_sporemaw',skiff:'b_grazer',prospector:'b_grazer',dredger:'b_grazer',courier:'b_gorger',freighter:'b_gorger',bulker:'b_gorger',constructor:'b_weaver',scout:'b_watcher',scout2:'b_watcher',frigate:'b_hive',escort:'b_prowler',carrier:'b_hive'};
 // the fleet carrier: a long armoured flight deck over a heavy hull, a bow hangar mouth, side bays, an island bridge to
 // starboard and four big drives. Built in model space (bow at +z, about 2 units long) in the faction's colours.
 function carrierMesh(fac){const pal=mdlPal(fac),C=pal.c,LT=C[0],MD=C[1],DK=C[2],AC=C[3],GL=C[4],FG=C[5],WN=C[6],g=new GB(),L=new GB(),eng=[];

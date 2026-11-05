@@ -20,7 +20,7 @@ async def main():
     used=json.loads(await ev("""(()=>{let last=null;const o=mdlMesh;mdlMesh=function(n){last=n;return o.apply(this,arguments)};const out={};
       const one=(f,c)=>{for(const k in MESH)delete MESH[k];last=null;try{shipMesh(f,c)}catch(e){last='ERR '+e.message}return last};
       for(const f of FAC_IDS)out[f+':constructor']=one(f,'constructor');
-      for(const c of ['raider','corsair','plunderer','uskiff','interceptor','striker','heavy','bomber','gunboat','scout','scout2','courier','freighter','bulker','skiff','prospector','dredger','constructor','picket'])out['pirate:'+c]=one('pirate',c);
+      for(const c of ['raider','corsair','plunderer','uskiff','interceptor','striker','heavy','bomber','gunboat','scout','scout2','courier','freighter','bulker','skiff','prospector','dredger','constructor'])out['pirate:'+c]=one('pirate',c);
       mdlMesh=o;return JSON.stringify(out)})()"""))
     check('every power\'s constructor draws as its approved model',[used[f+':constructor'] for f in ('halcyon','varkesh','ostrova')]==['dz_architect','dz_foundry','dz_loom'],{k:v for k,v in used.items() if 'constructor' in k})
     six={'dz_raider','dz_skiff','dz_corsair','dz_plunderer','dz_wrecker'}

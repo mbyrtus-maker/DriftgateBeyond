@@ -2053,7 +2053,7 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 - **What still drew as Driftgate 1's, now the approved look** (new file `16zzj_art.js`):
   - **The constructors** (Architect, Foundry, Loom). They were mapped on 2 Nov but never drew. The class is called `constructor`, and looking that name up in a plain object finds every object's built-in constructor function, so the old model won. Lookups now check the object's own keys.
   - **The Unbound fly only their six designs**, as decided on 2 Nov. Every class they fly now draws as one of them:
-    - fighters and pickets: Raider, Corsair and Plunderer;
+    - fighters: Raider, Corsair and Plunderer;
     - bombers, gunboats and their Rigger: the **Wrecker**, which flies at last;
     - scouts, couriers and small miners: the Skiff;
     - freighters, bulkers and big miners: the Plunderer;
@@ -2065,7 +2065,21 @@ You can change the appointment any time you're awake. Without a stand-in nothing
     - It only shows the outcome the rules already decide: assault ships stay loads aboard capitals and can't be targeted.
 - **No approved design yet, so still Driftgate 1's:**
   - the Compact's own ships (freeport traffic and security);
-  - the Picket escort fighter;
   - Unbound escorts;
   - the station module blocks (habitat, storage, production, defence, shield works, hangars) and the capital shipyards that stand beside stations.
 - **Tests:** `art.py` (quick suite): constructors, every Unbound class, assault flights (one shot down, the others back). `mp_guest_trade.py` also checks that a flight reaches a guest's screen.
+
+### The Picket class retired (5 Nov 2026)
+- **The user's ask:** no one uses pickets; double-check and comment the code out.
+- **Checked:**
+  - Nothing builds, spawns, sells or fabricates the **Picket class** (Driftgate 1's small escort fighter) or the **Picket Kit**.
+  - No loop walks the class or hull-name lists, so nothing else picks them up.
+- **Commented out or removed:**
+  - the class itself (`CLASSES.picket` in `01_core.js`);
+  - each faction's Picket hull name;
+  - the kit's place in the goods order;
+  - the leftover model mappings for it.
+- **Kept:**
+  - **The Picket Kit's item record**, so an old save holding one (the dev tools could add them) still loads and the ledger still balances.
+  - **The role `picket`.** It's the internal name for a carrier's launched fighters and bombers: the carrier wing, sorties and the hangar console use it, so it isn't the class and it stays.
+- **Tests run:** art, destroyers, dread, stations, dock, designs and `mp_guest_kit` (carrier helm) all pass.
