@@ -2083,3 +2083,63 @@ You can change the appointment any time you're awake. Without a stand-in nothing
   - **The Picket Kit's item record**, so an old save holding one (the dev tools could add them) still loads and the ledger still balances.
   - **The role `picket`.** It's the internal name for a carrier's launched fighters and bombers: the carrier wing, sorties and the hangar console use it, so it isn't the class and it stays.
 - **Tests run:** art, destroyers, dread, stations, dock, designs and `mp_guest_kit` (carrier helm) all pass.
+- **Then renamed (user, 5 Nov):** the carrier code's "picket" is now **"flight"**:
+  - the role `flight`;
+  - the launched craft list `e.flights`;
+  - the wing mission setting `ctl.flights` (an old save's `ctl.pickets` carries over the first time the console reads it);
+  - the hangar console's "Flight" labels.
+
+  The strike AI's hold point (`ai.picket`, a station siege position) isn't carrier code and keeps its name. destroyers and stations pass.
+
+### Brood surges (proposal, 5 Nov 2026, awaiting approval)
+**The user's idea:** a Brood surge is a big, telegraphed Brood event the whole galaxy sees coming, and **the more the powers fight, the more the Brood surges**: the salvage their wars leave behind feeds it.
+
+**The user's choices:**
+- Fed by the salvage of war.
+- One big wave against one target.
+- Defence bounties for contractors.
+- A short warning (2 minutes).
+
+**The surge meter: war feeds the Brood**
+- Every ship destroyed anywhere in the galaxy adds its **salvage**, the worth of its wreck and debris, to a galaxy-wide **surge meter**. A power's capital adds a lot, a fighter a little.
+- Kills inside Brood space, or of Brood ships, don't count: the Brood doesn't feed on itself.
+- **Proposal:** salvage made near Brood space counts double, and the meter drains slowly in peacetime (about a tenth an hour), so a quiet galaxy rarely surges.
+- **When the meter is full, the Brood surges** and the meter empties.
+  - A long war between two powers will bring one on. Peace and ceasefires starve it.
+  - This gives leaders, and you, a reason to end wars that drag on.
+- **Proposal: the bar grows with the Brood.** The more systems it holds, the less salvage it takes to fill. A Brood that is already spreading surges more often.
+- **Seen in the galaxy:** a "Brood stirring" gauge on the galaxy map, and a News item when it passes half and again near full ("The Bloom stirs: the war's dead are feeding it").
+
+**The surge: one big wave at one target**
+- **Target.** One system next to Brood space that isn't the Brood's, preferring:
+  1. where the most salvage was made lately, since the Brood goes where the dead are;
+  2. failing that, the richest border system.
+
+  It can be a power's system, a freeport's, or yours.
+- **Warning: 2 minutes.**
+  - A galaxy-wide News item ("☣ Brood surge: the Bloom is spilling toward Glass Shallows. 2 minutes.").
+  - A pulsing marker on the map.
+  - In the target system, a red alert with a countdown.
+- **The wave.** A single massive assault, sized by the meter: several times a normal Brood offensive, with Hive Ships and (once the Brood holds eight systems) a Gullet. It comes through the target's gates from Brood space and goes for the station.
+- **Outcome.**
+  - **It holds** if the wave is beaten off within the surge's time (proposal: 8 minutes) or before the station falls. The Brood falls back, and the meter's next fill comes slower (proposal: the bar is 25% higher for the next surge).
+  - **It falls** if the station falls. The system falls to the Brood the usual way (a power's station razed or overgrown; your base captured or destroyed as today).
+
+**Contractors: defence bounties**
+- **While the surge lasts, every Brood ship killed in the target system pays a defence bounty** on top of the normal Brood bounty. The power whose system is hit pays it: the Compact at a freeport, and nobody at your own base (you're defending your own).
+  - **Proposal:** about double the normal Brood bounty, with Hive Ships and the Gullet worth a great deal.
+- **A distress call during a surge brings everyone:** every power's ships nearby answer, as in Brood space today, whatever their relations.
+- **On the Jobs board:** the surge shows as a job, "☣ Hold Glass Shallows against the surge", with its bounty and countdown, at every station within reach (proposal: 4 jumps).
+
+**The powers' response**
+- Leaders treat a surge as a shared threat. Ships within reach break off other fighting to defend it, and a power at war with the target's owner may still send help (Honourable, Zealous) or hold back and hope (Opportunist, Ruthless).
+- **War weariness:** a surge brought on by a war counts against that war ("our dead fed the Bloom"), making a ceasefire likelier afterwards.
+
+**Your own faction.** If you've declared and the surge hits your base, your stand-in (sleep mode) defends it as an attack.
+
+**Balance.** Surges make the Brood spikier, and wars feed it. The 20% target is checked by the war check (16 h) once built, and the meter's size and the wave's strength are the dials.
+
+**Open questions:**
+1. **Should the Brood actually eat the salvage?** Brood grazers could drift to battlefields and consume uncollected debris into their own stores, so goods move rather than vanish and the ledger stays exact. Contractors would then race them for salvage.
+2. **Count the player's own kills?** The proposal counts every destroyed ship, yours included.
+3. **Only one surge at a time?** The proposal allows one, with at least 30 minutes before the next.

@@ -307,7 +307,7 @@ function killShip(e,src,at){if(e.role==='limpet'){limpetShot(e,src,at);return}
   e.alive=false;e.killed=true;if(e.sortie||e.sortieEv){const ev=S.events.find(v=>v.id===(e.sortie||e.sortieEv));if(ev){if(e.sortie&&ev.stage==='gather')ev.pending=Math.max(0,ev.pending-1);if(e.sortieEv){const i=ev.craft.indexOf(e.cls);if(i>=0)ev.craft.splice(i,1);ev.lost++}}}if((e.role==='trader'||e.role==='hauler')&&src==='pirate'&&FAC_IDS.includes(e.side)){S.raidT=S.raidT||{};S.raidT[e.side]=S.T}if(e.role==='trader'&&e.home.startsWith('trader:'))traderLost(e);if(e.role==='scout'&&e.home.startsWith('scout:')){const id=e.home.split(':')[1];S.scouts=S.scouts.filter(t=>String(t.id)!==id);if(e.side===S.player.sworn)feed(`Our scout was shot down in ${DEF[W.sid].name}.`,'bad')}fxBoom(e,e.st.radius*2.6,e.isPlayer?PLAYER_COL:sideCol(e.side));
   if(e.drones)for(const d of e.drones)if(d.alive){d.role='leave';d.mom=null}
   if(e.side==='player'&&e.role==='drone')feed('One of your guard drones was destroyed.','bad');
-  if(e.pickets)for(const p of e.pickets)if(p.alive){p.mom=null;p.role='leave'}
+  if(e.flights)for(const p of e.flights)if(p.alive){p.mom=null;p.role='leave'}
   if(e.role==='frigate'&&e.tok){if(S.unb&&e.tok.call&&e.tok.call.until>S.T){const f=sideNorm(src),by=e.tok.call.by;if(FAC_IDS.includes(f)){const go=()=>heatAdd(f,10,`your called ${capName(e.tok)} ${e.tok.name} was lost`);if(NET.on&&by&&by!=='me')runAs(by,go);else go()}}capPingPay(e.tok);S.frigates=S.frigates.filter(x=>x!==e.tok);{const T=e.tok;if(T.load&&Object.keys(T.load).length){inv.addAll(e.load,T.load);T.load={}}if(T.store){inv.addAll(e.load,T.store);T.store={}}if(T.fab){inv.addAll(e.load,T.fab.kit||{});T.fab=null}}   // its store and the craft half-built aboard spill with the rest of its hold
     fxBoom(e,320,'#ffe2b0');fxBoom(e,200,sideCol(e.side));W.shake=Math.max(W.shake||0,.6);feed(`${e.side==='player'?'Your '+capName(e.tok):e.side==='brood'?'The Brood '+broodCap(e.tok):sideName(e.side)+' '+capName(e.tok)} ${e.tok.name} has been destroyed!`,friendSide(e.side)?'bad':'good')}
   if(e.escortG){e.escortG.escort=null;for(const m of grpAlive(e.escortG))if(m.role==='escort'){m.role='patrol';m.ai.retireAt=W.t+40}if(friendSide(e.side))feed(`${FACTIONS[e.side].short} freighter lost in ${DEF[W.sid].name}${e.escortG?' despite its escort':''}.`,'bad')}
@@ -495,7 +495,7 @@ function npcThink(e,dt){
   if(e.role==='limpet'){limpetThink(e);return}
   if(e.role==='drone'){if(e.mom&&jamDark(e.mom)){e.boosting=false;e.thrusting=false;return}droneThink(e,dt);return}
   if(e.role==='frigate'){frigateThink(e,dt);return}
-  if(e.role==='picket'){if(e.order&&e.order.kind==='attack'&&orderThink(e,dt))return;droneThink(e,dt);return}
+  if(e.role==='flight'){if(e.order&&e.order.kind==='attack'&&orderThink(e,dt))return;droneThink(e,dt);return}
   if(e.role==='scout'){scoutThink(e,dt);return}
   if(e.role==='trader'){traderThink(e,dt);return}
   if(e.role==='builder'){if(W.t-e.lastHit<3)e.boosting=false;builderThink(e,dt);return}

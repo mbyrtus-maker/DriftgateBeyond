@@ -44,7 +44,7 @@ function inSpaceOf(sid,f){const R=S.stations[sid];if(R&&R.owner===f)return true;
 function scanTick(dt){if(NET.cl||!W||!S||S.training||S.unb)return;W.scT=(W.scT||0)-dt;if(W.scT>0)return;W.scT=SM.every;
   const pilots=[];if(W===LW&&W.player&&W.player.alive&&!S.player.docked&&!W.dead)pilots.push([W.player,S.player,'me']);for(const e of W.ents)if(e.rp&&e.alive&&S.pilots&&S.pilots[e.rp]&&!S.pilots[e.rp].docked)pilots.push([e,S.pilots[e.rp],e.rp]);
   for(const[e,P,key]of pilots){if(P.sworn||P.scan||P.caught)continue;
-    for(const f of FAC_IDS){if(!inSpaceOf(W.sid,f))continue;const pat=W.ents.find(x=>x.npc&&x.alive&&x.type==='ship'&&x.side===f&&(x.role==='patrol'||x.role==='escort'||x.role==='picket'||x.role==='frigate')&&d3(x,e)<SM.scanR);if(!pat)continue;
+    for(const f of FAC_IDS){if(!inSpaceOf(W.sid,f))continue;const pat=W.ents.find(x=>x.npc&&x.alive&&x.type==='ship'&&x.side===f&&(x.role==='patrol'||x.role==='escort'||x.role==='flight'||x.role==='frigate')&&d3(x,e)<SM.scanR);if(!pat)continue;
       const st=standOf(f,P),near=W.stationEnt&&d3(W.stationEnt,e)<3000?2:1,pr=(.02+heatOf(f,P)/1500+(st<0?-st/2500:0))*near;if(Math.random()>pr)continue;
       P.scan={f,t:SM.scanT,by:pat.id,key};scanSay(key,`⚠ ${FACTIONS[f].short} customs: a patrol is scanning you (${SM.scanT} s).`,true);break}}}
 function scanSay(key,msg,bad){if(key==='me'||isMe(key)){flash(msg,!!bad);feed(msg,bad?'warn':'info')}else netMsg(key,'flash',msg,!!bad)}

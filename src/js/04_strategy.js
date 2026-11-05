@@ -227,7 +227,7 @@ function announce(ev){if((NET.cl?MP.seenEv.has(ev.id):ev.seen)||ev.stage==='done
 function frigatesIn(sid){return(S.frigates||[]).filter(t=>t.sector===sid)}
 function frigHop(t){if(t.jumpTo)return t.jumpTo;if(!t.dest||t.dest===t.sector)return null;let best=null,bh=99;for(const n of NEIGH[t.sector]){const h=HOP[t.dest][n];if(h<bh){bh=h;best=n}}return best}
 const JUMP_TIME=20,PWR=['eng','shd','lance','pd'];
-function fctl(t){if(!t.ctl)t.ctl={throttle:1,movePt:null,lanceMode:'auto',pd:'torps',pickets:'escort',power:{eng:3,shd:3,lance:3,pd:3}};const C=t.ctl;
+function fctl(t){if(!t.ctl)t.ctl={throttle:1,movePt:null,lanceMode:'auto',pd:'torps',flights:'escort',power:{eng:3,shd:3,lance:3,pd:3}};const C=t.ctl;if(C.pickets!==undefined){if(C.flights===undefined)C.flights=C.pickets;delete C.pickets}
   // the battery target is a live entity: keep it out of saves and network copies, and mirror its id (tgtId) so other browsers can resolve it
   if(!Object.getOwnPropertyDescriptor(C,'_t')){const v=C.tgt;delete C.tgt;Object.defineProperty(C,'_t',{value:null,writable:true,enumerable:false});Object.defineProperty(C,'tgt',{get(){return this._t},set(x){this._t=x||null;this.tgtId=x?(x.type==='station'?'S':x.id):null},enumerable:false,configurable:true});if(v&&typeof v==='object'&&v.type)C.tgt=v}
   return C}
@@ -399,7 +399,7 @@ function wePts(f){const g=weFac(f);return g&&S.we?(S.we[g]||0):0}
 function weBonus(f){return WE.max*(1-Math.exp(-wePts(f)/WE.scale))}
 function weMul(f){return 1+weBonus(f)}
 function weTick(){if(!S.we)return;const k=Math.exp(-10/WE.tau);for(const f in S.we){S.we[f]*=k;if(S.we[f]<.01)delete S.we[f]}}
-function weKill(e,sh=1){const wf=weSide(S.player);if(!wf||!hostile(wf,e.side))return;const K=WE.kill;let p=e.role==='frigate'?(e.cls==='escort'?K.escort:K.frigate):e.role==='builder'?K.builder:e.role==='hauler'||e.role==='trader'?K.hauler:e.role==='miner'?K.miner:e.role==='drone'||e.role==='picket'||e.role==='limpet'?K.drone:e.role==='og'?K.og:e.cls==='mite'?K.mite:(e.cls==='heavy'||isBmb(e.cls)?K.heavy:K.fighter);if(e.side==='pirate')p*=.5;weAdd(wf,p*sh)}
+function weKill(e,sh=1){const wf=weSide(S.player);if(!wf||!hostile(wf,e.side))return;const K=WE.kill;let p=e.role==='frigate'?(e.cls==='escort'?K.escort:K.frigate):e.role==='builder'?K.builder:e.role==='hauler'||e.role==='trader'?K.hauler:e.role==='miner'?K.miner:e.role==='drone'||e.role==='flight'||e.role==='limpet'?K.drone:e.role==='og'?K.og:e.cls==='mite'?K.mite:(e.cls==='heavy'||isBmb(e.cls)?K.heavy:K.fighter);if(e.side==='pirate')p*=.5;weAdd(wf,p*sh)}
 // ---- kill credit. Every pilot who damaged a ship is paid their share of its bounty (and War effort) by damage dealt, so the
 // kill shot isn't needed. AI damage counts in the total but pays no one; the kill shot only adds to the kill count.
 // Bounties grow with the size of the ship.

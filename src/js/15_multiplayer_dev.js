@@ -413,7 +413,7 @@ function applySync(L){if(!S)return;const P=S.player;
   for(const id in w.pup||{}){const e=w.pup[id];if(e.mining)e.mining=S.sectors[w.sid].ast.find(a=>a.id===e.mining.id)||null}}
 function mkPup(r){const[id,side,fac,cls,role,tier,wpn,name]=r;const st=shipStats(fac==='pirate'?null:fac,cls,tier||1);
   const e={type:'ship',pup:true,id,side,fac,cls,role,tier:tier||1,wpn,st,x:r[8],y:r[9],z:r[10],vx:0,vy:0,vz:0,q:q0(),hull:st.hull,shield:st.sCap,energy:st.eCap,alive:true,lastHit:-99,ai:{},load:{},cargo:{},drones:[]};
-  if(role==='pilot'){e.pname=name;e.rp=id.slice(2);e.trail=r[24]||null}if(role==='frigate'){e.tokId=r[23];e.tok=(S.frigates||[]).find(x=>x.id===r[23])||{name,side,id:r[23]};e.pickets=[]}e.q.x=r[11]/1000;e.q.y=r[12]/1000;e.q.z=r[13]/1000;e.q.w=r[14]/1000;qNorm(e.q);e.momId=r[22];return e}
+  if(role==='pilot'){e.pname=name;e.rp=id.slice(2);e.trail=r[24]||null}if(role==='frigate'){e.tokId=r[23];e.tok=(S.frigates||[]).find(x=>x.id===r[23])||{name,side,id:r[23]};e.flights=[]}e.q.x=r[11]/1000;e.q.y=r[12]/1000;e.q.z=r[13]/1000;e.q.w=r[14]/1000;qNorm(e.q);e.momId=r[22];return e}
 function relinkFrigs(){const w=LW;if(!w||!w.pup)return;for(const id in w.pup){const e=w.pup[id];if(e.role!=='frigate'||e.tokId==null)continue;const t=(S.frigates||[]).find(x=>x.id===e.tokId);if(!t)continue;e.tok=t;
     if(t.ctl){const C=fctl(t);if(C.tgtId&&!C.tgt){const T=C.tgtId==='S'?w.stationEnt:C.tgtId==='p_'+MP.pid?w.player:w.pup[C.tgtId];if(T)C._t=T}}}
   if(MP.fjB){const e=Object.values(w.pup).find(x=>x.role==='frigate'&&x.tokId===MP.fjB.id);if(e){W.bridge={f:e,...MP.fjB.keep,panel:null};cam.snap=true;const st=MP.fjB.keep.seat;MP.fjB=null;if(st)openConsole('strat')}else if(performance.now()-MP.fjB.at>8000){MP.fjB=null;if(S.player.docked==='bridge'){S.player.docked=null;ejectReset();const p=W.player;netSend({t:'undock',x:p.x,y:p.y,z:p.z,vx:0,vy:0,vz:0,q:[p.q.x,p.q.y,p.q.z,p.q.w]});flash('Lost contact with the capital ship. Your fighter is adrift.',true)}}}}
@@ -522,7 +522,7 @@ function devEnemyUI(){const sel=$('devSide');if(!sel||!S)return;const pf=S.playe
   const T=$('devTypes');if(T&&!T.children.length)T.innerHTML=DEV_TYPES.map(([k,n],i)=>`<label><input type="checkbox" value="${k}"${i<2?' checked':''}>${esc(n)}</label>`).join('')}
 function devEnemyFrig(side,levi,esc){if(!W||!W.player)return 'Not in a system.';if(levi)side='brood';if(side==='pirate')return `The Unbound have no ${esc?'escorts':'carriers'}. Pick a faction or the Brood.`;if(!FACTIONS[side]&&side!=='brood')return 'Pick an enemy side.';
   const p=W.player;let t;devLedger(()=>{t=(esc?makeEscort:makeCarrier)(side,W.sid,{})});const e=W.ents.find(x=>x.alive&&x.tok===t);
-  if(e){qRot(p.q,0,0,1,_f);const d=2600;e.x=p.x+_f.x*d;e.y=p.y+_f.y*d+120;e.z=p.z+_f.z*d;e.vx=e.vy=e.vz=0;faceInstant(e,p.x-e.x,p.y-e.y,p.z-e.z);for(const k of e.pickets||[]){const o=rdir();k.x=e.x+o.x*170;k.y=e.y+o.y*170;k.z=e.z+o.z*170}fxWarp(e,sideCol(side));frigArriveFx(e)}
+  if(e){qRot(p.q,0,0,1,_f);const d=2600;e.x=p.x+_f.x*d;e.y=p.y+_f.y*d+120;e.z=p.z+_f.z*d;e.vx=e.vy=e.vz=0;faceInstant(e,p.x-e.x,p.y-e.y,p.z-e.z);for(const k of e.flights||[]){const o=rdir();k.x=e.x+o.x*170;k.y=e.y+o.y*170;k.z=e.z+o.z*170}fxWarp(e,sideCol(side));frigArriveFx(e)}
   return side==='brood'?`A Brood ${esc?'escort, '+t.name+',':broodCap(t)} has surfaced 2.6 km ahead.`:`${FACTIONS[side].short} ${capName(t)} ${t.name} jumped in 2.6 km ahead.`}
 function devSquad(side,n,types){if(!W||!W.player)return 'Not in a system.';n=clamp(Math.round(+n||4),1,20);types=(types||[]).filter(k=>CLASSES[k]);if(!types.length)types=['interceptor'];
   const p=W.player,fac=side==='pirate'?null:side,tier=side==='pirate'?pirateTier():factionTier(side),g={id:'g'+(RID++),side,role:'raider',members:[],n0:0,fleeing:false};qRot(p.q,0,0,1,_f);qRot(p.q,1,0,0,_r);
@@ -551,7 +551,7 @@ function devGunboat(){if(!W||!W.player)return 'Not in a system.';const p=W.playe
 function devFrig(asHost,esc){if(NET.cl&&!asHost){netSend({t:'dev',k:esc?'fesc':'frig'});return `Asked the host for ${esc?'an escort':'a carrier'}…`}if(!W||!W.player)return 'Not in a system.';
   const mk=esc?makeEscort:makeCarrier,t=devLedger(()=>NET.on?mk(S.player.faction,W.sid,{},curPid(),true):mk('player',W.sid,{},undefined,true)),e=W.ents.find(x=>x.alive&&x.tok===t);
   if(e){const p=W.player;qRot(p.q,0,0,1,_f);qRot(p.q,1,0,0,_r);const d=420+e.st.radius;e.x=p.x+_f.x*d+_r.x*160;e.y=p.y+_f.y*d+_r.y*160+60;e.z=p.z+_f.z*d+_r.z*160;e.vx=e.vy=e.vz=0;qCopy(e.q,p.q);
-    for(const k of e.pickets||[]){const o=rdir();k.x=e.x+o.x*170;k.y=e.y+o.y*170;k.z=e.z+o.z*170}fxWarp(e,sideCol('player'))}
+    for(const k of e.flights||[]){const o=rdir();k.x=e.x+o.x*170;k.y=e.y+o.y*170;k.z=e.z+o.z*170}fxWarp(e,sideCol('player'))}
   feed(`${capName(t)==='carrier'?'Carrier':'Escort'} ${t.name} has joined you in ${DEF[W.sid].name}. Order it from the galaxy map (M).`,'good');return `Spawned ${capName(t)} ${t.name}.`}
 function devDo(k){if(!running||!S)return;let msg='';
   if(k==='close'){$('dev').hidden=true;return}

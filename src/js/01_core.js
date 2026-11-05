@@ -187,7 +187,7 @@ const CLASSES={
   carrier:{name:'Carrier',hull:2500,shield:14,speed:.36,turn:.26,weapon:0,cargo:0,drill:0,radius:120,rack:0,boost:1,agile:.25,acc:.3,desc:'Fleet carrier.'},
   frigate:{name:'Frigate',hull:3000,shield:14,speed:.42,turn:.32,weapon:1,cargo:0,drill:0,radius:110,rack:0,boost:1,agile:.3,acc:.35,desc:'Capital ship.'},
   // (5 Nov 2026, user) the Picket class is unused: no one builds, spawns or flies one. Commented out. (A carrier's launched
-  // fighters still have the role 'picket'; that is the carrier wing, not this class.)
+  // fighters and bombers are its 'flight' (role 'flight'; the carrier code called them pickets until 5 Nov 2026).)
   //picket:{name:'Picket',hull:32,shield:.55,speed:1.35,turn:3.6,weapon:.6,cargo:0,drill:0,radius:11,rack:.5,boost:1.2,agile:1.4,acc:1.4,desc:'Small escort fighter, 2 missiles.'},
   drone:{name:'Guard Drone',acc:1.4,hull:12,shield:.2,speed:1.3,turn:3.6,weapon:.12,cargo:0,drill:0,radius:5,rack:0,boost:1.1,agile:1.3,desc:'Escort drone.'},
   scout:{name:'Scout',acc:1.35,bcost:.8,hull:60,shield:.75,speed:1.78,turn:1.35,weapon:.5,cargo:10,drill:0,radius:11,rack:1,twin:true,boost:1.3,agile:.5,radar:true,desc:'The fastest hull in the galaxy, and one of the hardest to turn. Two missile launchers fire a pair on every shot. Long-range radar sees the whole sector and reports the next ones. Flips sector beacons (hold within 250 m). Plants one limpet on an enemy capital ship or station (hold F within 600 m for 2 s; rearms when docked).'},
