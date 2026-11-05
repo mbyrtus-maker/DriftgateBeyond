@@ -2145,7 +2145,7 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 3. **Only one surge at a time?** The proposal allows one, with at least 30 minutes before the next.
 
 ### Corporations with money: shares, struggles, product tweaks and market surges (proposal, 5 Nov 2026, awaiting approval)
-**The user's idea:**
+**The user's idea** (and, 5 Nov, that AI buyers and sellers should choose by each product's actual stats and their own needs):
 - market surges;
 - stocks in the corporations;
 - corporations with limited money, so that if their products don't sell they start to fail;
@@ -2171,6 +2171,21 @@ You can change the appointment any time you're awake. Without a stand-in nothing
   - **AI contractors** buy now and then.
 - The ledger stays exact: parts and components only move, and credits only change wallets.
 
+**1a. AI buyers choose on the products' actual stats** (user, 5 Nov). Every AI buyer has a role, and each role values the stats that matter to it:
+
+| Role | Values most |
+|---|---|
+| Fighter pilots, and a power's fighters, bombers and escorts | Shield, hull, weapon damage, energy draw |
+| Haulers | Hold, guard drones (the Drone controller's toughness and damage), top speed |
+| Miners | Mining rate, charges, hold, guard drones |
+| Scouts | Scanner reach, speed |
+
+- **Scoring.** For each slot a buyer needs, it scores every product on sale: what the product's bonus and drawback do for that role, per credit of price, plus a little loyalty to its home's makers.
+- **Choosing.** It buys the better-scored products more often, not always: a weighted choice, so a product a little behind still sells some. A shield that protects more sells more to fighters; a Drone controller with tougher drones or a cargo module with more hold sells more to haulers.
+- **Merchants** carry the parts that score best with the buyers at their destination, so a good product spreads across the galaxy and a poor one sits.
+- **Makers tweak toward their buyers.** A line that isn't selling gets the tweak that most raises its score with the roles that buy that kind of part: more shield for a shield that fighters pass over, tougher drones for a controller that haulers ignore. It no longer picks at random.
+- **Engines:** drives and reactors are still upgraded in place rather than fitted as parts (the "systems as parts" not-yet), so for now haulers weigh speed through the products' own top-speed effects (the cargo modules' drawbacks). If engines should be products, systems become parts first (open question 4).
+
 **2. Struggling, failing, and a new maker**
 - **Struggling.** When its treasury falls below two hours of running costs:
   - it cuts its prices (10% to 25%);
@@ -2189,7 +2204,7 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 
 **3. Makers tweak their products from their sales**
 - Each line's sales are counted, and every **review** (proposal: 20 minutes) the maker looks at them.
-- **A line that hasn't sold** gets one tweak, chosen at random from the ones that help:
+- **A line that hasn't sold** gets one tweak, the one that most raises its score with its buyers (1a), from these:
   - a bigger bonus (+2 to +4 points);
   - a smaller drawback;
   - or a lower price (−10%).
@@ -2243,3 +2258,4 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 1. **Starting capital, running costs and market dues:** the numbers above are first guesses.
 2. **The powers' refit buying** is the biggest piece of work here: AI ships drawing parts from their warehouse when built. Do it now, or start with merchants and AI contractors as the buyers and add it later?
 3. **Your own brand:** should your Depot's brand be able to issue shares too, later, so other pilots can invest in you?
+4. **Engines as products:** turn drives and reactors (and shields and armour) into fitted parts so makers can sell better engines? It's the larger "systems as parts" change, which would come first.
