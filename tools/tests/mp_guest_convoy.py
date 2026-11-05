@@ -126,6 +126,11 @@ async def body(K):
   dead=await shoot(K,wc['id'])
   got=(await G("S.player.credits"))-c0;pt1=await Hh("S.econ.treasury.pirate")
   fd=await G("FEED.slice(-8).map(x=>x.msg).filter(m=>/Unbound|convoy|raid/i.test(m)).join(' / ').slice(0,260)")
-  check('the guest destroyed the Tankard's freighter',dead)
+  check("the guest destroyed the Tankard's freighter",dead)
   check('the Unbound paid their share',pt0-pt1>0 and 'Unbound pay' in fd,'+%s cr in all · Unbound paid %s · %s'%(got,pt0-pt1,fd))
+  # (user, 4 Nov 2026) only the rumour pays: no power's raid or kill bounty on top
+  import re
+  up=sum(int(x.replace(',','')) for x in re.findall(r'The Unbound pay ([\d,]+) cr',fd))
+  fa=await G("FEED.slice(-10).map(x=>x.msg).join(' / ')")
+  check('only the Unbound paid (no power\'s bounty too)','Convoy raid:' not in fa and 'Bounty +' not in fa and got==up,'+%s cr, the Unbound paid %s · %s'%(got,up,fa[-300:]))
 if __name__=="__main__":run(body)

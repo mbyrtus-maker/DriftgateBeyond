@@ -1961,8 +1961,8 @@ The user's asks, with their choices (Drone controller on drone-bay hulls only; d
 - **Found and fixed:**
   - **Convoy bounties.** A convoy's goods ride in its freighter while it flies through an open system, and its record's load is empty meanwhile. So the raid bounty, which is always paid in an open system, fell to the 400 cr base. The boards showed that figure, and their "what it carries" line was blank (host and guests alike). A 1,152 cr convoy now pays 1,380 cr as the board says. Convoys now keep a manifest per leg: a note, not goods, so the ledger is untouched.
   - **Docking after an upgrade.** Raising a Lair to a Depot left the guest docked at the new station on the host but at the vanished Lair on its own screen. The host now tells the guest when a dock action moves its berth.
+- **Tankard raids pay once** (user): a contractor on a Tankard raid was paid twice, by the Unbound (their share) and by a power at war with the convoy's owner (its usual raid bounty). Only the rumour pays now: the kill of the convoy you took the rumour for pays no power's bounty, raid or kill, and adds to no power's war effort.
 - **Noted, unchanged:**
-  - On a Tankard raid a contractor is paid twice: by the Unbound (their share) and by a power at war with the convoy's owner (its usual raid bounty).
   - A new contract or convoy reaches a guest's boards within 5 s of game time: the whole state is sent every 5 s.
 
 ### A check of every model for collisions and overlaps (4 Nov 2026)

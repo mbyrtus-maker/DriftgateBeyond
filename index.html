@@ -10565,6 +10565,11 @@ function wrRaidPay(t){return Math.round(raidBounty(t)*WR_RAID.k/10)*10}
   try{if(t&&!NET.cl){let tot=0;for(const k in D)tot+=D[k];const kp=at&&at.gk?at.gk:at&&at.src&&at.src.rp,killer=kp||(src==='player'?'me':null);if(killer&&!(tot>0)){D[killer]=1;tot=1}
     for(const k in D){if(k==='_ai'||!(D[k]/tot>=.05))continue;const P=isMe(k)?S.player:(S.pilots||{})[k];if(!P||!P.job||P.job.by!=='pirate'||P.job.id!=='cv:'+t.id)continue;
       runAs(isMe(k)?null:k,()=>{const got=transfer('pirate','player',Math.round(wrRaidPay(t)*D[k]/tot));if(got)feed(`☠ The Unbound pay ${fmt(got)} cr for the ${FACTIONS[t.side].short} convoy.`,'good');S.player.job=null})}}}catch(err){console.error(err)}return r}}
+// (user, 4 Nov 2026) a Tankard rumour is the Unbound's job: only the Unbound pay for it. The kill of the convoy you took the rumour
+// for pays no power's bounty (no raid bounty, no kill bounty, no war effort), whoever is at war with its owner.
+let wrRumKill=null;
+{const o=payKill;payKill=function(e){const t=e&&e.role==='trader'&&e.tradeT&&e.tradeT.kind==='haul'?e.tradeT:null;const keep=wrRumKill;wrRumKill=t;try{return o.apply(this,arguments)}finally{wrRumKill=keep}}}
+{const o=bountyPayer;bountyPayer=function(victim,P){P=P||S.player;if(wrRumKill&&P&&P.job&&P.job.by==='pirate'&&P.job.id==='cv:'+wrRumKill.id)return null;return o.apply(this,arguments)}}
 
 //@src 16s_declare.js
 // ============================================================ declaring a faction, the 20-system win, the Brood's ramp (Beyond stage 13)
