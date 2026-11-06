@@ -2304,3 +2304,48 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 - About 59 tweaks and 5.5 replaced products a galaxy; CEOs: Discounter 3.2%/h best, Premium 0.1%/h worst (a premium price loses to the standard part on the same shelf).
 - 150 + 35 per line gives 0.77 failures but most makers shrink.
 - Open: Coldwater Prospecting's line-up; standard part prices; Premium CEO; running costs.
+
+### Corporate R&D: grades by invention, and corporate missions (proposal, 5 Nov 2026, awaiting approval)
+The user's direction after the v6 simulation: every maker launches its products with minimal traits; a maker whose product can't compete invests in an upgraded part; grades come back, but only through R&D, to win market share; R&D takes time, materials runs, missions, sabotage and espionage; random galaxy events are removed; a finished project releases an upgraded product line.
+
+**What it replaces**
+- **Upgrades in place go.** No more Mk 1–5 system upgrades or part-grade upgrades at a dock. A better drive is a better *part*: a higher grade bought from the maker that invented it.
+- **The random galaxy events (famine, feast, plague, war scare, ore boom, shortage) are dropped** from the corporate economy. Competition and R&D drive the market instead.
+- **"Replaced after three failed tweaks" becomes "R&D after the tweaks fail".** A product that loses doesn't vanish; its maker tries to leapfrog it.
+- **Unchanged from v6:** factions stock grade 1 standard parts; makers sell their trait lines at every station; trade-off rule; every sale clears 15% after the station's cut and fees; CEO traits.
+
+**Launch:** every product line starts at **grade 1** with **small traits** (proposal: a 4 to 8 point strength, half that as its weakness), barely different from the standard part. Who wins at first is mostly price, position and the CEO.
+
+**When R&D starts** (proposal):
+- one of a maker's lines is losing: bought less than half its fair share over 2 hours, after its tweaks (proposal: up to 2 small ones), or
+- a rival has released a higher grade of the same kind and is taking its share.
+
+The maker opens a **project for that kind at the next grade** (grade 2 first, up to 5), if it can fund it. A maker that can't fund it keeps struggling, and may fail.
+
+**A project's stages** (each shown on the maker's page and in the News):
+1. **Funding.** Cost rises steeply with grade (proposal: G2 1,500 cr, G3 4,000, G4 9,000, G5 18,000). It comes from the maker's treasury, or from issuing new shares, which lowers the share price.
+2. **Design.** Lab time at the maker's home works (proposal: G2 30 min, G3 60, G4 90, G5 120, game time). A progress bar; espionage can copy it, sabotage can set it back.
+3. **Materials.** The prototype needs the grade's components plus rare inputs (lattice, cores, matrix, rare ore) delivered to the home works. They're posted as **materials-run contracts**; NPC haulers fill them slowly if players don't.
+4. **Trials.** The prototype must be flown: a **test-flight mission** (fit it and fight, mine or haul until the data is logged). NPC test pilots do it more slowly. A sabotaged prototype fails trials and is rebuilt.
+5. **Launch.** A new product line, "Ember drive G2", with traits rolled under the trade-off rule. A launch batch ships to the stations, and the News announces it. The old line stays on sale as a cheaper option until the maker retires it.
+
+**What a grade does:** each grade raises the part's base stats, using today's steps (for weapons and utilities: damage +10%, rounds +25%, mining rate +15%, hold +5%, scan reach +20% per grade; for systems, today's Mk steps). Price follows the grade's component cost. Contractor Rating still gates which grades a player may fit, and the powers' AI fleets buy up to the grade their tech allows.
+
+**Rivals fight back.** AI makers run espionage and sabotage against each other through NPC agents, and post the same work as missions for players. Espionage and sabotage are crimes in the target maker's power space, rated with the smuggling system's heat (None, Light, Heavy, Severe; section on smuggling), and caught agents bring heat and bounties on whoever ran them.
+
+**Corporate missions** (a Corporations filter on the Jobs board; paid from the posting maker's treasury):
+- *R&D work:* **Materials run** (deliver components to a maker's works by a deadline); **Rare ore contract** (mine a specific ore for a project); **Prototype escort** (the prototype to a test range or another lab); **Test flight** (fly the prototype until the trial data is logged); **Data courier** (carry research cores between a maker's stations); **Launch delivery** (the first batch of a new line to several stations, fast).
+- *Espionage:* **Data tap** (dock at a rival's home and hold a scan near its works without being caught); **Convoy read** (cargo-scan a rival's materials convoy to learn what it's building); **Lift the prototype** (raid a rival's prototype escort). Success advances the client's project and can expose the rival's.
+- *Sabotage:* **Intercept materials** (destroy or steal a rival's shipment; its project waits); **Plant a fault** (dock and tamper with a rival's prototype; it fails trials); **Poach an engineer** (carry a rival's researcher to your client; your project speeds up, theirs slows).
+- *Security:* **Works patrol** (scan and chase off saboteurs around a maker's home); **Convoy guard** (escort a materials run against raiders and agents); **Counter-intelligence** (hunt a rival's agent ship before it leaves the system).
+- *Market:* **Fleet tender** (a power asks for, say, 40 shield emitters; makers bid; deliver the winner's batch); **Demo run** (take a demo unit to a power's station to win its refits for a while); **Market survey** (log price boards at several stations for a maker's planners).
+- *Company life:* **Recall run** (haul a retired line's unsold stock to a scrapper to be broken into ore); **CEO transfer** (fly a new CEO to headquarters, maybe under threat); **Shareholder vote** (own enough shares and you vote on which kind a maker researches next).
+
+**Simulation plan (v7, once the rules are agreed):** grade-1 launch with small traits; R&D projects with funding, lab time, materials and trials, filled by NPCs at measured rates; rival espionage and sabotage at proposed rates; no galaxy events. Measure how often projects start and finish, which grades the galaxy reaches by 16 hours, failures, share prices, and how many missions a galaxy offers players.
+
+**Open questions:**
+1. When a new grade launches, does the old line keep selling (cheaper), get retired at once (stock broken into ore), or carry on until it sells out?
+2. Grade steps: today's sizes, or bigger, so an R&D win is decisive?
+3. Tweaks: keep up to 2 small tweaks before R&D, or go straight to R&D?
+4. Sabotage and espionage: crimes with heat and bounties (as proposed), or a grey area where only the victim maker puts a price on you?
+5. Your own brand: can a player's Depot brand run R&D projects too?
