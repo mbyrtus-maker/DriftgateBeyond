@@ -85,5 +85,6 @@ js/16zzp_freight.js
 js/16zzq_raiders.js
 js/16zzr_contract.js
 js/16zzs_crewruns.js
+js/16zzt_cap.js
 js/17_main.js
 end.html

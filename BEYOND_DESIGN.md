@@ -2173,6 +2173,8 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 - **Hauling crews:** every two minutes a hauling crew loads what the depot is set to sell and flies it to the nearest market that deals with you along the lanes (`S.crRuns`), sells it there, and flies home empty. It shows in any live system on its way, and if it's shot down the crew is lost and its hold is salvage. (The goods were sold from the depot directly before.)
 - Guards and idle crews are as they were; a crew away on a run isn't at the depot.
 
+**Stage 6 as built (6 Nov 2026, `16zzt_cap.js`): the ship cap.** Measured on the test renderer (software WebGL at 1280x720, in Halcyon Prime): simulating the system costs 0.2 ms a frame with 10 ships, 0.5 to 0.8 ms with 27 to 58, 1.1 ms with 74, so the simulation isn't the limit; drawing is (software rendering 50 to 83 ms a frame up to 50 ships, 100 ms at 58 and over; a real GPU is many times faster). With every ship a tracked unit the cap no longer rations chance spawns; it's where tracked units over it wait out of sight (miners and garrison fighters stay docked; convoys, raids and capitals always fly). New caps: a home system or hub 40, the deep 24, the void 12, any other system 32 (was 17 everywhere and 6 in the void); your crews still don't count.
+
 **Order (user, 6 Nov 2026):** stage 2 next; then **stage 1b, your crews made real**: today (`16w_crews.js`) a depot's crews fly in its system for show while the minute tick does the work; crew miners will mine and unload for real and crew haulers carry real goods (raidable), guards as now.
 
 **Stage 1 as built (6 Nov 2026, `16zzn_miners.js`; test `miners.py`):**
