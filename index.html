@@ -8517,7 +8517,7 @@ function raidSend(side,pk,kit){const src=pk.src,r={id:S.nextId++,side,src:src.si
   const t=r.tgt&&(S.traders||[]).find(x=>x.id===r.tgt);if(t&&t.esc)keyFeed(t.esc.k,`⚠ ${raidWho(side)} raiders are moving to intercept the convoy you're escorting. Expect them in ${DEF[r.dest].name}.`,'warn');
   if(r.dep&&friendSide(S.stations[r.dep].owner))feed(`⚠ An ${raidWho(side)} raiding party has been seen heading for ${S.stations[r.dep].name}.`,'warn');
   if(WORLDS[r.sector])inW(WORLDS[r.sector],()=>raidSpawn(r,false));else if(r.path.length===1)raidArrive(r);return r}
-function raidDispatch(){S.raids=S.raids||[];for(const side of[...FAC_IDS,'brood','pirate']){const kind=side==='pirate'?'pirate':side==='brood'?'brood':'fac',mine=S.raids.filter(r=>r.side===side&&!r.ret);if(mine.length>=RAID.max[kind])continue;
+function raidDispatch(){S.raids=S.raids||[];for(const side of[...FAC_IDS,'brood','pirate']){const kind=side==='pirate'?'pirate':side==='brood'?'brood':'fac',mine=S.raids.filter(r=>r.side===side&&!r.ret&&!r.strike);if(mine.length>=RAID.max[kind])continue;
     if(S.T<300)continue;const srcL=raidSources(side).filter(s=>!mine.some(r=>r.src===s.sid&&S.T-r.T0<RAID.cool));if(!srcL.length)continue;
     // escorted convoys draw raiders more often; an Unbound capital on the hunt launches far more often than the haven
     let p=RAID.rate[kind];if(side==='pirate'&&srcL.some(s=>s.cap))p=RAID.rate.cap;if((S.traders||[]).some(t=>t.esc&&hostile(side,t.side)&&!raidTaken(t)&&srcL.some(s=>raidIntercept(s,t))))p+=RAID.esc;if(Math.random()>=p)continue;
@@ -13658,7 +13658,7 @@ function prwGrounds(side,src){const out=[];for(const d of SECTOR_DEFS){const id=
   else if(side==='brood'){if(d.kind==='hive'||!broodNear(id)||territory('brood').has(id))continue;out.push([id,1])}
   else{const ow=sectorOwner(id);if(!ow||ow===side||!hostile(side,ow)||d.kind==='core')continue;out.push([id,d.kind==='frontier'||d.kind==='contested'?2:1])}}
   return out}
-function prwSend(side){const kind=side==='pirate'?'pirate':side==='brood'?'brood':'fac',mine=(S.raids||[]).filter(r=>r.side===side&&!r.ret);if(mine.length>=PRW.max[kind])return null;
+function prwSend(side){const kind=side==='pirate'?'pirate':side==='brood'?'brood':'fac',mine=(S.raids||[]).filter(r=>r.side===side&&!r.ret&&!r.strike);if(mine.length>=PRW.max[kind])return null;
   const srcL=raidSources(side).filter(s=>!mine.some(r=>r.src===s.sid&&S.T-r.T0<RAID.cool));if(!srcL.length)return null;const src=pick(srcL),G=prwGrounds(side,src);if(!G.length)return null;
   const c=wpickArr(G);const kit=raidShips(side,src.srcs);if(!kit)return null;const r=raidSend(side,{src,tgt:null,dep:null,c},kit);if(r){r.prowl=true;if(r.path.length===1&&r.state!=='wait'){r.state='wait';r.until=S.T+RAID.wait}}return r}
 {const o=raidDispatch;raidDispatch=function(){const x=o.apply(this,arguments);try{if(S.T>=300)for(const side of[...FAC_IDS,'brood','pirate']){const kind=side==='pirate'?'pirate':side==='brood'?'brood':'fac';if(Math.random()<PRW.rate[kind])prwSend(side)}}catch(e){console.error(e)}return x}}
@@ -13691,6 +13691,26 @@ function prwHome(side,sid,force){const home=homeOf(side);if(!force||!Object.keys
   const tier=side==='pirate'?pirateTier():factionTier(side)||1,ships=[],left={...force};for(let i=0;i<6;i++){let c=pickFighter('patrol'),ld=loadout(side==='pirate'?'pirate':'patrol',tier,c);if(!haveIn(ld,[left])){c='interceptor';ld=loadout(side==='pirate'?'pirate':'patrol',1,c)}if(!haveIn(ld,[left])&&ships.length)break;takeFrom(ld,[left]);ships.push({cls:c,tier,ld})}
   const r={id:S.nextId++,side,src:home,cap:null,tgt:null,dep:null,dest:home,sector:sid,path:trPath(sid,home),leg:0,next:S.T+RAID.hop,state:'home',ships,kit:{...force},loot:{},back:[],T0:S.T,ret:true};
   for(const k in force)delete force[k];(S.raids=S.raids||[]).push(r);if(WORLDS[sid])inW(WORLDS[sid],()=>raidSpawn(r,false));return r}
+// ---- stage 3b: an offensive flies to its target. Formed at its side's home, the strike group travels the lanes hop by hop as
+// a tracked party (a raid token with .strike), showing in any live system on its way; at the target it becomes the offensive
+// again: it jumps in and fights live, or the battle is resolved out of sight as before.
+function prwStrikeStart(ev){const from=homeOf(ev.att);if(!from||from===ev.sector){ev.trDone=1;return}const path=trPath(from,ev.sector);if(!path||path.length<2){ev.trDone=1;return}
+  const ships=[];(ev.cls||[]).forEach(c=>ships.push({cls:c,tier:ev.tier,ld:loadout(ev.att==='pirate'?'pirate':'patrol',ev.tier,c)}));if(!ships.length){ev.trDone=1;return}
+  const r={id:S.nextId++,side:ev.att,src:from,cap:null,tgt:null,dep:null,dest:ev.sector,sector:from,path,leg:0,next:S.T+RAID.hop,state:'out',ships,kit:{},loot:{},back:[],T0:S.T,strike:ev.id};
+  inv.addAll(r.kit,ev.force);for(const k in ev.force)delete ev.force[k];ev.tr=r.id;ev.eta=1e12;(S.raids=S.raids||[]).push(r);if(WORLDS[r.sector])inW(WORLDS[r.sector],()=>raidSpawn(r,false))}
+function prwStrikeHand(r){const ev=S.events.find(e=>e.id===r.strike);const i=S.raids.indexOf(r);if(i>=0)S.raids.splice(i,1);
+  if(!ev||ev.stage==='done'){prwHome(r.side,r.sector,r.kit);r.kit={};return null}
+  inv.addAll(ev.force,r.kit);r.kit={};ev.cls=r.ships.map(s=>s.cls);ev.n=r.ships.length;ev.tr=null;ev.trDone=1;ev.eta=S.T;
+  if(ev.n<2){ev.stage='done';prwHome(ev.att,r.sector,ev.force);ev.force={};return null}return ev}
+{const o=updateEvents;updateEvents=function(){try{if(!NET.cl)for(const ev of S.events||[])if(ev.type==='offensive'&&ev.stage==='inbound'&&!ev.tr&&!ev.trDone)prwStrikeStart(ev)}catch(e){console.error(e)}return o.apply(this,arguments)}}
+{const o=raidStillOn;raidStillOn=function(r){if(r&&r.strike)return true;return o.apply(this,arguments)}}
+{const o=raidArrive;raidArrive=function(r){if(r&&r.strike){prwStrikeHand(r);return}return o.apply(this,arguments)}}
+// arriving in an open target system: the group jumps in as the offensive
+{const o=raidSpawn;raidSpawn=function(r,arrive){if(r&&r.strike&&W&&W.sid===r.dest){const ev=prwStrikeHand(r);if(ev)engageOffensive(ev);return}return o.apply(this,arguments)}}
+// a strike group wiped out on the way: the offensive is over
+{const o=raidWipe;raidWipe=function(r,sid,msg){if(r&&r.strike){const ev=S.events.find(e=>e.id===r.strike);if(ev&&ev.stage!=='done'){ev.stage='done';ev.force={}}}return o.apply(this,arguments)}}
+// a strike group cut down on the way turns for home: the offensive is called off and the survivors are a plain party home
+{const o=raidHome;raidHome=function(r){if(r&&r.strike){const ev=S.events.find(e=>e.id===r.strike);if(ev&&ev.stage!=='done'){ev.stage='done';ev.force={}}r.strike=null;r.ret=true}return o.apply(this,arguments)}}
 
 //@src 16zzr_contract.js
 // ============================================================ Beyond: AI contractors fly the jobs (live space stage 5, 6 Nov 2026)

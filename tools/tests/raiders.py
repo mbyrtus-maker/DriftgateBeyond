@@ -33,6 +33,11 @@ async def main():
     print('ledger',await ev(LED))
     print('a force flies home',await ev("""(()=>{const st=S.econ.stock.halcyon,p0=st.plate||0,force={};devLedger(()=>{inv.add(st,'plate',9);inv.add(st,'wire',6)});for(let i=0;i<3;i++){const ld=loadout('patrol',1,'striker');takeFrom(ld,[st]);inv.addAll(force,ld)}const r=prwHome('halcyon','ke',force);const n=RUN(()=>!S.raids.includes(r),80);return JSON.stringify({token:!!r,ret:r&&r.ret,ships:r&&r.ships.length,home:n>=0,plateBack:(st.plate||0)-p0})})()"""))
     print('ledger',await ev(LED))
+    print('an offensive flies to its target',await ev("""(()=>{let ev=null;for(let k=0;k<40&&!ev;k++){for(const f of ['varkesh','halcyon','ostrova','brood']){const n0=S.events.length;S.ai[f].next=0;planOffensive(f);const e=S.events.find(x=>x.type==='offensive'&&x.att===f&&x.stage==='inbound'&&!x.tr&&!x.trDone);if(e){ev=e;break}}}
+      if(!ev)return 'no offensive';updateEvents();const r=S.raids.find(x=>x.strike===ev.id);window._EV=ev;return JSON.stringify({att:ev.att,to:ev.sector,token:!!r,hops:r?r.path.length-1:0,ships:r?r.ships.length:0,eta:ev.eta>1e11?'in transit':ev.eta})})()"""))
+    print('ledger',await ev(LED))
+    print('arrives and fights',await ev("""(()=>{const ev=window._EV;if(!ev)return 'none';for(let i=0;i<120&&ev.stage==='inbound';i++){S.T+=10;raidsTick();updateEvents()}return JSON.stringify({stage:ev.stage,token:!!S.raids.find(x=>x.strike===ev.id)})})()"""))
+    print('ledger',await ev(LED))
     for i in range(3):await ev("(()=>{for(let i=0;i<30;i++){S.T+=10;strategicTick();updateEvents()}})()")
     print('an hour on',await ev(LED),await ev("JSON.stringify({raids:S.raids.length,prowls:S.raids.filter(r=>r.prowl).length,home:S.raids.filter(r=>r.ret).length})"))
     print('errors',errs[:4]);await b.close()
