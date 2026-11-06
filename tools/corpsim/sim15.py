@@ -355,6 +355,18 @@ def sim(seed,params=None):
         k=rng.choices(list(EVENTS),[v['w'] for v in EVENTS.values()])[0];tgt=rng.choice(POWERS) if EVENTS[k]['power'] else None
         if not ev_on(k,tgt):e=dict(k=k,tgt=tgt,t0=now,t1=now+rng.randint(*P['event_len']));EV.append(e);st['events'].append(e)
       for mk in makers.values():mk.ck=cost_k(mk.sid)
+      # a wealthy pilot buying one line in bulk (experiment; off unless P['whale'] is set): from t0 to t1 they buy every
+      # unit on the shelf, up to `rate` an hour, at the shelf price; it counts as a sale like any other
+      W=P.get('whale')
+      if W and W['t0']<=now<W['t1']:
+        mk=makers[W['m']];Lw=next((L for L in mk.lines if L.kind==W['kind'] and L.active),None) if mk.alive else None
+        ws=st.setdefault('whale',dict(units=0,spend=0.0,list=0.0))
+        if Lw and Lw.stock[Lw.g]>0 and rng.random()<W['rate']/60:
+          g=Lw.g;pr=Lw.price(g,mk);Lw.stock[g]-=1;Lw.sold.append(now);Lw.sold_g[g]+=1;net=pr*(1-P['dues']);mk.T+=net;mk.rev+=net
+          mk.op+=net-Lw.comp(g)*Lw.ckavg;mk.sales_t.append(now);Lw.ev.append((now,1.0,True))
+          ws['units']+=1;ws['spend']+=pr;ws['list']+=Lw.lst(g,mk)
+          if Lw.stock[g]==0:Lw.sellouts.append(now);Lw.sellout_rev=True
+      if W and now in (W['t0'],W['t1']):st.setdefault('whale_snap',{})[now]=st['std_kind'].get(W['kind'],0)
       # works: build the emptiest shelf it can afford, keeping its reserve
       if now%max(1,int(P['works_every']))==0:
         for mk in makers.values():
