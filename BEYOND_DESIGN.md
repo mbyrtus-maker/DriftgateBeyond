@@ -2159,6 +2159,14 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 - **Forces home:** a finished offensive's or build party's force flies home along the lanes as a tracked party (as many fighters as its kit makes, up to six) and unloads into its warehouse there; it showed up in the warehouse at once before.
 - **Not yet (stage 3b):** offensives and build parties still travel to their target by an ETA rather than hop by hop along the lanes; lockdown response wings, the powers' hunts and aces' wings spawn at their station rather than launching from its garrison.
 
+**Stage 5 as built (6 Nov 2026, `16zzr_contract.js`; tests `contract.py`, `postjobs.py`): AI contractors fly the jobs.** A job posted for other pilots that an AI takes is a tracked ship (`S.pjRuns`), not a timer. It flies the lanes hop by hop (45 s a jump out of sight), shows in a live system labelled "Compact contractor · Supply" or "Varkesh contractor · Mine", and can be shot down: the job fails, no fee, and its hold falls as salvage.
+- **Supply:** the taker buys the goods at the nearest market that has them (your credits, when it signs on), carries them along the lanes and puts them into your depot's store.
+- **Haul:** the taker loads the goods at your depot, carries them to the nearest market that deals with you and sells them there (the proceeds are yours when it sells).
+- **Mine:** the taker flies in from the nearest market and mines the depot's rocks: out of sight at 0.35 t a second; live it drills a real rock, unloads at the depot when full, and leaves when the tonnes are cut.
+- **Guard:** the taker flies in and patrols the depot for 20 minutes; the depot's guns get their +50% only while it is there.
+- The Post jobs tab shows where each taker is ("in Coldwater Drift, 2 jumps out", "mining: 6 of 15 t", "on guard, 12:40 left"). Fees are paid when the job is done. A Compact contractor flies the Compact's colours (only the Brood and the Unbound attack it).
+- **Not yet:** off-screen raids don't hunt contractors (they hunt convoys); in multiplayer a guest's takers fly only when the host has the system open, as all tracked ships do.
+
 **Order (user, 6 Nov 2026):** stage 2 next; then **stage 1b, your crews made real**: today (`16w_crews.js`) a depot's crews fly in its system for show while the minute tick does the work; crew miners will mine and unload for real and crew haulers carry real goods (raidable), guards as now.
 
 **Stage 1 as built (6 Nov 2026, `16zzn_miners.js`; test `miners.py`):**

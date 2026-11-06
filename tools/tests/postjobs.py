@@ -1,6 +1,6 @@
 # Beyond: posting jobs to other pilots, with bidding. The galactic mean and the three bids (Low waits longest, Fast least),
 # the 200% cap; Supply (goods bought at the nearest market at your expense), Haul (sold for you), Mine (ore cut into the store)
-# and Guard (the depot's guns up) done by AI takers and paid; a job withdrawn; another player delivering a Supply job; the
+# and Guard (the depot's guns up) done by AI takers flying the jobs (16zzr_contract.js) and paid; a job withdrawn; another player delivering a Supply job; the
 # tab renders; the ledger stays exact
 import asyncio,json
 from playwright.async_api import async_playwright
@@ -21,8 +21,9 @@ async def main():
       const m=pjPost(P,`${sid}:supply:plate:20:999999`);const j=S.pj[S.pj.length-1];out.cap=Math.round(j.bid/j.mean*100)+'%';out.withdraw=pjCancel(P,j.id);return JSON.stringify(out)})()"""))
     print('ledger',await ev(LED))
     print('done by AI',await ev("""(()=>{const P=S.player,sid=window._SID,R=S.stations[sid];pjPost(P,`${sid}:haul:plate:20:fast`);pjPost(P,`${sid}:mine:x:15:medium`);pjPost(P,`${sid}:guard:x:0:medium`);
-      const pl0=R.stock.plate||0,st0=invMass(R.stock),c0=P.credits;for(const j of S.pj)if(j.state==='open')j.claimAt=S.T;pjTick();const guard=depGunK({rec:R},{role:'raider',side:'pirate'});for(const j of S.pj)if(j.state==='taken')j.due=S.T;pjTick();
+      const pl0=R.stock.plate||0,st0=invMass(R.stock),c0=P.credits;for(const j of S.pj)if(j.state==='open')j.claimAt=S.T;pjTick();const guard=depGunK({rec:R},{role:'raider',side:'pirate'});exitSector();for(let i=0;i<300&&S.pj.some(j=>j.state==='taken');i++){S.T+=10;pjTick()}enterSector(sid);
       return JSON.stringify({states:S.pj.map(j=>j.kind+':'+j.state),msgs:S.pj.filter(j=>j.msg).map(j=>j.msg).slice(-5),plate:[pl0,R.stock.plate||0],store:[st0,invMass(R.stock)],spent:c0-P.credits,guardK:guard})})()"""))
+    print('still taken',await ev("JSON.stringify(S.pj.filter(j=>j.state==='taken').map(j=>({kind:j.kind,run:j.run,due:j.due,r:JSON.stringify(pjRunOf(j.run))})))"))
     print('ledger',await ev(LED))
     print('another player delivers',await ev("""(()=>{const P=S.player,sid=window._SID,R=S.stations[sid];pjPost(P,`${sid}:supply:fe:10:medium`);const j=S.pj[S.pj.length-1];const Q={name:'Guest',cargo:{fe:10},credits:0,docked:'station',sector:sid};
       const k=pkeyOf(P);j.pid='zz';const save=xPilotOfKey;S.pilots=S.pilots||{};S.pilots.zz=P;let m;devLedger(()=>{m=pjDo(Q,j.id)});delete S.pilots.zz;return JSON.stringify({m,state:j.state,fe:R.stock.fe||0})})()"""))
