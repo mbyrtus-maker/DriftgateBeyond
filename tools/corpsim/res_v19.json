@@ -1,0 +1,189 @@
+{
+ "prudent makers, running costs 240 + 50 a line": {
+  "fail": 0.03,
+  "none": 97,
+  "launches": 27.0,
+  "g3": 83,
+  "sales": 1886,
+  "std": 1087,
+  "shut": 3.1,
+  "causes": {
+   "cash flow (selling its share)": 50,
+   "tweaks did not win buyers back": 33,
+   "out-graded": 17
+  },
+  "share": 0.88,
+  "age_h": 15.4,
+  "stock": 1892,
+  "who": {
+   "cp": 2,
+   "ewd": 1,
+   "cr": 1,
+   "hf": 1,
+   "ad": 1
+  },
+  "ceo": {
+   "Premium": 2,
+   "Restless": 1,
+   "Generous": 1,
+   "Expansionist": 1
+  }
+ },
+ "running costs 300 + 60": {
+  "fail": 0.03,
+  "none": 98,
+  "launches": 24.2,
+  "g3": 59,
+  "sales": 1884,
+  "std": 1082,
+  "shut": 3.1,
+  "causes": {
+   "cash flow (selling its share)": 40,
+   "tweaks did not win buyers back": 40,
+   "too dear": 20
+  },
+  "share": 0.84,
+  "age_h": 12.9,
+  "stock": 2032,
+  "who": {
+   "cr": 3,
+   "hf": 1,
+   "sw": 1
+  },
+  "ceo": {
+   "Innovator": 2,
+   "Premium": 1,
+   "Generous": 1,
+   "Expansionist": 1
+  }
+ },
+ "running costs 360 + 70": {
+  "fail": 0.07,
+  "none": 94,
+  "launches": 19.4,
+  "g3": 28,
+  "sales": 1931,
+  "std": 1050,
+  "shut": 2.7,
+  "causes": {
+   "out of stock": 69,
+   "cash flow (selling its share)": 31
+  },
+  "share": 0,
+  "age_h": 8.1,
+  "stock": 0,
+  "who": {
+   "qs": 2,
+   "hf": 2,
+   "ewd": 2,
+   "wf": 2,
+   "cr": 1,
+   "mg": 1
+  },
+  "ceo": {
+   "Restless": 2,
+   "Generous": 2,
+   "Discounter": 2,
+   "Premium": 2
+  }
+ },
+ "running costs 420 + 80": {
+  "fail": 0.35,
+  "none": 72,
+  "launches": 13.0,
+  "g3": 6,
+  "sales": 1944,
+  "std": 1022,
+  "shut": 2.7,
+  "causes": {
+   "out of stock": 61,
+   "cash flow (selling its share)": 37,
+   "too dear": 1
+  },
+  "share": 0.53,
+  "age_h": 10.8,
+  "stock": 0,
+  "who": {
+   "qs": 12,
+   "wf": 12,
+   "ewd": 8,
+   "cr": 8,
+   "mwa": 6,
+   "cp": 6
+  },
+  "ceo": {
+   "Discounter": 18,
+   "Cautious": 12,
+   "Premium": 11,
+   "Innovator": 9
+  }
+ },
+ "240 + 50, over 32 h": {
+  "fail": 1.31,
+  "none": 21,
+  "launches": 45.5,
+  "g3": 100,
+  "sales": 3246,
+  "std": 2713,
+  "shut": 8.8,
+  "causes": {
+   "cash flow (selling its share)": 39,
+   "out of stock": 22,
+   "tweaks did not win buyers back": 21,
+   "too dear": 11,
+   "out-graded": 5,
+   "losing on stats (before its tweaks ran out)": 2
+  },
+  "share": 0.81,
+  "age_h": 27.2,
+  "stock": 1588,
+  "who": {
+   "cr": 40,
+   "sw": 29,
+   "ad": 27,
+   "ewd": 25,
+   "cp": 25,
+   "mg": 24
+  },
+  "ceo": {
+   "Premium": 50,
+   "Expansionist": 47,
+   "Innovator": 38,
+   "Restless": 35
+  }
+ },
+ "360 + 70, over 32 h": {
+  "fail": 1.07,
+  "none": 32,
+  "launches": 37.4,
+  "g3": 100,
+  "sales": 3437,
+  "std": 2555,
+  "shut": 8.0,
+  "causes": {
+   "cash flow (selling its share)": 44,
+   "out of stock": 35,
+   "tweaks did not win buyers back": 13,
+   "out-graded": 3,
+   "too dear": 3,
+   "losing on stats (before its tweaks ran out)": 2
+  },
+  "share": 0.84,
+  "age_h": 26.8,
+  "stock": 0,
+  "who": {
+   "cr": 34,
+   "sw": 24,
+   "ad": 24,
+   "cp": 23,
+   "ewd": 20,
+   "mg": 18
+  },
+  "ceo": {
+   "Generous": 36,
+   "Innovator": 34,
+   "Premium": 31,
+   "Restless": 28
+  }
+ }
+}
