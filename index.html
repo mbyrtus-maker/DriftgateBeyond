@@ -13525,12 +13525,16 @@ function mrLine(key){const st=mrSite(key);if(!mrOn(st))return'';const ro=mrRoste
 // is attacked, its garrison is what defends it (plus a ship sent from the muster when the power saw it coming), and the
 // ships lost in that fight are gone until the garrison is made up from the power's stores. No
 // patrol is spawned by chance any more. Three minutes after its last loss, a garrison is made up to full at once (kits allowing).
-const GR={n:{core:3,depot:3,hive:6,out:3},wing:3,build:180,retry:60,turn:[40,80],topup:false};   // build: 3 minutes after its last loss the whole garrison is made up at once (user, 6 Nov 2026)   // topup: a short garrison is made up from the muster in a fight off-screen, to the old 3 (home) or 2
+const GR={n:{core:3,depot:3,hive:4,out:3},wing:3,build:180,retry:60,turn:[40,80],topup:false};   // build: 3 minutes after its last loss the whole garrison is made up at once (user, 6 Nov 2026)   // topup: a short garrison is made up from the muster in a fight off-screen, to the old 3 (home) or 2
 function grSites(){const L=[];for(const sid in S.stations){const R=S.stations[sid];if(R&&FACTIONS[R.owner]&&GR.n[R.kind])L.push('S.'+sid)}
   for(const oid in S.outposts){const o=S.outposts[oid];if(o&&FACTIONS[o.owner])L.push('O.'+oid)}return L}
 function grSite(key){const id=key.slice(2);if(key[0]==='S'){const R=S.stations[id];return R?{key,kind:R.kind,owner:R.owner,sid:id,R}:null}const o=S.outposts[id];return o?{key,kind:'out',owner:o.owner,sid:o.sector,o}:null}
 function grOn(st){return!!st&&!!FACTIONS[st.owner]&&!!GR.n[st.kind]}
-function grTarget(st){return GR.n[st.kind]||0}
+// a garrison grows with the site (user, 6 Nov 2026): a home station 3, plus one for each level its defence, armour and hangar
+// modules come to (as a depot's level counts them); a depot one more than its level (a forward depot 1); an outpost one more
+// than its level; the Brood's hive 4
+function grLvl(R){const d=devOf(R);return Math.floor(((d.def||0)+(d.armor||0)+Math.min(3,d.hangar||0))/3)}
+function grTarget(st){if(st.o)return 1+(st.o.level||1);const R=st.R;if(!R)return 0;if(R.kind==='core')return 3+grLvl(R);if(R.kind==='depot')return R.fwd?1:1+depotLevel(R);if(R.kind==='hive')return GR.n.hive;return GR.n[R.kind]||0}
 function grRoster(key){return(S.gar=S.gar||{})[key]}
 function grEntry(key,id){const ro=grRoster(key);return ro&&ro.m.find(m=>String(m.id)===String(id))||null}
 // a fighter's kit from the muster first, then the warehouse, at the best tier the stores allow
