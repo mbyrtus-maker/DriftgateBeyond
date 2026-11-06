@@ -1,5 +1,5 @@
 # Corporations model v3 (user, 5 Nov 2026, evening). On top of v2's rules:
-#  - no Mk upgrades: every system and every weapon or utility is a part, sold at grades 1 to 5 (a better system = a better part);
+#  - no upgrades at all: every system, weapon and utility is a part at one level; products differ only in their trade-offs;
 #  - the Unbound's gear (jammer, cargo hook, hidden container, cargo scanner) stays outside the corporations (old system);
 #  - a replaced product's unsold stock is broken into raw ore that goes into the station holding that stock (the maker is not paid);
 #  - no fixed story: each galaxy deals every maker a random line-up of products (leaning to what its name suggests) and rolls
@@ -13,20 +13,17 @@ from sim2 import (D,D2,KINDS,SYSTEMS,COST_KEYS,ROLE_W,RSLOTS,KIND_ROLES,HOME_SID
 UNBOUND={'jammer','hook','hide','cscan'}
 CORP_KINDS=[k for k in KINDS if k not in UNBOUND]
 SYSD={'engine':'engine','power':'power','shield':'shield','weapon':'weapon','armor':'armor','drill':'drill','hold':'cargo'}
-# component cost and ore value of each kind of part at each grade (systems: the game's Mk recipes; weapons and utilities: the
-# standard part's recipe plus the game's part-upgrade recipes, grade by grade)
-COMPV={'plate':20,'wire':24,'coil':92,'lattice':144,'core':367,'matrix':212}
-UPG={2:{'plate':2,'wire':2},3:{'plate':2,'coil':2,'matrix':1},4:{'coil':2,'lattice':2,'matrix':1},5:{'lattice':1,'core':2,'matrix':1}}
-def _v(r):return sum(COMPV[k]*n for k,n in r.items())
+# component cost and ore value of each kind of part. No upgrades and no grades (user, 5 Nov 2026): a part is a part, and
+# products differ only in their trade-offs. A system part costs what today's Mk2 system does (so systems and weapons are of
+# a size); a weapon or utility costs its standard recipe.
 COMP={};ORE={}
 for k in CORP_KINDS:
   if k in SYSD:
-    g=D2['sys'][SYSD[k]]['g'];COMP[k]={t:g[str(t)]['cv'] for t in range(1,6)};ORE[k]={t:g[str(t)]['oreVal'] for t in range(1,6)}
+    g=D2['sys'][SYSD[k]]['g']['2'];COMP[k]={1:g['cv']};ORE[k]={1:g['oreVal']}
   else:
-    it=next(i for i,x in D['items'].items() if x['part']==k);c=D['items'][it]['comp'];o=D2['items'][it]['oreVal'];add=0;COMP[k]={1:c};ORE[k]={1:o}
-    for t in range(2,6):add+=_v(UPG[t]);COMP[k][t]=c+add;ORE[k][t]=round(o+.8*add)
+    it=next(i for i,x in D['items'].items() if x['part']==k);COMP[k]={1:D['items'][it]['comp']};ORE[k]={1:D2['items'][it]['oreVal']}
 LIST_K=1.11
-GRADES=[1,2,3,4,5]
+GRADES=[1]
 # what makers are known for: a maker is three times as likely to be dealt these kinds
 AFF={'ewd':['engine','power'],'qs':['armor','hold','cargo'],'hf':['armor','drill','charge'],'tcy':['hold','cargo','dronec'],'bl':['laser','shield'],'ad':['laser','power','scanner'],
      'mg':['gun','missile','weapon'],'sw':['scanner','mlaser','power'],'cp':['mlaser','charge','drill','scanner','dronec'],'cr':['shield','engine','gun','laser'],
@@ -41,9 +38,9 @@ CEOS={
  'Generous':'pays 60% of profit in dividends (others 40%)',
  'Cautious':'keeps a 6-hour reserve, pays 25% in dividends',
  'Restless':'judges parts over 1 hour and tweaks every 30 minutes'}
-P=dict(start=10000,upk=150,upk_line=30,dues=.15,markup=1.5,min_margin=.15,review=20,div=.4,shares=100,
+P=dict(start=3000,upk=120,upk_line=30,dues=.15,markup=1.5,min_margin=.15,review=20,div=.4,shares=100,
        refit_per_h=12,refit_parts=1.5,contractor_per_h=20,merchant_per_h=16,player_per_h=2,
-       beta=8.0,loyal=.06,works_every=1.5,cap={1:3,2:3,3:2,4:1,5:1},grade_w=[.30,.30,.22,.12,.06],struggle_h=2,replace=(30,60),reserve=3,retire=120,
+       beta=8.0,loyal=.06,works_every=1.5,cap={1:4},grade_w=[1.0],struggle_h=2,replace=(30,60),reserve=3,retire=120,
        tweak_pts=(2,4),cap_bonus=.25,cap_mag=2,max_tweaks=3,dislike=.5,dislike_min=1.5,window=120,settle=60,launch=300,
        up=1.06,down=.97,pm_max=1.6,hot=1.5,craze_sellouts=3,craze_len=40,craze_k=1.5,spike_every=45,spike_len=30,spike_k=2.0,
        refits=True,hours=16,trait_lines=(2,3),std_lines=(1,2),ceo=True,ceo_drop=.6,ceo_cool=120,ceo_on_replace=True,random_lineup=True)
@@ -67,11 +64,11 @@ def fixed_lineup():
   return deal
 class Line:
   def __init__(s,kind,std,tr):
-    s.kind=kind;s.std=std;s.tr=dict(tr);s.trs=[dict(tr)];s.pm=1.0;s.stock={g:(1 if g<=2 else 0) for g in GRADES};s.sold=[];s.ev=[];s.tweaks=0;s.last_tw=-999
+    s.kind=kind;s.std=std;s.tr=dict(tr);s.trs=[dict(tr)];s.pm=1.0;s.stock={g:2 for g in GRADES};s.sold=[];s.ev=[];s.tweaks=0;s.last_tw=-999
     s.sellouts=[];s.craze=0;s.active=True;s.gen=1;s.minst=0;s.sellout_rev=False;s.sold_g={g:0 for g in GRADES}
   def comp(s,g):return COMP[s.kind][g]
   def lst(s,g,mk):return COMP[s.kind][g]*LIST_K*P['markup']*mk.listk()
-  def price(s,g,mk):return s.lst(g,mk)*s.pm
+  def price(s,g,mk):return s.lst(g,mk)*max(s.pm,s.floor(mk))
   def floor(s,mk):return (1+P['min_margin'])/((1-P['dues'])*LIST_K*P['markup']*mk.listk())
   def units(s):return sum(s.stock.values())
   def full(s):return all(s.stock[g]>=P['cap'][g] for g in GRADES)
@@ -163,7 +160,7 @@ def sim(seed,params=None):
       if not opts:return False
       opts.sort(key=lambda x:-x[0]);L.tr=opts[0][1];L.trs.append(dict(L.tr));return True
     def new_ceo(mk,why):
-      old=mk.ceo;mk.ceo=rng.choice([c for c in CEOS if c!=old]);mk.ceo_since=now;mk.ceo_peak=None;mk.ceos.append((now,mk.ceo,why));st['ceo_changes'].append((now,mk.m,old,mk.ceo,why))
+      old=mk.ceo;mk.ceo=rng.choice([c for c in CEOS if c!=old]);[setattr(L,'pm',max(L.pm,L.floor(mk))) for L in mk.lines];mk.ceo_since=now;mk.ceo_peak=None;mk.ceos.append((now,mk.ceo,why));st['ceo_changes'].append((now,mk.m,old,mk.ceo,why))
     for now in range(int(P['hours']*60)):
       # works: build the emptiest shelf it can afford, keeping its reserve
       if now%max(1,int(P['works_every']))==0:
@@ -224,7 +221,7 @@ def sim(seed,params=None):
           mk.struggling=mk.T<P['struggle_h']*mk.upkeep_h()
           if prof>0 and not mk.struggling:
             d=prof*mk.divk();mk.T-=d;mk.div_paid+=d;st['div']+=d
-          px=mk.px();mk.share_px.append((now,px))
+          px=mk.px();mk.share_px.append((now,px,mk.div_paid/P['shares']))
           # the board: a product line failed, or the shares fell far below their peak under this CEO
           if P['ceo']:
             mk.ceo_peak=max(mk.ceo_peak or px,px)
@@ -233,11 +230,11 @@ def sim(seed,params=None):
               elif px<P['ceo_drop']*mk.ceo_peak:new_ceo(mk,'shares')
       for m,mk in list(makers.items()):
         if mk.alive and mk.T<=0:
-          mk.alive=False;st['failures'].append((now,m,mk.name,mk.ceo));mk.rebirth=now+rng.randint(*P['replace'])
-          # its stock goes back to ore in its station
-          v=sum(ORE[L.kind][g]*n for L in mk.lines for g,n in L.stock.items());st['ore_cr']+=v;st['ore_units']+=sum(L.units() for L in mk.lines)
+          mk.alive=False;mk.failed_at=now;st['failures'].append((now,m,mk.name,mk.ceo));mk.rebirth=now+rng.randint(*P['replace'])
         if not mk.alive and now>=getattr(mk,'rebirth',1e9):
           nm=Maker(m,rng,[(L.kind,L.std) for L in mk.lines]);nm.born=now;makers[m]=nm
+          # the company's history carries on: its shares were worth nothing while it was gone
+          nm.share_px=mk.share_px+[(mk.failed_at,0,mk.div_paid/P['shares'])];nm.ceos=mk.ceos+[(now,nm.ceo,'new company')];nm.div_paid=0
     lines=[(mk.m,L.kind,L.std,L.tweaks,L.gen,L.tr,round(L.pm,3),len(L.sold),L.trs) for mk in makers.values() for L in mk.lines]
     return dict(st,T={m:round(mk.T) for m,mk in makers.items()},struggling={m:mk.struggling for m,mk in makers.items()},
                 divm={m:round(mk.div_paid) for m,mk in makers.items()},rev={m:round(mk.rev) for m,mk in makers.items()},rev_sys={m:round(mk.rev_sys) for m,mk in makers.items()},
