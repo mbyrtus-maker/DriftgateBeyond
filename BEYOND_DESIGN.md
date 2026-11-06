@@ -2174,7 +2174,7 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 2. **Count the player's own kills?** The proposal counts every destroyed ship, yours included.
 3. **Only one surge at a time?** The proposal allows one, with at least 30 minutes before the next.
 
-### Corporations with money: shares, struggles, product tweaks and market surges (proposal, 5 Nov 2026, awaiting approval)
+### Corporations with money: shares, struggles, product tweaks and market surges (proposal 5 Nov 2026; rules decided through simulation v17, 6 Nov 2026; not built)
 **Status (user, 6 Nov 2026): pilots trading shares is tabled.** The design for it is written below ("Pilot share trading: designed, not built") but not built or published. The makers' money, shares, dividends and CEOs run in the background, and what the makers do (R&D projects, materials runs, trials, spying, sabotage, product tweaks) reaches pilots as missions and news.
 
 **The user's idea** (and, 5 Nov, that AI buyers and sellers should choose by each product's actual stats and their own needs):
@@ -2337,7 +2337,7 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 - 150 + 35 per line gives 0.77 failures but most makers shrink.
 - Open: Coldwater Prospecting's line-up; standard part prices; Premium CEO; running costs.
 
-### Corporate R&D: grades by invention, and corporate missions (proposal, 5 Nov 2026, awaiting approval)
+### Corporate R&D: grades by invention, and corporate missions (proposal 5 Nov 2026; rules decided through simulation v17, 6 Nov 2026; not built)
 The user's direction after the v6 simulation: every maker launches its products with minimal traits; a maker whose product can't compete invests in an upgraded part; grades come back, but only through R&D, to win market share; R&D takes time, materials runs, missions, sabotage and espionage; random galaxy events are removed; a finished project releases an upgraded product line.
 
 **What it replaces**
@@ -2426,7 +2426,7 @@ The maker opens a **project for that kind at the next grade** (grade 2 first, up
 - **A launch keeps the old grade as the maker's budget line**, 15% under list (still 15% over cost), built and sold like any line (it pays its running cost) but never tweaked and never the subject of R&D. At the next launch the old budget line's stock goes on clearance at 30% off (about cost; the one exception to the 15% profit rule) and is not rebuilt; clearance stock unsold for 2 hours is broken into ore as before.
 - **Results against v16:** failures 0.31 -> 0.07 a galaxy (93% of galaxies have none); corporate sales +20% and fewer buyers settle for the standard part (1,300 -> 940 a galaxy); makers' profit +10%; R&D launches 28 -> 27, grade 3 reached in 54% of galaxies (78%). A maker that upgrades no longer hands the low end to a rival: leads held with a lower grade than the best rival fall from 47% of leading spells to 16%, and spells with no maker over 60% of a kind rise from 62% to 68%. Who buys what: strapped 38% standard, 40% grade 1, 20% budget line, 1% a new grade; steady 28/50/19/3%; flush 21/56/16/8%. On their own, price-minded buyers bring failures to 0.17, clearance only to 0.14, a budget line without price-minded buyers to 0.23.
 
-### Bulk orders and freight contracts (proposal, user 6 Nov 2026, awaiting approval)
+### Bulk orders and freight contracts (proposal, user 6 Nov 2026; refunds, AI orders and rush orders decided; not built)
 **The user's idea:** faction owners can place a bulk order for certain items with a company, which generates missions and hauling and mining tasks, plus escorts, raids and ambushes to deliver the products. They can also pay a premium to have stock hauled from another port or station to their own.
 - **Who:** a faction menu item only (decided 6 Nov 2026): a pilot whose company has declared itself a faction (section 11), and the AI powers (see "AI powers' bulk orders" below). Not Station owners before they declare.
 - **The order:** a kind of part, a maker, a grade (any the maker sells, its budget line included) and a number of units, at list price plus a 20% order premium. 60% is paid up front and held for the order (it pays for the components, so it can't go into the maker's R&D), the rest on delivery. The maker gives the order up to half its works until it is filled. The order is not a shelf sale: it starts no craze, makes no rival tweak, and counts for investors as a one-off (cash, not lasting earnings). This also closes the bulk-buying loophole found with the bulk-buyer test.
@@ -2464,7 +2464,7 @@ The maker opens a **project for that kind at the next grade** (grade 2 first, up
   Each AI order makes the same work as a player's: hauling and mining for components, convoys with escort jobs, and raids and ambushes on them.
 - **Open:** whether the order premium goes up with size; how much of an order a faction may place at once.
 
-### Meetings with a CEO (proposal, user 6 Nov 2026, awaiting approval)
+### Meetings with a CEO (proposal, user 6 Nov 2026; partly decided; not built)
 **The user's idea:** a faction power calls a meeting with a maker's CEO. The CEO has to fly to the power's station, so they exist in the world for a time. At the meeting a menu lets the power encourage R&D, ask for a tweak to a product line, place a bulk order, rush it, or all of them. The CEO's trait shapes the answer.
 
 **Decided (user, 6 Nov 2026):** corporations don't touch the victory conditions, so a power's influence with a maker has nothing to do with how close it is to winning. The CEO is a pilot, never a passenger: they fly their own ship or command a capital ship. Meetings, bulk orders, rush orders and freight contracts are faction menu items only: the AI powers and pilots whose company has declared itself a faction (not Station owners before that).
