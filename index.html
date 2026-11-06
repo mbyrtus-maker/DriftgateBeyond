@@ -13523,9 +13523,9 @@ function mrLine(key){const st=mrSite(key);if(!mrOn(st))return'';const ro=mrRoste
 // loadout of the power's tier when built). Live they fly as the system's patrol wing (wings of three; the hive keeps two);
 // a ship that breaks off flies home and docks, and launches again with the others once rearmed. Off-screen, when the site
 // is attacked, its garrison is what defends it (plus a ship sent from the muster when the power saw it coming), and the
-// ships lost in that fight are gone. A ship lost either way is rebuilt from the power's stores, one every 3 minutes. No
-// patrol is spawned by chance any more.
-const GR={n:{core:3,depot:3,hive:6,out:3},wing:3,build:180,retry:60,turn:[40,80],topup:false};   // topup: a short garrison is made up from the muster in a fight off-screen, to the old 3 (home) or 2
+// ships lost in that fight are gone until the garrison is made up from the power's stores. No
+// patrol is spawned by chance any more. Three minutes after its last loss, a garrison is made up to full at once (kits allowing).
+const GR={n:{core:3,depot:3,hive:6,out:3},wing:3,build:180,retry:60,turn:[40,80],topup:false};   // build: 3 minutes after its last loss the whole garrison is made up at once (user, 6 Nov 2026)   // topup: a short garrison is made up from the muster in a fight off-screen, to the old 3 (home) or 2
 function grSites(){const L=[];for(const sid in S.stations){const R=S.stations[sid];if(R&&FACTIONS[R.owner]&&GR.n[R.kind])L.push('S.'+sid)}
   for(const oid in S.outposts){const o=S.outposts[oid];if(o&&FACTIONS[o.owner])L.push('O.'+oid)}return L}
 function grSite(key){const id=key.slice(2);if(key[0]==='S'){const R=S.stations[id];return R?{key,kind:R.kind,owner:R.owner,sid:id,R}:null}const o=S.outposts[id];return o?{key,kind:'out',owner:o.owner,sid:o.sector,o}:null}
@@ -13539,7 +13539,7 @@ function grKit(f){const srcs=[S.econ.fleet[f],S.econ.stock[f]].filter(Boolean);l
 function grTick(){const R=(S.gar=S.gar||{}),keys=grSites(),init=!S.grInit;S.grInit=1;
   for(const key in R){const st=grSite(key),ro=R[key];if(grOn(st)&&ro.f===st.owner)continue;const s=S.sectors[ro.sid];for(const m of ro.m)if(!m.live&&s)toDebris(s,m.load);delete R[key]}
   for(const key of keys){const st=grSite(key);let ro=R[key];if(!ro)ro=R[key]={f:st.owner,sid:st.sid,m:[],t:S.T,nid:1};const want=grTarget(st);
-    while(ro.m.length<want&&S.T>=ro.t){const k=grKit(st.owner);if(!k){ro.t=S.T+GR.retry;break}ro.m.push({id:ro.nid++,c:k.c,t:k.t,load:k.load,live:false,next:0});ro.t=init?S.T:S.T+GR.build;if(!init)break}}}
+    while(ro.m.length<want&&S.T>=ro.t){const k=grKit(st.owner);if(!k){ro.t=S.T+GR.retry;break}ro.m.push({id:ro.nid++,c:k.c,t:k.t,load:k.load,live:false,next:0})}}}
 // ships that left the world some other way are docked again; whatever isn't kit goes to the site's store
 const GR_KIT=new Set(['plate','wire','coil','lattice','missile','torpedo','drone','swarm','tune']);
 function grMend(){const R=S.gar||{};for(const key in R){const ro=R[key];for(const m of ro.m){if(!m.live){for(const k in m.load||{})if(!GR_KIT.has(k)){const st=grSite(key),h=(st&&(st.R?storeOf(st.R):st.o.stock))||S.econ.stock[ro.f]||S.econ.stock.pirate;inv.add(h,k,inv.take(m.load,k,m.load[k]))}continue}
@@ -13579,7 +13579,7 @@ function grSettle(key,ships,force,lf,s){const ro=grRoster(key);let lost=0;for(co
   if(Math.random()<lf){toDebris(s,got);lost++;if(ro){const i=ro.m.indexOf(x.m);if(i>=0)ro.m.splice(i,1)}}else inv.addAll(x.m.load,got)}
   if(lost&&ro)ro.t=Math.max(ro.t,S.T+GR.build);return lost}
 function grLine(key){const st=grSite(key);if(!grOn(st))return'';const ro=grRoster(key),n=ro&&ro.f===st.owner?ro.m.length:0,want=grTarget(st),out=ro?ro.m.filter(m=>m.live).length:0;
-  return`${n}/${want}${out?` (${out} out)`:''}${n<want&&ro?` · next built in ${Math.max(0,Math.round((ro.t-S.T)/60))} min`:''}`}
+  return`${n}/${want}${out?` (${out} out)`:''}${n<want&&ro?` · made up in ${Math.max(0,Math.round((ro.t-S.T)/60))} min`:''}`}
 {const o=mapSectorNow;mapSectorNow=function(sid){let h=o.apply(this,arguments);try{const keys=[];if(S.stations[sid])keys.push('S.'+sid);const oid=OUT_BY_SECTOR[sid];if(oid)keys.push('O.'+oid);for(const k of keys){const L=grLine(k);if(L)h+=`<span>Garrison</span><b>${esc(L)}</b>`}}catch(e){}return h}}
 
 //@src 17_main.js
