@@ -2327,11 +2327,11 @@ The maker opens a **project for that kind at the next grade** (grade 2 first, up
 2. **Design.** Lab time at the maker's home works (proposal: G2 30 min, G3 60, G4 90, G5 120, game time). A progress bar; espionage can copy it, sabotage can set it back.
 3. **Materials.** The prototype needs the grade's components plus rare inputs (lattice, cores, matrix, rare ore) delivered to the home works. They're posted as **materials-run contracts**; NPC haulers fill them slowly if players don't.
 4. **Trials.** The prototype must be flown: a **test-flight mission** (fit it and fight, mine or haul until the data is logged). NPC test pilots do it more slowly. A sabotaged prototype fails trials and is rebuilt.
-5. **Launch.** A new product line, "Ember drive G2", with traits rolled under the trade-off rule. A launch batch ships to the stations, and the News announces it. The old line stays on sale as a cheaper option until the maker retires it.
+5. **Launch.** A new product line, "Ember drive G2", with traits rolled under the trade-off rule. A launch batch ships to the stations, and the News announces it. The old line is retired at once (decided below).
 
-**What a grade does:** each grade raises the part's base stats, using today's steps (for weapons and utilities: damage +10%, rounds +25%, mining rate +15%, hold +5%, scan reach +20% per grade; for systems, today's Mk steps). Price follows the grade's component cost. Contractor Rating still gates which grades a player may fit, and the powers' AI fleets buy up to the grade their tech allows.
+**What a grade does:** each grade raises the part's base stats by about 1.5 times today's steps (decided below). Price follows the grade's component cost. Contractor Rating still gates which grades a player may fit, and the powers' AI fleets buy up to the grade their tech allows.
 
-**Rivals fight back.** AI makers run espionage and sabotage against each other through NPC agents, and post the same work as missions for players. Espionage and sabotage are crimes in the target maker's power space, rated with the smuggling system's heat (None, Light, Heavy, Severe; section on smuggling), and caught agents bring heat and bounties on whoever ran them.
+**Rivals fight back.** AI makers run espionage and sabotage against each other through NPC agents, and post the same work as missions for players. It's a grey area (decided below): the powers don't treat it as a crime; the victim maker puts a bounty on agents it catches and remembers who they worked for.
 
 **Corporate missions** (a Corporations filter on the Jobs board; paid from the posting maker's treasury):
 - *R&D work:* **Materials run** (deliver components to a maker's works by a deadline); **Rare ore contract** (mine a specific ore for a project); **Prototype escort** (the prototype to a test range or another lab); **Test flight** (fly the prototype until the trial data is logged); **Data courier** (carry research cores between a maker's stations); **Launch delivery** (the first batch of a new line to several stations, fast).
@@ -2343,9 +2343,17 @@ The maker opens a **project for that kind at the next grade** (grade 2 first, up
 
 **Simulation plan (v7, once the rules are agreed):** grade-1 launch with small traits; R&D projects with funding, lab time, materials and trials, filled by NPCs at measured rates; rival espionage and sabotage at proposed rates; no galaxy events. Measure how often projects start and finish, which grades the galaxy reaches by 16 hours, failures, share prices, and how many missions a galaxy offers players.
 
-**Open questions:**
-1. When a new grade launches, does the old line keep selling (cheaper), get retired at once (stock broken into ore), or carry on until it sells out?
-2. Grade steps: today's sizes, or bigger, so an R&D win is decisive?
-3. Tweaks: keep up to 2 small tweaks before R&D, or go straight to R&D?
-4. Sabotage and espionage: crimes with heat and bounties (as proposed), or a grey area where only the victim maker puts a price on you?
-5. Your own brand: can a player's Depot brand run R&D projects too?
+**Decided (user, 5 Nov 2026):**
+- **A launch retires the old line at once.** Its unsold stock is broken into raw ore in the station that holds it.
+- **Grade steps are bigger than today's, not quite double:** about 1.5 times (weapons and utilities per grade: damage +15%, rounds +37%, mining rate +22%, hold +7.5%, scan reach +30%; systems: today's Mk steps times 1.5).
+- **Up to 2 small tweaks first;** R&D only if they don't work.
+- **Espionage and sabotage are a grey area:** not crimes to the powers. Only the victim maker puts a price on you (its bounty, and its standing with you).
+
+**Open:** can a player's Depot brand run R&D projects too?
+
+**Simulation v7, 5 Nov 2026** (`tools/corpsim/sim7.py`, `run_v7.py`; report: https://claude.ai/artifact/TXz37kLRJcGkfqaoAiWQhC). v6's market, no random events, grade 1 launches with small traits (at most 6 points), up to 2 tweaks an hour apart, then an R&D project for the next grade (funding G2 1,500 / G3 4,000 / G4 9,000 / G5 18,000 cr with 3 h of running costs kept back; design 30 to 120 min; materials 20 to 60; trials 15 to 30), launch retires the old line (stock to ore); grades add about 1.5 times today's steps to the main stat (grade costs: the part-upgrade components); powers' AI buys up to G3; rivals sabotage about once every 8 h (works 60%, 30% against a Cautious CEO) and spy once every 10 h per rival. 200 galaxies of 16 h:
+- 7.4 projects and 6.6 launches a galaxy, the first at about 6.5 h; a G2 project takes about 1.6 h; nothing passes G2 in 16 h; G2 is 5% of sales.
+- Failures 0.65 a galaxy against 0.22 without R&D: weak makers spend their reserve and don't recover. At 32 h: 3.7 against 1.8.
+- About 41 corporate missions a galaxy (materials runs and rare ore 7.2 each, prototype escorts and test flights 6.8, launch deliveries 6.6, sabotage and security 2.5, espionage 1.9); spying and sabotage barely change outcomes at these rates.
+- Tuned (1 h judging, 30 min between tweaks, half-price R&D, 8 h reserve): 13.4 launches, first at 5.5 h, 0.50 failures, 83 missions; G3 in 71 of 80 32-hour galaxies.
+- Recommended: the tuned rules plus a lifeline for weak makers (new shares, a power's sponsorship, or player investment). Open: which lifeline; stronger rival pressure; grade pace; Depot brands and R&D.
