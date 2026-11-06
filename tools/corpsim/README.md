@@ -10,6 +10,7 @@ product replaces it and its unsold stock goes back to raw ore.
   `data.json` and `data2.json` (Playwright). Re-run after changing makers or parts.
 - `sim2.py`: the model (`sim(seed, params)`; the defaults are the recommended numbers).
 - `run_v2.py`: 200 galaxies of 16 h for each setting; prints the results and writes `res_v2.json`. About 20 s.
+- `sim9.py`, `run_v9.py`: version 9 (v8 tuned for a first R&D launch at about 3 hours). `run_v9.py` writes `res_v9.json`; about a minute.
 - `sim8.py`, `run_v8.py`: version 8 (v7 with faster judging and tweaks, half-price R&D, the powers' tastes from their doctrines, spying that speeds the spy's own R&D and sabotage that slows the target's). `run_v8.py` writes `res_v8.json`; about a minute.
 - `sim7.py`, `run_v7.py`: version 7 (corporate R&D: grade 1 launches, tweaks, then projects for the next grade with design, materials and trials; rival spying and sabotage; missions counted; no random events). `run_v7.py` writes `res_v7.json`; about 40 s.
 - `sim6.py`, `run_v6.py`: version 6 (standard parts stocked by the factions, makers sell only trait lines). `run_v6.py` writes `res_v6.json`; about 30 s.
