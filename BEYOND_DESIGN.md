@@ -2107,6 +2107,8 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 - **Capital escorts ride the jump** (`16zzl_capescort.js`): fighters with a Guard or Escort order on a capital fly to a berth on its hull once the drive passes 75% of its spin-up and hold there, guns cold; a broken spin-up frees them. At the jump their load goes into the capital's hold and they are listed on the capital (`t.riders`); they come out beside it in the next live system with their order's time still running. A carrier's own wing craft (except any out on a strike next door) fly home and land past 75%. Freighters and other ships it escorts are left behind.
 - **The carrier's defence set** (same file): five fighters (heavy, two strikers, two interceptors) and a scout per power's or pilot's carrier (not the Brood's Hive Ships or the Ravager), their kits aboard like the wings' (plate and coil), filled from the faction's (or pilot's) stores at a refit and replaced first by the carrier's fabricator; the carrier asks for their kits with its wings'. Docked until a threat (a hostile ship within 4.5 km, fire on it, a missile or torpedo at it); then they launch one every 0.35 s, fight within 1.5 km of it, and land once it has been clear for 20 s. The scout launches for its own jobs: the system's beacon when it isn't locked (it counts as a flipper for the carrier's side) and its limpet on an enemy capital attacking the carrier (one, rearmed aboard). They take no other orders and aren't in the wings' lists; the Hangar console shows a line for them. Test: `capescort.py`.
 
+**Published 6 Nov 2026** (commit c2406fe; Beyond artifact version 44). War check, two runs of 600 galaxies, 16 h, the player an idle contractor at Mirrorwater: Brood 26% / 26%, Halcyon 26% / 26%, Varkesh 20% / 23%, Ostrova 24% / 21%, unfinished 4% / 5%. The build before (743f9b0): Brood 22%, Halcyon 28%, Varkesh 24%, Ostrova 21%. The Brood stands about 4 points over its 20% target, a little more than run noise; the retune comes with the live-space stages (stage 7), which move the powers' stores anyway.
+
 ### Live space shows what's tracked (decided, user 6 Nov 2026; building)
 **The user's word:** make all of it live: the ships you see do the real work (a station's ore comes from its miners actually flying, so killing them hurts; haulers are the real flows of goods); the stores physical, with goods moving between a power's stations by real convoys; AI contractors flying the jobs on the boards; a higher ship cap where the game can draw it. And: "I'd prefer live reflect what's being tracked, not a random percentage generator."
 
@@ -2539,6 +2541,36 @@ Each ask needs influence over a threshold: bulk order 10, rush 30, tweak 25, R&D
 **AI powers call meetings too:** an AI leader calls one for the causes in "AI powers' bulk orders" above (when its doctrine's parts are scarce, it is losing a war, or a rival's new grade has outclassed its fleet), asking the way its traits lean. Its CEO flights make the same escort, intercept and ransom work for contractors, and pilots can sway which power a CEO favours.
 
 **Open:** how long a maker remembers a failed escort or a killed CEO (8 and 16 hours proposed).
+
+### Corporate economy: last pass (decided, user 6 Nov 2026)
+A review of everything decided above for gaps and conflicts, and the user's answers. Where these differ from an earlier rule, these win.
+
+**Where the money goes (the ledger):**
+- A maker's running costs are paid to the owner of the station that hosts its works (wages and rent).
+- R&D money is paid to the host station's owner too, and it buys something you can see: **a new grade needs a building.** The project's funding builds a grade works on the host station (raised from real materials during the project), and only a station with that works can build the new grade. The building is the station's earnings made physical.
+- Storage is charged to the maker by the station holding its stock (below).
+- The 40 tradable shares no pilot holds (trading is tabled) belong to the Compact; their dividends go to the freeports' treasury.
+
+**Market surges:** demand spikes with real causes (the war front, a Brood surge, a power building, a comet) and product crazes stay. Share booms are dropped while share trading is tabled.
+
+**A failed maker** is replaced 30 to 60 minutes later by a new company at the same home making the same kinds of part: grade 1, small fresh traits, a new name and a new CEO.
+
+**Growth:** accepted. The powers pay for the corporate economy's growth out of their war treasuries, so a war check follows its build.
+
+**Orders and memory:**
+- The order premium rises with the order's size.
+- One faction's orders with a maker are capped by what the maker can build and deliver in time: production time plus delivery time.
+- A maker remembers a grievance until it is settled: a killed CEO until the new CEO is appointed, a failed escort until the refund is paid.
+- Player brands don't run R&D or issue shares.
+
+**Go broke or go home (no safety net):**
+- **No reserve.** A maker spends down to its last credit on stock and R&D. (Penny-pincher and Cautious CEOs still keep their own 5 and 6 hours back: that's their character, not a net.)
+- **Storage.** The station charges the maker for every unit on its shelves, every hour (a share of the unit's component cost), shut lines included.
+- **Markdowns.** A station marks down goods that aren't moving, below the maker's profit floor if it has to (a step each review after an hour without a sale, down to half price), easing back as they sell. The 15% profit rule only holds for goods that sell.
+- **Shut lines** stop being built and stop paying their line's running cost, but their stock stays on sale (marked down, paying storage) until it sells out.
+- **No budget line.** A launch retires the old grade at once (its stock broken into ore at the station holding it). The low end goes to whoever still sells it: another maker's grade 1 can pick up the cheap buyers.
+
+**Still open:** upgrades in place go (systems become parts, grades only through R&D): not yet confirmed.
 
 ### Pilot share trading: designed, not built (tabled 6 Nov 2026)
 Written so it can be picked up later; nothing here is in the game.
