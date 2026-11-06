@@ -2125,6 +2125,14 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 6. **The cap.** Measure what the game can draw (frame time with 17, 24, 32 and 40 ships in a system on the test renderer), then raise the cap where systems are busy (home systems, hubs, contested holdings); tracked units over the cap wait out of sight (docked, or just past the gate) rather than vanish.
 7. **Balance.** A war check after each stage; the per-faction knobs move from hidden mining rates to miner builds, wing sizes and logistics.
 
+**Stage 2 as built (6 Nov 2026, `16zzo_garrison.js`; test `garrison.py`): garrisons.**
+- **Every site a power or the Brood holds keeps a garrison:** each home station, depot and outpost 3 fighters, the hive 6. A garrison fighter is built with the power's patrol loadout at its current tier (a lower tier, or a light fighter, when the stores are short), its kit taken from the muster first, then the warehouse, and kept aboard. Garrisons are built at once when a galaxy starts or an old save loads; a short garrison builds a fighter every 3 minutes.
+- **Live:** `popWants` no longer asks for patrols. The garrison docked at a site flies as its patrol wing (wings of three; the hive's two), out on patrol when the system opens. A wing cut down breaks off as before, but a garrison ship flies home and docks rather than leaving the system; docked ships rearm for 40 to 80 s and launch again as a wing once two are ready (or all that are docked). Over the ship cap they wait docked.
+- **Off-screen:** when an offensive or siege hits a site, its docked garrison is the defending force (`resolveAbstract`, `resolveSiege`), plus one fighter from the muster when the power saw the attack coming (it had two or three from the muster before, whatever it had). Each garrison ship is lost with the battle's loss share (its kit falls as debris); the survivors keep their kits.
+- **Losses:** a garrison ship killed live or off-screen is gone until rebuilt. A site that changes hands loses its garrison (kits docked there fall as debris).
+- **Seen:** the galaxy map's system panel shows "Garrison 2/3 (2 out) · next built in 3 min".
+- **Not yet:** wings don't move between posts (a rebuilt fighter appears at its post; it will come by convoy from home once stage 4 ships goods); the muster pool still feeds raids, convoy escorts, offensives and refits (stage 3); the Unbound's den keeps its chance wings (stage 3).
+
 **Order (user, 6 Nov 2026):** stage 2 next; then **stage 1b, your crews made real**: today (`16w_crews.js`) a depot's crews fly in its system for show while the minute tick does the work; crew miners will mine and unload for real and crew haulers carry real goods (raidable), guards as now.
 
 **Stage 1 as built (6 Nov 2026, `16zzn_miners.js`; test `miners.py`):**
