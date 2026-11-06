@@ -2014,13 +2014,13 @@ function strategicTick(){
   const T=S.T;
   for(const d of SECTOR_DEFS){
     const s=S.sectors[d.id],here=!!WORLDS[d.id];
-    {const R=S.stations[d.id];if(R){const cn=R.owner!=='player'&&!here&&S.T>150&&FACTIONS[R.owner]&&capNeed(R.owner),n=here&&R.owner!=='player'?0:sRound((here?2:R.kind==='core'?5:R.kind==='hive'?BAL.brHive:R.owner==='player'?3:4)*(cn?2.2:1)*(BAL.ext[R.owner]||1)*(R.owner==='player'||R.owner==='brood'?1:BAL.aiEff))+devOf(R).store;
+    {const R=S.stations[d.id];if(R){const cn=R.owner!=='player'&&!here&&S.T>150&&FACTIONS[R.owner]&&capNeed(R.owner),n=here&&R.owner!=='player'?0:sRound((here?2/3:1)*stRate(R,cn)*mrWork('S.'+d.id))+devOf(R).store;
       if(R.owner==='player'){if(invMass(R.stock)<400+300*devOf(R).store)inv.addAll(R.stock,extract(s,n))}else if(n>0&&isDepotF(R)){const ds=dStore(R);if(invMass(ds)<LOGI.depotCap+120*devOf(R).store){const got=extract(s,n,false,{});inv.addAll(ds,got);if(R.mk)for(const k in got)R.mk[k]=(R.mk[k]||0)+got[k]*.3}}else if(n>0){const st=storeOf(R)||{},sc=mkSc(R);const full=(st.fe||0)+(st.cu||0)>=((R.owner==='brood'?1000:500)+250*devOf(R).store)*sc,nuW=(st.nu||0)<120*sc&&d.ores&&d.ores.nu;if(!full||nuW){const got=extract(s,n,(st.xc||0)>=30*sc,{ir:(st.ir||0)>400*sc,xc:(st.xc||0)>300*sc,fe:full,cu:full});inv.addAll(st,got);if(R.mk)for(const k in got)R.mk[k]=(R.mk[k]||0)+got[k]*.3}}
       if(!here&&!underCapSiege(d.id,R.owner)){R.shield=R.sMax;R.hull=Math.min(R.hMax,R.hull+R.hMax*.05)}}}
     const oid=OUT_BY_SECTOR[d.id];
     if(oid){const o=S.outposts[oid];if(o.owner){
       if(o.type==='yard'){for(const e of RAWS){const m=Math.min(s.debris[e],2+o.level);s.debris[e]-=m;inv.add(o.stock,e,m)}}
-      else if(!WORLDS[d.id])inv.addAll(o.stock,extract(s,2+o.level));
+      else if(!WORLDS[d.id])inv.addAll(o.stock,extract(s,sRound((2+o.level)*mrWork('O.'+oid))));
       if(FACTIONS[o.owner]){for(const k in o.stock){if(o.stock[k]>25)inv.add(S.econ.stock[o.owner],k,inv.take(o.stock,k,o.stock[k]-25))}}
       if(o.owner==='pirate'){for(const k in o.stock)inv.add(S.econ.stock.pirate,k,inv.take(o.stock,k,o.stock[k]))}
       if(!here){const os=oStats(o);if(o.breached&&T>o.breached+90)o.breached=0;if(!o.breached){o.shield=os.sMax;o.hull=Math.min(os.hMax,o.hull+os.hMax*.12)}}
@@ -2310,6 +2310,8 @@ const WIN_TIME=600;   // Beyond: hold 20 systems for 10 minutes
 // Beyond: station extraction rounds at random to the nearest whole unit (its expected value is the exact rate), so the
 // per-faction rates in BAL.ext tune smoothly instead of in whole-unit steps
 function sRound(x){return Math.floor(x+Math.random())}
+// a station's full-strength mining per 10 s (Beyond 6 Nov 2026: shared with its miners' live rate; see 16zzn_miners.js)
+function stRate(R,cn){return(R.kind==='core'?5:R.kind==='hive'?BAL.brHive:R.owner==='player'?3:4)*(cn?2.2:1)*(BAL.ext[R.owner]||1)*(R.owner==='player'||R.owner==='brood'?1:BAL.aiEff)}
 function controlCounts(){const n={};for(const d of SECTOR_DEFS){let o=sectorOwner(d.id);if(o==='player')o=S.player.sworn||(S.player.decl?'player':null);if(o&&o!=='pirate'&&o!=='neutral')n[o]=(n[o]||0)+1}return n}
 const VIC_NEED=20;   // Beyond: 20 of the 42 systems that can be held (freeports and the Wrack can't), for WIN_TIME
 // ============================================================ the coalition: when one side nears galaxy control, the other factions call a truce and
@@ -5298,7 +5300,7 @@ function npcThink(e,dt){
       const d=d3(a,e),r=astR(a);
       if(e.side!=='brood'&&blHull(e.cls)){npcBlast(e,a,dt,s);break}
       if(d>r+150){steer(e,a.x,a.y,a.z,dt,true);faceTo(e,a,dt)}
-      else{brake(e,dt);if(faceTo(e,a,dt)<.3){e.mining=a;e.mineAcc+=e.st.drill*dt*(e.side==='brood'?(a.wpt?2:1):BAL.aiEff);while(e.mineAcc>=1){e.mineAcc-=1;const k=mainOre(a);if(!k)break;a.ore[k]--;if(!a.ore[k])delete a.ore[k];inv.add(e.cargo,k,1);if(oreTotal(a)<=0){removeAst(s,a);ai.ast=null;break}}}}
+      else{brake(e,dt);if(faceTo(e,a,dt)<.3){e.mining=a;e.mineAcc+=e.st.drill*dt*(e.side==='brood'?(a.wpt?2:1):BAL.aiEff)*(e.mrK||1);while(e.mineAcc>=1){e.mineAcc-=1;const k=mainOre(a);if(!k)break;a.ore[k]--;if(!a.ore[k])delete a.ore[k];inv.add(e.cargo,k,1);if(oreTotal(a)<=0){removeAst(s,a);ai.ast=null;break}}}}
       break}
     case 'hauler':{const g=ai.dest,hit=W.t-e.lastHit<4,dock=g.type==='station'||g.type==='outpost';e.boosting=hit;if(!dock&&g.to!==undefined&&d3(e,g)<900){npcGateJump(e,g,dt,1);break}const d=steer(e,g.x,g.y,g.z,dt,dock,hit?1.15:.75);faceTo(e,g,dt);if(dock&&d<200){despawn(e);break}break}
     case 'leave':{const g=e.gj?e.gj.g:nearestGate(e);npcGateJump(e,g,dt,1);break}
@@ -5308,7 +5310,7 @@ function npcThink(e,dt){
 // AI miners blast: stand off a fault point, set 2-3 charges, back off, detonate, scoop the chunk. The rock gives at the miner's
 // drilling rate the whole time (the ore builds up and leaves with the chunk), so their output is what it was with the laser.
 function npcBlast(e,a,dt,s){const ai=e.ai,r=astR(a);let B=ai.bl;if(!B||B.a!==a.id){B=ai.bl={a:a.id,st:'set',t:0,n:a.wpt?1:ri(2,3),fired:0,pts:[]}}B.t+=dt;
-  if(B.st!=='set'||B.fired>0||d3(e,a)<r+400)e.mineAcc+=e.st.drill*dt*BAL.aiEff;
+  if(B.st!=='set'||B.fired>0||d3(e,a)<r+400)e.mineAcc+=e.st.drill*dt*BAL.aiEff*(e.mrK||1);
   if(B.st==='set'){const pts=blPts(a),left=pts.filter(p=>!B.pts.some(x=>d3(x,p)<1)),q=(left.length?left:pts).slice().sort((u,v)=>d3(u,e)-d3(v,e))[0],sx=q.x-a.x,sy=q.y-a.y,sz=q.z-a.z,sl=hyp(sx,sy,sz)||1,o={x:q.x+sx/sl*170,y:q.y+sy/sl*170,z:q.z+sz/sl*170};
     steer(e,o.x,o.y,o.z,dt,true,.7);if(d3(e,q)<320||B.t>7){brake(e,dt);if(faceTo(e,q,dt)<.15&&(B.cd||0)<=W.t){B.cd=W.t+.8;B.fired++;(W.npcBl=W.npcBl||[]).push({x:e.x,y:e.y,z:e.z,tx:q.x,ty:q.y,tz:q.z,t:0,T:Math.max(.2,d3(e,q)/BL.spd)});B.pts.push({x:q.x,y:q.y,z:q.z});if(B.fired>=B.n){B.st='clear';B.t=0}}}else faceTo(e,o,dt);return}
   if(B.st==='clear'){const dx=e.x-a.x,dy=e.y-a.y,dz=e.z-a.z,l=hyp(dx,dy,dz)||1;steer(e,a.x+dx/l*(r+330),a.y+dy/l*(r+330),a.z+dz/l*(r+330),dt,true,.8);faceTo(e,a,dt);if(l>r+280||B.t>6){B.st='det';B.t=0}return}
@@ -13445,6 +13447,73 @@ function glPress(){const P=S.player,e=W&&W.player;if(!e||P.docked||W.dead)return
   L.seg([0,0,0],[0,0,0],[0,0,0]);return MESH.glock={hull:g.upload(),rim:L.upload(true),eng:[]}}}
 // a lock is not a ship: no kill bounty for it (the power whose gate it is pays the breaker)
 {const o=payKill;payKill=function(e){if(e&&e.role==='glock')return;return o.apply(this,arguments)}}
+
+//@src 16zzn_miners.js
+// ============================================================ Beyond: station miners (live space stage 1, 6 Nov 2026)
+// Every power's station and depot, the Brood's hive and each outpost a power or the Brood holds keeps a roster of miners,
+// each with its kit (plate, coil, guard drones) aboard. Off-screen the site's ore is its roster's work: the old flat rate at
+// full strength, less for every miner missing. In a live system the roster flies: out at the rocks, home to unload, a
+// short turnaround docked, out again; live they drill at the same average rate they mine off-screen. A miner killed is
+// gone from the roster with its kit; the site builds another from its stores (one at a time, every 4 minutes). No miner
+// is spawned by chance any more: every one in space belongs to a roster.
+const MR={n:{core:4,depot:3,hive:4,out:2},build:240,retry:60,turn:[30,60],duty:.6,mix:{skiff:1,prospector:2,dredger:1},droneKeep:6};
+const MR_W=(()=>{let t=0,m=0;for(const k in MR.mix){t+=MR.mix[k];m+=MR.mix[k]*CLASSES[k].drill}const avg=m/t,w={};for(const k in MR.mix)w[k]=CLASSES[k].drill/avg;return w})();
+// the sites: 'S.<station sector>' and 'O.<outpost id>'
+function mrSites(){const L=[];for(const sid in S.stations){const R=S.stations[sid];if(R&&FACTIONS[R.owner]&&MR.n[R.kind])L.push('S.'+sid)}
+  for(const oid in S.outposts){const o=S.outposts[oid];if(o&&FACTIONS[o.owner]&&o.type!=='yard')L.push('O.'+oid)}return L}
+function mrSite(key){const id=key.slice(2);if(key[0]==='S'){const R=S.stations[id];return R?{key,kind:R.kind,owner:R.owner,sid:id,R}:null}const o=S.outposts[id];return o?{key,kind:'out',owner:o.owner,sid:o.sector,o}:null}
+function mrOn(st){return!!st&&!!FACTIONS[st.owner]&&!!MR.n[st.kind]&&!(st.o&&st.o.type==='yard')}
+function mrTarget(st){return MR.n[st.kind]||0}
+function mrRoster(key){const R=(S.mrs=S.mrs||{});return R[key]}
+// the share of the site's full mining its roster can do now (1 for anything that has no roster: the player's stations, freeports)
+function mrWork(key){const st=mrSite(key);if(!mrOn(st))return 1;const ro=mrRoster(key);if(!ro||ro.f!==st.owner)return 0;let w=0;for(const m of ro.m)w+=MR_W[m.c]||1;return Math.min(1.5,w/mrTarget(st))}
+// a site's full mining per 10 s, as the off-screen tick has it
+function mrBase(st){if(st.o)return 2+st.o.level;const R=st.R,cn=S.T>150&&capNeed(R.owner);return stRate(R,cn)}
+function mrSrcs(st){const L=[];if(st.R){const s=storeOf(st.R);if(s)L.push(s)}const h=S.econ.stock[st.owner];if(h&&!L.includes(h))L.push(h);return L}
+function mrKit(st){const c=wpick(MR.mix),srcs=mrSrcs(st),ld=loadout('miner',1,c);const dr=ld.drone||0;delete ld.drone;if(!takeFrom(ld,srcs))return null;
+  let have=0;for(const s of srcs)have+=s.drone||0;const n=Math.min(dr,Math.max(0,have-MR.droneKeep));if(n>0){takeFrom({drone:n},srcs);ld.drone=n}return{c,load:ld}}
+// keep each roster: a site that changed hands loses its miners (kits docked there go to the system's debris), a short one builds
+function mrTick(){const R=(S.mrs=S.mrs||{}),keys=mrSites(),init=!S.mrInit;S.mrInit=1;
+  for(const key in R){const st=mrSite(key),ro=R[key];if(mrOn(st)&&ro.f===st.owner)continue;const s=S.sectors[ro.sid];for(const m of ro.m)if(!m.live&&s)toDebris(s,m.load);delete R[key]}
+  for(const key of keys){const st=mrSite(key);let ro=R[key];if(!ro)ro=R[key]={f:st.owner,sid:st.sid,m:[],t:S.T,nid:1};const want=mrTarget(st);
+    while(ro.m.length<want&&S.T>=ro.t){const k=mrKit(st);if(!k){ro.t=S.T+MR.retry;break}ro.m.push({id:ro.nid++,c:k.c,load:k.load,live:false,next:0});ro.t=init?S.T:S.T+MR.build;if(!init)break}}}
+{const o=strategicTick;strategicTick=function(){try{mrTick()}catch(e){console.error(e)}return o.apply(this,arguments)}}
+// the kits docked count with the stations
+{const o=ledger;ledger=function(){const r=o.apply(this,arguments);try{const L=r.L.Stations;for(const k in S.mrs||{})for(const m of S.mrs[k].m){const v=invVec(m.load||{});for(const e of RAWS){L[e]+=v[e];r.tot[e]+=v[e]}}}catch(e){}return r}}
+// 'mrs:<site>:<id>' holds a roster miner's kit; once it's gone the site's store (or its owner's) takes what comes home
+function mrEntry(key,id){const ro=mrRoster(key);return ro&&ro.m.find(m=>String(m.id)===String(id))||null}
+{const o=holderIn;holderIn=function(st,path){if(typeof path==='string'&&path.startsWith('mrs:')){const p=path.split(':'),ro=st.mrs&&st.mrs[p[1]],m=ro&&ro.m.find(x=>String(x.id)===p[2]);if(m)return m.load=m.load||{};
+  const k=p[1]||'',id=k.slice(2);if(k[0]==='S'&&st.stations[id]){const R=st.stations[id];return(isDepotF(R)?(R.store=R.store||{}):st.econ.stock[R.owner])||st.econ.stock[ro?ro.f:'pirate']||st.econ.stock.pirate}
+  if(k[0]==='O'&&st.outposts[id]&&st.econ.stock[st.outposts[id].owner])return st.econ.stock[st.outposts[id].owner];return ro&&st.econ.stock[ro.f]||st.econ.stock.pirate}return o.apply(this,arguments)}}
+// home: the kit goes back aboard (docked), whatever is in the hold goes to the site's store
+{const o=returnHome;returnHome=function(e){if(e&&e.mrKey){const m=mrEntry(e.mrKey,e.mrId);if(m){const st=mrSite(e.mrKey);inv.addAll(m.load,e.load);e.load={};if(invMass(e.cargo)>0){const h=st&&(st.R?storeOf(st.R):st.o.stock)||S.econ.stock[e.side]||S.econ.stock.pirate;inv.addAll(h,e.cargo);e.cargo={}}
+  m.live=false;m.next=S.T+rnd(MR.turn[0],MR.turn[1])}}return o.apply(this,arguments)}}
+// killed: off the roster for good
+{const o=killShip;killShip=function(e){if(e&&e.mrKey&&e.role!=='limpet'){const ro=mrRoster(e.mrKey);if(ro){const i=ro.m.findIndex(m=>String(m.id)===String(e.mrId));if(i>=0)ro.m.splice(i,1);if(ro.m.length<mrTarget(mrSite(e.mrKey)||{}))ro.t=Math.max(ro.t,S.T+MR.build)}e.mrKey=null}return o.apply(this,arguments)}}
+// live: the roster flies. A miner spawns from its kit, drills at the rate its share of the site's mining comes to, and is
+// placed at the rocks when the system opens (the work already under way) or launched from the station after its turnaround
+function mrSpawn(st,ro,m,initial){const side=st.owner,e=makeNPC('miner',side,m.c,1,m.load,`mrs:${st.key}:${m.id}`);m.load={};m.live=true;e.mrKey=st.key;e.mrId=m.id;
+  const per=mrBase(st)/mrTarget(st)/10*(MR_W[m.c]||1),nom=e.st.drill*(side==='brood'?1:BAL.aiEff);e.mrK=Math.min(1,per/MR.duty/Math.max(.01,nom));
+  const s=S.sectors[W.sid],D=st.R?W.stationEnt:W.outpostEnt,rocks=s.ast.filter(x=>!x.comet);
+  if(initial&&rocks.length){const a=pick(rocks),o=rdir(.6),k=astR(a)+rnd(70,140);e.x=a.x+o.x*k;e.y=a.y+o.y*k;e.z=a.z+o.z*k;e.ai.ast=a;e.mineAcc=Math.random();faceInstant(e,a.x-e.x,a.y-e.y,a.z-e.z)}
+  else if(D){const o=rdir(1),r=(D.r||120)+90;e.x=D.x+o.x*r;e.y=D.y+o.y*r;e.z=D.z+o.z*r;faceInstant(e,o.x,o.y,o.z)}
+  else{const g=pick(GATES[W.sid]);e.x=g.x*.93;e.y=g.y*.93;e.z=g.z*.93;faceInstant(e,-e.x,-e.y,-e.z)}
+  W.ents.push(e);if(e.load.drone)deployDrones(e);return e}
+function mrLive(initial){if(!W||NET.cl)return;const R=S.mrs||{};for(const key in R){const ro=R[key];if(ro.sid!==W.sid)continue;const st=mrSite(key);if(!mrOn(st)||st.owner!==ro.f)continue;
+  for(const m of ro.m){if(m.live)continue;if(!initial&&S.T<m.next)continue;if(W.ents.filter(e=>e.npc&&e.role!=='drone').length>=popCap())return;mrSpawn(st,ro,m,initial)}}}
+// a miner whose ship left the world some other way (a lost entity) is docked again rather than stuck out
+const MR_KIT=new Set(['plate','wire','drone']);
+function mrMend(){const R=S.mrs||{};for(const key in R){const ro=R[key];for(const m of ro.m)if(!m.live){let h=null;for(const k in m.load||{})if(!MR_KIT.has(k)){const st=mrSite(key);h=h||(st&&(st.R?storeOf(st.R):st.o.stock))||S.econ.stock[ro.f]||S.econ.stock.pirate;inv.add(h,k,inv.take(m.load,k,m.load[k]))}}
+  for(const m of ro.m)if(m.live){const w=WORLDS[ro.sid];if(!w||!w.ents.some(e=>e.alive&&e.mrKey===key&&String(e.mrId)===String(m.id))){m.live=false;m.next=S.T+MR.turn[0]}}}}
+{const o=strategicTick;strategicTick=function(){try{mrMend()}catch(e){console.error(e)}return o.apply(this,arguments)}}
+// no chance-spawned miners: the rosters are the miners
+{const o=popWants;popWants=function(){return o.apply(this,arguments).filter(w=>w[0]!=='miner')}}
+{const o=populateAll;populateAll=function(){try{if(!S.mrInit)mrTick();mrLive(true)}catch(e){console.error(e)}return o.apply(this,arguments)}}
+{const o=populate;populate=function(initial){try{mrLive(!!initial)}catch(e){console.error(e)}return o.apply(this,arguments)}}
+// what a site's miners are up to, for the station's and outpost's panels
+function mrLine(key){const st=mrSite(key);if(!mrOn(st))return'';const ro=mrRoster(key),n=ro&&ro.f===st.owner?ro.m.length:0,want=mrTarget(st),out=ro?ro.m.filter(m=>m.live).length:0;
+  return`Miners ${n}/${want}${out?` (${out} out)`:''} · mining at ${Math.round(mrWork(key)*100)}%${n<want&&ro?` · next built in ${Math.max(0,Math.round((ro.t-S.T)/60))} min`:''}`}
+{const o=mapSectorNow;mapSectorNow=function(sid){let h=o.apply(this,arguments);try{const keys=[];if(S.stations[sid])keys.push('S.'+sid);const oid=OUT_BY_SECTOR[sid];if(oid)keys.push('O.'+oid);for(const k of keys){const L=mrLine(k);if(L){const i=L.indexOf(' · ');h+=`<span>${L.slice(0,i<0?L.length:i).replace(/ \d.*$/,'')}</span><b>${esc(L.replace(/^Miners /,''))}</b>`}}}catch(e){}return h}}
 
 //@src 17_main.js
 // ============================================================ main loop

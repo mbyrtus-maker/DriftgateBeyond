@@ -563,7 +563,7 @@ function npcThink(e,dt){
       const d=d3(a,e),r=astR(a);
       if(e.side!=='brood'&&blHull(e.cls)){npcBlast(e,a,dt,s);break}
       if(d>r+150){steer(e,a.x,a.y,a.z,dt,true);faceTo(e,a,dt)}
-      else{brake(e,dt);if(faceTo(e,a,dt)<.3){e.mining=a;e.mineAcc+=e.st.drill*dt*(e.side==='brood'?(a.wpt?2:1):BAL.aiEff);while(e.mineAcc>=1){e.mineAcc-=1;const k=mainOre(a);if(!k)break;a.ore[k]--;if(!a.ore[k])delete a.ore[k];inv.add(e.cargo,k,1);if(oreTotal(a)<=0){removeAst(s,a);ai.ast=null;break}}}}
+      else{brake(e,dt);if(faceTo(e,a,dt)<.3){e.mining=a;e.mineAcc+=e.st.drill*dt*(e.side==='brood'?(a.wpt?2:1):BAL.aiEff)*(e.mrK||1);while(e.mineAcc>=1){e.mineAcc-=1;const k=mainOre(a);if(!k)break;a.ore[k]--;if(!a.ore[k])delete a.ore[k];inv.add(e.cargo,k,1);if(oreTotal(a)<=0){removeAst(s,a);ai.ast=null;break}}}}
       break}
     case 'hauler':{const g=ai.dest,hit=W.t-e.lastHit<4,dock=g.type==='station'||g.type==='outpost';e.boosting=hit;if(!dock&&g.to!==undefined&&d3(e,g)<900){npcGateJump(e,g,dt,1);break}const d=steer(e,g.x,g.y,g.z,dt,dock,hit?1.15:.75);faceTo(e,g,dt);if(dock&&d<200){despawn(e);break}break}
     case 'leave':{const g=e.gj?e.gj.g:nearestGate(e);npcGateJump(e,g,dt,1);break}
@@ -573,7 +573,7 @@ function npcThink(e,dt){
 // AI miners blast: stand off a fault point, set 2-3 charges, back off, detonate, scoop the chunk. The rock gives at the miner's
 // drilling rate the whole time (the ore builds up and leaves with the chunk), so their output is what it was with the laser.
 function npcBlast(e,a,dt,s){const ai=e.ai,r=astR(a);let B=ai.bl;if(!B||B.a!==a.id){B=ai.bl={a:a.id,st:'set',t:0,n:a.wpt?1:ri(2,3),fired:0,pts:[]}}B.t+=dt;
-  if(B.st!=='set'||B.fired>0||d3(e,a)<r+400)e.mineAcc+=e.st.drill*dt*BAL.aiEff;
+  if(B.st!=='set'||B.fired>0||d3(e,a)<r+400)e.mineAcc+=e.st.drill*dt*BAL.aiEff*(e.mrK||1);
   if(B.st==='set'){const pts=blPts(a),left=pts.filter(p=>!B.pts.some(x=>d3(x,p)<1)),q=(left.length?left:pts).slice().sort((u,v)=>d3(u,e)-d3(v,e))[0],sx=q.x-a.x,sy=q.y-a.y,sz=q.z-a.z,sl=hyp(sx,sy,sz)||1,o={x:q.x+sx/sl*170,y:q.y+sy/sl*170,z:q.z+sz/sl*170};
     steer(e,o.x,o.y,o.z,dt,true,.7);if(d3(e,q)<320||B.t>7){brake(e,dt);if(faceTo(e,q,dt)<.15&&(B.cd||0)<=W.t){B.cd=W.t+.8;B.fired++;(W.npcBl=W.npcBl||[]).push({x:e.x,y:e.y,z:e.z,tx:q.x,ty:q.y,tz:q.z,t:0,T:Math.max(.2,d3(e,q)/BL.spd)});B.pts.push({x:q.x,y:q.y,z:q.z});if(B.fired>=B.n){B.st='clear';B.t=0}}}else faceTo(e,o,dt);return}
   if(B.st==='clear'){const dx=e.x-a.x,dy=e.y-a.y,dz=e.z-a.z,l=hyp(dx,dy,dz)||1;steer(e,a.x+dx/l*(r+330),a.y+dy/l*(r+330),a.z+dz/l*(r+330),dt,true,.8);faceTo(e,a,dt);if(l>r+280||B.t>6){B.st='det';B.t=0}return}

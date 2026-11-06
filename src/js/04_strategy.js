@@ -4,13 +4,13 @@ function strategicTick(){
   const T=S.T;
   for(const d of SECTOR_DEFS){
     const s=S.sectors[d.id],here=!!WORLDS[d.id];
-    {const R=S.stations[d.id];if(R){const cn=R.owner!=='player'&&!here&&S.T>150&&FACTIONS[R.owner]&&capNeed(R.owner),n=here&&R.owner!=='player'?0:sRound((here?2:R.kind==='core'?5:R.kind==='hive'?BAL.brHive:R.owner==='player'?3:4)*(cn?2.2:1)*(BAL.ext[R.owner]||1)*(R.owner==='player'||R.owner==='brood'?1:BAL.aiEff))+devOf(R).store;
+    {const R=S.stations[d.id];if(R){const cn=R.owner!=='player'&&!here&&S.T>150&&FACTIONS[R.owner]&&capNeed(R.owner),n=here&&R.owner!=='player'?0:sRound((here?2/3:1)*stRate(R,cn)*mrWork('S.'+d.id))+devOf(R).store;
       if(R.owner==='player'){if(invMass(R.stock)<400+300*devOf(R).store)inv.addAll(R.stock,extract(s,n))}else if(n>0&&isDepotF(R)){const ds=dStore(R);if(invMass(ds)<LOGI.depotCap+120*devOf(R).store){const got=extract(s,n,false,{});inv.addAll(ds,got);if(R.mk)for(const k in got)R.mk[k]=(R.mk[k]||0)+got[k]*.3}}else if(n>0){const st=storeOf(R)||{},sc=mkSc(R);const full=(st.fe||0)+(st.cu||0)>=((R.owner==='brood'?1000:500)+250*devOf(R).store)*sc,nuW=(st.nu||0)<120*sc&&d.ores&&d.ores.nu;if(!full||nuW){const got=extract(s,n,(st.xc||0)>=30*sc,{ir:(st.ir||0)>400*sc,xc:(st.xc||0)>300*sc,fe:full,cu:full});inv.addAll(st,got);if(R.mk)for(const k in got)R.mk[k]=(R.mk[k]||0)+got[k]*.3}}
       if(!here&&!underCapSiege(d.id,R.owner)){R.shield=R.sMax;R.hull=Math.min(R.hMax,R.hull+R.hMax*.05)}}}
     const oid=OUT_BY_SECTOR[d.id];
     if(oid){const o=S.outposts[oid];if(o.owner){
       if(o.type==='yard'){for(const e of RAWS){const m=Math.min(s.debris[e],2+o.level);s.debris[e]-=m;inv.add(o.stock,e,m)}}
-      else if(!WORLDS[d.id])inv.addAll(o.stock,extract(s,2+o.level));
+      else if(!WORLDS[d.id])inv.addAll(o.stock,extract(s,sRound((2+o.level)*mrWork('O.'+oid))));
       if(FACTIONS[o.owner]){for(const k in o.stock){if(o.stock[k]>25)inv.add(S.econ.stock[o.owner],k,inv.take(o.stock,k,o.stock[k]-25))}}
       if(o.owner==='pirate'){for(const k in o.stock)inv.add(S.econ.stock.pirate,k,inv.take(o.stock,k,o.stock[k]))}
       if(!here){const os=oStats(o);if(o.breached&&T>o.breached+90)o.breached=0;if(!o.breached){o.shield=os.sMax;o.hull=Math.min(os.hMax,o.hull+os.hMax*.12)}}
@@ -300,6 +300,8 @@ const WIN_TIME=600;   // Beyond: hold 20 systems for 10 minutes
 // Beyond: station extraction rounds at random to the nearest whole unit (its expected value is the exact rate), so the
 // per-faction rates in BAL.ext tune smoothly instead of in whole-unit steps
 function sRound(x){return Math.floor(x+Math.random())}
+// a station's full-strength mining per 10 s (Beyond 6 Nov 2026: shared with its miners' live rate; see 16zzn_miners.js)
+function stRate(R,cn){return(R.kind==='core'?5:R.kind==='hive'?BAL.brHive:R.owner==='player'?3:4)*(cn?2.2:1)*(BAL.ext[R.owner]||1)*(R.owner==='player'||R.owner==='brood'?1:BAL.aiEff)}
 function controlCounts(){const n={};for(const d of SECTOR_DEFS){let o=sectorOwner(d.id);if(o==='player')o=S.player.sworn||(S.player.decl?'player':null);if(o&&o!=='pirate'&&o!=='neutral')n[o]=(n[o]||0)+1}return n}
 const VIC_NEED=20;   // Beyond: 20 of the 42 systems that can be held (freeports and the Wrack can't), for WIN_TIME
 // ============================================================ the coalition: when one side nears galaxy control, the other factions call a truce and
