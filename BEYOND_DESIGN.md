@@ -2398,7 +2398,7 @@ The maker opens a **project for that kind at the next grade** (grade 2 first, up
 
 ### Bulk orders and freight contracts (proposal, user 6 Nov 2026, awaiting approval)
 **The user's idea:** faction owners can place a bulk order for certain items with a company, which generates missions and hauling and mining tasks, plus escorts, raids and ambushes to deliver the products. They can also pay a premium to have stock hauled from another port or station to their own.
-- **Who:** a pilot whose company has declared itself a faction (section 11), and the AI powers (decided 6 Nov 2026; see "AI powers' bulk orders" below). Open: Station owners before declaring.
+- **Who:** a faction menu item only (decided 6 Nov 2026): a pilot whose company has declared itself a faction (section 11), and the AI powers (see "AI powers' bulk orders" below). Not Station owners before they declare.
 - **The order:** a kind of part, a maker, a grade (any the maker sells, its budget line included) and a number of units, at list price plus a 20% order premium. 60% is paid up front and held for the order (it pays for the components, so it can't go into the maker's R&D), the rest on delivery. The maker gives the order up to half its works until it is filled. The order is not a shelf sale: it starts no craze, makes no rival tweak, and counts for investors as a one-off (cash, not lasting earnings). This also closes the bulk-buying loophole found with the bulk-buyer test.
 - **How long (simulation, `tools/corpsim/order_v17.py`, 100 galaxies):** 60 machine guns from Marchgun take about 2 hours (107 to 138 minutes), 120 about 4; 30 blast rigs from Hold Foundry about an hour. Other buyers barely notice (the maker's shelf sales, its other lines and its rivals' sales all within 3%) and the maker doesn't fail more. Paying more for a bigger share of the works (a rush order) is an option.
 - **The work it makes**, all real goods moving under the ledger:
@@ -2406,7 +2406,7 @@ The maker opens a **project for that kind at the next grade** (grade 2 first, up
   - *Delivery:* finished units go from the maker's station to the buyer's station by real convoy, in batches (about one per 10 to 20 units). The buyer can post escort jobs, send their own AI pilots, or pay the maker to provide the escort.
   - *Threats:* the convoy is raidable. Rivals can post deniable raid jobs on the Faction jobs board, the Unbound ambush at gates, and a power at war with the buyer hunts it. Stolen units are tagged as the buyer's property (contraband in their space).
   - *News:* a big order is news ("Varkesh orders 120 Marchgun guns"), which tells rivals and pirates where the convoys will be.
-- **Freight contracts:** pay a premium to have goods hauled from another port or station to yours: the goods' price plus a freight fee by distance and risk. It posts a hauling job (or uses your own AI haulers) and, if you choose, escort jobs; the cargo moves by real convoy and can be raided like any other.
+- **Freight contracts** (a faction menu item, like bulk orders): pay a premium to have goods hauled from another port or station to yours: the goods' price plus a freight fee by distance and risk. It posts a hauling job (or uses your own AI haulers) and, if you choose, escort jobs; the cargo moves by real convoy and can be raided like any other.
 - **If the maker fails before delivery (decided, user 6 Nov 2026):** the deposit is refunded out of the maker's coffers. Refunds are the first call on a failing maker's money, before anything else; if its coffers can't cover every refund, each buyer gets the same share of what is there. Units already built for the order stay with the failed maker's stock.
 - **Rush orders (decided, user 6 Nov 2026):** offered at a CEO meeting (below): the order gets three quarters of the works instead of half, for a higher premium. Simulated: 60 machine guns from Marchgun in about 80 minutes (73 to 87) instead of 2 hours; the maker's other buyers get about 7% fewer of its guns meanwhile; no more failures.
 - **AI powers' bulk orders (decided, user 6 Nov 2026): placed for a reason in the galaxy, shaped by the leader's traits** (events never feel random, section 11c). An AI power orders from the maker its tastes and influence favour (its own hosted makers first), sized at about 2 hours of its refits of that kind:
@@ -2435,15 +2435,17 @@ The maker opens a **project for that kind at the next grade** (grade 2 first, up
 - **Open:** whether the order premium goes up with size; how much of an order a faction may place at once.
 
 ### Meetings with a CEO (proposal, user 6 Nov 2026, awaiting approval)
-**The user's idea:** a faction power calls a meeting with a maker's CEO. The CEO has to fly to the power's station, so they exist in the world for a time. At the meeting a menu lets the power encourage R&D, ask for a tweak to a product line, place a bulk order, or all three. The CEO's trait shapes the answer, and the closer a power is to victory the more influence it wields.
+**The user's idea:** a faction power calls a meeting with a maker's CEO. The CEO has to fly to the power's station, so they exist in the world for a time. At the meeting a menu lets the power encourage R&D, ask for a tweak to a product line, place a bulk order, rush it, or all of them. The CEO's trait shapes the answer.
 
-**Calling the meeting.** From the maker's page (Company screen → Economy → Corporations), a faction power calls a meeting at one of its stations. One meeting per maker per power every 2 hours. The CEO can refuse to come: always if the power is at War with the maker's home faction, unless its influence is very high (see Influence).
+**Decided (user, 6 Nov 2026):** corporations don't touch the victory conditions, so a power's influence with a maker has nothing to do with how close it is to winning. The CEO is a pilot, never a passenger: they fly their own ship or command a capital ship. Meetings, bulk orders, rush orders and freight contracts are faction menu items only: the AI powers and pilots whose company has declared itself a faction (not Station owners before that).
 
-**The CEO's flight.** The CEO travels in a real ship, an executive yacht with the maker's own escort (one or two AI fighters; more for a rich maker), along the lanes from the maker's home station to the meeting. It is on the map as "Marchgun's CEO, en route to Talon Citadel". After the meeting (about 10 minutes docked) the CEO flies home, exposed again. While the yacht is out:
+**Calling the meeting.** A faction menu item: from the faction's screen, on the maker's page, a faction power calls a meeting at one of its stations. One meeting per maker per power every 2 hours. The CEO can refuse to come: always if the power is at War with the maker's home faction.
+
+**The CEO's flight.** The CEO is a pilot, like the faction leaders (section 11c): they fly their own ship, fitted with their maker's parts, or, for a rich maker, command a capital ship, always with the maker's escort (one or two AI fighters, more for a rich maker). Their traits lean the choice, as a leader's do: an Expansionist or Premium CEO at the helm of an escort-class capital ship, a Penny-pincher in a plain fighter. They fly the lanes from the maker's home station to the meeting, on the map by name ("Marchgun's CEO, en route to Talon Citadel"). After the meeting (about 10 minutes docked) they fly home, exposed again. While the CEO is out:
 - the caller can post **CEO escort** jobs, or send its own AI pilots;
 - rivals (other powers, and the maker's rival makers through their agents) can post deniable **Intercept the CEO** jobs; the Unbound ambush at gates;
 - a CEO who arrives after an attack is **shaken** (influence needed +10 for this meeting) and remembers who failed to protect them;
-- a CEO who is killed gives the maker a new CEO (a CEO change, with its news and share drop) and cancels the meeting; one the Unbound capture is held for ransom (a **Ransom run** job; whoever pays it earns the maker's goodwill).
+- a CEO who is shot down is killed: the maker gets a new CEO (a CEO change, with its news) and the meeting is cancelled. Whoever killed them is remembered by the maker.
 
 **The meeting menu.** Any of the four asks, or all of them; the CEO answers each with accept, a counter-offer, or no.
 - **Encourage R&D:** pick a kind of part the maker makes. The power co-funds the next grade's project (25 to 75% of its cost, by the CEO's answer). The project starts at once (or, if one is running, the power's kind goes next), with its usual materials, trials and their jobs. The power gets the first batch of the launch at list price. An Expansionist CEO may offer to open a new line of a kind it doesn't make yet.
@@ -2451,10 +2453,11 @@ The maker opens a **project for that kind at the next grade** (grade 2 first, up
 - **Place a bulk order:** as in "Bulk orders and freight contracts" above. Influence lowers the order premium (20% at the threshold, down to 10%).
 - **Rush the order (decided, user 6 Nov 2026):** the order (a new one, or one already running with this maker) gets three quarters of the works instead of half, for 15 points more premium. 60 machine guns take about 80 minutes instead of 2 hours. A Cautious CEO never gives an order more than a quarter of its works, rushed or not.
 
-**Influence.** A number from 0 to 100, shown before the meeting:
-- **Victory:** 40 x systems held / 20, plus 20 while the power's 20-system win timer runs. The closer to winning, the more makers listen.
+**Influence.** A number from 0 to 100, shown before the meeting. It never depends on victory (decided above):
+- **A faction power:** 20 to start with.
 - **Relations with the maker's home faction:** Allied +20, Friendly +10, Neutral 0, Hostile -15, War -30 (freeport makers: the power's standing with the Compact, halved).
 - **Business:** +1 per 1,000 cr the power and its pilots have spent with the maker in the last 4 hours (up to +15); +5 for each delivered bulk order in the last 8 hours (up to +15).
+- **Goodwill:** +10 if the power's pilots defended this maker's CEO or convoys in the last 8 hours; -10 if a CEO it called was attacked under its escort in that time; -30 if its pilots killed this maker's CEO in the last 16 hours.
 - **This meeting:** -10 if the CEO was attacked on the way; +10 if the power's own escort fought off the attack.
 Each ask needs influence over a threshold: bulk order 10, rush 30, tweak 25, R&D 40. Above the threshold the CEO accepts; up to 15 below it counters (a higher fee or premium, a smaller co-funding share refused, a tweak to a different stat); further below, no.
 
@@ -2473,7 +2476,7 @@ Each ask needs influence over a threshold: bulk order 10, rush 30, tweak 25, R&D
 
 **AI powers call meetings too:** an AI leader calls one for the causes in "AI powers' bulk orders" above (when its doctrine's parts are scarce, it is losing a war, or a rival's new grade has outclassed its fleet), asking the way its traits lean. Its CEO flights make the same escort, intercept and ransom work for contractors, and pilots can sway which power a CEO favours.
 
-**Open:** whether influence from nearing victory should be checked (the others already unite against a power whose win timer runs; makers hosted by the threatened powers could refuse it too); whether the caller's own pilots can fly the CEO (a VIP passenger job); how long a CEO remembers a failed escort; whether players who haven't declared a faction (Station owners) can call meetings with less influence.
+**Open:** how long a maker remembers a failed escort or a killed CEO (8 and 16 hours proposed).
 
 ### Pilot share trading: designed, not built (tabled 6 Nov 2026)
 Written so it can be picked up later; nothing here is in the game.
