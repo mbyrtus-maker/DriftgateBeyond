@@ -2370,3 +2370,9 @@ The maker opens a **project for that kind at the next grade** (grade 2 first, up
 - Without R&D, eleven makers clear 73 to 191 cr an hour after running costs (Prospecting -32, from -140); failures 0.02 a galaxy.
 - With R&D: 0.66 failures (0.84 with v9's line-up), spread across makers; eleven makers top the sales somewhere (Wakefire most, 20%); first launch 3.1 h, 18.8 launches, 103 missions. 32 h: 3.7 failures, spread across every maker.
 - Open: one fewer mining line for Coldwater Prospecting; a lifeline for makers that lose R&D races.
+
+**Decided (user, 5 Nov 2026, evening): mining lines should be popular, especially for Varkesh; the powers' haulers and scouts buy parts too.** Simulation v11 (`tools/corpsim/sim11.py`, `run_v11.py`): the powers refit their whole fleets, parts an hour beside 18 for warships: Halcyon 9 mining, 15 hauling, 3 scouting; Varkesh 18, 6, 3; Ostrova 9, 7.5, 7.5. Tastes added: Halcyon favours cargo holds and modules and values hold; Varkesh favours mining lasers, charge launchers and blast rigs and values mining yield; Ostrova favours scanners more. All miners buy their mining gear three times as often as other parts. 200 galaxies of 16 h:
+- Corporate sales nearly double (1,525 a galaxy against 813); mining gear 13% of sales (2% before); Varkesh's top suppliers Hold Foundry 20%, Marchgun 12%, Coldwater Prospecting 10%.
+- Every maker clears 210 to 600 cr an hour after running costs (Prospecting +463); the leaders are now Spirewright, Hold Foundry and Teal & Corvane; pure weapon makers trail.
+- R&D faster: first launch 2.6 h, 31.6 launches, grade 3 in 97% of galaxies, about 173 missions. Failures 0.08 a galaxy (1.1 over 32 h).
+- Open: with the market doubled, running costs barely bite; roughly doubling them would bring back about one failure in a long galaxy.
