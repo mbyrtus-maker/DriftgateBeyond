@@ -82,5 +82,6 @@ js/16zzm_gatelock.js
 js/16zzn_miners.js
 js/16zzo_garrison.js
 js/16zzp_freight.js
+js/16zzq_raiders.js
 js/17_main.js
 end.html

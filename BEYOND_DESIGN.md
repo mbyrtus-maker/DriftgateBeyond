@@ -2150,6 +2150,15 @@ You can change the appointment any time you're awake. Without a stand-in nothing
   - a merchant whose market is gone, or a supply convoy whose station was lost, turns for home with its load rather than vanishing into the warehouse.
 - **Still jumping (to go with stage 3, the fleets):** an offensive's or build party's force going home when it's done (`finishOffensive`, `finishBuild`, sorties), a power's ships home from the player's convoy escort; a black-market run caught (goods to the catching power); a pilot's shipment whose pilot is gone. The Brood and the Unbound have no freighters: the Brood's outposts still send their surplus straight home, and the Unbound's loot comes home with their raids.
 
+**Stage 3 as built (6 Nov 2026, `16zzq_raiders.js`; test `raiders.py`): raiders are tracked.**
+- **No chance raiders:** `popWants` no longer asks for raider wings (the powers' or the Brood's) or Unbound wings. Every hostile wing on the lanes is a tracked raid party (`S.raids`).
+- **Prowls:** besides raids on a convoy or depot (as before), a side sends a party with no target to a hunting ground within its reach, where it waits 4 minutes for whatever comes through, then goes home (or takes a target if one turns up): the Unbound from the Wrack (and their capitals) into the deep, the void, the hubs and the contested systems (deep most often); a power from any of its stations into an enemy's border systems; the Brood around its own territory. About one Unbound prowl every 8 minutes, a power's every 14, the Brood's every 21; up to 5 Unbound raid parties out at once, 3 a power's, 2 the Brood's.
+- **A waiting prowl springs on any hostile convoy** that comes through out of sight (a hold worth at least 40 cr), fighting it by the raid odds.
+- **Live:** a prowl in an open system holds by one of its gates as a wing (Unbound prowls sometimes lurk among the rocks, as their wings used to), fights what comes, and leaves by the right gate when its wait is up.
+- **Raiders against a garrison, off-screen:** each docked hostile garrison fighter in the system cuts a raid's odds by 15%; a garrison that loses a fight loses ships (40% each when the raiders win, 10% when they don't); a prowl waiting where a hostile garrison is fights it once a minute until one side gives.
+- **Forces home:** a finished offensive's or build party's force flies home along the lanes as a tracked party (as many fighters as its kit makes, up to six) and unloads into its warehouse there; it showed up in the warehouse at once before.
+- **Not yet (stage 3b):** offensives and build parties still travel to their target by an ETA rather than hop by hop along the lanes; lockdown response wings, the powers' hunts and aces' wings spawn at their station rather than launching from its garrison.
+
 **Order (user, 6 Nov 2026):** stage 2 next; then **stage 1b, your crews made real**: today (`16w_crews.js`) a depot's crews fly in its system for show while the minute tick does the work; crew miners will mine and unload for real and crew haulers carry real goods (raidable), guards as now.
 
 **Stage 1 as built (6 Nov 2026, `16zzn_miners.js`; test `miners.py`):**

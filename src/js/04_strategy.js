@@ -457,7 +457,7 @@ function resolveSiege(ev){const Rr=S.stations[ev.st],s=S.sectors[ev.sector];if(!
       if(loud)feed(`${Rr.name} was battered by ${ev.att==='brood'?'the Brood':sideName(ev.att)}: ${invMass(got)} t of stores ${ev.att==='brood'?'devoured':'carried off'}.`,friendSide(Rr.owner)?'bad':'warn')}}
   else if(loud)feed(`${Rr.name} held off ${ev.att==='brood'?'a Brood swarm':art(sideAdj(ev.att)).toLowerCase()+' '+sideAdj(ev.att)+' assault'}.`,friendSide(Rr.owner)?'good':'news');
   finishOffensive(ev)}
-function finishOffensive(ev){ev.stage='done';inv.addAll(S.econ.stock[ev.att],ev.force);ev.force={}}
+function finishOffensive(ev){ev.stage='done';prwHome(ev.att,ev.sector,ev.force);ev.force={}}
 // ============================================================ capital threats, hunter groups, distress responses
 // A faction that sees hostile capital ships in its space goes on a war footing: it makes torpedoes, musters bombers into a
 // hunter group over a few strategic ticks, then sends it after the frigate. Each failed hunt makes the next one bigger.

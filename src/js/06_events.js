@@ -267,7 +267,7 @@ function buildTick(ev,T){const lw=liveIn(ev.sector),live=!!lw;if(lw&&W!==lw)retu
 function completeBuild(ev,src){const f=ev.att,DC=f==='brood'?DEPOT_COST:FWD_COST;if(!haveIn(DC,[src])){finishBuild(ev);return}takeFrom(DC,[src]);const Rr=makeStation(ev.sector,f,'depot',ev.site,{...DC});if(f!=='brood'){Rr.fwd=1;applyDev(Rr)}
   if(f===S.player.sworn||covered(ev.sector))feed(f==='brood'?`⚠ A Bloom Node has taken root in ${DEF[ev.sector].name}.`:`${Rr.name} is online.`,f==='brood'?'bad':f===S.player.sworn?'good':'news');
   if(WORLDS[ev.sector])inW(WORLDS[ev.sector],()=>{W.scaffold=null;addStationEnt(Rr);fxBoom(Rr,180,sideCol(f))});finishBuild(ev)}
-function finishBuild(ev){ev.stage='done';inv.addAll(S.econ.stock[ev.att],ev.force);ev.force={}}
+function finishBuild(ev){ev.stage='done';prwHome(ev.att,ev.sector,ev.force);ev.force={}}
 // the convoy in person: a constructor plus its escort wing, flying to the site and building while you watch
 function engageBuild(ev){ev.live=true;const home=`ev:${ev.id}:${ev.att}`,mid=ev.prog>0;let C=null;
   const CL=ev.att==='brood'?BROOD_SEED:CONSTR_LD;if(takeFrom(CL,[ev.force])){const ld={...CL};const fr=inv.take(ev.force,'frame',ev.force.frame||0);if(fr)ld.frame=fr;C=makeNPC('builder',ev.att,'constructor',1,ld,home);if(ev.spotted)C.spotted=1;C.evId=ev.id;C.ai.site=ev.site}
