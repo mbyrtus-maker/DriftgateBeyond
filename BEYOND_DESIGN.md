@@ -194,6 +194,28 @@ Smuggling is a way to make money outside the law, with its own parts. Names are 
 
 **Where it sells: everywhere that wants it,** by supply and demand. Each market's demand sets the price, whether the goods are legal there or not; an embargo or a ban pushes demand and price up where the goods are scarce. Powers and freeports may post smuggling runs as jobs (deniable proxy work, 11c).
 
+### 6c. Gate lock kits (proposal, user 6 Nov 2026, awaiting approval)
+**The user's idea:** a new item at the Wrack, the **gate lock kit**. Like the Brood's Overgrowth it seals a jump gate, but it can be destroyed from either side of the gate. It lets the Unbound and pilots ambush convoys moving through a system by locking them out of the system they're heading for, for a limited time.
+
+**Where it comes from.** Sold only at Scrapheart Haven's market and by black-market contacts, or taken from Unbound wrecks. It is pirate gear (section 6b): owning one is no crime, but carrying one is contraband in every power's space, and a patrol that finds one raises that power's heat on you. It is outside the corporations, bought and sold the old way. The haven makes kits from its own stores (proposal: plate, circuits and a Riftstone shard each), so the ledger stays exact, and it sells only as many as it has made. Proposal: about 2,500 cr, one per pilot per hour.
+
+**Setting a lock.** Carried as cargo (5 t); fly within 300 m of a gate and drop it. It arms in 20 seconds; while arming it can be shot off the gate (25% of its health), and ships in the system get a warning ("Something is clamping the gate to Kestrel Drift"). Once armed:
+- **The gate is sealed both ways** for **5 minutes**, then the lock burns out (proposal). No pilots, fighter wings, freighters, miners or scouts can pass. Capital ships aren't stopped, as with Overgrowth: they jump on their own drives, so a convoy's capital escort can leave, but it leaves its freighters behind.
+- **It can be destroyed from either side** (unlike Overgrowth, which has to be reached from its own side): the lock clamps both mouths of the gate, and a hit on either damages it. Proposal: 2,000 health, no shield, no regrowth, every weapon at full damage, so a fighter wing breaks one in about half a minute. Trapped ships can fight their way out, and a power's patrol on the other side can break it in.
+- **When it burns out or is destroyed,** its materials fall as debris at the gate (the ledger stays exact).
+- **Limits:** one lock per gate at a time; none on a freeport's gates or the Wrack's; never on a core home system's last open gate (the same rule as Overgrowth).
+
+**The ambush.** The convoy reaches the gate to the system it's heading for and finds it sealed. It has to fight there, turn back (another route takes longer), or break the lock under fire. Meanwhile the ambushers jam, hook and loot (section 12). Convoys and AI traffic reroute around a sealed gate when they see it from far enough away, so the lock works best set just before a convoy arrives: a convoy's route, known from Rusty Tankard rumours, cargo scans or the bulk-order news, tells you where to set it.
+
+**Who uses it:**
+- **The Unbound:** their raids on a power's supply convoys and on bulk-order convoys use locks, more often under a Cunning or Greedy Dread Pirate, less under a Paranoid one.
+- **Pilots:** a contractor taking a convoy-raid job from the rum bar, or a rival's deniable raid job, can buy a kit and set it.
+- **Not the powers** (proposal): their own war tools stay as they are.
+
+**Consequences.** Setting a lock on a power's gate is an attack on that power: its standing with you drops and its heat on you rises, as for jamming one of its ships, if it identifies you (it does if one of its ships or a beacon of its own sees you set it). A lock that traps one of its convoys counts as raiding that convoy. The Unbound pay a share of a raid's bounty, as for other convoy raids. The powers can post jobs to break a lock, paid on its destruction.
+
+**Open:** how long a lock holds (5 minutes proposed); its health; its price and how many the haven makes; whether a warning reaches the far side of the gate; whether escorts with capital ships should be able to ignore a lock entirely (the freighters still can't).
+
 ### 7. What you spend on: the ladder
 Players have several things to spend money and materials on, in this order, each with its own levels:
 
