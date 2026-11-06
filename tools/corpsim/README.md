@@ -10,6 +10,8 @@ product replaces it and its unsold stock goes back to raw ore.
   `data.json` and `data2.json` (Playwright). Re-run after changing makers or parts.
 - `sim2.py`: the model (`sim(seed, params)`; the defaults are the recommended numbers).
 - `run_v2.py`: 200 galaxies of 16 h for each setting; prints the results and writes `res_v2.json`. About 20 s.
+- `sim17.py`, `run_v17.py`: version 17 (v16 with buyers who weigh price against quality by their means, strapped/steady/flush, and a launch that keeps the old grade on sale as the maker's budget line, with older stock on clearance). `run_v17.py` writes `res_v17.json`.
+- `order_v17.py`: a faction's bulk order with one maker (sim17's `orders` setting): how long it takes to fill and what it does to other buyers and rivals.
 - `sim16.py`, `run_v16.py`: version 16 (v15 with makers tweaking a line, instantly and for all stock, when a rival maker outsells it 2 to 1 in the review window; being outsold doesn't start R&D by itself). `run_v16.py` measures tweaks and projects by cause, failures and how long one maker leads a kind of part; writes `res_v16.json`.
 - `whale2_v15.py`: the same bulk buying, seen from the other makers of that part and its buyers (sales, price, tweaks, R&D, earnings, shares).
 - `whale_v15.py`: a wealthy pilot buying one line in bulk from hour 4 to hour 8 (sim15's `whale` setting), compared with the same galaxies without them.
