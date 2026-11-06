@@ -2297,3 +2297,10 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 - CEOs: Penny-pincher, Expansionist and Discounter 5.2-5.4%/h, Premium 3.3%/h and most failures; Restless ousted 56%.
 - Every sale clears 15%; median price 1.14x list; 1% of purchases fall back on station standard parts; 8% of maker parts reach +20%, average +5.7 net, highest +14.9.
 - Open: one standard line per system makes its maker the leader (two makers each, or stations sell standard systems?); the weak three (Spirewright, Hold Foundry, Wakefire); reroll starting traits each galaxy for variety; Premium CEO balance.
+
+**Simulation v6, 5 Nov 2026 (the user's answer):** standard parts are no longer corporate items: every faction's stations stock the standard part of every kind (the old way), always in stock at list price, and makers sell only their 39 trait lines (about three each) at every station. Line-ups stay fixed; CEOs and events random. 120 cr an hour + 25 per active line. 200 galaxies of 16 h (`tools/corpsim/run_v6.py`):
+- Standard parts take 45% of purchases (most for guns and cargo holds); 0.23 failures a galaxy (79% none), Coldwater Prospecting 38 of 46 (its mining lines sell 210 cr an hour).
+- Leaders closer: Refit top seller in 29% of galaxies, Marchgun 27%, Brightline 20%, Archive 17%; median end share price 60 (Marchgun) to 30 (Wakefire).
+- About 59 tweaks and 5.5 replaced products a galaxy; CEOs: Discounter 3.2%/h best, Premium 0.1%/h worst (a premium price loses to the standard part on the same shelf).
+- 150 + 35 per line gives 0.77 failures but most makers shrink.
+- Open: Coldwater Prospecting's line-up; standard part prices; Premium CEO; running costs.
