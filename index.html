@@ -13603,7 +13603,7 @@ const FR_KIT=new Set(['plate','wire','coil','lattice','drone','missile','torpedo
 function frPower(f){return FAC_IDS.includes(f)}
 function frHome(f){return S.stations[FAC_HOME(f)]}
 // ship a load to a power's home (or into another power's warehouse with intoF); straight in when it's already there
-function frShip(f,fromSid,load,key,why,intoF){if(!load||!Object.keys(load).length)return null;const dest=intoF||f,to=FAC_HOME(dest);
+function frShip(f,fromSid,load,key,why,intoF){if(!load||!Object.keys(load).length)return null;const dest=intoF||f,to=frPower(dest)?FAC_HOME(dest):null;
   if(!frPower(f)||!frPower(dest)||!to||fromSid===to||!trPath(fromSid,to)){inv.addAll(S.econ.stock[dest]||S.econ.stock.pirate,load);return null}
   const t=haulSend(f,fromSid,to,load,key+':'+S.nextId,why);if(t&&intoF&&intoF!==f)t.intoF=intoF;return t}
 // convoys with somewhere particular to go: an outpost's store, another power's warehouse; a convoy that can't deliver turns
