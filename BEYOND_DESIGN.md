@@ -2409,6 +2409,46 @@ The maker opens a **project for that kind at the next grade** (grade 2 first, up
 - **Freight contracts:** pay a premium to have goods hauled from another port or station to yours: the goods' price plus a freight fee by distance and risk. It posts a hauling job (or uses your own AI haulers) and, if you choose, escort jobs; the cargo moves by real convoy and can be raided like any other.
 - **Open:** what happens to a deposit if the maker fails before delivery (refund from its money, or the order passes to a rival); whether the order premium goes up with size or urgency; how much of an order a faction may place at once.
 
+### Meetings with a CEO (proposal, user 6 Nov 2026, awaiting approval)
+**The user's idea:** a faction power calls a meeting with a maker's CEO. The CEO has to fly to the power's station, so they exist in the world for a time. At the meeting a menu lets the power encourage R&D, ask for a tweak to a product line, place a bulk order, or all three. The CEO's trait shapes the answer, and the closer a power is to victory the more influence it wields.
+
+**Calling the meeting.** From the maker's page (Company screen → Economy → Corporations), a faction power calls a meeting at one of its stations. One meeting per maker per power every 2 hours. The CEO can refuse to come: always if the power is at War with the maker's home faction, unless its influence is very high (see Influence).
+
+**The CEO's flight.** The CEO travels in a real ship, an executive yacht with the maker's own escort (one or two AI fighters; more for a rich maker), along the lanes from the maker's home station to the meeting. It is on the map as "Marchgun's CEO, en route to Talon Citadel". After the meeting (about 10 minutes docked) the CEO flies home, exposed again. While the yacht is out:
+- the caller can post **CEO escort** jobs, or send its own AI pilots;
+- rivals (other powers, and the maker's rival makers through their agents) can post deniable **Intercept the CEO** jobs; the Unbound ambush at gates;
+- a CEO who arrives after an attack is **shaken** (influence needed +10 for this meeting) and remembers who failed to protect them;
+- a CEO who is killed gives the maker a new CEO (a CEO change, with its news and share drop) and cancels the meeting; one the Unbound capture is held for ransom (a **Ransom run** job; whoever pays it earns the maker's goodwill).
+
+**The meeting menu.** Any one, two or all three asks; the CEO answers each with accept, a counter-offer, or no.
+- **Encourage R&D:** pick a kind of part the maker makes. The power co-funds the next grade's project (25 to 75% of its cost, by the CEO's answer). The project starts at once (or, if one is running, the power's kind goes next), with its usual materials, trials and their jobs. The power gets the first batch of the launch at list price. An Expansionist CEO may offer to open a new line of a kind it doesn't make yet.
+- **Ask for a tweak:** pick a line and the stat to strengthen. The maker chooses the weakness under the trade-off rule. The tweak is instant and changes every unit already on the shelves (the v16 rule), so everyone who buys that line gets it, not only the caller. A fee by the CEO's answer; it counts as the line's tweak (its cooldown applies).
+- **Place a bulk order:** as in "Bulk orders and freight contracts" above. Influence lowers the order premium (20% at the threshold, down to 10%) and raises the share of the works the order gets (half, up to three quarters: a rush).
+
+**Influence.** A number from 0 to 100, shown before the meeting:
+- **Victory:** 40 x systems held / 20, plus 20 while the power's 20-system win timer runs. The closer to winning, the more makers listen.
+- **Relations with the maker's home faction:** Allied +20, Friendly +10, Neutral 0, Hostile -15, War -30 (freeport makers: the power's standing with the Compact, halved).
+- **Business:** +1 per 1,000 cr the power and its pilots have spent with the maker in the last 4 hours (up to +15); +5 for each delivered bulk order in the last 8 hours (up to +15).
+- **This meeting:** -10 if the CEO was attacked on the way; +10 if the power's own escort fought off the attack.
+Each ask needs influence over a threshold: bulk order 10, tweak 25, R&D 40. Above the threshold the CEO accepts; up to 15 below it counters (a higher fee or premium, a smaller co-funding share refused, a tweak to a different stat); further below, no.
+
+**CEO traits** shift the thresholds and terms:
+
+| CEO | R&D | Tweak | Bulk order |
+| --- | --- | --- | --- |
+| Innovator | -15, asks 25% co-funding | -10; tweak a third bigger | +5 (works are for new products) |
+| Penny-pincher | +10, asks 75% | fee x1.5 | -10; deposit 80% |
+| Premium | 0 | -5; fee x1.5 | premium +10% |
+| Discounter | +10 | 0 | -15; premium -5% |
+| Expansionist | -10; may open a new line | 0 | -5 |
+| Generous | -5 | -5 | -5 |
+| Cautious | +15 | +10 | +10; at most a quarter of the works |
+| Restless | +5 | -15; may add a second tweak | 0 |
+
+**AI powers call meetings too** (proposed): an AI leader calls one when its doctrine's parts are scarce, it is losing a war, or a rival's new grade has outclassed its fleet. Its CEO flights make the same escort, intercept and ransom work for contractors, and pilots can sway which power a CEO favours.
+
+**Open:** whether influence from nearing victory should be checked (the others already unite against a power whose win timer runs; makers hosted by the threatened powers could refuse it too); whether the caller's own pilots can fly the CEO (a VIP passenger job); how long a CEO remembers a failed escort; whether players who haven't declared a faction (Station owners) can call meetings with less influence.
+
 ### Pilot share trading: designed, not built (tabled 6 Nov 2026)
 Written so it can be picked up later; nothing here is in the game.
 - **What pilots trade:** each maker has 100 shares, 40 of them tradable. Pilots buy and sell from the Company screen → Economy → Corporations, at the quoted price plus a broker's fee each way (0.5% to 1%; who takes it, the station or the Compact, is open). A pilot's own order moves the price (0.5% a share in the simulation), so big orders cost more.
