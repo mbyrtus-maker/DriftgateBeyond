@@ -193,7 +193,7 @@ function tradersTick(){if(NET.cl)return;S.traders=S.traders||[];for(const f of F
   try{raidsTick()}catch(e){frameErr('raids',e)}}
 function traderArrive(t){if(t.kind==='haul'){haulArrive(t);return}const B=S.stations[t.to],k=t.item,n=t.load[k]||0;
   if(!n){return}
-  if(!trCanUse(t.side,B)){inv.addAll(S.econ.stock[t.side],t.load);t.load={};return}   // market gone or turned: the goods go home
+  if(!trCanUse(t.side,B)){frShip(t.side,t.to,t.load,'back','return');t.load={};return}   // market gone or turned: the goods go home (Beyond: by convoy)
   const pr=Math.max(1,Math.floor(stPrice(B,k)*.94));inv.add(mkStock(B),k,n);if(B.owner==='neutral')transfer('neutral',t.side,pr*n);mkOf(B)[k]+=n;t.load={};
   if(t.side===S.player.sworn&&covered(t.to))feed(`${FACTIONS[t.side].short} trader delivered ${n} ${ITEMS[k].name} to ${B.name}.`,'news')}
 // ---- shipping your own goods: from a dock with your vault, pay your faction to send a freighter for the goods in one of your

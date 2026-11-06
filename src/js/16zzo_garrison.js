@@ -24,7 +24,7 @@ function grKit(f){const srcs=[S.econ.fleet[f],S.econ.stock[f]].filter(Boolean);l
 function grTick(){const R=(S.gar=S.gar||{}),keys=grSites(),init=!S.grInit;S.grInit=1;
   for(const key in R){const st=grSite(key),ro=R[key];if(grOn(st)&&ro.f===st.owner)continue;const s=S.sectors[ro.sid];for(const m of ro.m)if(!m.live&&s)toDebris(s,m.load);delete R[key]}
   for(const key of keys){const st=grSite(key);let ro=R[key];if(!ro)ro=R[key]={f:st.owner,sid:st.sid,m:[],t:S.T,nid:1};const want=grTarget(st);
-    while(ro.m.length<want&&S.T>=ro.t){const k=grKit(st.owner);if(!k){ro.t=S.T+GR.retry;break}ro.m.push({id:ro.nid++,c:k.c,t:k.t,load:k.load,live:false,next:0})}}}
+    while(ro.m.length<want&&S.T>=ro.t){const k=grKit(st.owner,st);if(!k){ro.t=S.T+GR.retry;break}ro.m.push({id:ro.nid++,c:k.c,t:k.t,load:k.load,live:false,next:0})}}}
 // ships that left the world some other way are docked again; whatever isn't kit goes to the site's store
 const GR_KIT=new Set(['plate','wire','coil','lattice','missile','torpedo','drone','swarm','tune']);
 function grMend(){const R=S.gar||{};for(const key in R){const ro=R[key];for(const m of ro.m){if(!m.live){for(const k in m.load||{})if(!GR_KIT.has(k)){const st=grSite(key),h=(st&&(st.R?storeOf(st.R):st.o.stock))||S.econ.stock[ro.f]||S.econ.stock.pirate;inv.add(h,k,inv.take(m.load,k,m.load[k]))}continue}

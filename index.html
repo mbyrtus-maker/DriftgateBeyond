@@ -1949,7 +1949,7 @@ function tradersTick(){if(NET.cl)return;S.traders=S.traders||[];for(const f of F
   try{raidsTick()}catch(e){frameErr('raids',e)}}
 function traderArrive(t){if(t.kind==='haul'){haulArrive(t);return}const B=S.stations[t.to],k=t.item,n=t.load[k]||0;
   if(!n){return}
-  if(!trCanUse(t.side,B)){inv.addAll(S.econ.stock[t.side],t.load);t.load={};return}   // market gone or turned: the goods go home
+  if(!trCanUse(t.side,B)){frShip(t.side,t.to,t.load,'back','return');t.load={};return}   // market gone or turned: the goods go home (Beyond: by convoy)
   const pr=Math.max(1,Math.floor(stPrice(B,k)*.94));inv.add(mkStock(B),k,n);if(B.owner==='neutral')transfer('neutral',t.side,pr*n);mkOf(B)[k]+=n;t.load={};
   if(t.side===S.player.sworn&&covered(t.to))feed(`${FACTIONS[t.side].short} trader delivered ${n} ${ITEMS[k].name} to ${B.name}.`,'news')}
 // ---- shipping your own goods: from a dock with your vault, pay your faction to send a freighter for the goods in one of your
@@ -2021,7 +2021,7 @@ function strategicTick(){
     if(oid){const o=S.outposts[oid];if(o.owner){
       if(o.type==='yard'){for(const e of RAWS){const m=Math.min(s.debris[e],2+o.level);s.debris[e]-=m;inv.add(o.stock,e,m)}}
       else if(!WORLDS[d.id])inv.addAll(o.stock,extract(s,sRound((2+o.level)*mrWork('O.'+oid))));
-      if(FACTIONS[o.owner]){for(const k in o.stock){if(o.stock[k]>25)inv.add(S.econ.stock[o.owner],k,inv.take(o.stock,k,o.stock[k]-25))}}
+      if(FACTIONS[o.owner]&&!frOutpost(oid)){for(const k in o.stock){if(o.stock[k]>25)inv.add(S.econ.stock[o.owner],k,inv.take(o.stock,k,o.stock[k]-25))}}
       if(o.owner==='pirate'){for(const k in o.stock)inv.add(S.econ.stock.pirate,k,inv.take(o.stock,k,o.stock[k]))}
       if(!here){const os=oStats(o);if(o.breached&&T>o.breached+90)o.breached=0;if(!o.breached){o.shield=os.sMax;o.hull=Math.min(os.hMax,o.hull+os.hMax*.12)}}
     }}
@@ -2551,7 +2551,7 @@ function netMsgOrFeed(pid,msg){if(pid===NET.me)feed(msg,'bad');else netMsg(pid,'
 function capture(o,side){if(NET.on&&side==='player'&&S.player.sworn)side=S.player.sworn;
   const prev=o.owner,s=S.sectors[o.sector];
   if(prev&&o.level>1){const lost={};for(const e of RAWS){const m=Math.floor(o.fort[e]/o.level);o.fort[e]-=m;lost[e]=m}toDebris(s,lost);o.level--}
-  if(prev&&prev!==side&&side!=='player'){const take={};for(const k in o.stock){const m=Math.floor(o.stock[k]/2);if(m)take[k]=inv.take(o.stock,k,m)}inv.addAll(S.econ.stock[side],take)}
+  if(prev&&prev!==side&&side!=='player'){const take={};for(const k in o.stock){const m=Math.floor(o.stock[k]/2);if(m)take[k]=inv.take(o.stock,k,m)}frShip(side,o.sector,take,'plunder','plunder')}
   if(W&&S.player.docked===o.id&&side!=='player'&&side!==S.player.sworn)undock();
   o.owner=side;if(NET.host)netKickDocked(o.sector,o.id,side);o.breached=0;const os=oStats(o);o.hull=os.hMax*.4;o.shield=0;o.cap={side:null,p:0};
   if(W&&W.outpostEnt&&W.outpostEnt.o===o)W.outpostEnt.lastHit=W.t;
@@ -5087,7 +5087,7 @@ function damageStation(E,dmg,by,kind,src){if(E&&E.fac==='brood'&&E.rec){const k=
 // a razed depot leaves its frames as drifting debris; anything stored in it spills out as salvage
 // a frigate that breaks a faction depot takes it over: new flag, a third of its hull back, half its store to the captor
 function captureDepot(sid,side){const R=S.stations[sid];if(!R||R.owner==='neutral')return;if(side==='player')side=S.player.sworn;const prev=R.owner;if(!FACTIONS[side]||prev===side)return;
-  R.owner=side;R.name=stationName(side,R.kind,sid);R.hull=Math.round(R.hMax*.33);R.shield=0;const take={};for(const k in R.stock){const m=Math.floor(R.stock[k]/2);if(m)take[k]=inv.take(R.stock,k,m)}inv.addAll(S.econ.stock[side],take);if(storeOf(R)===R.stock){inv.addAll(R.stock,R.store||{});R.store={}}else{inv.addAll(dStore(R),R.stock);R.stock={}}
+  R.owner=side;R.name=stationName(side,R.kind,sid);R.hull=Math.round(R.hMax*.33);R.shield=0;const take={};for(const k in R.stock){const m=Math.floor(R.stock[k]/2);if(m)take[k]=inv.take(R.stock,k,m)}frShip(side,sid,take,'plunder','plunder');if(storeOf(R)===R.stock){inv.addAll(R.stock,R.store||{});R.store={}}else{inv.addAll(dStore(R),R.stock);R.stock={}}
   if(S.distress)S.distress=S.distress.filter(d=>d.sid!==sid);
   const pf=S.player.sworn;if((pf&&(side===pf||prev===pf))||covered(sid))feed(side===pf?`Our assault ships have taken the depot in ${DEF[sid].name}. It flies the ${FACTIONS[side].short} flag now.`:prev===pf?`The depot in ${DEF[sid].name} has been captured by ${sideName(side)} assault ships.`:`${sideName(side)} assault ships captured the depot in ${DEF[sid].name}.`,side===pf?'good':prev===pf?'bad':'news');
   const w=WORLDS[sid];if(w)inW(w,()=>{const E=W.stationEnt;if(E&&E.rec===R){if(W===LW&&S.player.docked==='station')undock();if(NET.host)netKickDocked(sid,'station',side);fxBoom(E,200,sideCol(side));const i=W.ents.indexOf(E);if(i>=0)W.ents.splice(i,1);W.stationEnt=null;const N=addStationEnt(R);N.shield=0;N.offline=W.t+20;if(W.tgt&&W.tgt.ref===E)W.tgt={kind:'station',ref:N}}})}
@@ -9647,7 +9647,7 @@ function evBorder(f,g,s){relAdd(f,g,-6,'a border dispute');pairOf(f,g).demand={b
 function evEmbargo(f,g){const P=pairOf(f,g);P.emb=1;P.pact=0;relAdd(f,g,-8,'an embargo');chron(`${lName(f)} declares an embargo on ${FAC(g).name}: trade between them stops.`,'bad',[f,g])}
 function evPact(f,g,k){const P=pairOf(f,g);P.pact=S.T+1800;relAdd(f,g,6,'a trade pact');chron(`${lName(f)} signs a trade pact with ${FAC(g).name}: merchants will run between them (${ITEMS[k].name} first).`,'good',[f,g])}
 function evAid(f,g){const st=S.econ.stock[f],give={};for(const k of['plate','wire','coil'])if((st[k]||0)>40)give[k]=Math.min(25,Math.floor(st[k]*.15));if(!Object.keys(give).length)return;
-  inv.addAll(S.econ.stock[g],takeSome(st,give));relAdd(f,g,8,'aid sent');chron(`${lName(f)} sends ${FAC(g).short} an aid shipment: ${Object.entries(give).map(([k,n])=>n+' '+ITEMS[k].name).join(', ')}.`,'good',[f,g])}
+  frShip(f,FAC_HOME(f),takeSome(st,give),'aid','aid',g);relAdd(f,g,8,'aid sent');chron(`${lName(f)} sends ${FAC(g).short} an aid shipment: ${Object.entries(give).map(([k,n])=>n+' '+ITEMS[k].name).join(', ')}.`,'good',[f,g])}
 function takeSome(st,want){const got={};for(const k in want){const n=Math.min(st[k]||0,want[k]);if(n>0)got[k]=inv.take(st,k,n)}return got}
 function evAlliance(f,g,th){const P=pairOf(f,g),ok=!hasT(g,'Isolationist')&&relOf(f,g)>(hasT(g,'Wary')?75:55);
   if(!ok){relAdd(f,g,-3,'an alliance refused');chron(`${lName(g)} turns down ${lName(f)}'s offer of alliance.`,'news',[f,g]);return}
@@ -9700,7 +9700,7 @@ function relTick(){if(!S||!S.rel)return;
   for(const f of FAC_IDS){const G=(leaderOf(f)||{}).grudge||{};for(const g in G)G[g]*=hasT(f,'Vengeful')?.9995:.998}}
 // merchants under a pact: goods one side is short of, from the other's surplus, paid for at base value (goods and credits only move)
 function pactTrade(a,b){for(const[f,g]of[[a,b],[b,a]]){for(const k of PACT_ITEMS){if(!short(f,k)||!surplus(g,k))continue;const n=Math.min(20,Math.floor((S.econ.stock[g][k]||0)*.1));if(n<1)continue;
-  const cost=Math.round(baseValue(k)*n);if((S.econ.treasury[f]||0)<cost)continue;transfer(f,g,cost);inv.add(S.econ.stock[f],k,inv.take(S.econ.stock[g],k,n));relAdd(a,b,1,'trade');return}}}
+  const cost=Math.round(baseValue(k)*n);if((S.econ.treasury[f]||0)<cost)continue;transfer(f,g,cost);frShip(g,FAC_HOME(g),{[k]:inv.take(S.econ.stock[g],k,n)},'pact','trade',f);relAdd(a,b,1,'trade');return}}}
 // ---- hooks: what the powers' own ships do to each other moves their relation
 {const o=strategicTick;strategicTick=function(){relInit();const r=o.apply(this,arguments);try{relTick();leaderTick();leaderShipTick()}catch(e){frameErr&&frameErr('leaders',e)}return r}}
 {const o=beaconFlip;beaconFlip=function(sid,side,by){const B=S.beacons&&S.beacons[sid],old=B&&B.owner;const r=o.apply(this,arguments);if(old&&isPow(old)&&isPow(sideNorm(side))&&S.beacons[sid].owner!==old)relAdd(sideNorm(side),old,-REL.beacon,'beacons flipped');return r}}
@@ -11095,7 +11095,7 @@ function havenDown(){return!!(S&&S.havenDown&&S.T<S.havenDown.until)}
 function havenKnock(by,P){const R=S.stations.wr;if(!R||havenDown())return;S.havenDown={until:S.T+HAVEN.down,by};const st=S.econ.stock.pirate||{},got={};
   for(const k in st){const n=Math.floor((st[k]||0)*HAVEN.loot);if(n>0)got[k]=inv.take(st,k,n)}const cr=Math.floor((S.econ.treasury.pirate||0)*HAVEN.loot);
   let who;if(P){inv.addAll(P.vault=P.vault||{},got);payTo(P,'pirate',cr);who=P.name||'a pilot'}
-  else if(FAC_IDS.includes(by)){inv.addAll(S.econ.stock[by],got);transfer('pirate',by,cr);who=FACTIONS[by].short}else{inv.addAll(S.econ.stock.pirate,got);who=null}
+  else if(FAC_IDS.includes(by)){frShip(by,'wr',got,'plunder','plunder');transfer('pirate',by,cr);who=FACTIONS[by].short}else{inv.addAll(S.econ.stock.pirate,got);who=null}
   const t=invMass(got);allFeed(`☠ Scrapheart Haven is knocked out${who?` by ${who}`:''}: dark for ${HAVEN.down/60} minutes, its market and the Rusty Tankard shut.${who?` ${t} t of plunder and ${fmt(cr)} cr carried off${P?` to your vault${P.vaultAt?' at '+vaultName(P.vaultAt):''}`:''}.`:''}`,'news');
   chron&&chron(`Scrapheart Haven was knocked out${who?' by '+who:''}.`);if(W&&W.sid==='wr'&&W.stationEnt)W.stationEnt.offline=W.t+HAVEN.down}
 // its hull broken (it never falls)
@@ -11267,7 +11267,7 @@ lairWorldB=function(dt){const Ls=(S.lairs||[]).filter(L=>L.sid===W.sid&&L.hull>0
       if(e.role==='scout'&&!L.seen[e.side]&&d3(e,L)<LAIR_B.seeR){L.seen[e.side]=1;keyFeed(L.pid,`⚠ A ${FACTIONS[e.side].short} scout has found your Lair in ${DEF[W.sid].name}. Their ships will attack it on sight.`,'bad')}
       if(L.seen[e.side]&&d3(e,L)<2500){L.hull-=6*dt;by=e.side}}
     if(L.hull<=0){const s=S.sectors[W.sid],imp=by&&fallChoice(L,by,true)==='capture';let msg;
-      if(imp){const lost={};for(const k in L.stash){const m=Math.floor((L.stash[k]||0)*rnd(0,FALL.lose));if(m>0)lost[k]=inv.take(L.stash,k,m)}toDebris(s,lost);const t=invMass(L.stash);inv.addAll(S.econ.stock[by],L.stash);
+      if(imp){const lost={};for(const k in L.stash){const m=Math.floor((L.stash[k]||0)*rnd(0,FALL.lose));if(m>0)lost[k]=inv.take(L.stash,k,m)}toDebris(s,lost);const t=invMass(L.stash);{const sh={...L.stash};for(const k in sh)inv.take(L.stash,k,sh[k]);frShip(by,W.sid,sh,'plunder','plunder')}
         msg=`✕ ${FACTIONS[by].short} has impounded your Lair in ${DEF[W.sid].name}: ${fmt(t)} t of its stash went into their stores.`}
       else{if(Object.keys(L.stash).length)s.crates.push({id:S.nextId++,x:L.x,y:L.y,z:L.z,inv:L.stash,until:S.T+600});msg=`✕ Your Lair in ${DEF[W.sid].name} was destroyed. Its stash is drifting as salvage.`}
       toDebris(s,L.fort||{});L.stash={};L.fort={};L.lt=[];S.lairs=S.lairs.filter(x=>x!==L);if(!MUTE)fxBoom(L,260,'#ffcf5a');keyFeed(L.pid,msg,'bad');lairEvict(L)}}}
@@ -13543,7 +13543,7 @@ function grKit(f){const srcs=[S.econ.fleet[f],S.econ.stock[f]].filter(Boolean);l
 function grTick(){const R=(S.gar=S.gar||{}),keys=grSites(),init=!S.grInit;S.grInit=1;
   for(const key in R){const st=grSite(key),ro=R[key];if(grOn(st)&&ro.f===st.owner)continue;const s=S.sectors[ro.sid];for(const m of ro.m)if(!m.live&&s)toDebris(s,m.load);delete R[key]}
   for(const key of keys){const st=grSite(key);let ro=R[key];if(!ro)ro=R[key]={f:st.owner,sid:st.sid,m:[],t:S.T,nid:1};const want=grTarget(st);
-    while(ro.m.length<want&&S.T>=ro.t){const k=grKit(st.owner);if(!k){ro.t=S.T+GR.retry;break}ro.m.push({id:ro.nid++,c:k.c,t:k.t,load:k.load,live:false,next:0})}}}
+    while(ro.m.length<want&&S.T>=ro.t){const k=grKit(st.owner,st);if(!k){ro.t=S.T+GR.retry;break}ro.m.push({id:ro.nid++,c:k.c,t:k.t,load:k.load,live:false,next:0})}}}
 // ships that left the world some other way are docked again; whatever isn't kit goes to the site's store
 const GR_KIT=new Set(['plate','wire','coil','lattice','missile','torpedo','drone','swarm','tune']);
 function grMend(){const R=S.gar||{};for(const key in R){const ro=R[key];for(const m of ro.m){if(!m.live){for(const k in m.load||{})if(!GR_KIT.has(k)){const st=grSite(key),h=(st&&(st.R?storeOf(st.R):st.o.stock))||S.econ.stock[ro.f]||S.econ.stock.pirate;inv.add(h,k,inv.take(m.load,k,m.load[k]))}continue}
@@ -13585,6 +13585,59 @@ function grSettle(key,ships,force,lf,s){const ro=grRoster(key);let lost=0;for(co
 function grLine(key){const st=grSite(key);if(!grOn(st))return'';const ro=grRoster(key),n=ro&&ro.f===st.owner?ro.m.length:0,want=grTarget(st),out=ro?ro.m.filter(m=>m.live).length:0;
   return`${n}/${want}${out?` (${out} out)`:''}${n<want&&ro?` · made up in ${Math.max(0,Math.round((ro.t-S.T)/60))} min`:''}`}
 {const o=mapSectorNow;mapSectorNow=function(sid){let h=o.apply(this,arguments);try{const keys=[];if(S.stations[sid])keys.push('S.'+sid);const oid=OUT_BY_SECTOR[sid];if(oid)keys.push('O.'+oid);for(const k of keys){const L=grLine(k);if(L)h+=`<span>Garrison</span><b>${esc(L)}</b>`}}catch(e){}return h}}
+
+//@src 16zzp_freight.js
+// ============================================================ Beyond: goods go by hauler (live space stage 4, 6 Nov 2026)
+// No chance-spawned haulers: every freighter in space is a tracked convoy (S.traders). And goods that used to jump between
+// places now ride a convoy (haulSend), which flies the lanes, shows in a live system and can be raided:
+//   - an outpost's surplus goes home (it went straight into the warehouse);
+//   - a depot's or outpost's miners and garrison are kitted from what is there, and ask the warehouse for kits by convoy
+//     (they were taken straight from the warehouse);
+//   - plunder from a captured station or outpost goes home to the victor;
+//   - aid shipments and pact trades go from one power's home to the other's;
+//   - a merchant whose market is gone, or a convoy whose station was lost, turns for home instead of vanishing into it.
+// The Brood and the Unbound keep their own ways for now (they have no freighters): see BEYOND_DESIGN.md.
+const FR={opMin:30,opKeep:25,kitAsk:2};
+const FR_KIT=new Set(['plate','wire','coil','lattice','drone','missile','torpedo','swarm','tune']);
+function frPower(f){return FAC_IDS.includes(f)}
+function frHome(f){return S.stations[FAC_HOME(f)]}
+// ship a load to a power's home (or into another power's warehouse with intoF); straight in when it's already there
+function frShip(f,fromSid,load,key,why,intoF){if(!load||!Object.keys(load).length)return null;const dest=intoF||f,to=FAC_HOME(dest);
+  if(!frPower(f)||!frPower(dest)||!to||fromSid===to||!trPath(fromSid,to)){inv.addAll(S.econ.stock[dest]||S.econ.stock.pirate,load);return null}
+  const t=haulSend(f,fromSid,to,load,key+':'+S.nextId,why);if(t&&intoF&&intoF!==f)t.intoF=intoF;return t}
+// convoys with somewhere particular to go: an outpost's store, another power's warehouse; a convoy that can't deliver turns
+// for its own home
+{const o=haulArrive;haulArrive=function(t){try{
+  if(t&&t.okit){const ob=S.outposts[t.okit];if(ob&&ob.owner===t.side){cvEnd(t,true);inv.addAll(ob.stock,t.load);t.load={};return}}
+  if(t&&t.intoF&&S.econ.stock[t.intoF]){cvEnd(t,true);inv.addAll(S.econ.stock[t.intoF],t.load);t.load={};return}
+  if(t&&!t.own&&!t.car&&!t.okit&&frPower(t.side)){const B=S.stations[t.to];if((!B||B.owner!==t.side)&&t.to!==FAC_HOME(t.side)&&Object.keys(t.load||{}).length){cvEnd(t,true);frShip(t.side,t.to,t.load,'back','return');t.load={};return}}
+  }catch(e){console.error(e)}return o.apply(this,arguments)}}
+// ---- outposts: the surplus over 25 of each good (not kits) ships home once there's a hold's worth
+function frOutpost(oid){const o=S.outposts[oid];if(!o||!frPower(o.owner))return false;const key='op:'+oid;if(haulBusy(key))return true;
+  const load={};let m=0;for(const k in o.stock){if(FR_KIT.has(k))continue;const n=(o.stock[k]||0)-FR.opKeep;if(n>0){load[k]=n;m+=n}}
+  if(m<FR.opMin)return true;for(const k in load)inv.take(o.stock,k,load[k]);haulSend(o.owner,o.sector,FAC_HOME(o.owner),load,key,'ore');return true}
+// ---- kits at a site: the site's own store away from home; short, it asks the warehouse for a couple of kits by convoy
+// (when a galaxy starts, the first rosters and garrisons are fitted from the warehouse: the depots were founded stocked)
+let frSeed=false;
+function frAway(st){return!frSeed&&frPower(st.owner)&&!(st.R&&st.R.kind==='core')}
+{const o=mrTick;mrTick=function(){frSeed=!S.mrInit;try{return o.apply(this,arguments)}finally{frSeed=false}}}
+{const o=grTick;grTick=function(){frSeed=!S.grInit;try{return o.apply(this,arguments)}finally{frSeed=false}}}
+function frSiteStore(st){return st.R?dStore(st.R):st.o.stock}
+function frAsk(st,ld){const f=st.owner,want={};for(const k in ld)want[k]=ld[k]*FR.kitAsk;
+  if(st.R)return depotAsk(st.R,want);
+  const o=st.o,oid=st.key.slice(2),key='okit:'+oid;if(haulBusy(key))return false;const home=S.econ.stock[f],load={};
+  for(const k in want){const lack=want[k]-(o.stock[k]||0);if(lack<=0)continue;const n=Math.min(lack,home[k]||0);if(n>0)load[k]=inv.take(home,k,n)}
+  if(!Object.keys(load).length)return false;const t=haulSend(f,FAC_HOME(f),o.sector,load,key,'supplies');if(t)t.okit=oid;return!!t}
+// miners: kit from the site's store when away from home
+{const o=mrSrcs;mrSrcs=function(st){if(frAway(st))return[frSiteStore(st)];return o.apply(this,arguments)}}
+{const o=mrKit;mrKit=function(st){const k=o.apply(this,arguments);if(!k&&frAway(st))try{frAsk(st,loadout('miner',1,'prospector'))}catch(e){}return k}}
+// garrisons: the same, from the site's store (at a power's home: the muster, then the warehouse)
+{const o=grKit;grKit=function(f,st){if(!st||!frAway(st))return o.call(this,f);const srcs=[frSiteStore(st)];let tier=factionTier(f),c=pickFighter('patrol'),ld=loadout('patrol',tier,c);
+  if(!haveIn(ld,srcs)){c='interceptor';ld=loadout('patrol',tier,c)}while(!haveIn(ld,srcs)&&tier>1){tier--;ld=loadout('patrol',tier,c)}
+  if(!takeFrom(ld,srcs)){try{frAsk(st,loadout('patrol',factionTier(f),'striker'))}catch(e){}return null}return{c,t:tier,load:ld}}}
+// an outpost's kit stays in its store for its own crews; the surplus run leaves it
+// ---- no chance haulers in a live system: what you see hauling is a tracked convoy
+{const o=popWants;popWants=function(){return o.apply(this,arguments).filter(w=>w[0]!=='hauler')}}
 
 //@src 17_main.js
 // ============================================================ main loop

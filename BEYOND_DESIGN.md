@@ -2138,6 +2138,18 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 - **Seen:** the galaxy map's system panel shows "Garrison 2/3 (2 out) · made up in 3 min".
 - **Not yet:** wings don't move between posts (a rebuilt fighter appears at its post; it will come by convoy from home once stage 4 ships goods); the muster pool still feeds raids, convoy escorts, offensives and refits (stage 3); the Unbound's den keeps its chance wings (stage 3).
 
+**The rule restated (user, 6 Nov 2026):** after this, everything exists in the galaxy: goods are carried by haulers, ore is mined by miners. In the background the game only tracks things; in a live system the tracked things are created.
+
+**Stage 4 as built (6 Nov 2026, `16zzp_freight.js`; test `freight.py`): goods go by hauler.**
+- **No chance haulers:** `popWants` no longer asks for haulers (or the escort wings that rode with them). Every freighter you see is a tracked convoy.
+- **Goods that jumped now ride a convoy** (`haulSend`: it flies the lanes hop by hop, shows in a live system, can be raided and escorted):
+  - an outpost's surplus (over 25 of each good, kits kept) goes home once there's a hold's worth (30 units); it went straight into the warehouse;
+  - a depot's or outpost's miners and garrison are kitted from that site's own store; short, the site asks the warehouse for two kits' worth by convoy (`depotAsk` for depots, an `okit` convoy into an outpost's store). A galaxy's first rosters and garrisons are still fitted from the warehouse (the depots were founded stocked). At the home station, kits come from the muster and the warehouse as before;
+  - plunder from a captured outpost, depot, Scrapheart Haven or an impounded Lair goes to the victor's home by convoy;
+  - an aid shipment goes from the giver's home to the receiver's warehouse, and a pact trade from the seller's home to the buyer's (`intoF`);
+  - a merchant whose market is gone, or a supply convoy whose station was lost, turns for home with its load rather than vanishing into the warehouse.
+- **Still jumping (to go with stage 3, the fleets):** an offensive's or build party's force going home when it's done (`finishOffensive`, `finishBuild`, sorties), a power's ships home from the player's convoy escort; a black-market run caught (goods to the catching power); a pilot's shipment whose pilot is gone. The Brood and the Unbound have no freighters: the Brood's outposts still send their surplus straight home, and the Unbound's loot comes home with their raids.
+
 **Order (user, 6 Nov 2026):** stage 2 next; then **stage 1b, your crews made real**: today (`16w_crews.js`) a depot's crews fly in its system for show while the minute tick does the work; crew miners will mine and unload for real and crew haulers carry real goods (raidable), guards as now.
 
 **Stage 1 as built (6 Nov 2026, `16zzn_miners.js`; test `miners.py`):**

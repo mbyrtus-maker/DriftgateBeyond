@@ -46,7 +46,7 @@ lairWorldB=function(dt){const Ls=(S.lairs||[]).filter(L=>L.sid===W.sid&&L.hull>0
       if(e.role==='scout'&&!L.seen[e.side]&&d3(e,L)<LAIR_B.seeR){L.seen[e.side]=1;keyFeed(L.pid,`⚠ A ${FACTIONS[e.side].short} scout has found your Lair in ${DEF[W.sid].name}. Their ships will attack it on sight.`,'bad')}
       if(L.seen[e.side]&&d3(e,L)<2500){L.hull-=6*dt;by=e.side}}
     if(L.hull<=0){const s=S.sectors[W.sid],imp=by&&fallChoice(L,by,true)==='capture';let msg;
-      if(imp){const lost={};for(const k in L.stash){const m=Math.floor((L.stash[k]||0)*rnd(0,FALL.lose));if(m>0)lost[k]=inv.take(L.stash,k,m)}toDebris(s,lost);const t=invMass(L.stash);inv.addAll(S.econ.stock[by],L.stash);
+      if(imp){const lost={};for(const k in L.stash){const m=Math.floor((L.stash[k]||0)*rnd(0,FALL.lose));if(m>0)lost[k]=inv.take(L.stash,k,m)}toDebris(s,lost);const t=invMass(L.stash);{const sh={...L.stash};for(const k in sh)inv.take(L.stash,k,sh[k]);frShip(by,W.sid,sh,'plunder','plunder')}
         msg=`✕ ${FACTIONS[by].short} has impounded your Lair in ${DEF[W.sid].name}: ${fmt(t)} t of its stash went into their stores.`}
       else{if(Object.keys(L.stash).length)s.crates.push({id:S.nextId++,x:L.x,y:L.y,z:L.z,inv:L.stash,until:S.T+600});msg=`✕ Your Lair in ${DEF[W.sid].name} was destroyed. Its stash is drifting as salvage.`}
       toDebris(s,L.fort||{});L.stash={};L.fort={};L.lt=[];S.lairs=S.lairs.filter(x=>x!==L);if(!MUTE)fxBoom(L,260,'#ffcf5a');keyFeed(L.pid,msg,'bad');lairEvict(L)}}}

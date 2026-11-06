@@ -11,7 +11,7 @@ function strategicTick(){
     if(oid){const o=S.outposts[oid];if(o.owner){
       if(o.type==='yard'){for(const e of RAWS){const m=Math.min(s.debris[e],2+o.level);s.debris[e]-=m;inv.add(o.stock,e,m)}}
       else if(!WORLDS[d.id])inv.addAll(o.stock,extract(s,sRound((2+o.level)*mrWork('O.'+oid))));
-      if(FACTIONS[o.owner]){for(const k in o.stock){if(o.stock[k]>25)inv.add(S.econ.stock[o.owner],k,inv.take(o.stock,k,o.stock[k]-25))}}
+      if(FACTIONS[o.owner]&&!frOutpost(oid)){for(const k in o.stock){if(o.stock[k]>25)inv.add(S.econ.stock[o.owner],k,inv.take(o.stock,k,o.stock[k]-25))}}
       if(o.owner==='pirate'){for(const k in o.stock)inv.add(S.econ.stock.pirate,k,inv.take(o.stock,k,o.stock[k]))}
       if(!here){const os=oStats(o);if(o.breached&&T>o.breached+90)o.breached=0;if(!o.breached){o.shield=os.sMax;o.hull=Math.min(os.hMax,o.hull+os.hMax*.12)}}
     }}
@@ -541,7 +541,7 @@ function netMsgOrFeed(pid,msg){if(pid===NET.me)feed(msg,'bad');else netMsg(pid,'
 function capture(o,side){if(NET.on&&side==='player'&&S.player.sworn)side=S.player.sworn;
   const prev=o.owner,s=S.sectors[o.sector];
   if(prev&&o.level>1){const lost={};for(const e of RAWS){const m=Math.floor(o.fort[e]/o.level);o.fort[e]-=m;lost[e]=m}toDebris(s,lost);o.level--}
-  if(prev&&prev!==side&&side!=='player'){const take={};for(const k in o.stock){const m=Math.floor(o.stock[k]/2);if(m)take[k]=inv.take(o.stock,k,m)}inv.addAll(S.econ.stock[side],take)}
+  if(prev&&prev!==side&&side!=='player'){const take={};for(const k in o.stock){const m=Math.floor(o.stock[k]/2);if(m)take[k]=inv.take(o.stock,k,m)}frShip(side,o.sector,take,'plunder','plunder')}
   if(W&&S.player.docked===o.id&&side!=='player'&&side!==S.player.sworn)undock();
   o.owner=side;if(NET.host)netKickDocked(o.sector,o.id,side);o.breached=0;const os=oStats(o);o.hull=os.hMax*.4;o.shield=0;o.cap={side:null,p:0};
   if(W&&W.outpostEnt&&W.outpostEnt.o===o)W.outpostEnt.lastHit=W.t;

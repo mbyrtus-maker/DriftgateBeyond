@@ -9,7 +9,7 @@ function havenDown(){return!!(S&&S.havenDown&&S.T<S.havenDown.until)}
 function havenKnock(by,P){const R=S.stations.wr;if(!R||havenDown())return;S.havenDown={until:S.T+HAVEN.down,by};const st=S.econ.stock.pirate||{},got={};
   for(const k in st){const n=Math.floor((st[k]||0)*HAVEN.loot);if(n>0)got[k]=inv.take(st,k,n)}const cr=Math.floor((S.econ.treasury.pirate||0)*HAVEN.loot);
   let who;if(P){inv.addAll(P.vault=P.vault||{},got);payTo(P,'pirate',cr);who=P.name||'a pilot'}
-  else if(FAC_IDS.includes(by)){inv.addAll(S.econ.stock[by],got);transfer('pirate',by,cr);who=FACTIONS[by].short}else{inv.addAll(S.econ.stock.pirate,got);who=null}
+  else if(FAC_IDS.includes(by)){frShip(by,'wr',got,'plunder','plunder');transfer('pirate',by,cr);who=FACTIONS[by].short}else{inv.addAll(S.econ.stock.pirate,got);who=null}
   const t=invMass(got);allFeed(`☠ Scrapheart Haven is knocked out${who?` by ${who}`:''}: dark for ${HAVEN.down/60} minutes, its market and the Rusty Tankard shut.${who?` ${t} t of plunder and ${fmt(cr)} cr carried off${P?` to your vault${P.vaultAt?' at '+vaultName(P.vaultAt):''}`:''}.`:''}`,'news');
   chron&&chron(`Scrapheart Haven was knocked out${who?' by '+who:''}.`);if(W&&W.sid==='wr'&&W.stationEnt)W.stationEnt.offline=W.t+HAVEN.down}
 // its hull broken (it never falls)

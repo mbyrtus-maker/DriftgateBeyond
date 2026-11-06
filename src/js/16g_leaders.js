@@ -92,7 +92,7 @@ function evBorder(f,g,s){relAdd(f,g,-6,'a border dispute');pairOf(f,g).demand={b
 function evEmbargo(f,g){const P=pairOf(f,g);P.emb=1;P.pact=0;relAdd(f,g,-8,'an embargo');chron(`${lName(f)} declares an embargo on ${FAC(g).name}: trade between them stops.`,'bad',[f,g])}
 function evPact(f,g,k){const P=pairOf(f,g);P.pact=S.T+1800;relAdd(f,g,6,'a trade pact');chron(`${lName(f)} signs a trade pact with ${FAC(g).name}: merchants will run between them (${ITEMS[k].name} first).`,'good',[f,g])}
 function evAid(f,g){const st=S.econ.stock[f],give={};for(const k of['plate','wire','coil'])if((st[k]||0)>40)give[k]=Math.min(25,Math.floor(st[k]*.15));if(!Object.keys(give).length)return;
-  inv.addAll(S.econ.stock[g],takeSome(st,give));relAdd(f,g,8,'aid sent');chron(`${lName(f)} sends ${FAC(g).short} an aid shipment: ${Object.entries(give).map(([k,n])=>n+' '+ITEMS[k].name).join(', ')}.`,'good',[f,g])}
+  frShip(f,FAC_HOME(f),takeSome(st,give),'aid','aid',g);relAdd(f,g,8,'aid sent');chron(`${lName(f)} sends ${FAC(g).short} an aid shipment: ${Object.entries(give).map(([k,n])=>n+' '+ITEMS[k].name).join(', ')}.`,'good',[f,g])}
 function takeSome(st,want){const got={};for(const k in want){const n=Math.min(st[k]||0,want[k]);if(n>0)got[k]=inv.take(st,k,n)}return got}
 function evAlliance(f,g,th){const P=pairOf(f,g),ok=!hasT(g,'Isolationist')&&relOf(f,g)>(hasT(g,'Wary')?75:55);
   if(!ok){relAdd(f,g,-3,'an alliance refused');chron(`${lName(g)} turns down ${lName(f)}'s offer of alliance.`,'news',[f,g]);return}
@@ -145,7 +145,7 @@ function relTick(){if(!S||!S.rel)return;
   for(const f of FAC_IDS){const G=(leaderOf(f)||{}).grudge||{};for(const g in G)G[g]*=hasT(f,'Vengeful')?.9995:.998}}
 // merchants under a pact: goods one side is short of, from the other's surplus, paid for at base value (goods and credits only move)
 function pactTrade(a,b){for(const[f,g]of[[a,b],[b,a]]){for(const k of PACT_ITEMS){if(!short(f,k)||!surplus(g,k))continue;const n=Math.min(20,Math.floor((S.econ.stock[g][k]||0)*.1));if(n<1)continue;
-  const cost=Math.round(baseValue(k)*n);if((S.econ.treasury[f]||0)<cost)continue;transfer(f,g,cost);inv.add(S.econ.stock[f],k,inv.take(S.econ.stock[g],k,n));relAdd(a,b,1,'trade');return}}}
+  const cost=Math.round(baseValue(k)*n);if((S.econ.treasury[f]||0)<cost)continue;transfer(f,g,cost);frShip(g,FAC_HOME(g),{[k]:inv.take(S.econ.stock[g],k,n)},'pact','trade',f);relAdd(a,b,1,'trade');return}}}
 // ---- hooks: what the powers' own ships do to each other moves their relation
 {const o=strategicTick;strategicTick=function(){relInit();const r=o.apply(this,arguments);try{relTick();leaderTick();leaderShipTick()}catch(e){frameErr&&frameErr('leaders',e)}return r}}
 {const o=beaconFlip;beaconFlip=function(sid,side,by){const B=S.beacons&&S.beacons[sid],old=B&&B.owner;const r=o.apply(this,arguments);if(old&&isPow(old)&&isPow(sideNorm(side))&&S.beacons[sid].owner!==old)relAdd(sideNorm(side),old,-REL.beacon,'beacons flipped');return r}}
