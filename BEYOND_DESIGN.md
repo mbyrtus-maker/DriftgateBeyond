@@ -2571,6 +2571,7 @@ A review of everything decided above for gaps and conflicts, and the user's answ
 - **Shut lines** stop being built and stop paying their line's running cost, but their stock stays on sale (marked down, paying storage) until it sells out.
 - **No budget line.** A launch retires the old grade at once (its stock broken into ore at the station holding it). The low end goes to whoever still sells it: another maker's grade 1 can pick up the cheap buyers.
 
+**Simulation v18** (`tools/corpsim/sim18.py`, `run_v18.py`, `dial_v18.py`; 200 galaxies of 16 h): all the rules above give 2.49 failures a galaxy (5% of galaxies have none; the first at about 11 h), against v17's 0.07. Almost all of it is the missing reserve: no reserve alone gives 2.10; the old grade retired alone 0.17; storage, markdowns and shut lines alone 0.02 (markdowns turn stale stock back into cash). Storage at 2% an hour 2.26, 5% 2.79; no reserve even for Penny-pincher and Cautious CEOs 3.02. Ember Wake Drives, Coldwater Prospecting, Teal & Corvane and Quicksilver fail most; Premium, Generous, Expansionist and Innovator CEOs. Grade 3 in 72% of galaxies (54%). The dial, with every other v18 rule: R&D alone keeping 1 h of costs 1.84; a 0.5 h reserve 0.75 (46% none); 1 h 0.28 (77%); 2 h 0.13 (88%). Over 32 h with no reserve: 7.75 failures a galaxy, none free of them.
 **Still open:** upgrades in place go (systems become parts, grades only through R&D): not yet confirmed.
 
 ### Pilot share trading: designed, not built (tabled 6 Nov 2026)
