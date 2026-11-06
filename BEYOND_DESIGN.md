@@ -2398,7 +2398,7 @@ The maker opens a **project for that kind at the next grade** (grade 2 first, up
 
 ### Bulk orders and freight contracts (proposal, user 6 Nov 2026, awaiting approval)
 **The user's idea:** faction owners can place a bulk order for certain items with a company, which generates missions and hauling and mining tasks, plus escorts, raids and ambushes to deliver the products. They can also pay a premium to have stock hauled from another port or station to their own.
-- **Who:** a pilot whose company has declared itself a faction (section 11). Open: also Station owners before declaring, and the AI powers in a war (their orders would make contractor work).
+- **Who:** a pilot whose company has declared itself a faction (section 11), and the AI powers (decided 6 Nov 2026; see "AI powers' bulk orders" below). Open: Station owners before declaring.
 - **The order:** a kind of part, a maker, a grade (any the maker sells, its budget line included) and a number of units, at list price plus a 20% order premium. 60% is paid up front and held for the order (it pays for the components, so it can't go into the maker's R&D), the rest on delivery. The maker gives the order up to half its works until it is filled. The order is not a shelf sale: it starts no craze, makes no rival tweak, and counts for investors as a one-off (cash, not lasting earnings). This also closes the bulk-buying loophole found with the bulk-buyer test.
 - **How long (simulation, `tools/corpsim/order_v17.py`, 100 galaxies):** 60 machine guns from Marchgun take about 2 hours (107 to 138 minutes), 120 about 4; 30 blast rigs from Hold Foundry about an hour. Other buyers barely notice (the maker's shelf sales, its other lines and its rivals' sales all within 3%) and the maker doesn't fail more. Paying more for a bigger share of the works (a rush order) is an option.
 - **The work it makes**, all real goods moving under the ledger:
@@ -2407,7 +2407,32 @@ The maker opens a **project for that kind at the next grade** (grade 2 first, up
   - *Threats:* the convoy is raidable. Rivals can post deniable raid jobs on the Faction jobs board, the Unbound ambush at gates, and a power at war with the buyer hunts it. Stolen units are tagged as the buyer's property (contraband in their space).
   - *News:* a big order is news ("Varkesh orders 120 Marchgun guns"), which tells rivals and pirates where the convoys will be.
 - **Freight contracts:** pay a premium to have goods hauled from another port or station to yours: the goods' price plus a freight fee by distance and risk. It posts a hauling job (or uses your own AI haulers) and, if you choose, escort jobs; the cargo moves by real convoy and can be raided like any other.
-- **Open:** what happens to a deposit if the maker fails before delivery (refund from its money, or the order passes to a rival); whether the order premium goes up with size or urgency; how much of an order a faction may place at once.
+- **If the maker fails before delivery (decided, user 6 Nov 2026):** the deposit is refunded out of the maker's coffers. Refunds are the first call on a failing maker's money, before anything else; if its coffers can't cover every refund, each buyer gets the same share of what is there. Units already built for the order stay with the failed maker's stock.
+- **Rush orders (decided, user 6 Nov 2026):** offered at a CEO meeting (below): the order gets three quarters of the works instead of half, for a higher premium. Simulated: 60 machine guns from Marchgun in about 80 minutes (73 to 87) instead of 2 hours; the maker's other buyers get about 7% fewer of its guns meanwhile; no more failures.
+- **AI powers' bulk orders (decided, user 6 Nov 2026): placed for a reason in the galaxy, shaped by the leader's traits** (events never feel random, section 11c). An AI power orders from the maker its tastes and influence favour (its own hosted makers first), sized at about 2 hours of its refits of that kind:
+
+| Cause | What it orders |
+| --- | --- |
+| A war declared, or a war going badly (warships lost faster than replaced) | its doctrine's weapons, armour and shields |
+| Tension with a neighbour | a smaller stockpile of the same |
+| A station or depot under siege, or lost | shields and armour; a rush order if the leader is Ambitious or Ruthless |
+| Ore or components short at its stations | mining gear and cargo holds |
+| A trade pact signed | haulers' gear (cargo holds and modules, drives) |
+| A rival's new grade outclasses its fleet's parts | a meeting with the maker of that kind to encourage R&D, then an order when it launches |
+
+| Leader trait | How it orders |
+| --- | --- |
+| Mercantile | prefers its own hosted makers, bargains (premium 5% lower), orders haulers' gear more |
+| Cautious | orders early, under tension, and defence first; never rushes |
+| Ambitious | orders big (half as much again) and rushes when at war |
+| Vengeful | orders weapons after any reprisal or loss |
+| Scheming | orders quietly (no news), and posts deniable raids on its rivals' order convoys |
+| Patient | stockpiles in peace; orders less in a war it is winning |
+| Ruthless | rushes weapons orders; raids rivals' order convoys openly |
+| Loyal | orders from its allies' makers as readily as its own |
+
+  Each AI order makes the same work as a player's: hauling and mining for components, convoys with escort jobs, and raids and ambushes on them.
+- **Open:** whether the order premium goes up with size; how much of an order a faction may place at once.
 
 ### Meetings with a CEO (proposal, user 6 Nov 2026, awaiting approval)
 **The user's idea:** a faction power calls a meeting with a maker's CEO. The CEO has to fly to the power's station, so they exist in the world for a time. At the meeting a menu lets the power encourage R&D, ask for a tweak to a product line, place a bulk order, or all three. The CEO's trait shapes the answer, and the closer a power is to victory the more influence it wields.
@@ -2420,32 +2445,33 @@ The maker opens a **project for that kind at the next grade** (grade 2 first, up
 - a CEO who arrives after an attack is **shaken** (influence needed +10 for this meeting) and remembers who failed to protect them;
 - a CEO who is killed gives the maker a new CEO (a CEO change, with its news and share drop) and cancels the meeting; one the Unbound capture is held for ransom (a **Ransom run** job; whoever pays it earns the maker's goodwill).
 
-**The meeting menu.** Any one, two or all three asks; the CEO answers each with accept, a counter-offer, or no.
+**The meeting menu.** Any of the four asks, or all of them; the CEO answers each with accept, a counter-offer, or no.
 - **Encourage R&D:** pick a kind of part the maker makes. The power co-funds the next grade's project (25 to 75% of its cost, by the CEO's answer). The project starts at once (or, if one is running, the power's kind goes next), with its usual materials, trials and their jobs. The power gets the first batch of the launch at list price. An Expansionist CEO may offer to open a new line of a kind it doesn't make yet.
 - **Ask for a tweak:** pick a line and the stat to strengthen. The maker chooses the weakness under the trade-off rule. The tweak is instant and changes every unit already on the shelves (the v16 rule), so everyone who buys that line gets it, not only the caller. A fee by the CEO's answer; it counts as the line's tweak (its cooldown applies).
-- **Place a bulk order:** as in "Bulk orders and freight contracts" above. Influence lowers the order premium (20% at the threshold, down to 10%) and raises the share of the works the order gets (half, up to three quarters: a rush).
+- **Place a bulk order:** as in "Bulk orders and freight contracts" above. Influence lowers the order premium (20% at the threshold, down to 10%).
+- **Rush the order (decided, user 6 Nov 2026):** the order (a new one, or one already running with this maker) gets three quarters of the works instead of half, for 15 points more premium. 60 machine guns take about 80 minutes instead of 2 hours. A Cautious CEO never gives an order more than a quarter of its works, rushed or not.
 
 **Influence.** A number from 0 to 100, shown before the meeting:
 - **Victory:** 40 x systems held / 20, plus 20 while the power's 20-system win timer runs. The closer to winning, the more makers listen.
 - **Relations with the maker's home faction:** Allied +20, Friendly +10, Neutral 0, Hostile -15, War -30 (freeport makers: the power's standing with the Compact, halved).
 - **Business:** +1 per 1,000 cr the power and its pilots have spent with the maker in the last 4 hours (up to +15); +5 for each delivered bulk order in the last 8 hours (up to +15).
 - **This meeting:** -10 if the CEO was attacked on the way; +10 if the power's own escort fought off the attack.
-Each ask needs influence over a threshold: bulk order 10, tweak 25, R&D 40. Above the threshold the CEO accepts; up to 15 below it counters (a higher fee or premium, a smaller co-funding share refused, a tweak to a different stat); further below, no.
+Each ask needs influence over a threshold: bulk order 10, rush 30, tweak 25, R&D 40. Above the threshold the CEO accepts; up to 15 below it counters (a higher fee or premium, a smaller co-funding share refused, a tweak to a different stat); further below, no.
 
 **CEO traits** shift the thresholds and terms:
 
-| CEO | R&D | Tweak | Bulk order |
-| --- | --- | --- | --- |
-| Innovator | -15, asks 25% co-funding | -10; tweak a third bigger | +5 (works are for new products) |
-| Penny-pincher | +10, asks 75% | fee x1.5 | -10; deposit 80% |
-| Premium | 0 | -5; fee x1.5 | premium +10% |
-| Discounter | +10 | 0 | -15; premium -5% |
-| Expansionist | -10; may open a new line | 0 | -5 |
-| Generous | -5 | -5 | -5 |
-| Cautious | +15 | +10 | +10; at most a quarter of the works |
-| Restless | +5 | -15; may add a second tweak | 0 |
+| CEO | R&D | Tweak | Bulk order | Rush |
+| --- | --- | --- | --- | --- |
+| Innovator | -15, asks 25% co-funding | -10; tweak a third bigger | +5 (works are for new products) | +10 |
+| Penny-pincher | +10, asks 75% | fee x1.5 | -10; deposit 80% | 0; premium +5 points |
+| Premium | 0 | -5; fee x1.5 | premium +10% | -5; premium +10 points |
+| Discounter | +10 | 0 | -15; premium -5% | -10 |
+| Expansionist | -10; may open a new line | 0 | -5 | -5 |
+| Generous | -5 | -5 | -5 | -5 |
+| Cautious | +15 | +10 | +10; at most a quarter of the works | never |
+| Restless | +5 | -15; may add a second tweak | 0 | -10 |
 
-**AI powers call meetings too** (proposed): an AI leader calls one when its doctrine's parts are scarce, it is losing a war, or a rival's new grade has outclassed its fleet. Its CEO flights make the same escort, intercept and ransom work for contractors, and pilots can sway which power a CEO favours.
+**AI powers call meetings too:** an AI leader calls one for the causes in "AI powers' bulk orders" above (when its doctrine's parts are scarce, it is losing a war, or a rival's new grade has outclassed its fleet), asking the way its traits lean. Its CEO flights make the same escort, intercept and ransom work for contractors, and pilots can sway which power a CEO favours.
 
 **Open:** whether influence from nearing victory should be checked (the others already unite against a power whose win timer runs; makers hosted by the threatened powers could refuse it too); whether the caller's own pilots can fly the CEO (a VIP passenger job); how long a CEO remembers a failed escort; whether players who haven't declared a faction (Station owners) can call meetings with less influence.
 
