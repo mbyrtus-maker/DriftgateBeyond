@@ -367,6 +367,7 @@ def sim(seed,params=None):
           ws['units']+=1;ws['spend']+=pr;ws['list']+=Lw.lst(g,mk)
           if Lw.stock[g]==0:Lw.sellouts.append(now);Lw.sellout_rev=True
       if W and now in (W['t0'],W['t1']):st.setdefault('whale_snap',{})[now]=st['std_kind'].get(W['kind'],0)
+      if W and now==W['t1']:st['whale_pm']={m2.m:round(L.pm,3) for m2 in makers.values() if m2.alive for L in m2.lines if L.kind==W['kind'] and L.active}
       # works: build the emptiest shelf it can afford, keeping its reserve
       if now%max(1,int(P['works_every']))==0:
         for mk in makers.values():
@@ -493,7 +494,7 @@ def sim(seed,params=None):
               elif got<exp and L.full() and L.pm>fl+1e-9:L.pm=max(fl,L.pm*P['down'])
             elif not L.std and disliked(L,mk) and now-L.last_tw>=mk.settle():
               if L.tweaks<P['max_tweaks']:
-                if tweak(L,mk):L.tweaks+=1;L.last_tw=now;st['tweaks']+=1;L.ev=[];news(mk,'tweak')
+                if tweak(L,mk):L.tweaks+=1;L.last_tw=now;st['tweaks']+=1;L.ev=[];news(mk,'tweak');st.setdefault('tweak_log',[]).append((now,mk.m,L.kind))
               elif P['issue'] and mk.proj is None and L.g<5 and mk.issued<P['issue_max']*P['shares'] and mk.mp>3 and mk.T-P['rd_cost'][L.g+1]<max(mk.reserve(),P['rd_reserve'])*mk.upkeep_h():
                 # not enough money: issue new shares to fund the project (diluting the old ones)
                 need=P['rd_cost'][L.g+1]+max(mk.reserve(),P['rd_reserve'])*mk.upkeep_h()-mk.T;n=min(math.ceil(need/(.95*mk.mp)),int(P['issue_max']*P['shares']-mk.issued))

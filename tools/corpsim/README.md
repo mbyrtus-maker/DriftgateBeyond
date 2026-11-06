@@ -10,6 +10,7 @@ product replaces it and its unsold stock goes back to raw ore.
   `data.json` and `data2.json` (Playwright). Re-run after changing makers or parts.
 - `sim2.py`: the model (`sim(seed, params)`; the defaults are the recommended numbers).
 - `run_v2.py`: 200 galaxies of 16 h for each setting; prints the results and writes `res_v2.json`. About 20 s.
+- `whale2_v15.py`: the same bulk buying, seen from the other makers of that part and its buyers (sales, price, tweaks, R&D, earnings, shares).
 - `whale_v15.py`: a wealthy pilot buying one line in bulk from hour 4 to hour 8 (sim15's `whale` setting), compared with the same galaxies without them.
 - `sim15.py`, `run_v15.py`: version 15 (v14 with CEOs replaced after the share price falls 2 hours running, and steadier prices so a pilot's 2-hour round trip is usually ahead: R&D counted at cost while it runs, the launch premium used up as earnings arrive, calmer investors). `run_v15.py` adds the 2-hour round trip (`FEE=` broker's fee each way, default 0.01; `IMP=` price moved per share of the pilot's own order, default 0.005) and writes `res_v15.json`; about a minute at N=200.
 - `sim14.py`, `run_v14.py`: version 14 (v13's market with R&D paid from the maker's own money, dividends that grow with success, the powers' peace/tension/war moving the weapon makers, an hourly analysts' rating, calmer investors and a 200 cr/h earnings prior). `run_v14.py` writes `res_v14.json` (`N=`, `W=`); about a minute at N=200 on two cores.
