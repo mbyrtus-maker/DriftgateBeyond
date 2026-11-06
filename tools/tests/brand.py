@@ -1,6 +1,7 @@
 # Beyond: your own brand. No brand without a Depot; a name and a trait shaped with points that net to zero (an unpaid strength
 # refused); a gun built at your Depot's workshop carries the brand's name and trait, and fitted it changes the gun's damage;
-# reshaping costs credits and reshapes the parts you have; the tab renders; the ledger stays exact
+# reshaping costs credits and reshapes the parts you have; the tab renders; the company colour (default gold, picked from the
+# palette, shown for you and on the map, fixed once declared); the ledger stays exact
 import asyncio,json
 from playwright.async_api import async_playwright
 import os
@@ -25,6 +26,11 @@ async def main():
     print('reshape',await ev("(()=>{const P=S.player,c0=P.credits;const m=brSave(P,encodeURIComponent('Kestrel Works')+'|gun:dmg=1,ammo=-1');return JSON.stringify({m,paid:c0-P.credits,now:mkTr(P,'gun','dmg')})})()"))
     print('ledger',await ev(LED))
     print('tab',await ev("(()=>{undock();coTab='holdings';$('company').hidden=false;renderCompany();return $('coBody').innerText.split(/your brand/i).slice(-1)[0].slice(0,300).replace(/\\n/g,' | ')})()"))
+    print('colour default',await ev("JSON.stringify({col:coCol(pkeyOf(S.player)),you:PLAYER_COL,map:coColAt(window._SID)})"))
+    print('colour picked',await ev("(()=>{dockAction('cocol','3');const m=dockErr;worldUpdate(1/60);const R=S.stations[window._SID];return JSON.stringify({m,col:coCol(pkeyOf(S.player)),you:PLAYER_COL,map:coColAt(window._SID),side:sideCol('player'),pal:mdlPal('co:'+PLAYER_COL).c[5].map(x=>x.toFixed(2)).join(',')})})()"))
+    print('picker',await ev("(()=>{renderCompany();const t=$('coBody').innerText.toLowerCase();return t.includes('company colour')&&t.includes('cobalt')&&t.includes('free to change')})()"))
+    print('fixed once declared',await ev("(()=>{const P=S.player;P.decl=true;const m=coSet(P,1);const still=coCol(pkeyOf(P));P.decl=false;return m+' · '+still})()"))
+    print('ledger',await ev(LED))
     await pg.wait_for_timeout(8000)
     print('after flight',await ev(LED))
     print('errors',errs[:4]);await b.close()

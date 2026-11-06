@@ -8,7 +8,7 @@
 // Ledger: credits only move between treasuries and wallets; goods never appear.
 const DP_TRAITS=['Bloodthirsty','Greedy','Cunning','Showman','Superstitious','Gallant','Paranoid','Kingmaker'];
 const DP_NAMES=['Marrow','Black Agnes','Saltjaw','Rook Vane','Calloway Thorn','Mad Ottilie','Grimsby','Iron Nell','Vasquez Crane','Old Teague','Red Sorrel','Hollow Jack'];
-const DP={cool:[240,480],back:900,bounty:3000,pBounty:2500,tribute:1500,season:1200,sale:900,saleK:.7,house:900,houseK:1.3,low:900,lowK:.3,kills:6};
+const DP={cool:[240,480],back:900,bounty:3000,pBounty:2500,tribute:1500,season:1200,sale:900,saleK:.7,house:900,houseK:1.3,low:900,lowK:.3,kills:6,broodLost:8,failRun:5,kept:3};
 const DP_SUCC={killedPow:['Bloodthirsty'],killedPilot:['Paranoid'],looted:['Paranoid','Cunning'],fat:['Greedy','Showman'],brood:['Superstitious'],leader:['Kingmaker'],failed:['Cunning'],kept:['Gallant']};
 function dpOf(){return S&&S.dread||null}
 function dpHas(t){const D=dpOf();return!!(D&&D.traits.includes(t))}
@@ -78,7 +78,7 @@ function dpEvents(){const D=dpOf(),out=[],T=S.T,st=S.econ.stock.pirate||{},tr=S.
 function dpAct(){const D=dpOf();if(!D||NET.cl||S.training||S.unb||S.T<D.cool)return;D.cool=S.T+rnd(DP.cool[0],DP.cool[1]);if(havenDown())return;const L=dpEvents();if(!L.length)return;
   let tot=L.reduce((a,b)=>a+b.w,0),r=Math.random()*tot,E=L[0];for(const x of L){r-=x.w;if(r<=0){E=x;break}}const nm=dpName(D),T=S.T;
   if(E.k==='season'){D.season={f:E.f,until:T+DP.season};allFeed(`☠ ${nm} declares a raiding season on ${FACTIONS[E.f].short} lanes.`,'warn')}
-  else if(E.k==='tribute'){const L2=leaderOf(E.f),pays=L2&&(L2.traits.includes('Mercantile')||L2.traits.includes('Cautious'))?.8:.4;if(Math.random()<pays){const got=transfer(E.f,'pirate',DP.tribute);D.spare=D.spare||{};D.spare[E.f]=T+DP.season;allFeed(`☠ ${FACTIONS[E.f].short} pays ${nm} ${fmt(got)} cr to keep the raiders off its lanes.`,'news')}else{D.season={f:E.f,until:T+DP.season};allFeed(`☠ ${FACTIONS[E.f].short} refuses ${nm}'s demand for tribute: a raiding season on its lanes.`,'warn')}}
+  else if(E.k==='tribute'){const L2=leaderOf(E.f),pays=L2&&(L2.traits.includes('Mercantile')||L2.traits.includes('Cautious'))?.8:.4;if(Math.random()<pays){const got=transfer(E.f,'pirate',DP.tribute);D.kept=(D.kept||0)+1;D.spare=D.spare||{};D.spare[E.f]=T+DP.season;allFeed(`☠ ${FACTIONS[E.f].short} pays ${nm} ${fmt(got)} cr to keep the raiders off its lanes.`,'news')}else{D.season={f:E.f,until:T+DP.season};allFeed(`☠ ${FACTIONS[E.f].short} refuses ${nm}'s demand for tribute: a raiding season on its lanes.`,'warn')}}
   else if(E.k==='bounty'){D.bounty[E.pid]=DP.pBounty;const P=xPilotOfKey(E.pid);allFeed(`☠ ${nm} puts a ${fmt(DP.pBounty)} cr bounty on ${P&&P.name||'a contractor'} for the Unbound ships they've sunk.`,'warn')}
   else if(E.k==='sale'){D.sale=T+DP.sale;allFeed(`☠ ${nm} is selling off the hoard: Scrapheart's market is ${Math.round((1-DP.saleK)*100)}% cheaper for a while.`,'news')}
   else if(E.k==='house'){D.house=T+DP.house;allFeed(`☠ Open house at the Rusty Tankard: ${nm}'s rumours pay ${Math.round((DP.houseK-1)*100)}% more for a while.`,'news')}
@@ -86,7 +86,15 @@ function dpAct(){const D=dpOf();if(!D||NET.cl||S.training||S.unb||S.T<D.cool)ret
   else if(E.k==='ravage'){D.ravage={sid:E.sid,until:T+900};allFeed(`☠ ${nm} sails the Ravager for ${S.stations[E.sid].name}.`,'warn')}}
 // captains lose faith: a long run of losses, or the Brood eating raiders; a power closing on the galaxy breeds a Kingmaker
 function dpFaith(){const D=dpOf();if(!D||S.T-D.since<3600||Math.random()>.02)return;const n=controlCounts();
-  if(Math.max(...FAC_IDS.map(f=>n[f]||0))>=VIC_NEED-4&&!dpHas('Kingmaker'))dpSucceed('leader');else if((S.econ.treasury.pirate||0)>60000&&!dpHas('Greedy'))dpSucceed('fat')}
+  const lostB=(D.lostB||[]).filter(t=>t>S.T-3600).length;
+  if(Math.max(...FAC_IDS.map(f=>n[f]||0))>=VIC_NEED-4&&!dpHas('Kingmaker'))dpSucceed('leader');else if((S.econ.treasury.pirate||0)>60000&&!dpHas('Greedy'))dpSucceed('fat');
+  else if(lostB>=DP.broodLost&&!dpHas('Superstitious'))dpSucceed('brood');else if((D.fails||0)>=DP.failRun&&!dpHas('Cunning'))dpSucceed('failed');else if((D.kept||0)>=DP.kept&&!dpHas('Gallant'))dpSucceed('kept')}
+// what the captain's time has been like: Unbound ships lost to the Brood in the last hour, raids that came home with nothing
+// (in a row), and bargains kept (tribute paid; ransoms when they're built)
+function dpRaidDone(ok){const D=dpOf();if(!D)return;D.fails=ok?0:(D.fails||0)+1}
+{const o=killShip;killShip=function(e,src,at){try{if(!NET.cl&&e&&e.alive&&e.side==='pirate'&&sideNorm(src)==='brood'){const D=dpOf();if(D){D.lostB=(D.lostB||[]).filter(t=>t>S.T-3600);D.lostB.push(S.T)}}}catch(x){}return o.apply(this,arguments)}}
+{const o=raidUnload;raidUnload=function(r){try{if(r&&r.side==='pirate')dpRaidDone(invMass(r.loot||{})>0)}catch(x){}return o.apply(this,arguments)}}
+{const o=raidWipe;raidWipe=function(r){try{if(r&&r.side==='pirate')dpRaidDone(false)}catch(x){}return o.apply(this,arguments)}}
 {const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{if(!S.unb&&!S.training){dpInit();dpTick();dpAct();dpFaith()}}catch(err){console.error(err)}return r}}
 // ---- the Allegiance tab: the Dread Pirate beside the powers' leaders; its bounty on you
 {const o=allegianceHtml;allegianceHtml=function(P){let h=o.apply(this,arguments);try{const D=dpOf();if(!D)return h;P=P||S.player;const b=D.bounty&&D.bounty[pkeyOf(P)];

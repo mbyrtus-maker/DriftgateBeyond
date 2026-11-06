@@ -76,5 +76,8 @@ js/16zzg_marque.js
 js/16zzh_fpdark.js
 js/16zzi_regent.js
 js/16zzj_art.js
+js/16zzk_colour.js
+js/16zzl_capescort.js
+js/16zzm_gatelock.js
 js/17_main.js
 end.html

@@ -1,7 +1,8 @@
 # Beyond 12c: the Dread Pirate. Rolled with two pirate traits, shown on the Allegiance tab, flies (spawned with an escort in a
 # live system, or aboard the Ravager), killed by a pilot: every power pays the bounty and a Paranoid captain takes the hat with a
 # bounty on that pilot; its events (raiding season, tribute, hoard sale, open house, lie low) run with the ledger exact;
-# the hunt job at a power's station and the rumour of its whereabouts at the Rusty Tankard
+# the hunt job at a power's station and the rumour of its whereabouts at the Rusty Tankard; successions after raiders lost to
+# the Brood (Superstitious), a run of failed raids (Cunning) and bargains kept (Gallant)
 import asyncio,json
 from playwright.async_api import async_playwright
 import os
@@ -29,6 +30,14 @@ async def main():
     print('hoard sale price',await ev("""(()=>{const D=S.dread,R=S.stations.wr;D.sale=0;const a=stPrice(R,'plate');D.sale=S.T+100;const b=stPrice(R,'plate');return (b/a).toFixed(2)})()"""))
     print('hunt job',await ev("""(()=>{const P=S.player,D=S.dread;D.ship.alive=true;const hs=Object.keys(S.stations).find(s=>S.stations[s].owner==='halcyon'&&S.stations[s].kind==='core');exitSector();P.sector=hs;enterSector(hs);P.docked='station';const c=dockCtx();const L=jobsList(c,P,[P.cargo]);P.docked=null;const j=L.find(x=>String(x.id).startsWith('dp:'));return j?j.title+' · '+j.sub+' · '+j.pay:'none'})()"""))
     print('rumour',await ev("""(()=>{const P=S.player;exitSector();P.sector='wr';enterSector('wr');P.docked='station';const c=dockCtx();P.credits=Math.max(P.credits,0);devLedger(()=>{});transfer('halcyon','player',400);const c0=P.credits;dockAction('dpword','');P.docked=null;return dockErr+' · paid '+(c0-P.credits)})()"""))
+    print('ledger',await ev(LED))
+    print('succession: lost to the Brood',await ev("""(()=>{const D=S.dread;D.ship.alive=false;D.since=S.T-4000;exitSector();S.player.sector='wr';S.player.docked=null;enterSector('wr');
+      for(let i=0;i<8;i++){const e=makeNPC('raider','pirate','raider',1,{},'t'+i);e.x=4000+i*50;e.y=0;e.z=0;W.ents.push(e);killShip(e,'brood')}const n=(S.dread.lostB||[]).length;const r=Math.random;let first=true;Math.random=()=>first?(first=false,0):r();try{dpFaith()}finally{Math.random=r}
+      return JSON.stringify({lost:n,why:S.dread.why,traits:S.dread.traits})})()"""))
+    print('succession: failed raids',await ev("""(()=>{S.dread.since=S.T-4000;const tp=S.econ.treasury.pirate||0;if(tp>50000)transfer('pirate','halcyon',tp-50000);for(let i=0;i<5;i++){const r={id:-1-i,side:'pirate',kit:{},loot:{}};S.raids=S.raids||[];S.raids.push(r);raidWipe(r,'wr',null)}const n=S.dread.fails;const r=Math.random;let first=true;Math.random=()=>first?(first=false,0):r();try{dpFaith()}finally{Math.random=r}
+      return JSON.stringify({fails:n,why:S.dread.why,traits:S.dread.traits})})()"""))
+    print('a raid home with loot resets the run',await ev("""(()=>{const D=S.dread;D.fails=3;dpRaidDone(true);return D.fails})()"""))
+    print('succession: bargains kept',await ev("""(()=>{const D=S.dread;D.since=S.T-4000;D.kept=3;const r=Math.random;let first=true;Math.random=()=>first?(first=false,0):r();try{dpFaith()}finally{Math.random=r}return JSON.stringify({why:S.dread.why,traits:S.dread.traits})})()"""))
     print('ledger',await ev(LED))
     await pg.wait_for_timeout(15000)
     print('after flight',await ev(LED))

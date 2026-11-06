@@ -824,7 +824,7 @@ const FACTIONS={
 FACTIONS.brood={name:'The Vael Brood',short:'Brood',col:'#9be35a',fill:'#14200c',trait:{hull:1.5,shield:.6,energy:1.1},traitText:'Hull +50% and regrows · Shields −40%',blurb:'Something grown, not built. It eats ore, and it eats stations.',
   hulls:{overgrowth:'Overgrowth',mite:'Mite',interceptor:'Skitter',striker:'Thresher',heavy:'Carapace',bomber:'Sporemaw',prospector:'Grazer',freighter:'Gorger',drone:'Mite',skiff:'Nibbler',frigate:'Leviathan',escort:'Prowler',dredger:'Devourer',courier:'Crawler',bulker:'Bloater',constructor:'Seeder',scout:'Watcher',scout2:'Stalker'},station:'Bloom Heart',depot:'Bloom Node',shot:'spore',bio:true};
 const PIRATE={name:'The Unbound',short:'Unbound',col:'#d8cd98',fill:'#221f15',shot:'scrap',hulls:{raider:'Raider',corsair:'Corsair',plunderer:'Plunderer',uskiff:'Skiff',gunboat:'Raker',interceptor:'Dart',striker:'Cutter',heavy:'Brute',bomber:'Wrecker',prospector:'Gouger',freighter:'Scow',drone:'Junk Drone',skiff:'Scrounger',frigate:'Destroyer',dredger:'Grinder',courier:'Smuggler',bulker:'Hulk',constructor:'Rigger',scout:'Sneak',scout2:'Ghost'}};
-const PLAYER_COL='#f0b24a';
+let PLAYER_COL='#f0b24a';   // the local pilot's company colour (16zzk_colour.js keeps it up to date)
 const CLASSES={
   overgrowth:{name:'Brood Overgrowth',hull:2000,shield:0,speed:.01,turn:.01,weapon:0,cargo:0,drill:0,radius:150,rack:0,boost:1,agile:.1,acc:.01,desc:'A living mass sealing a jump gate.'},
   mite:{name:'Mite',hull:12,shield:0,speed:1.45,turn:4,weapon:.5,cargo:0,drill:0,radius:7,rack:0,boost:1.2,agile:1.6,acc:1.55,bcost:.6,desc:'Brood swarm fighter: grown from ore, fast, fragile, no shields.'},
@@ -7066,7 +7066,7 @@ function drawMap(){
   const onRoute=new Set();if(S.player.route){let cur=S.player.sector;for(let k=0;k<12&&cur!==S.player.route;k++){let nx=null,bh=1e9;for(const n of NEIGH[cur])if(HOP[S.player.route][n]<bh){bh=HOP[S.player.route][n];nx=n}onRoute.add(gateKey(cur,nx));cur=nx}}
   for(const[a,b]of LINKS){const[x1,y1]=mapXY(DEF[a],w,h),[x2,y2]=mapXY(DEF[b],w,h),down=S.gateDown[gateKey(a,b)];if(onRoute.has(gateKey(a,b))){c.strokeStyle='rgba(240,178,74,.9)';c.lineWidth=5;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke()}c.strokeStyle=down?(ogSealed(a,b)?FACTIONS.brood.col:'#ff5d4f'):'#5a647c';c.setLineDash(down?[5,5]:[]);c.lineWidth=2;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();c.setLineDash([])}
   const t=performance.now()/1000,LBL=[];
-  for(const d of SECTOR_DEFS){const[x,y]=mapXY(d,w,h),own=sectorOwner(d.id),col=sideCol(own),r=Math.round((d.kind==='core'?22:d.kind==='void'?13:18)*mapK(w,h));
+  for(const d of SECTOR_DEFS){const[x,y]=mapXY(d,w,h),own=sectorOwner(d.id),col=own==='player'?coColAt(d.id):sideCol(own),r=Math.round((d.kind==='core'?22:d.kind==='void'?13:18)*mapK(w,h));
     c.fillStyle='#0c1222';c.beginPath();if(d.kind==='core'||d.kind==='frontier'||d.kind==='void')c.arc(x,y,r,0,TAU);else{for(let i=0;i<6;i++){const a=i/6*TAU+Math.PI/6;c[i?'lineTo':'moveTo'](x+Math.cos(a)*r,y+Math.sin(a)*r)}c.closePath()}c.fill();c.strokeStyle=col;c.lineWidth=mapSel===d.id?4:2;c.stroke();
     if(d.kind==='core'){c.fillStyle=col;c.beginPath();c.arc(x,y,6,0,TAU);c.fill()}
     if(d.kind==='deep'){c.fillStyle='#6ff2cf';c.font='700 10px "Saira Semi Condensed",sans-serif';c.textAlign='center';c.fillText('Au',x,y+4)}
@@ -11116,7 +11116,7 @@ function havenKnock(by,P){const R=S.stations.wr;if(!R||havenDown())return;S.have
 // Ledger: credits only move between treasuries and wallets; goods never appear.
 const DP_TRAITS=['Bloodthirsty','Greedy','Cunning','Showman','Superstitious','Gallant','Paranoid','Kingmaker'];
 const DP_NAMES=['Marrow','Black Agnes','Saltjaw','Rook Vane','Calloway Thorn','Mad Ottilie','Grimsby','Iron Nell','Vasquez Crane','Old Teague','Red Sorrel','Hollow Jack'];
-const DP={cool:[240,480],back:900,bounty:3000,pBounty:2500,tribute:1500,season:1200,sale:900,saleK:.7,house:900,houseK:1.3,low:900,lowK:.3,kills:6};
+const DP={cool:[240,480],back:900,bounty:3000,pBounty:2500,tribute:1500,season:1200,sale:900,saleK:.7,house:900,houseK:1.3,low:900,lowK:.3,kills:6,broodLost:8,failRun:5,kept:3};
 const DP_SUCC={killedPow:['Bloodthirsty'],killedPilot:['Paranoid'],looted:['Paranoid','Cunning'],fat:['Greedy','Showman'],brood:['Superstitious'],leader:['Kingmaker'],failed:['Cunning'],kept:['Gallant']};
 function dpOf(){return S&&S.dread||null}
 function dpHas(t){const D=dpOf();return!!(D&&D.traits.includes(t))}
@@ -11186,7 +11186,7 @@ function dpEvents(){const D=dpOf(),out=[],T=S.T,st=S.econ.stock.pirate||{},tr=S.
 function dpAct(){const D=dpOf();if(!D||NET.cl||S.training||S.unb||S.T<D.cool)return;D.cool=S.T+rnd(DP.cool[0],DP.cool[1]);if(havenDown())return;const L=dpEvents();if(!L.length)return;
   let tot=L.reduce((a,b)=>a+b.w,0),r=Math.random()*tot,E=L[0];for(const x of L){r-=x.w;if(r<=0){E=x;break}}const nm=dpName(D),T=S.T;
   if(E.k==='season'){D.season={f:E.f,until:T+DP.season};allFeed(`☠ ${nm} declares a raiding season on ${FACTIONS[E.f].short} lanes.`,'warn')}
-  else if(E.k==='tribute'){const L2=leaderOf(E.f),pays=L2&&(L2.traits.includes('Mercantile')||L2.traits.includes('Cautious'))?.8:.4;if(Math.random()<pays){const got=transfer(E.f,'pirate',DP.tribute);D.spare=D.spare||{};D.spare[E.f]=T+DP.season;allFeed(`☠ ${FACTIONS[E.f].short} pays ${nm} ${fmt(got)} cr to keep the raiders off its lanes.`,'news')}else{D.season={f:E.f,until:T+DP.season};allFeed(`☠ ${FACTIONS[E.f].short} refuses ${nm}'s demand for tribute: a raiding season on its lanes.`,'warn')}}
+  else if(E.k==='tribute'){const L2=leaderOf(E.f),pays=L2&&(L2.traits.includes('Mercantile')||L2.traits.includes('Cautious'))?.8:.4;if(Math.random()<pays){const got=transfer(E.f,'pirate',DP.tribute);D.kept=(D.kept||0)+1;D.spare=D.spare||{};D.spare[E.f]=T+DP.season;allFeed(`☠ ${FACTIONS[E.f].short} pays ${nm} ${fmt(got)} cr to keep the raiders off its lanes.`,'news')}else{D.season={f:E.f,until:T+DP.season};allFeed(`☠ ${FACTIONS[E.f].short} refuses ${nm}'s demand for tribute: a raiding season on its lanes.`,'warn')}}
   else if(E.k==='bounty'){D.bounty[E.pid]=DP.pBounty;const P=xPilotOfKey(E.pid);allFeed(`☠ ${nm} puts a ${fmt(DP.pBounty)} cr bounty on ${P&&P.name||'a contractor'} for the Unbound ships they've sunk.`,'warn')}
   else if(E.k==='sale'){D.sale=T+DP.sale;allFeed(`☠ ${nm} is selling off the hoard: Scrapheart's market is ${Math.round((1-DP.saleK)*100)}% cheaper for a while.`,'news')}
   else if(E.k==='house'){D.house=T+DP.house;allFeed(`☠ Open house at the Rusty Tankard: ${nm}'s rumours pay ${Math.round((DP.houseK-1)*100)}% more for a while.`,'news')}
@@ -11194,7 +11194,15 @@ function dpAct(){const D=dpOf();if(!D||NET.cl||S.training||S.unb||S.T<D.cool)ret
   else if(E.k==='ravage'){D.ravage={sid:E.sid,until:T+900};allFeed(`☠ ${nm} sails the Ravager for ${S.stations[E.sid].name}.`,'warn')}}
 // captains lose faith: a long run of losses, or the Brood eating raiders; a power closing on the galaxy breeds a Kingmaker
 function dpFaith(){const D=dpOf();if(!D||S.T-D.since<3600||Math.random()>.02)return;const n=controlCounts();
-  if(Math.max(...FAC_IDS.map(f=>n[f]||0))>=VIC_NEED-4&&!dpHas('Kingmaker'))dpSucceed('leader');else if((S.econ.treasury.pirate||0)>60000&&!dpHas('Greedy'))dpSucceed('fat')}
+  const lostB=(D.lostB||[]).filter(t=>t>S.T-3600).length;
+  if(Math.max(...FAC_IDS.map(f=>n[f]||0))>=VIC_NEED-4&&!dpHas('Kingmaker'))dpSucceed('leader');else if((S.econ.treasury.pirate||0)>60000&&!dpHas('Greedy'))dpSucceed('fat');
+  else if(lostB>=DP.broodLost&&!dpHas('Superstitious'))dpSucceed('brood');else if((D.fails||0)>=DP.failRun&&!dpHas('Cunning'))dpSucceed('failed');else if((D.kept||0)>=DP.kept&&!dpHas('Gallant'))dpSucceed('kept')}
+// what the captain's time has been like: Unbound ships lost to the Brood in the last hour, raids that came home with nothing
+// (in a row), and bargains kept (tribute paid; ransoms when they're built)
+function dpRaidDone(ok){const D=dpOf();if(!D)return;D.fails=ok?0:(D.fails||0)+1}
+{const o=killShip;killShip=function(e,src,at){try{if(!NET.cl&&e&&e.alive&&e.side==='pirate'&&sideNorm(src)==='brood'){const D=dpOf();if(D){D.lostB=(D.lostB||[]).filter(t=>t>S.T-3600);D.lostB.push(S.T)}}}catch(x){}return o.apply(this,arguments)}}
+{const o=raidUnload;raidUnload=function(r){try{if(r&&r.side==='pirate')dpRaidDone(invMass(r.loot||{})>0)}catch(x){}return o.apply(this,arguments)}}
+{const o=raidWipe;raidWipe=function(r){try{if(r&&r.side==='pirate')dpRaidDone(false)}catch(x){}return o.apply(this,arguments)}}
 {const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{if(!S.unb&&!S.training){dpInit();dpTick();dpAct();dpFaith()}}catch(err){console.error(err)}return r}}
 // ---- the Allegiance tab: the Dread Pirate beside the powers' leaders; its bounty on you
 {const o=allegianceHtml;allegianceHtml=function(P){let h=o.apply(this,arguments);try{const D=dpOf();if(!D)return h;P=P||S.player;const b=D.bounty&&D.bounty[pkeyOf(P)];
@@ -13198,6 +13206,245 @@ const _asp={};
   W.asl=W.asl.filter(s=>{const k=now-s.t0;if(k<0)return true;if(s.die&&k>=s.dur*s.dieAt){asPos(s,s.t0+s.dur*s.dieAt,_asp);if(W===LW)fxBoom(_asp,40,sideCol(s.fac));return false}return k<s.dur*2+ASF.hold});
   for(const s of W.asl){if(now<s.t0)continue;asPos(s,now,_asp);if(!inView(_asp.x,_asp.y,_asp.z,ASF.r*2))continue;if(hyp(_asp.vx,_asp.vy,_asp.vz)>1)qLook(_asp.vx,_asp.vy,_asp.vz,0,1,0,s.q);
     mModel(MM,_asp.x,_asp.y,_asp.z,s.q,ASF.r,ASF.r,ASF.r);drawMesh(asMesh(s.fac),MM)}}catch(e){console.error(e)}return r}}
+
+//@src 16zzk_colour.js
+// ============================================================ your company's colour (Beyond, decided 2 Nov 2026; built 6 Nov 2026)
+// You pick your company's colour with its name, from your first Depot (Holdings → Your brand), from a palette kept clear of
+// the powers', the Brood's, the Unbound's and the Compact's colours. It shows wherever your company does: your Lairs, Depots
+// and Stations (their lights, and their systems on the galaxy map), your AI pilots on radar, your declared faction. Free to
+// change until you declare a faction; fixed after. Each pilot of a multiplayer galaxy has their own; your own screen draws
+// "you" (PLAYER_COL) in yours. Nothing here touches the ledger.
+const CO_PAL=[{n:'Gold',c:'#f0b24a'},{n:'Crimson',c:'#e0485e'},{n:'Rose',c:'#ff86b6'},{n:'Cobalt',c:'#4f7cff'},{n:'Sky',c:'#7cc0ff'},
+  {n:'Magenta',c:'#e34fd6'},{n:'Lemon',c:'#f2ea55'},{n:'Pearl',c:'#e6ebf2'}];
+const CO_DEF=CO_PAL[0].c;
+function coCol(key){const N=S&&S.brandOf&&S.brandOf[key],B=N!=null&&S.brands&&S.brands[N];return(B&&B.col)||CO_DEF}
+function coMine(){return coCol(pkeyOf(S.player))}
+// the colour of whoever holds a system for 'player' (a pilot's Station there)
+function coColAt(sid){const R=S.stations&&S.stations[sid];if(R&&R.owner==='player')return coCol(R.pid||'me');return PLAYER_COL}
+// a company colour as a side name for the meshes: 'co:#rrggbb'
+{const o=sideCol;sideCol=function(s){if(typeof s==='string'&&s.startsWith('co:'))return s.slice(3);return o.apply(this,arguments)}}
+{const o=mdlPal;mdlPal=function(fac){if(typeof fac==='string'&&fac.startsWith('co:')){const F=hexRGB(fac.slice(3)),base=[.57,.58,.6];
+  return{c:[mixC(base,F,.1),mixC([.36,.38,.43],F,.04),[.15,.16,.19],scaleC(F,.92),[.16,.3,.4],F,mixC([.2,.33,.42],F,.25),[.43,.4,.36],[.25,.23,.21]],e:[0,0,0,0,.15,.85,.4,0,0]}}return o.apply(this,arguments)}}
+// each pilot's bases in their own colour; your Lairs (only your own are drawn) in yours
+{const o=bmBase;bmBase=function(R,fac){if(fac==='player'&&R&&R.owner==='player')fac='co:'+coCol(R.pid||'me');return o.call(this,R,fac)}}
+{const o=bmLair;bmLair=function(lvl,fac){if(fac==='player')fac='co:'+coMine();return o.call(this,lvl,fac)}}
+// keep "you" in your colour: meshes drawn for the 'player' side are rebuilt when it changes
+function coSync(){if(!S||!S.player)return;const c=coMine();if(c===PLAYER_COL)return;PLAYER_COL=c;for(const k of Object.keys(MESH))if(k.includes('player'))delete MESH[k]}
+{const o=worldUpdate;worldUpdate=function(dt){const r=o.apply(this,arguments);try{coSync()}catch(e){}return r}}
+{const o=drawMap;drawMap=function(){try{coSync()}catch(e){}return o.apply(this,arguments)}}
+// choosing it (a dock action, so a guest's choice runs on the host)
+function coSet(P,i){if(!myDepots(P).length)return'Your company picks its colour with its first Depot.';if(P.decl)return'Your colour is fixed now that you have declared a faction.';
+  const C=CO_PAL[+i];if(!C)return'No such colour.';const N=brSlot(P,true);if(N==null)return'No brand slot free in this galaxy.';S.brands[N].col=C.c;return`✓ Your company's colour is now ${C.n}.`}
+{const o=dockAction;dockAction=function(act,arg){if(act==='cocol'){dockErr=coSet(S.player,arg);return}return o.apply(this,arguments)}}
+{const o=coClick;coClick=function(act,arg){if(act==='cocol'){if(NET.cl){netSend({t:'act',act,arg});coErr='Working…';renderCompany();return}dockAction(act,arg);coErr=dockErr;renderCompany();return}return o.apply(this,arguments)}}
+// the picker, under the company name in Your brand
+{const o=brHtml;brHtml=function(P){let h=o.apply(this,arguments);try{if(!myDepots(P).length)return h;const cur=coCol(pkeyOf(P)),fixed=!!P.decl;
+  const row=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px"><span class="note" style="margin:0">Company colour</span>${CO_PAL.map((C,i)=>`<button class="btn sm" type="button" data-co="cocol" data-arg="${i}" title="${C.n}" aria-pressed="${C.c===cur}" ${fixed&&C.c!==cur?'disabled':''} style="min-width:0;padding:3px 8px;border-color:${C.c===cur?C.c:'var(--line)'}"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${C.c};vertical-align:-1px"></span> ${C.n}</button>`).join('')}<span class="note" style="margin:0">${fixed?'Fixed now that you have declared.':'Free to change until you declare a faction.'}</span></div>`;
+  const at=h.indexOf('<div class="tblw">');if(at>=0)h=h.slice(0,at)+row+h.slice(at);else h+=row}catch(err){console.error(err)}return h}}
+
+//@src 16zzl_capescort.js
+// ============================================================ capital escorts ride the jump; the carrier's defence set (user, 6 Nov 2026)
+// A capital ship's own fighter escort docks on it once its jump drive passes 75% of the spin-up, and jumps with it:
+//  - fighters given a Guard or Escort order on a capital (from its bridge) fly to a berth on its hull and hold there, guns
+//    cold; if the spin-up is broken they undock and fight again. When it jumps they go with it (their load rides in the
+//    capital's hold, so the ledger stays exact) and undock beside it in the next system, their order still running;
+//  - a carrier's own craft (its wings, except any out on a strike next door, and its defence set) fly home and land.
+// Freighters and other ships a capital is escorting are not its escort: they stay behind.
+// Every power's and pilot's carrier also carries a defence set: five fighters (one heavy, two medium, two light) and a
+// scout, built from the same deck kits as its wings (plate and coil, aboard, so the ledger stays exact). They only escort
+// the carrier and take no other orders. They wait docked until a threat is realised (a hostile ship within 4.5 km, fire on
+// the carrier, or a missile or torpedo coming at it), launch, fight within 1.5 km of it, and land again once it has been
+// clear for 20 seconds. The scout has two jobs of its own in the carrier's system: it flips the beacon (or re-secures its
+// side's fading one) when it isn't locked, and it plants its limpet on an enemy capital attacking the carrier, then rearms
+// aboard. Lost craft are replaced like the wings': from the faction's stores when the carrier refits, or by its fabricator.
+// The Brood's Hive Ships and the Unbound's Ravager have no defence set.
+const CAPJ={dock:.75,threatR:4500,defR:1500,clear:20,launchGap:.35,set:['heavy','striker','striker','interceptor','interceptor','scout'],hullGap:60};
+function capSpin(M){const t=M&&M.tok;return!!(t&&t.spin&&t.spin.p>=CAPJ.dock)}
+function capIs(T){return!!(T&&T.role==='frigate'&&T.tok&&T.alive)}
+// ---- escorts ordered onto a capital: a berth on its hull while the drive spins past 75%
+function capBerth(T,n){const R=T.st.radius,k=[[.55,.32,.1],[-.55,.32,.1],[.4,.38,-.45],[-.4,.38,-.45]][n%4];qRot(T.q,k[0]*R,k[1]*R,k[2]*R,_u);return{x:T.x+_u.x,y:T.y+_u.y,z:T.z+_u.z}}
+{const o=orderThink;orderThink=function(e,dt){const O=e.order,T=O&&O.tgt;
+  if(!NET.cl&&O&&(O.kind==='guard'||O.kind==='escort')&&capIs(T)&&W.ents.includes(T)&&W.t<=O.until){
+    if(capSpin(T)){const B=capBerth(T,O.slot||0);
+      if(e.hullRide===T||d3(e,B)<CAPJ.hullGap){e.hullRide=T;e.x=B.x;e.y=B.y;e.z=B.z;e.vx=T.vx;e.vy=T.vy;e.vz=T.vz;qCopy(e.q,T.q);e.thrusting=e.boosting=false;e.ai.tgt=null;return true}
+      e.hullRide=null;holdSlot(e,T,B.x,B.y,B.z,dt,2.2);faceTo(e,B,dt);e.ai.tgt=null;return true}
+    if(e.hullRide)e.hullRide=null}
+  return o.apply(this,arguments)}}
+// the jump: escorts on the hull go with it; their load rides in the capital's hold
+{const o=despawnFrigate;despawnFrigate=function(e){try{const t=e&&e.tok;if(t&&!NET.cl){
+      for(const r of W.ents.slice()){if(r.hullRide!==e||!r.alive||!r.order)continue;const O=r.order;
+        (t.riders=t.riders||[]).push({cls:r.cls,side:r.side,fac:r.fac,tier:r.tier||1,home:r.home,role:r.role,kind:O.kind,left:Math.max(0,O.until-W.t),pid:O.pid||null,slot:O.slot||0,by:O.by,ld:{...r.load},cg:{...(r.cargo||{})},hull:r.hull,shield:r.shield});
+        inv.addAll(t.load,r.load);inv.addAll(t.load,r.cargo||{});r.load={};r.cargo={};r.alive=false;const i=W.ents.indexOf(r);if(i>=0)W.ents.splice(i,1);if(W.tgt&&W.tgt.ref===r)W.tgt=null}
+      if(isCar(t)&&capDefOK(t)){t.def=capDefNow(e);for(const p of(e.dfl||[]))if(p.alive&&W.ents.includes(p))despawn(p);e.dfl=[];e.dbay=[]}}}catch(err){frameErr('capital escorts',err)}
+  return o.apply(this,arguments)}}
+{const o=spawnFrigate;spawnFrigate=function(t,arrive){const e=o.apply(this,arguments);try{if(e&&!NET.cl){
+      if(t.riders&&t.riders.length){const L=t.riders;t.riders=[];for(const R of L){const ld={},cg={};for(const k in R.ld){const m=Math.min(R.ld[k],e.load[k]||0);if(m>0)ld[k]=inv.take(e.load,k,m)}for(const k in R.cg){const m=Math.min(R.cg[k],e.load[k]||0);if(m>0)cg[k]=inv.take(e.load,k,m)}
+          const r=makeNPC(R.role||'patrol',R.side,R.cls,R.tier,ld,R.home);r.fac=R.fac||r.fac;r.cargo=cg;if(R.hull)r.hull=Math.min(r.st.hull,R.hull);if(R.shield!=null)r.shield=Math.min(r.st.sCap,R.shield);
+          const B=capBerth(e,R.slot);r.x=B.x;r.y=B.y;r.z=B.z;qCopy(r.q,e.q);r.order={kind:R.kind,tgt:e,until:W.t+Math.max(30,R.left),slot:R.slot,by:R.by,pid:R.pid};W.ents.push(r)}}
+      if(isCar(t)&&capDefOK(t)){e.dbay=(t.def||[]).slice();t.def=[];e.dfl=[];e.defT=-1e9}}}catch(err){frameErr('capital escorts',err)}return e}}
+// ---- the carrier's own craft land before it jumps
+{const o=droneThink;droneThink=function(e,dt){const M=e.mom;
+  if(e.def){defThink(e,dt);return}
+  if(!NET.cl&&e.role==='flight'&&M&&M.alive&&W.ents.includes(M)&&capSpin(M)&&e.mis!=='sortie'){const d=d3(e,M);if(d<M.st.radius+110){carStow(M,e);return}steer(e,M.x,M.y,M.z,dt,true);faceTo(e,M,dt);e.thrusting=true;return}
+  return o.apply(this,arguments)}}
+// ---- the defence set
+function capDefOK(t){return!!t&&isCar(t)&&t.side!=='brood'&&t.side!=='pirate'}
+function capDefSide(t){if(t.side==='player'||t.owner){const P=t.owner&&S.pilots&&S.pilots[t.owner]||S.player;return intelFor(P)}return FAC_IDS.includes(t.side)?t.side:null}
+function capDefBy(t){return t.owner||(t.side==='player'?'me':null)}
+// what a carrier has of its set: aboard plus flying (live), or listed on the token
+function capDefNow(e){return(e.dbay||[]).concat((e.dfl||[]).filter(p=>p.alive&&W.ents.includes(p)).map(p=>p.cls))}
+function capDefHave(t){if(t.live){const e=carEnt(t);if(e)return capDefNow(e)}return t.def||[]}
+function capDefMissing(t){const have=capDefHave(t).slice(),out=[];for(const c of CAPJ.set){const i=have.indexOf(c);if(i>=0)have.splice(i,1);else out.push(c)}return out}
+function capDefKit(c){return carKit(c)}
+// filled from the faction's (or pilot's) stores when the carrier refits, like its wings
+function capDefFill(t,srcs){if(!capDefOK(t))return;for(const c of capDefMissing(t)){const kit=capDefKit(c);if(!takeFrom(kit,srcs))break;if(t.live&&carEnt(t)){const e=carEnt(t);inv.addAll(e.load,kit);(e.dbay=e.dbay||[]).push(c)}else{inv.addAll(t.load,kit);(t.def=t.def||[]).push(c)}}}
+{const o=capRefill;capRefill=function(t){const r=o.apply(this,arguments);try{if(capDefOK(t)){const f=t.side==='player'?sideNorm('player'):t.side,own=carOwned(t),st=own&&S.pilots&&S.pilots[t.owner]?S.pilots[t.owner].vault:S.econ.stock[f];if(st)capDefFill(t,own?[st]:[S.econ.fleet[f],st].filter(Boolean))}}catch(err){console.error(err)}return r}}
+// a carrier delivered fully loaded (the developer spawn) comes with its set too
+{const o=carFullLoad;carFullLoad=function(t){const r=o.apply(this,arguments);try{if(capDefOK(t)){t.def=[];for(const c of CAPJ.set){t.def.push(c);inv.addAll(t.load,capDefKit(c))}}}catch(err){console.error(err)}return r}}
+// the fabricator replaces a lost defence craft before anything else
+{const o=carTick;carTick=function(){try{if(!NET.cl)for(const t of S.frigates){if(!capDefOK(t)||carOwned(t)||t.hull<=0)continue;t.store=t.store||{};
+      if(t.fab&&t.fab.def&&S.T>=t.fab.until){const fb=t.fab;t.fab=null;const e=t.live&&carEnt(t);if(e){inv.addAll(e.load,fb.kit);(e.dbay=e.dbay||[]).push(fb.cls)}else{inv.addAll(t.load,fb.kit);(t.def=t.def||[]).push(fb.cls)}}
+      if(!t.fab){const miss=capDefMissing(t);if(miss.length){const c=miss[0],kit=capDefKit(c);if(haveIn(kit,[t.store])){takeFrom(kit,[t.store]);t.fab={cls:c,kit,until:S.T+BAL.carFab,def:1}}}}}}catch(err){console.error(err)}
+  return o.apply(this,arguments)}}
+// what the carrier asks its faction for includes the set's kits
+{const o=carWant;carWant=function(t){const w=o.apply(this,arguments);try{if(capDefOK(t))for(const c of capDefMissing(t)){const k=capDefKit(c);for(const x in k)w[x]=(w[x]||0)+k[x]}}catch(err){}return w}}
+// a threat to the carrier: a hostile ship within 4.5 km, fire on it, a missile or torpedo coming at it
+function capThreat(M){if(W.t-(M.lastHit||-1e9)<3&&M.lastHitBy&&hostile(M.side,M.lastHitBy))return true;
+  for(const m of W.missiles)if(m.tgt===M&&hostile(M.side,m.side))return true;
+  for(const o of W.ents){if(o.type!=='ship'||!o.alive||o===M||o.role==='limpet'||o.role==='drone'||!hostE(M.side,o))continue;if(o.isPlayer&&(S.player.docked||W.dead))continue;if(mHid(o,M))continue;if(d3(o,M)<CAPJ.threatR)return true}return false}
+// an enemy capital attacking the carrier, with no limpet of ours on it yet
+function capAttacker(M,f){for(const o of W.ents){if(o.role!=='frigate'||!o.alive||o===M||!hostE(M.side,o))continue;const R=o.tok;if(R&&R.pings&&R.pings[f]&&R.pings[f].until>S.T)continue;
+    if(d3(o,M)<6000&&((W.t-(M.lastHit||-1e9)<10&&M.lastHitBy===o.side)||o.lanceT===M||d3(o,M)<3200))return o}return null}
+function capBeaconJob(M,f){const B=S.beacons&&S.beacons[W.sid];if(!B||!f)return null;if(B.owner===f&&bcnState(B)==='locked')return null;return bcnCan(B,f)?B:null}
+function defLaunch(M,cls){const ld=capDefKit(cls),got={};for(const k in ld){const m=Math.min(ld[k],M.load[k]||0);if(m>0)got[k]=inv.take(M.load,k,m)}
+  const p=makeNPC('flight',M.side,cls,factionTier(M.fac),got,M.home);p.fac=M.fac;p.mom=M;p.def=1;p.wg='D';p.limpet=isScoutCls(cls)?1:0;p.ai.orb=Math.random()*TAU;p.x=M.x;p.y=M.y-M.st.radius*.3;p.z=M.z;qCopy(p.q,M.q);(M.dfl=M.dfl||[]).push(p);W.ents.push(p);return p}
+function defStow(M,p){inv.addAll(M.load,p.load||{});p.load={};const i=W.ents.indexOf(p);if(i>=0)W.ents.splice(i,1);p.alive=false;M.dfl=(M.dfl||[]).filter(x=>x!==p);(M.dbay=M.dbay||[]).push(p.cls);if(W.tgt&&W.tgt.ref===p)W.tgt=null}
+function defHome(e,M,dt){const d=d3(e,M);if(d<M.st.radius+110){defStow(M,e);return}steer(e,M.x,M.y,M.z,dt,true);faceTo(e,M,dt);e.thrusting=true}
+function defThink(e,dt){const M=e.mom;if(NET.cl)return;if(!M||!M.alive||!W.ents.includes(M)){e.def=0;e.role='leave';e.mom=null;return}
+  if(capSpin(M)){defHome(e,M,dt);return}
+  const t=M.tok,f=t&&capDefSide(t),ai=e.ai;
+  if(isScoutCls(e.cls)){
+    if(e.limpet){const E=f&&capAttacker(M,f);if(E){const d=d3(e,E);if(d<lpRad(E)+140){if(limpetPlant(E,f,capDefBy(t),e))e.limpet=0}else{steer(e,E.x,E.y,E.z,dt,false,1.1);faceTo(e,E,dt);e.thrusting=true;e.boosting=d>1500}return}}
+    const B=capBeaconJob(M,f);if(B){e.bcnJob=1;const d=d3(e,B);if(d>BCN_R*.5){steer(e,B.x,B.y,B.z,dt,true);faceTo(e,B,dt);e.thrusting=true}else{e.vx*=.9;e.vy*=.9;e.vz*=.9;e.thrusting=false}return}
+    e.bcnJob=0;defHome(e,M,dt);return}
+  // fighters: the threat nearest the carrier, within 1.5 km of it
+  if(ai.t<=0||!(ai.tgt&&ai.tgt.alive&&W.ents.includes(ai.tgt))||d3(ai.tgt,M)>CAPJ.defR*1.3){ai.t=.4+rnd(.3);ai.tgt=threatTo(M,e,CAPJ.defR)}
+  if(ai.tgt){fight(e,ai.tgt,dt);return}
+  if(W.t-(M.defT||-1e9)>CAPJ.clear){defHome(e,M,dt);return}
+  ai.orb=(ai.orb||0)+dt*.35;const R=M.st.radius+220,a=ai.orb;holdSlot(e,M,M.x+Math.cos(a)*R,M.y+Math.sin(a*1.3)*30,M.z+Math.sin(a)*R,dt,2);const rv=hyp(e.vx,e.vy,e.vz);if(rv>15)faceDir(e,e.vx,e.vy,e.vz,dt)}
+// the carrier decides: launch on a threat, the scout for its jobs, nothing while the drive is past 75%
+{const o=frigateThink;frigateThink=function(e,dt){const r=o.apply(this,arguments);try{const t=e.tok;if(!NET.cl&&e.alive&&t&&capDefOK(t)&&W.ents.includes(e)&&!capSpin(e)){
+      e.dbay=e.dbay||[];e.dfl=e.dfl||[];const f=capDefSide(t);
+      if(capThreat(e))e.defT=W.t;const hot=W.t-(e.defT||-1e9)<1;
+      if(W.t>=(e.defLT||0)&&e.dbay.length){let i=-1;
+        if(hot)i=e.dbay.findIndex(c=>!isScoutCls(c));
+        if(i<0){const si=e.dbay.findIndex(c=>isScoutCls(c));if(si>=0&&f&&(capBeaconJob(e,f)||capAttacker(e,f)))i=si}
+        if(i>=0){const c=e.dbay.splice(i,1)[0];defLaunch(e,c);e.defLT=W.t+CAPJ.launchGap}}}}catch(err){frameErr('defence set',err)}return r}}
+// the scout counts as a beacon flipper for its side
+{const o=bcnFlipper;bcnFlipper=function(e){if(e&&e.def&&e.bcnJob&&e.alive&&isScoutCls(e.cls)&&e.mom&&e.mom.tok){const f=capDefSide(e.mom.tok);if(f)return{side:f,by:capDefBy(e.mom.tok)}}return o.apply(this,arguments)}}
+// the Hangar console: a line for the defence set
+function capDefLine(e){const fly=(e.dfl||[]).filter(p=>p.alive&&W.ents.includes(p)),miss=capDefMissing(e.tok);return`<p class="note" style="margin:8px 0 0">Defence set: ${(e.dbay||[]).length} aboard, ${fly.length} flying${miss.length?`, ${miss.length} to replace`:''}. They escort this carrier only, launch when a threat comes within 4.5 km (or it's hit), and land once it has been clear for ${CAPJ.clear} s. The scout flips this system's beacon when it isn't locked, and limpets an enemy capital that attacks.</p>`}
+{const o=hangarHtml;hangarHtml=function(F,t,C,B){let h=o.apply(this,arguments);try{if(t&&capDefOK(t))h+=capDefLine(F)}catch(err){}return h}}
+
+//@src 16zzm_gatelock.js
+// ============================================================ gate lock kits (Beyond 6c, decided by the user 6 Nov 2026)
+// Pirate gear from the Wrack. Scrapheart Haven makes a kit every 10 minutes from the Unbound's stores (one Alloy Plate and
+// one Conduit each, so the ledger stays exact) while it has the materials and fewer than four on its shelf, and sells them
+// for 2,500 cr, one per pilot per hour. Owning one is no crime; carrying one is contraband, like the rest of the gear.
+// Fly within 300 m of a gate with a kit in your hold and press F: the lock clamps the gate and arms in 20 s (it can be shot
+// off meanwhile, at a quarter of its health), with a warning to every ship on both sides. Armed, the gate is sealed both
+// ways for 5 minutes, then the lock burns out. It has 2,000 health, no shield and no regrowth, every weapon does full
+// damage, and it can be shot from either side of the gate. Burnt out or destroyed, its materials fall as debris there.
+// Not on a freeport's gates or the Wrack's, one per gate, and never on a power's home system's last open gate. Capital
+// ships still jump on their own drives. A convoy that reaches a locked gate is stuck there until the lock goes; off-screen
+// traffic routes round a locked gate when there is a way round. The Unbound set locks on the convoys their raiders lie in
+// wait for (more under a Cunning or Greedy Dread Pirate, less under a Paranoid one), using the haven's own kits. Locking a
+// power's gate where its ships or its beacon see you costs standing with it and raises its heat on you; a lock that traps
+// one of its convoys counts as raiding it. The powers post a job to break a lock on their gates, paid to whoever kills it.
+const GL={hp:2000,arm:20,hold:300,price:2500,sell:1250,make:600,shelf:4,gap:3600,setR:300,seeR:4000,stand:8,heat:30,trap:5,breakPay:800,unbBase:.45};
+ITEMS.glock={name:'Gate lock kit',recipe:{plate:1,wire:1},col:'#d8cd98',gear:1};ITEM_ORDER.push('glock');
+CLASSES.glock={name:'Gate lock',hull:GL.hp,shield:0,speed:.01,turn:.01,weapon:0,cargo:0,drill:0,radius:110,rack:0,boost:1,agile:.1,acc:.01,desc:'An Unbound clamp sealing a jump gate.'};
+if(PIRATE.hulls)PIRATE.hulls.glock='Gate lock';
+function glOf(a,b){const k=gateKey(a,b);return(S.glocks||[]).find(L=>L.key===k)||null}
+function glName(L){return`the gate between ${DEF[L.a].name} and ${DEF[L.b].name}`}
+function glLeft(L){return Math.max(0,L.stage==='arm'?L.t0+GL.arm-S.T:L.until-S.T)}
+// where a lock may go
+function glWhyNot(a,b){if(!a||!b||!(NEIGH[a]||[]).includes(b))return'There is no gate there.';const k=gateKey(a,b);
+  if(a==='wr'||b==='wr')return'The Wrack\'s gates can\'t be locked.';
+  if(isFreeF(S.stations[a])||isFreeF(S.stations[b])||DEF[a].kind==='free'||DEF[b].kind==='free')return'A freeport\'s gates can\'t be locked.';
+  if(glOf(a,b))return'This gate already has a lock on it.';if(ogAt(a,b)||S.gateDown[k])return'This gate is already sealed.';
+  for(const x of[a,b])if(DEF[x].home&&ogOpenGates(x,k)<1)return`That would cut ${DEF[x].name} off: a home system always keeps one gate open.`;return''}
+// a lock clamps a gate (by a pilot's key, or 'pirate' for the Unbound); the kit's materials ride in the lock
+function glPlace(a,b,by){const why=glWhyNot(a,b);if(why)return why;const L={id:S.nextId++,key:gateKey(a,b),a,b,by,t0:S.T,stage:'arm',until:S.T+GL.arm+GL.hold,hp:GL.hp*.25,load:{...ITEMS.glock.recipe},trap:{}};
+  (S.glocks=S.glocks||[]).push(L);ogSay(L,`⚠ Something is clamping ${glName(L)}: a gate lock, arming in ${GL.arm} s. Shoot it off the gate.`,'warn');return L}
+function glEnd(L,sid){S.glocks=(S.glocks||[]).filter(x=>x!==L);if(L.down!=null&&S.gateDown[L.key]===L.down)delete S.gateDown[L.key];const s=S.sectors[sid||L.a];if(s)toDebris(s,L.load);L.load={};
+  for(const w of Object.values(WORLDS))for(const e of w.ents)if(e.glId===L.id&&e.alive){e.alive=false;const i=w.ents.indexOf(e);if(i>=0)w.ents.splice(i,1)}}
+function glTick(){if(NET.cl||!S)return;S.glocks=S.glocks||[];const T=S.T;
+  for(const L of S.glocks.slice()){if(L.stage==='arm'&&T>=L.t0+GL.arm){L.stage='set';L.hp=Math.min(GL.hp,L.hp+GL.hp*.75);S.gateDown[L.key]=L.down=L.until;for(const w of Object.values(WORLDS))for(const e of w.ents)if(e.glId===L.id&&e.alive)e.hull=L.hp;ogSay(L,`⚠ ${glName(L)[0].toUpperCase()+glName(L).slice(1)} is locked for ${GL.hold/60} minutes.`,'bad');continue}
+    if(T>=L.until){ogSay(L,`The gate lock on ${glName(L)} has burnt out: the gate is open.`,'info');glEnd(L)}}
+  // the haven makes a kit every 10 minutes
+  const R=S.stations&&S.stations.wr;if(R&&R.owner==='pirate'&&!havenDown()&&T>=(S.glMakeT||0)){S.glMakeT=T+GL.make;const st=mkStock(R),src=S.econ.stock.pirate;if((st.glock||0)<GL.shelf&&src&&haveIn(ITEMS.glock.recipe,[src])){takeFrom(ITEMS.glock.recipe,[src]);inv.add(st,'glock',1)}}}
+{const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{glTick()}catch(err){frameErr('gate locks',err)}return r}}
+{const o=ledger;ledger=function(){const r=o.apply(this,arguments);try{const L=r.L['Faction & Unbound stores'];for(const x of S.glocks||[]){const v=invVec(x.load||{});for(const e of RAWS){L[e]+=v[e];r.tot[e]+=v[e]}}}catch(e){}return r}}
+// ---- in the world: one lock seen from both sides of its gate, one hull
+function glEnt(L){const to=W.sid===L.a?L.b:L.a,g=(GATES[W.sid]||[]).find(x=>x.to===to);if(!g)return null;const e=makeNPC('glock','pirate','glock',1,{},'stock:pirate');e.glId=L.id;e.x=g.x*.985;e.y=g.y*.985;e.z=g.z*.985;e.vx=e.vy=e.vz=0;
+  qLook(-g.x,-g.y,-g.z,0,1,0,e.q);e.st={...e.st,hull:GL.hp,sCap:0};e.hull=L.hp;e.shield=0;e.noRegen=1e12;e.pname='Gate lock';W.ents.push(e);return e}
+function glWorld(){if(NET.cl||!W)return;for(const L of S.glocks||[]){if(L.a!==W.sid&&L.b!==W.sid)continue;let e=W.ents.find(x=>x.alive&&x.glId===L.id);if(!e)e=glEnt(L);if(!e)continue;if(L.hp<e.hull-1)e.hull=L.hp;e.vx=e.vy=e.vz=0;e.shield=0;
+    const max=L.stage==='arm'?GL.hp*.25:GL.hp;if(e.hull>max)e.hull=max;L.hp=e.hull}}
+{const o=worldUpdate;worldUpdate=function(dt){const r=o.apply(this,arguments);try{glWorld()}catch(err){frameErr('gate locks',err)}return r}}
+{const o=npcThink;npcThink=function(e,dt){if(e.role==='glock'){e.vx=e.vy=e.vz=0;e.thrusting=false;e.boosting=false;return}return o.apply(this,arguments)}}
+{const o=killShip;killShip=function(e,src,at){if(e&&e.role==='glock'&&e.alive){const L=(S.glocks||[]).find(x=>x.id===e.glId);e.load={};e.cargo={};if(L){const kp=at&&at.src&&at.src.rp,killer=kp||(src==='player'?'me':null);ogSay(L,`✔ The gate lock on ${glName(L)} is destroyed: the gate is open.`,'good');
+      if(killer){const f=[sectorOwner(L.a),sectorOwner(L.b)].find(x=>FAC_IDS.includes(x));if(f)runAs(isMe(killer)?null:killer,()=>{const got=transfer(f,'player',GL.breakPay);if(got)feed(`✔ ${FACTIONS[f].short} pays +${fmt(got)} cr for breaking the gate lock.`,'good')})}
+      glEnd(L,W.sid)}}return o.apply(this,arguments)}}
+// the gate's own text
+{const o=ogTxt;ogTxt=function(sid,to){const L=glOf(sid,to);if(L&&L.stage!=='arm')return`This gate is locked by an Unbound gate lock (${Math.round(L.hp)} of ${GL.hp} hull, ${fmtT(glLeft(L))} left). Shoot it off the gate to open it.`;return o.apply(this,arguments)}}
+// ---- a convoy that reaches a locked gate waits there; off-screen traffic goes round it
+{const o=gateLocked;gateLocked=function(e){const r=o.apply(this,arguments);if(r)return r;try{const D=e&&e.ai&&e.ai.dest;if(e&&e.role==='trader'&&D&&D.type==='gate'&&W){const L=glOf(W.sid,D.to);if(L&&L.stage!=='arm'){glTrap(L,e);return true}}}catch(err){}return false}}
+function glTrap(L,e){if(L.trap[e.id])return;L.trap[e.id]=1;if(!L.by||L.by==='pirate'||!FAC_IDS.includes(e.side))return;const P=xPilotOfKey(L.by);if(P&&!P.sworn)standAdd(e.side,-GL.trap,'your gate lock trapped its convoy',P)}
+let glRouting=false;
+{const o=tradersTick;tradersTick=function(){glRouting=true;try{return o.apply(this,arguments)}finally{glRouting=false}}}
+{const o=ogSealed;ogSealed=function(a,b){const r=o.apply(this,arguments);if(r||!glRouting)return r;const L=glOf(a,b);return L&&L.stage!=='arm'?L:null}}
+{const o=ogRoute;ogRoute=function(a,b){if(!glRouting)return o.apply(this,arguments);const prev={[a]:null},q=[a];while(q.length){const c=q.shift();if(c===b)break;for(const n of NEIGH[c]||[]){if(n in prev||ogSealed(c,n))continue;prev[n]=c;q.push(n)}}if(!(b in prev))return null;const p=[];for(let c=b;c!=null;c=prev[c])p.unshift(c);return p}}
+// ---- the Unbound lock the gate a convoy they're waiting for will leave by
+function glUnbChance(){let p=GL.unbBase;if(dpHas('Cunning')||dpHas('Greedy'))p*=1.6;if(dpHas('Paranoid'))p*=.5;return Math.min(.9,p)}
+function glUnbTake(){const R=S.stations&&S.stations.wr;if(!R||havenDown())return false;const st=mkStock(R);if(!(st.glock>0))return false;inv.take(st,'glock',1);return true}
+function glUnbLock(t){const nx=t.path&&t.path[t.leg+1];if(!nx||glOf(t.sector,nx)||glWhyNot(t.sector,nx)||Math.random()>glUnbChance())return null;if(!glUnbTake())return null;const L=glPlace(t.sector,nx,'pirate');if(typeof L==='string'){inv.add(mkStock(S.stations.wr),'glock',1);return null}L.stage='set';L.hp=GL.hp;S.gateDown[L.key]=L.down=L.until=S.T+GL.hold;return L}
+{const o=raidOdds;raidOdds=function(r,sid,base,owner){const p=o.apply(this,arguments);return r&&r.lockK?Math.min(.95,p*r.lockK):p}}
+{const o=raidFight;raidFight=function(r){try{if(r&&r.side==='pirate'&&!r.dep&&!r.lockK){const t=(S.traders||[]).find(x=>x.id===r.tgt);if(t&&glUnbLock(t))r.lockK=1.25}}catch(err){}return o.apply(this,arguments)}}
+{const o=spawnTrader;spawnTrader=function(t,arrive){const e=o.apply(this,arguments);try{if(arrive&&!NET.cl&&t.kind==='haul'&&(S.raids||[]).some(r=>r.side==='pirate'&&r.tgt===t.id&&r.sector===t.sector)){const L=glUnbLock(t);if(L){L.stage='arm';L.t0=S.T;L.until=S.T+GL.arm+GL.hold;L.hp=GL.hp*.25;delete S.gateDown[L.key];L.down=null}}}catch(err){}return e}}
+// ---- a pilot sets one: F within 300 m of a gate with a kit in the hold
+function glGateNear(e){if(!W||!e)return null;let best=null,bd=GL.setR+(e.st?e.st.radius:0);for(const g of GATES[W.sid]||[]){const d=d3(e,g);if(d<bd){bd=d;best=g}}return best}
+function glSet(P,e,to){if(!P||!e)return'No ship.';if(!(P.cargo.glock>0))return'You have no gate lock kit aboard.';const g=glGateNear(e);if(!g||(to&&g.to!==to))return`Fly within ${GL.setR} m of a gate to set the lock.`;
+  const L=glPlace(W.sid,g.to,pkeyOf(P));if(typeof L==='string')return L;inv.take(P.cargo,'glock',1);
+  // seen by a power whose gate it is: standing and heat
+  for(const sid of[L.a,L.b]){const f=sectorOwner(sid);if(!FAC_IDS.includes(f))continue;const B=S.beacons&&S.beacons[W.sid],seen=(B&&B.owner===f)||W.ents.some(x=>x.alive&&x.type==='ship'&&x.side===f&&!x.isPlayer&&d3(x,e)<GL.seeR);
+    if(seen){if(!P.sworn)standAdd(f,-GL.stand,'you locked its gate',P);smHeat(P,f,GL.heat,'locking its gate')}}
+  return`☠ Gate lock set on the gate to ${DEF[g.to].name}: it arms in ${GL.arm} s and holds ${GL.hold/60} minutes.`}
+{const o=dockAction;dockAction=function(act,arg){if(act==='glock'){const P=S.player,pid=curPid(),e=NET.on&&MP.rp&&pid&&MP.rp[pid]?MP.rp[pid]:W&&W.player,w=e&&worldOf(e);dockErr=w?inW(w,()=>glSet(P,e,String(arg||'')))||'':glSet(P,e,String(arg||''));return}
+  if(act==='buy'&&String(arg).split(':')[0]==='glock'){const P=S.player;if(S.T-(P.glockT||-1e9)<GL.gap){dockErr=`The haven sells you one gate lock kit an hour: next in ${fmtT(GL.gap-(S.T-P.glockT))}.`;return}const n0=P.cargo.glock||0,s0=countIn('glock',[P.cargo,P.vault||{}]);const r=o.call(this,act,'glock:1');if(countIn('glock',[P.cargo,P.vault||{}])>s0)P.glockT=S.T;return r}
+  return o.apply(this,arguments)}}
+if(typeof CO_REMOTE!=='undefined'){CO_REMOTE.add('glock');CO_REMOTE.add('cocol')}
+function glPress(){const P=S.player,e=W&&W.player;if(!e||P.docked||W.dead)return false;if(!(P.cargo.glock>0))return false;const g=glGateNear(e);if(!g)return false;
+  if(NET.cl){netSend({t:'act',act:'glock',arg:g.to});flash('Setting the gate lock…');return true}dockAction('glock',g.to);flash(dockErr,!/^☠/.test(dockErr));return true}
+{const o=blPilotUpdate;blPilotUpdate=function(p,P,st,sec,dt){const hold=!!(keys.KeyF||mouse.r||touch.mine);if(P&&P.cargo&&P.cargo.glock>0&&glGateNear(p)){const press=hold&&!p.glHeld;p.glHeld=hold;if(press)glPress();return}p.glHeld=hold;return o.apply(this,arguments)}}
+{const o=convoyChip;convoyChip=function(){const c=o.apply(this,arguments);if(c)return c;try{const P=S.player,e=W&&W.player;if(e&&!P.docked&&P.cargo.glock>0){const g=glGateNear(e);if(g){const why=glWhyNot(W.sid,g.to);return why?[`☠ Gate lock: ${why}`,'warn']:[`☠ F: set a gate lock on the gate to ${DEF[g.to].name}`,'warn']}}
+    if(e){for(const L of S.glocks||[])if(L.a===W.sid||L.b===W.sid)return[`☠ Gate lock on the gate to ${DEF[L.a===W.sid?L.b:L.a].name}: ${L.stage==='arm'?'arming':'locked'}, ${fmtT(glLeft(L))}`,'bad']}}catch(err){}return null}}
+// contraband: a kit counts as pirate gear for customs
+{const o=gearOn;gearOn=function(P){return o.apply(this,arguments)+(P&&P.cargo&&loadOn()?(P.cargo.glock||0):0)}}
+// the haven's price; elsewhere a kit fetches half
+{const o=mBuy;mBuy=function(c,id){if(id==='glock')return GL.price;return o.apply(this,arguments)}}
+{const o=mSell;mSell=function(c,id){if(id==='glock')return GL.sell;return o.apply(this,arguments)}}
+// the powers post a job to break a lock on their gates
+{const o=jobsList;jobsList=function(c,P,srcs){const out=o.apply(this,arguments);try{if(!c||c.kind!=='station'||!FAC_IDS.includes(c.owner))return out;for(const L of S.glocks||[]){const mine=[L.a,L.b].some(s=>sectorOwner(s)===c.owner);if(!mine)continue;const j=HOP[P.sector][L.a]||0;
+      out.push({id:'gl:'+L.id,by:c.owner,sid:L.a,ty:'fight',title:`Break the gate lock on ${esc(glName(L))}`,sub:`${L.stage==='arm'?'arming':'locked'} · ${fmtT(glLeft(L))} left`,hops:j,where:`${j} jump${j===1?'':'s'}`,payN:GL.breakPay,pay:`${fmt(GL.breakPay)} cr`,btn:L.a!==P.sector?['croute',L.a,'Set course']:null,
+        detail:()=>`<p class="note" style="margin:0">An Unbound gate lock has sealed the gate. ${FACTIONS[c.owner].short} pays ${fmt(GL.breakPay)} cr to whoever destroys it (2,000 hull, any weapon, from either side of the gate).</p>`})}}catch(err){console.error(err)}return out}}
+// its look: a ring of clamps round the gate's mouth in Unbound sand, with red warning lights
+{const o=shipMesh;shipMesh=function(fac,cls){if(cls!=='glock')return o.apply(this,arguments);if(MESH.glock)return MESH.glock;
+  const F=hexRGB(PIRATE.col),D=[.22,.2,.16],Rd=[1,.25,.2],g=new GB(),L=new GB();g.set(0,0,0).torus(.62,.07,24,6,D,0);
+  for(let i=0;i<6;i++){const a=i/6*TAU;g.set(Math.cos(a)*.62,Math.sin(a)*.62,0,qLook(Math.cos(a),Math.sin(a),0,0,0,1,q0())).box(.16,.16,.3,F,0);g.set(Math.cos(a)*.5,Math.sin(a)*.5,.12).sphere(.05,4,6,Rd,1)}
+  L.seg([0,0,0],[0,0,0],[0,0,0]);return MESH.glock={hull:g.upload(),rim:L.upload(true),eng:[]}}}
+// a lock is not a ship: no kill bounty for it (the power whose gate it is pays the breaker)
+{const o=payKill;payKill=function(e){if(e&&e.role==='glock')return;return o.apply(this,arguments)}}
 
 //@src 17_main.js
 // ============================================================ main loop

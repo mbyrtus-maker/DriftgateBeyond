@@ -485,7 +485,7 @@ function drawMap(){
   const onRoute=new Set();if(S.player.route){let cur=S.player.sector;for(let k=0;k<12&&cur!==S.player.route;k++){let nx=null,bh=1e9;for(const n of NEIGH[cur])if(HOP[S.player.route][n]<bh){bh=HOP[S.player.route][n];nx=n}onRoute.add(gateKey(cur,nx));cur=nx}}
   for(const[a,b]of LINKS){const[x1,y1]=mapXY(DEF[a],w,h),[x2,y2]=mapXY(DEF[b],w,h),down=S.gateDown[gateKey(a,b)];if(onRoute.has(gateKey(a,b))){c.strokeStyle='rgba(240,178,74,.9)';c.lineWidth=5;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke()}c.strokeStyle=down?(ogSealed(a,b)?FACTIONS.brood.col:'#ff5d4f'):'#5a647c';c.setLineDash(down?[5,5]:[]);c.lineWidth=2;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();c.setLineDash([])}
   const t=performance.now()/1000,LBL=[];
-  for(const d of SECTOR_DEFS){const[x,y]=mapXY(d,w,h),own=sectorOwner(d.id),col=sideCol(own),r=Math.round((d.kind==='core'?22:d.kind==='void'?13:18)*mapK(w,h));
+  for(const d of SECTOR_DEFS){const[x,y]=mapXY(d,w,h),own=sectorOwner(d.id),col=own==='player'?coColAt(d.id):sideCol(own),r=Math.round((d.kind==='core'?22:d.kind==='void'?13:18)*mapK(w,h));
     c.fillStyle='#0c1222';c.beginPath();if(d.kind==='core'||d.kind==='frontier'||d.kind==='void')c.arc(x,y,r,0,TAU);else{for(let i=0;i<6;i++){const a=i/6*TAU+Math.PI/6;c[i?'lineTo':'moveTo'](x+Math.cos(a)*r,y+Math.sin(a)*r)}c.closePath()}c.fill();c.strokeStyle=col;c.lineWidth=mapSel===d.id?4:2;c.stroke();
     if(d.kind==='core'){c.fillStyle=col;c.beginPath();c.arc(x,y,6,0,TAU);c.fill()}
     if(d.kind==='deep'){c.fillStyle='#6ff2cf';c.font='700 10px "Saira Semi Condensed",sans-serif';c.textAlign='center';c.fillText('Au',x,y+4)}

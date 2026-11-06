@@ -171,7 +171,7 @@ const FACTIONS={
 FACTIONS.brood={name:'The Vael Brood',short:'Brood',col:'#9be35a',fill:'#14200c',trait:{hull:1.5,shield:.6,energy:1.1},traitText:'Hull +50% and regrows · Shields −40%',blurb:'Something grown, not built. It eats ore, and it eats stations.',
   hulls:{overgrowth:'Overgrowth',mite:'Mite',interceptor:'Skitter',striker:'Thresher',heavy:'Carapace',bomber:'Sporemaw',prospector:'Grazer',freighter:'Gorger',drone:'Mite',skiff:'Nibbler',frigate:'Leviathan',escort:'Prowler',dredger:'Devourer',courier:'Crawler',bulker:'Bloater',constructor:'Seeder',scout:'Watcher',scout2:'Stalker'},station:'Bloom Heart',depot:'Bloom Node',shot:'spore',bio:true};
 const PIRATE={name:'The Unbound',short:'Unbound',col:'#d8cd98',fill:'#221f15',shot:'scrap',hulls:{raider:'Raider',corsair:'Corsair',plunderer:'Plunderer',uskiff:'Skiff',gunboat:'Raker',interceptor:'Dart',striker:'Cutter',heavy:'Brute',bomber:'Wrecker',prospector:'Gouger',freighter:'Scow',drone:'Junk Drone',skiff:'Scrounger',frigate:'Destroyer',dredger:'Grinder',courier:'Smuggler',bulker:'Hulk',constructor:'Rigger',scout:'Sneak',scout2:'Ghost'}};
-const PLAYER_COL='#f0b24a';
+let PLAYER_COL='#f0b24a';   // the local pilot's company colour (16zzk_colour.js keeps it up to date)
 const CLASSES={
   overgrowth:{name:'Brood Overgrowth',hull:2000,shield:0,speed:.01,turn:.01,weapon:0,cargo:0,drill:0,radius:150,rack:0,boost:1,agile:.1,acc:.01,desc:'A living mass sealing a jump gate.'},
   mite:{name:'Mite',hull:12,shield:0,speed:1.45,turn:4,weapon:.5,cargo:0,drill:0,radius:7,rack:0,boost:1.2,agile:1.6,acc:1.55,bcost:.6,desc:'Brood swarm fighter: grown from ore, fast, fragile, no shields.'},
