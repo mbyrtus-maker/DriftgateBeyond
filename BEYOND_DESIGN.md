@@ -2290,3 +2290,10 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 - 4.5 CEO changes a galaxy, a little more often during events; Penny-pincher 3.3%/h best, Premium 1.2%/h worst, Restless ousted 56%.
 - 7.5% of purchases fall back on a station's standard part; median price 1.12x list; every sale clears 15%.
 - Open: a freeport home edge for freeport makers; event strength and more events (Brood surges, a pirate blockade); standard parts' price; CEO balance.
+
+**Simulation v5, 5 Nov 2026 (the user's answers):** every maker sells at every station; no random line-ups: each maker makes the same products with the same starting traits in every galaxy (the game's lines with the trade-off fixes, plus v2's system lines; Unbound gear left out). CEOs and events stay random, and a product that fails its three tweaks is still replaced by a new one with new traits. 120 cr an hour + 25 per active line (9.2 lines a maker). 200 galaxies of 16 h (`tools/corpsim/run_v5.py`):
+- 0.65 failures a galaxy (47% none); Spirewright 41, Hold Foundry 39 and Wakefire 29 of 129 failures in 200 galaxies.
+- The line-up decides who leads: Archive Dynamics is top seller in 62% of galaxies, Marchgun 21%; the top four (Archive, Marchgun, Quicksilver, Ember) each own the only standard line of one or two systems. Without events (0.59 failures) or without CEOs (0.65) the same makers lead; v5 with random line-ups: 0.09 failures, all twelve lead somewhere.
+- CEOs: Penny-pincher, Expansionist and Discounter 5.2-5.4%/h, Premium 3.3%/h and most failures; Restless ousted 56%.
+- Every sale clears 15%; median price 1.14x list; 1% of purchases fall back on station standard parts; 8% of maker parts reach +20%, average +5.7 net, highest +14.9.
+- Open: one standard line per system makes its maker the leader (two makers each, or stations sell standard systems?); the weak three (Spirewright, Hold Foundry, Wakefire); reroll starting traits each galaxy for variety; Premium CEO balance.

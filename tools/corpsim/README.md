@@ -10,6 +10,7 @@ product replaces it and its unsold stock goes back to raw ore.
   `data.json` and `data2.json` (Playwright). Re-run after changing makers or parts.
 - `sim2.py`: the model (`sim(seed, params)`; the defaults are the recommended numbers).
 - `run_v2.py`: 200 galaxies of 16 h for each setting; prints the results and writes `res_v2.json`. About 20 s.
+- `sim5.py`, `run_v5.py`: version 5 (every maker sells at every station, fixed line-ups with fixed starting traits; CEOs and events random). `run_v5.py` writes `res_v5.json`; about 40 s.
 - `sim4.py`, `run_v4.py`: version 4 (every maker sells at the freeports, station standard parts, galaxy events: famine, feast, plague, war scare, ore boom, shortage). `run_v4.py` writes `res_v4.json`; about 40 s.
 - `sim3.py`, `run_v3.py`: version 3 (no upgrades, Unbound gear out, ore to the station holding the stock, random line-ups per galaxy, CEO traits). `run_v3.py` writes `res_v3.json`; about 30 s.
 
