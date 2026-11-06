@@ -2167,6 +2167,11 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 - The Post jobs tab shows where each taker is ("in Coldwater Drift, 2 jumps out", "mining: 6 of 15 t", "on guard, 12:40 left"). Fees are paid when the job is done. A Compact contractor flies the Compact's colours (only the Brood and the Unbound attack it).
 - **Not yet:** off-screen raids don't hunt contractors (they hunt convoys); in multiplayer a guest's takers fly only when the host has the system open, as all tracked ships do.
 
+**Stage 1b as built (6 Nov 2026, `16zzs_crewruns.js`; test `crewruns.py`): your crews do real work.**
+- **Mining crews:** while the depot's system is open, a mining crew's ship drills real rocks at its hull's rate (skiff 3, prospector 5, dredger 7 t a minute), fills its hold (up to four minutes' work) and unloads at the depot; the minute tick no longer mines for it while the system is open. Out of sight the minute tick mines as before (tracked work).
+- **Hauling crews:** every two minutes a hauling crew loads what the depot is set to sell and flies it to the nearest market that deals with you along the lanes (`S.crRuns`), sells it there, and flies home empty. It shows in any live system on its way, and if it's shot down the crew is lost and its hold is salvage. (The goods were sold from the depot directly before.)
+- Guards and idle crews are as they were; a crew away on a run isn't at the depot.
+
 **Order (user, 6 Nov 2026):** stage 2 next; then **stage 1b, your crews made real**: today (`16w_crews.js`) a depot's crews fly in its system for show while the minute tick does the work; crew miners will mine and unload for real and crew haulers carry real goods (raidable), guards as now.
 
 **Stage 1 as built (6 Nov 2026, `16zzn_miners.js`; test `miners.py`):**
