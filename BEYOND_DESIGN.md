@@ -2132,6 +2132,7 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 - **Losses:** a miner killed is gone from the roster with whatever it carried (its kit falls as a crate and debris as any ship's does) and the site's mining falls by its share until a new one is built. A site that changes hands loses its roster: kits docked there fall as debris, and the new owner starts building its own.
 - **Seen:** the galaxy map's system panel shows "Miners 3/4 (2 out) · mining at 76% · next built in 3 min".
 - **Not yet:** freeports and the Wrack still mine without miners, and player stations keep their old rate (no roster); off-screen raids don't kill miners yet (stage 3).
+- **War check** (600 galaxies, 16 h, the player an idle contractor at Mirrorwater): Halcyon 25%, Ostrova 24%, Varkesh 22%, Brood 20%, unfinished 8% (before: Brood 26%, Halcyon 26%, Varkesh 21.5%, Ostrova 22.5%, unfinished 4.5%, two runs). On target; galaxies run a little longer, since a power that loses miners mines less until it rebuilds. Published 6 Nov 2026.
 
 ### The Picket class retired (5 Nov 2026)
 - **The user's ask:** no one uses pickets; double-check and comment the code out.
