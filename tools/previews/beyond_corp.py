@@ -12,7 +12,7 @@ sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,box,plate,ring
 from beyond_capitals import tube
 from beyond_stations import ry,frame_y,put,outward,drum,truss,tank,radiator,floods,mast,container
-from beyond_faction_stations import lathe,band,node,bridge,crystal_at,tilted_ring,float_seg,light_up
+from beyond_faction_stations import lathe,band,node,bridge,crystal_at,tilted_ring,float_seg,light_up,talon,tri_spire,pincer_clamp,turned,zdir,UP_CLAW
 from beyond_work import abox
 PI=math.pi
 SOCK=[PI/4,3*PI/4,5*PI/4,7*PI/4]
@@ -156,8 +156,37 @@ def logo_board(M,logo,c,a,size):
     for poly in LOGOS[logo]:plate(B,[(x*k,y*k,.03) for x,y in poly],.012,GLOW,1.0)
     put(M,B,c,outward(a))
 BOARD={'halcyon':(.95,.4,.6),'varkesh':(1.12,.42,.62),'ostrova':(1.0,.56,.56),'freeport':(.62,.54,.62)}   # (height, radius, size)
+# Varkesh: the Talon Citadel in small, as the depot: two triangular spires on an armoured waist, three talons curling up and
+# three down. Three labs are held out from the upper faces in pincer clamps; the fourth hangs under the lower spire, clutched by
+# the three lower talons. The CEO's bay is a hangar slot in one waist face; the logo boards sit on the lower faces.
+VH,VR=1.6,.95
+def v_face(k):return PI/2+PI/3+k*2*PI/3
+def varkesh_rd(grades,logo):
+    M=Mesh();tri_spire(M,0,VH,VR,1);tri_spire(M,0,VH,VR,-1)
+    lathe(M,[(-.12,VR*1.02),(-.05,VR*1.08),(.05,VR*1.08),(.12,VR*1.02)],3,(MID,1.0),(LIGHT,1.0),(LIGHT,1.4),off=PI/2,caps=False)
+    band(M,0,VR*1.09,3,.05,ACC,PI/2);band(M,.75,VR*.58,3,.04,WIN,PI/2)
+    C=[(r*.31,y*.31) for r,y in UP_CLAW];CD=[(r*.31*.8,-y*.31*1.05) for r,y in UP_CLAW]
+    for k in range(3):a=PI/2+k*2*PI/3;talon(M,a,C,.28,.1);talon(M,a,CD,.26,.1)
+    tube(M,[(0,VH-.1,0),(0,VH+.55,0)],[.05,.02],LIGHT,.9,5);node(M,(0,VH+.6,0),.08,GLOW);ring(M,(0,VH+.3,0),.16,.03,ACC,seg=12,sides=4,axis='y')
+    # the CEO's bay in the first waist face
+    a0=v_face(0);u0=np.array([math.cos(a0),0,math.sin(a0)]);turned(M,lambda B:ceo_bay(B,(0,0,0),.5,.22,.25),u0*(VR*.5+.08),a0)
+    for k in range(3):
+        a=v_face(k);u=np.array([math.cos(a),0,math.sin(a)]);g=grades[k] if k<len(grades) else 0
+        base=u*(VR*.5*.62)+[0,.55,0]
+        turned(M,lambda B:pincer_clamp(B,.95,.42),base,a)
+        if g:B=Mesh();lab_pod(B,'varkesh');(lab_gantry(B,'varkesh') if g>=3 else None);(lab_radiators(B,'varkesh') if g>=4 else None);(lab_crown(B,'varkesh') if g>=5 else None);put(M,B,base+u*1.3,outward(a),1.25)
+        if logo:logo_board(M,logo,u*(VR*.5*.62+.05)+[0,-.62,0],a,.5)
+    if len(grades)>3 and grades[3]:
+        B=Mesh();lab_pod(B,'varkesh');g=grades[3]
+        if g>=3:lab_gantry(B,'varkesh')
+        if g>=4:lab_radiators(B,'varkesh')
+        if g>=5:lab_crown(B,'varkesh')
+        put(M,B,(0,-VH+.15,0),zdir((0,-1,0)),1.2)
+    else:node(M,(0,-VH-.08,0),.09,GLOW)
+    return M
 def corp_station(style,grades=(),logo=None):
     # grades: the labs' grades, filling the sockets in order (up to four)
+    if style=='varkesh':return light_up(varkesh_rd(grades,logo),40+15*len(grades))
     M=Mesh();tower(M,style)
     if logo:
         y,r,sz=BOARD[style]
