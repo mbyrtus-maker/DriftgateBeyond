@@ -6,7 +6,7 @@
 // is attacked, its garrison is what defends it (plus a ship sent from the muster when the power saw it coming), and the
 // ships lost in that fight are gone. A ship lost either way is rebuilt from the power's stores, one every 3 minutes. No
 // patrol is spawned by chance any more.
-const GR={n:{core:3,depot:3,hive:6,out:3},wing:3,build:180,retry:60,turn:[40,80]};
+const GR={n:{core:3,depot:3,hive:6,out:3},wing:3,build:180,retry:60,turn:[40,80],topup:false};   // topup: a short garrison is made up from the muster in a fight off-screen, to the old 3 (home) or 2
 function grSites(){const L=[];for(const sid in S.stations){const R=S.stations[sid];if(R&&FACTIONS[R.owner]&&GR.n[R.kind])L.push('S.'+sid)}
   for(const oid in S.outposts){const o=S.outposts[oid];if(o&&FACTIONS[o.owner])L.push('O.'+oid)}return L}
 function grSite(key){const id=key.slice(2);if(key[0]==='S'){const R=S.stations[id];return R?{key,kind:R.kind,owner:R.owner,sid:id,R}:null}const o=S.outposts[id];return o?{key,kind:'out',owner:o.owner,sid:o.sector,o}:null}

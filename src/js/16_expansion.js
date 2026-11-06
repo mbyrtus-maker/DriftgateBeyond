@@ -1034,7 +1034,7 @@ function subHud(c,p){const T=W.tgt&&validTgt(W.tgt)?W.tgt.ref:null,rec=subRecOf(
 function subPanel(T){const rec=subRecOf(T);if(!rec)return'';const open=subOpen(T),pk=W.tsub&&W.tsub.E===T?W.tsub:null,col=f=>f<=0?'#8a8a8a':f<.5?'var(--amber)':'#9fd28a',L=[];
   for(const k of subKeys(rec)){const mx=subMax(rec,k);if(k==='pd'||k==='tur'){const n=subTurN(rec),d=subTurDown(rec);L.push(`<span style="color:${col(d>=n?0:d?.4:1)}">${k==='pd'?'PD':'Turrets'} ${n-d}/${n}</span>`);continue}
     const v=subHp(rec,k);L.push(`<span style="color:${col(v/mx)}">${subName(rec,k).replace('Shield generator','Shield gen')} ${v<=0?'out':Math.round(v/mx*100)+'%'}</span>`)}
-  let h=`<div class="ts" style="margin-top:4px">${open?`<span style="color:#ffd27a">Systems open · Shift+${kb('tgtH')} picks one</span>`:'Systems · shielded'}<br>${L.join(' · ')}</div>`;
+  let h=`<div class="ts" style="margin-top:4px">${open?`<span style="color:#ffd27a">Systems open · Shift+${kb('tgtH')} picks one</span>`:`Systems · shielded · Shift+${kb('tgtH')} picks one to hit once the shield is down`}<br>${L.join(' · ')}</div>`;
   if(pk&&open)h+=`<div class="row" style="color:#ffd27a">${subName(rec,pk.k,pk.i)}<b>${Math.round(subHp(rec,pk.k,pk.i))}/${subMax(rec,pk.k)}</b></div>`;
   return h}
 // a short line for the map and fleet panels: "engines out · 2/6 turrets down"

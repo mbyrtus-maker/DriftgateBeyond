@@ -2109,6 +2109,11 @@ You can change the appointment any time you're awake. Without a stand-in nothing
 
 **Published 6 Nov 2026** (commit c2406fe; Beyond artifact version 44). War check, two runs of 600 galaxies, 16 h, the player an idle contractor at Mirrorwater: Brood 26% / 26%, Halcyon 26% / 26%, Varkesh 20% / 23%, Ostrova 24% / 21%, unfinished 4% / 5%. The build before (743f9b0): Brood 22%, Halcyon 28%, Varkesh 24%, Ostrova 21%. The Brood stands about 4 points over its 20% target, a little more than run noise; the retune comes with the live-space stages (stage 7), which move the powers' stores anyway.
 
+### Picking a system to hit: the key shown (6 Nov 2026)
+- **The user's question:** is there a clearly defined key and a HUD helper for targeting sub-systems?
+- **What there was:** Shift+T (Shift with the "nearest hostile" key) picks the next system on a targeted capital or station, listed in the key bindings under Targets; once its shield is down the systems show as red rings with the picked one gold, named, with a lead marker, and the target panel lists each system's health with "Systems open · Shift+T picks one". But nothing said so while the shield was up, and the context key strip at the bottom of the HUD never mentioned it.
+- **Now:** with a hostile capital or station targeted, the key strip shows **Shift+T · pick a system** (then **next system**), or **Shift+T · systems (shield up)** while its shield holds; the target panel says "Systems · shielded · Shift+T picks one to hit once the shield is down". Every letter key is taken, so the key stays Shift with the nearest-hostile key (it follows that key if you rebind it).
+
 ### Live space shows what's tracked (decided, user 6 Nov 2026; building)
 **The user's word:** make all of it live: the ships you see do the real work (a station's ore comes from its miners actually flying, so killing them hurts; haulers are the real flows of goods); the stores physical, with goods moving between a power's stations by real convoys; AI contractors flying the jobs on the boards; a higher ship cap where the game can draw it. And: "I'd prefer live reflect what's being tracked, not a random percentage generator."
 

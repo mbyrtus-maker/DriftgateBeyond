@@ -436,7 +436,7 @@ function resolveAbstract(ev){
   if(ev.st){resolveSiege(ev);return}
   const o=S.outposts[ev.target],s=S.sectors[o.sector];if(o.owner&&!fightsAt(ev.att,o.owner)){finishOffensive(ev);return}
   const att=invValue(ev.force)*clsF(ev.cls);let def=o.owner?300+o.level*260:120,dforce=null,gar=[];
-  if(FACTIONS[o.owner]){dforce={};const fl=S.econ.fleet[o.owner],warned=covOf(o.owner,true).has(o.sector);gar=grForce('O.'+ev.target,dforce);for(let i=0;i<(warned?1:0);i++){const ld=loadout('patrol',factionTier(o.owner));if(takeFrom(ld,[fl,S.econ.stock[o.owner]]))inv.addAll(dforce,ld)}def+=invValue(dforce)}
+  if(FACTIONS[o.owner]){dforce={};const fl=S.econ.fleet[o.owner],warned=covOf(o.owner,true).has(o.sector);gar=grForce('O.'+ev.target,dforce);for(let i=0;i<(warned?1:0)+Math.max(0,(GR.topup?2:0)-gar.length);i++){const ld=loadout('patrol',factionTier(o.owner));if(takeFrom(ld,[fl,S.econ.stock[o.owner]]))inv.addAll(dforce,ld)}def+=invValue(dforce)}
   const win=Math.random()<att*weMul(ev.att)*toughK(ev.att)/(att*weMul(ev.att)*toughK(ev.att)+def*1.1*(o.owner?weMul(o.owner)*toughK(o.owner):1));
   loseInv(ev.force,(win?rnd(.15,.4):rnd(.45,.8))/toughK(ev.att),s);
   if(dforce){const lf=(win?rnd(.5,.9):rnd(.2,.45))/toughK(o.owner);grSettle('O.'+ev.target,gar,dforce,lf,s);loseInv(dforce,lf,s);inv.addAll(S.econ.fleet[o.owner],dforce)}
@@ -447,7 +447,7 @@ function resolveAbstract(ev){
 }
 function resolveSiege(ev){const Rr=S.stations[ev.st],s=S.sectors[ev.sector];if(!Rr||!fightsAt(ev.att,Rr.owner)){finishOffensive(ev);return}
   const att=invValue(ev.force)*clsF(ev.cls);let def=(Rr.kind==='core'?2600:Rr.kind==='free'?2000:Rr.fwd?800:1300)*(1+.2*(devOf(Rr).def+devOf(Rr).armor)+.1*(devOf(Rr).hangar||0)),dforce=null,gar=[];
-  if(FACTIONS[Rr.owner]){dforce={};const fl=S.econ.fleet[Rr.owner],warned=covOf(Rr.owner,true).has(ev.sector);gar=grForce('S.'+ev.st,dforce);for(let i=0;i<(warned?1:0);i++){const ld=loadout('patrol',factionTier(Rr.owner));if(takeFrom(ld,[fl,S.econ.stock[Rr.owner]]))inv.addAll(dforce,ld)}def+=invValue(dforce)}
+  if(FACTIONS[Rr.owner]){dforce={};const fl=S.econ.fleet[Rr.owner],warned=covOf(Rr.owner,true).has(ev.sector);gar=grForce('S.'+ev.st,dforce);for(let i=0;i<(warned?1:0)+Math.max(0,(GR.topup?(Rr.kind==='core'?3:2):0)-gar.length);i++){const ld=loadout('patrol',factionTier(Rr.owner));if(takeFrom(ld,[fl,S.econ.stock[Rr.owner]]))inv.addAll(dforce,ld)}def+=invValue(dforce)}
   const hgN=(Rr.hg||[]).length;if(hgN)def+=Rr.hg.reduce((a,h)=>a+invValue(h.load),0)*.6;   // hangar fighters scramble to defend their depot
   const tor=ev.force.torpedo||0,win=Math.random()<att*weMul(ev.att)*toughK(ev.att)/(att*weMul(ev.att)*toughK(ev.att)+def*1.15*weMul(Rr.owner)*toughK(Rr.owner))*Math.min(1,tor/8),loud=friendSide(Rr.owner)||covered(ev.sector);
   if(hgN){const lf=win?rnd(.6,.95):rnd(.15,.4);Rr.hg=Rr.hg.filter(h=>{if(Math.random()<lf){toDebris(s,h.load);return false}return true})}
