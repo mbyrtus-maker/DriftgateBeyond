@@ -10,6 +10,7 @@ product replaces it and its unsold stock goes back to raw ore.
   `data.json` and `data2.json` (Playwright). Re-run after changing makers or parts.
 - `sim2.py`: the model (`sim(seed, params)`; the defaults are the recommended numbers).
 - `run_v2.py`: 200 galaxies of 16 h for each setting; prints the results and writes `res_v2.json`. About 20 s.
+- `sim12.py`, `run_v12.py`: version 12 (v11 with running costs doubled for the bigger market and R&D funded with 3 hours of running costs kept back). `run_v12.py` writes `res_v12.json`; about three minutes.
 - `sim11.py`, `run_v11.py`: version 11 (v10 with the powers refitting their whole fleets: miners, haulers and scouts as well as warships; popular mining gear). `run_v11.py` writes `res_v11.json`; about three minutes.
 - `sim10.py`, `run_v10.py`: version 10 (v9 with the goods divided evenly: every maker has at least one solid line). `run_v10.py` writes `res_v10.json`; about two minutes.
 - `sim9.py`, `run_v9.py`: version 9 (v8 tuned for a first R&D launch at about 3 hours). `run_v9.py` writes `res_v9.json`; about a minute.
