@@ -216,7 +216,9 @@ Smuggling is a way to make money outside the law, with its own parts. Names are 
 
 **Consequences.** Setting a lock on a power's gate is an attack on that power: its standing with you drops and its heat on you rises, as for jamming one of its ships, if it identifies you (it does if one of its ships or a beacon of its own sees you set it). A lock that traps one of its convoys counts as raiding that convoy. The Unbound pay a share of a raid's bounty, as for other convoy raids. The powers can post jobs to break a lock, paid on its destruction.
 
-**Open:** whether escorts with capital ships should be able to ignore a lock entirely (the freighters still can't); the haven's kit-making rate (proposal: one kit every 10 minutes while it has the materials).
+**Capital ships' escorts ride the jump (decided, user 6 Nov 2026; not built yet).** A capital ship's own fighter escort (a leader's or CEO's ace escort, the fighters guarding an AI or player capital, a carrier's screen) flies in and docks on the capital's hull once its jump drive passes 75% of its spin-up, and jumps with it; they undock and fan out on arrival. Docked escorts can't fire, and if the spin-up is broken (engines knocked out, a jam) they undock and fight again. Only the capital's own escort rides: freighters and other ships it is escorting are left behind, so a gate lock or Overgrowth still traps a convoy's freighters even when its capital jumps out. (This changes Overgrowth's rule that a capital leaves its smaller ships behind, for its escort only.)
+
+**Open:** the haven's kit-making rate (proposal: one kit every 10 minutes while it has the materials).
 
 ### 7. What you spend on: the ladder
 Players have several things to spend money and materials on, in this order, each with its own levels:
