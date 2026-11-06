@@ -9,7 +9,7 @@ import sim17,sim18
 from multiprocessing import Pool
 N=int(os.environ.get('N',200));H=int(os.environ.get('H',16))
 def one(a):
-  v,seed,p=a;r=(sim17 if v==17 else sim18).sim(seed,dict(p,hours=H))
+  v,seed,p=a;p=dict(p);h=p.pop('_h',H);r=(sim17 if v==17 else sim18).sim(seed,dict(p,hours=h))
   T=r['T'];return dict(fail=len(r['failures']),who=[f[1] for f in r['failures']],ceo=[f[3] for f in r['failures']],at=[f[0] for f in r['failures']],launches=len(r['launches']),
     g3=any(x[3]>=3 for x in r['launches']),sales=r['sales'],std=r['faction_std'],tweaks=r['tweaks'],storage=r.get('storage',0),md=r.get('markdowns',0),shut=r.get('shut',0),
     minm=r['min_margin'],poor=sum(1 for m,t in T.items() if t<1500),rich=sum(1 for m,t in T.items() if t>6000),ceos=len(r['ceo_changes']))
