@@ -14287,6 +14287,8 @@ function ceHtml(P){let h=coViews('economy',[['hour','Hour'],['3h','3 hours'],['c
   d+=`<p class="note" style="margin-top:12px">A maker earns from every sale of its parts (the station keeps 15%), pays its host for components and running costs, tweaks lines its buyers pass by, and pays dividends to its home and the Compact. One that can't pay its way fails, and a new company takes over its works.</p>`;
   return h+`</div><div class="codet">${d}</div></div>`}
 {const o=ecHtml;ecHtml=function(P){if(coV.economy==='corps')return ceHtml(P);if(String(coPk.economy||'').startsWith('corp:'))coPk.economy='co';let h=o.apply(this,arguments);return h.replace(/(<button class="cov[^"]*" type="button" data-co="cov" data-arg="economy:3h">3 hours<\/button>)/,`$1<button class="cov" type="button" data-co="cov" data-arg="economy:corps">Corporations</button>`)}}
+// the market's note on the works says how they build now
+{const o=fbMarketHtml;fbMarketHtml=function(c,P){let h=o.apply(this,arguments);if(!S||!S.corp)return h;return h.replace(/These corporations build their parts here from this station's components, one every \d+ s up to \d+ on sale\./,`These corporations buy this station's components to build their parts here, one every ${MK_WORKS.every} s, stocking each line to what it sells (up to ${CE.cap}). Their books are on the Company screen: Economy → Corporations.`)}}
 
 //@src 17_main.js
 // ============================================================ main loop
