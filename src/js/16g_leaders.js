@@ -122,6 +122,9 @@ function leaderProfiles(){LEADP={};if(!S||!S.leaders)return;for(const f of FAC_I
   if(t('Ambitious'))p.range*=1.3;if(t('Opportunist'))p.range*=1.15;if(t('Cautious')){p.range*=.85;p.breakoff=.3}if(t('Patient'))p.range*=.9;if(t('Isolationist'))p.range*=.9;if(t('Mercantile'))p.breakoff=Math.max(p.breakoff,.2);
   if(t('Vengeful')){p.stay=true;p.breakoff=0}if(t('Honourable'))p.honour=true;if(t('Ruthless'))p.ruthless=true;if(t('Zealous'))p.zeal=true;LEADP[f]=p}}
 function leadP(side){return LEADP[side]||null}
+// LEADP lives outside S, so a galaxy continued from a save (where leadersInit returns early) rebuilds it from the saved
+// leaders and the Dread Pirate; without this every side flew plain until a leader died (trait-check, 7 Nov 2026)
+{const o=startWith;startWith=function(){const r=o.apply(this,arguments);try{leaderProfiles()}catch(e){}return r}}
 // ---- relation drift, pacts trading, losses and hurts fading
 function relTick(){if(!S||!S.rel)return;
   for(const k in S.pair){const P=S.pair[k],[a,b]=k.split('|');const v=S.rel[a][b];

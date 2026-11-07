@@ -38,8 +38,8 @@ Build and syntax-check first (commands in `CLAUDE.md`). Wrap every browser run i
 - **Soak:** `python3 tools/tests/soak.py 15` after a behaviour change, for frame errors from traits in real fights.
 - Faction strength is `war-sim`'s job: traits move it, so say when a finding would, and leave the war check to that bot.
 
-## Known findings (7 Nov 2026, commit 0b90cc7)
-- **FAIL: Continue loses every side's trait behaviour.** `leadersInit` returns early when a save already has leaders, and `LEADP` lives outside `S`, so after Continue every power's and the Unbound's pilots fly plain until some leader happens to die (`succession` and `dpSucceed` are the only other rebuilds). Fix direction: rebuild with `leaderProfiles()` when a game starts from a save.
+## Known findings (7 Nov 2026)
+- **Fixed 7 Nov 2026: Continue lost every side's trait behaviour** (`LEADP` lives outside `S` and `leadersInit` returns early on a saved galaxy). `startWith` now rebuilds it (wrapper in `16g_leaders.js`); `traits.py`'s save checks guard it.
 - **FAIL: `p.stay` is set and never read.** Vengeful still never breaks off (it zeroes `breakoff`), but Bloodthirsty's "stay" does nothing, so a Bloodthirsty + Superstitious Dread Pirate's ships break off.
 - **GAP:** break-off covers only `patrol`, `escort` and `raider` (not `strike`, `pirate`, `screen`); capitals (`frigateThink`), scouts, traders, drones and the carrier's defence set never read a trait; Scheming, Wary, Loyal, Industrious and Kingmaker have no pilot effect, and Mercantile, Patient, Opportunist only part of theirs; a founder's two traits on declaring are not built.
 - **Not a trait matter (economy bot's):** saving while in flight and pressing Continue adds 15 Vantium (`nu`) each time.
