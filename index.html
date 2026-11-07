@@ -14693,6 +14693,7 @@ function indOn(){return!!(S&&!S.training&&!S.unb&&!NET.cl)}
 function indAll(){S.ind=S.ind||{list:[],arr:{}};return S.ind.list}
 function indById(id){return indAll().find(I=>String(I.id)===String(id))||null}
 function indW(I){return'ind_'+I.id}
+function indStore(I){const R=S.stations[I.port];return R&&R.owner==='neutral'?dStore(R):S.econ.stock.pirate}
 function indPurse(I){return S.econ.treasury[indW(I)]||0}
 function indPorts(){return FREEPORTS.map(f=>f.sid).filter(sid=>S.stations[sid]&&S.stations[sid].owner==='neutral')}
 function indRoleOfJob(kind){return kind==='guard'?'fighter':kind==='mine'?'miner':'hauler'}
@@ -14814,7 +14815,7 @@ function indArrive(I){const r=I.run;if(!r){I.st='dock';return}
 function indWork(I,f,n){if(!(n>0))return;const r0=ratingOf(I);I.rp=(I.rp||0)+n*RATING.k;if(FAC_IDS.includes(f))I.stand[f]=clamp((I.stand[f]||0)+n,-100,100);const r1=ratingOf(I);
   if(r1>r0&&r1===6)allFeed(`★ ${I.name}, an independent out of ${DEF[I.port].name}, has reached Contractor Rating 6.`,'info')}
 // ---- shot down, and coming back
-function indDown(I,cause,sid){const s=S.sectors[sid]||S.sectors[I.sector];if(s){toDebris(s,I.kit);toDebris(s,I.hold)}else{inv.addAll(S.econ.stock.neutral,I.kit);inv.addAll(S.econ.stock.neutral,I.hold)}
+function indDown(I,cause,sid){const s=S.sectors[sid]||S.sectors[I.sector];if(s){toDebris(s,I.kit);toDebris(s,I.hold)}else{inv.addAll(indStore(I),I.kit);inv.addAll(indStore(I),I.hold)}
   I.kit={};I.hold={};I.res=null;if(I.run&&I.run.c){const c=(S.contracts||[]).find(x=>x.id===I.run.c);if(c)c.ind=null}
   I.lost=I.cls;I.st='down';I.live=false;I.run=null;I.pj=null;I.deaths++;I.back=S.T+IND.back;I.cause=cause||'unknown';I.sector=sid||I.sector;
   if(cause==='pirate'||cause==='raided'||cause==='ambush')allFeed(`${I.name}, an independent out of ${DEF[I.port].name}, was lost to raiders in ${DEF[I.sector].name}.`,'info')}
@@ -14829,7 +14830,7 @@ function indBack(I){const port=I.port,R=S.stations[port];if(!R){indRetire(I);ret
   const old=I.pt;I.pt=ptDeath(I.role,I.cause,I);I.cls=cls;I.paid=pr||null;I.st='dock';I.sector=port;I.run=null;I.idleT=S.T;
   if(old!==I.pt)allFeed(`${I.name} is flying again out of ${DEF[port].name}, ${ptName(I.pt)} now${I.cause&&I.cause!=='unknown'?'':' after a bad loss'}.`,'info');
   try{indShop(I,R)}catch(e){console.error(e)}}
-function indRetire(I){transfer(indW(I),'neutral',indPurse(I));delete S.econ.treasury[indW(I)];inv.addAll(S.econ.stock.neutral,I.hold);inv.addAll(S.econ.stock.neutral,I.kit);I.hold={};I.kit={};
+function indRetire(I){transfer(indW(I),'neutral',indPurse(I));delete S.econ.treasury[indW(I)];inv.addAll(indStore(I),I.hold);inv.addAll(indStore(I),I.kit);I.hold={};I.kit={};
   const L=indAll(),i=L.indexOf(I);if(i>=0)L.splice(i,1);allFeed(`${I.name} has hung up their flight suit: an independent retires from ${DEF[I.port].name}.`,'info')}
 // ---- posted jobs: an independent signs on when one is free and its hull fits
 function indTake(j){const R=S.stations[j.sid];if(!R)return null;const role=indRoleOfJob(j.kind);let best=null,bh=99;
@@ -14889,7 +14890,7 @@ function indRock(e,s,I){const L=s.ast.filter(x=>!x.comet&&oreTotal(x)>0);if(!L.l
 {const o=openWorld;openWorld=function(sid){const w=o.apply(this,arguments);try{if(indOn())inW(w,()=>{for(const I of indAll())if(I.sector===sid&&(I.st==='go'||I.st==='work')&&I.run){I.live=false;indSpawn(I,false)}})}catch(e){console.error(e)}return w}}
 // shooting an independent costs no standing (it's nobody's ship)
 {const o=dmgRec;dmgRec=function(e){if(e&&e.indId){const s=e.side;e.side='_ind';try{return o.apply(this,arguments)}finally{e.side=s}}return o.apply(this,arguments)}}
-{const o=holderIn;holderIn=function(st,path){if(typeof path==='string'&&path.startsWith('ind:')){const I=((st.ind&&st.ind.list)||[]).find(x=>String(x.id)===path.split(':')[1]);return I?(I.hold=I.hold||{}):(st.econ.stock.neutral||st.econ.stock.pirate)}return o.apply(this,arguments)}}
+{const o=holderIn;holderIn=function(st,path){if(typeof path==='string'&&path.startsWith('ind:')){const I=((st.ind&&st.ind.list)||[]).find(x=>String(x.id)===path.split(':')[1]);return I?(I.hold=I.hold||{}):(st.econ.stock.pirate)}return o.apply(this,arguments)}}
 {const o=ledger;ledger=function(){const r=o.apply(this,arguments);try{const L=r.L['Fleets in muster'];for(const I of(S.ind&&S.ind.list)||[]){for(const x of[I.hold||{},I.kit||{}]){const v=invVec(x);for(const k of RAWS){L[k]+=v[k];r.tot[k]+=v[k]}}}}catch(e){}return r}}
 {const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{indTick()}catch(e){console.error(e)}return r}}
 // ---- where you see them: a freeport's panel on the galaxy map lists its independents
