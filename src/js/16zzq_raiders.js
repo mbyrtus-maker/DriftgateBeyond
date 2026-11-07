@@ -69,3 +69,8 @@ function prwStrikeHand(r){const ev=S.events.find(e=>e.id===r.strike);const i=S.r
 {const o=raidWipe;raidWipe=function(r,sid,msg){if(r&&r.strike){const ev=S.events.find(e=>e.id===r.strike);if(ev&&ev.stage!=='done'){ev.stage='done';ev.force={}}}return o.apply(this,arguments)}}
 // a strike group cut down on the way turns for home: the offensive is called off and the survivors are a plain party home
 {const o=raidHome;raidHome=function(r){if(r&&r.strike){const ev=S.events.find(e=>e.id===r.strike);if(ev&&ev.stage!=='done'){ev.stage='done';ev.force={}}r.strike=null;r.ret=true}return o.apply(this,arguments)}}
+// ---- Varkesh's tougher hulls count in these fights too (6 Nov 2026): a raid on a convoy, a depot or a garrison is a battle
+// nobody watches, so each side's toughK (FACTIONS[f].tough: Varkesh 1.12) shifts the odds as it does in offensives and sieges
+function prwTough(p,att,def){const ka=toughK(att),kd=def?toughK(def):1;if(ka===kd)return p;const o=p/(1-p)*ka/kd;return clamp(o/(1+o),.05,.95)}
+{const o=raidOdds;raidOdds=function(r,sid,base,owner){const p=o.apply(this,arguments);try{let def=owner;if(!def){const g=prwGar(sid,r.side);if(g.length)def=S.gar[g[0]].f;else{const R=S.stations[sid];if(R&&r.dep===sid)def=R.owner}}return prwTough(p,r.side,def)}catch(e){return p}}}
+{const o=prwGarLoss;prwGarLoss=function(sid,side,lf){const s=S.sectors[sid];for(const k of prwGar(sid,side)){const force={},ships=grForce(k,force);grSettle(k,ships,force,lf/toughK(S.gar[k].f),s)}}}
