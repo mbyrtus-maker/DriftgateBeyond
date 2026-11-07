@@ -1,6 +1,6 @@
 # Beyond, the Bloom grows from raw ore (6 Nov 2026): Bloom Nodes grow weapons and hull-and-shield modules from the mass of ore
 # they'd be made of (any ore, node store first, then the hive's spare), with no crew; the Brood grows its Leviathan and
-# Prowlers at a Bloom Node the same way; the ledger stays exact throughout
+# Prowlers at a Bloom Node the same way; any kit asked of a Brood store is grown from its ore; the ledger stays exact throughout
 import asyncio,json
 from playwright.async_api import async_playwright
 import os
@@ -25,6 +25,10 @@ async def main():
     print('Leviathan grown at a node',await ev("""(()=>{const hv=S.econ.stock.brood;hv.xc=(hv.xc||0)+4000;S.ledger0.tot.xc+=4000;S.T=Math.max(S.T,BAL.brLevT+1);for(const t of S.frigates.filter(x=>x.side==='brood'))t.hull=0;S.frigates=S.frigates.filter(x=>x.side!=='brood');
       const L=ledger().tot;S.ai.brood.capT=0;bloomCapTick();const ev=S.events.find(e=>e.type==='frigbuild'&&e.att==='brood'&&e.bloom);if(!ev)return 'none';const at=ev.sector,m=invMass(ev.force);
       let i=0;while(ev.stage!=='done'&&i<40){S.T+=10;capitalTick();i++}const t=S.frigates.find(x=>x.side==='brood'&&isCar(x));return JSON.stringify({grownAt:at,node:!!S.stations[at]&&S.stations[at].owner==='brood',mass:m,launched:!!t,in:t&&t.sector})})()"""))
+    print('ledger',await ev(LED))
+    # ore, not parts: a Brood store with no parts at all still fits a bomber, grown from its most plentiful ore
+    print('a bomber from spare ore',await ev("""(()=>{const hv=S.econ.stock.brood,fl=S.econ.fleet.brood;const keep={};for(const k in hv){keep[k]=hv[k];}for(const k in hv)if(!RAWS.includes(k)){S.econ.stock.pirate[k]=(S.econ.stock.pirate[k]||0)+hv[k];delete hv[k]}for(const k in fl){S.econ.stock.pirate[k]=(S.econ.stock.pirate[k]||0)+fl[k];delete fl[k]}
+      const ld=loadout('patrol',2,'bomber'),ir0=hv.ir||0,ok=takeFrom(ld,[fl,hv]);if(ok)inv.addAll(S.econ.stock.pirate,ld);return JSON.stringify({kit:ld,ok,oreSpent:Math.round(ir0-(hv.ir||0)),mass:bloomMass(ld),booked:Object.fromEntries(Object.entries(S.bxm||{}).map(([k,v])=>[k,Math.round(v)]))})})()"""))
     print('ledger',await ev(LED))
     print('an hour on',await ev("(()=>{for(let i=0;i<360;i++){S.T+=10;strategicTick();updateEvents()}return bloomNodes().map(R=>depotLevel(R)).join(',')})()"),await ev(LED))
     print('errors',errs[:5] or 'none')
