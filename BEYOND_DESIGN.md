@@ -2814,6 +2814,13 @@ Five sub-bots (war-sim, economy, mp-test, training-mission, visuals; `.claude/ag
 
 **Build stages (once agreed):** 1. the population, purses, arrival and loss, taking posted jobs (replacing today's one-off contractors); 2. buying parts and hulls; 3. trading and mining between jobs; 4. the boards' jobs; 5. soak and war check, then tune.
 
+### Independent pilots: agreed (user, 7 Nov 2026)
+The proposal above is agreed, with the user's answers to its questions:
+1. **Board jobs:** independents take the jobs on the boards (freeport requests and the powers' jobs) once a job has gone untaken for **8 minutes** ("AI bots should take jobs after 8 mins"). Until then a job is left for players.
+2. **Attacking them is a free-for-all for now:** an independent is nobody's ship; shooting one down costs no standing with the Compact or anyone else (the usual rules for the cargo and wreck still apply).
+3. Turning pirate, joining the Unbound or being hired as a crew: not answered; left for a later stage, not built now.
+Build: stages 1 to 4 as listed, then the soak (target: AI-only galaxy at 4 h, most makers within ±1,000 cr, at most one failure) and a war check.
+
 ### Crews buy makers' parts; war check after the bug pass (7 Nov 2026)
 - **Your depot's crews shop like a pilot** (`16zzzb_aipilots.js`, economy bot). Half of a crew's wage is its own pay, kept in its own purse (up to a cap); the rest goes to the Compact as before. A hauling crew docked at a market to sell your goods buys one part per slot its work uses (hauler: cargo module; miner: mining laser; guard: laser or gun), grades up to your Contractor Rating, at the Market's price (`mkPartPrice`), off the station's shelf, the maker paid through `ceSale` and the price moved as a player's buy moves it. An old part goes back to the shelf; a crew shot down drops its purse to the Compact and its parts as debris. Ledger exact (`econfix.py`). This only helps galaxies with players' depots; AI-only galaxies wait for the independent pilots (proposal above).
 - **War check on merged main (600 galaxies, 16 h, neutral leaders):** Varkesh 26%, Halcyon 22%, Brood 22%, Ostrova 19%, unfinished 11% (65). Against the target (Brood 20, powers 25 each): Brood and Varkesh on target, Halcyon slightly low, Ostrova about 6 points low (it lost the Hollow Relay's tolls), and unfinished galaxies up from about 3% to 11% (the Brood ramp fix and capitals needing war to besiege both slow galaxies down). Not retuned yet.
