@@ -41,6 +41,14 @@ async def main():
     print('Overgrowth walls the powers, not the Brood',await ev("""(()=>{const a='hr',b=NEIGH.hr.find(n=>NEIGH[n].length>1&&!DEF[n].home)||NEIGH.hr[0];const O={id:S.nextId++,a,b,key:gateKey(a,b),stage:'grown',t0:S.T,hp:OG.hp,hitT:-1e9,load:{},strikeT:S.T+1e6};(S.og=S.og||[]).push(O);S.gateDown[O.key]=S.T+1e9;
       const mk=side=>({id:S.nextId++,side,src:a,cap:null,tgt:null,dep:null,dest:b,sector:a,path:[a,b],leg:0,next:S.T,state:'out',ships:[{cls:'striker',tier:1,ld:{}}],kit:{},loot:{},back:[],T0:S.T});const h=mk('halcyon'),br=mk('brood');ogDetour(h,'halcyon',b);ogDetour(br,'brood',b);
       const res={halcyon:h.path.join('>')+(h.next>S.T?' (waits)':''),brood:br.path.join('>'),wallH:ogWall('halcyon',a,b),wallB:ogWall('brood',a,b)};S.og=S.og.filter(x=>x!==O);delete S.gateDown[O.key];return JSON.stringify(res)})()"""))
+    # (the test makes a Bloom Node, the Overgrowth's stores and a carrier, then removes the carrier, and books all of it)
+    # a Bloom Node with a hostile carrier next door seeds Overgrowth on the gate between; sealed, the carrier can't strike through it
+    print('Bloom Node guards against a carrier',await ev("""(()=>{running=false;exitSector();W=null;const n=SECTOR_DEFS.map(d=>d.id).find(id=>!S.stations[id]&&canBuildIn(id,'brood')&&NEIGH[id].some(x=>!DEF[x].home&&DEF[x].kind!=='hive'&&!S.stations[x]));if(!n)return 'no site';
+      const c=NEIGH[n].find(x=>!DEF[x].home&&DEF[x].kind!=='hive'&&!S.stations[x]);const R=makeStation(n,'brood','depot',stationSite(n),{});const v=invVec({});S.econ.stock.brood.fe=(S.econ.stock.brood.fe||0)+40;S.econ.stock.brood.cu=(S.econ.stock.brood.cu||0)+20;S.econ.stock.brood.plate=(S.econ.stock.brood.plate||0)+4;S.ledger0.tot.fe+=40+12;S.ledger0.tot.cu+=20;
+      const lc0=ledger().tot;const t=makeCarrier('halcyon',c,{});t.dest=n;t.wing=Array(6).fill('striker');const before=(S.og||[]).length;ogGuardTick();const O=ogAt(n,c);if(!O)return 'no seed';const k0=sortiesOf(t).length;
+      for(let i=0;i<10;i++){S.T+=10;ogTick()}const sealed=!!ogSealed(n,c);t.sorT=0;carStrikeOff(t,n);const k1=sortiesOf(t).length;
+      ogKill(O);t.sorT=0;carStrikeOff(t,n);const k2=sortiesOf(t).length;const res={seeded:!!O,sealed,strikeBlocked:k1===k0,strikesWhenOpen:k2>k1};for(const e of S.events)if(e.type==='sortie'&&e.car===t.id){e.stage='done';e.force={}}S.frigates=S.frigates.filter(x=>x!==t);const lc1=ledger().tot;for(const e of RAWS)S.ledger0.tot[e]+=lc1[e]-lc0[e];return JSON.stringify(res)})()"""))
+    print('ledger',await ev(LED))
     for i in range(3):await ev("(()=>{for(let i=0;i<30;i++){S.T+=10;strategicTick();updateEvents()}})()")
     print('an hour on',await ev(LED),await ev("JSON.stringify({raids:S.raids.length,prowls:S.raids.filter(r=>r.prowl).length,home:S.raids.filter(r=>r.ret).length})"))
     print('errors',errs[:4]);await b.close()
