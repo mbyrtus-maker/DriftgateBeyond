@@ -380,7 +380,7 @@ function planOffensive(f){if(FACTIONS[f]&&f!=='brood'&&campBusy(f)){S.ai[f].next
   if(!c.length)return;if(FACTIONS[f]&&f!=='brood'){const see=covOf(f);for(const x of c){const sec=x[0].st||S.outposts[x[0].out].sector;if(see.has(sec))x[1]*=1.4}}
   const pk=wpickArr(c),isSt=!!pk.st,Rr=isSt?S.stations[pk.st]:null,o=isSt?null:S.outposts[pk.out];
   const lvl=isSt?(Rr.kind==='core'?4:2):o.level,sector=isSt?pk.st:o.sector,owner=isSt?Rr.owner:o.owner,name=isSt?Rr.name:o.name;
-  const n=clamp(3+lvl+ri(0,1)+(f==='brood'?BAL.brN:0),4,f==='brood'?10:8),tier=f==='pirate'?pirateTier():factionTier(f),role=f==='pirate'?'pirate':'patrol';
+  const n=clamp(3+lvl+ri(0,1)+(f==='brood'?BAL.brN:0),4,f==='brood'?BRSW.max:8),tier=f==='pirate'?pirateTier():factionTier(f),role=f==='pirate'?'pirate':'patrol';
   const force={};let got=0;const srcs=[S.econ.fleet[f],S.econ.stock[f]];
   const nb=isSt?Math.max(3,Math.floor(n/2)):owner?Math.max(1,Math.floor(n/3)):0,clsList=[];
   for(let i=0;i<n;i++){const want=i<nb?bmbPick(f,i,role,tier,srcs):pickFighter(role);let cl=want,ld=loadout(role,tier,cl);

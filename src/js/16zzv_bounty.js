@@ -10,6 +10,9 @@
 const RICH={field:1.5,store:1.5,every:3600,rep:.08,rock:[40,90],cap:70};
 // the Brood starts stronger (user, 6 Nov 2026): its stores and muster start this many times fuller again, on top of the richer start
 const BRST={store:1};
+// the Brood fields the biggest swarms (user, 6 Nov 2026): its offensives up to 16 ships (the powers' 8; it was 10), with 5 more than
+// a power would send to the same target (was 2), and its raiding and prowling parties 6 strong (the others' 3)
+const BRSW={max:16,raid:6};BAL.brN=5;
 function richStart(){for(const id in S.sectors)for(const a of S.sectors[id].ast)for(const k in a.ore)a.ore[k]=Math.round(a.ore[k]*RICH.field);
   const mul=o=>{if(!o)return;for(const k in o)if(typeof o[k]==='number')o[k]=Math.round(o[k]*RICH.store)};
   for(const f in S.econ.stock)mul(S.econ.stock[f]);if(BRST.store!==1){const m2=o=>{if(!o)return;for(const k in o)if(typeof o[k]==='number')o[k]=Math.round(o[k]*BRST.store)};m2(S.econ.stock.brood);m2(S.econ.fleet.brood)}for(const f in S.econ.fleet)mul(S.econ.fleet[f]);for(const id in S.stations){const R=S.stations[id];if(R&&R.kind==='free'&&R.store)mul(R.store)}
