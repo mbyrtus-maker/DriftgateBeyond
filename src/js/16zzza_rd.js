@@ -71,11 +71,18 @@ makersTick=(function(o){return function(){if(!rdOn())return o.apply(this,argumen
   if(!S.corpConv){try{corpConvert()}catch(e){}S.corpConv=1}
   for(const m in MAKERS){const R=mkAtHome(m);if(!R||!ceAlive(m))continue;const st=mkStock(R),gidOf=id=>rdGid(id,rdLineG(m,id)),want=id=>Math.min(CE.cap,CE.shelf+ceSold(m,id,3600));
     const ids=MK_LINE[m].filter(id=>{const gid=gidOf(id);return ITEMS[gid]&&Object.keys(ITEMS[gid].recipe).length&&(st[gid]||0)<want(id)&&!(S.T>CE.shut&&!ceSold(m,id,CE.shut)&&(st[gid]||0)>0)}).sort((a,b)=>(st[gidOf(a)]||0)/want(a)-(st[gidOf(b)]||0)/want(b));
-    for(const id of ids){const gid=gidOf(id),rc=ITEMS[gid].recipe;rdCraftFor(st,rc);if(!haveIn(rc,[st]))continue;const cost=Math.ceil(ceComp(R.sid,gid));if(ceT(m)-cost<ceReserve(m))continue;
-      transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);ceOf(m).cost+=cost;takeFrom(rc,[st]);inv.add(st,gid,1);break}}}})(makersTick);
-// a grade's inputs the station doesn't stock (Calibration Matrices, lattices, cores) are made in the works from what it does
-function rdCraftFor(st,rc,depth){depth=depth||0;if(depth>3)return;for(const k in rc){const need=rc[k]-(st[k]||0);if(need<=0||RAWS.includes(k))continue;const r=ITEMS[k]&&ITEMS[k].recipe;if(!r)continue;
-  for(let i=0;i<need;i++){rdCraftFor(st,r,depth+1);if(!haveIn(r,[st]))break;takeFrom(r,[st]);inv.add(st,k,1)}}}
+    for(const id of ids){const gid=gidOf(id),rc=ITEMS[gid].recipe;if(!rdCanMake(st,rc,R))continue;const cost=Math.ceil(ceComp(R.sid,gid));if(ceT(m)-cost<ceReserve(m))continue;
+      rdCraftFor(st,rc,R);if(!haveIn(rc,[st]))continue;transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);ceOf(m).cost+=cost;takeFrom(rc,[st]);inv.add(st,gid,1);break}}}})(makersTick);
+// a grade's Calibration Matrices, lattices and cores the station doesn't stock are made in the works from the station's stock
+// (design: "a grade's Calibration Matrices, lattices and cores are made in the works from the station's stock"); nothing else
+// is made (plates, conduit and coils must be on the market), and lattices and cores only where the station has a forge (as at
+// a dock: a faction's home station, or a production module). Callers check with rdCanMake before paying, then craft.
+const RD_CRAFT=new Set(['matrix','lattice','core']);
+function rdForgeAt(R){if(!R)return false;const d=DEF[R.sid];if(R.kind==='core'&&d&&d.home===R.owner)return true;return(devOf(R).prod||0)>=1&&!starving(R)}
+function rdCraftFor(st,rc,R,depth){depth=depth||0;if(depth>3)return;for(const k in rc){const need=rc[k]-(st[k]||0);if(need<=0||!RD_CRAFT.has(k))continue;const I=ITEMS[k],r=I&&I.recipe;if(!r||(I.forge&&!rdForgeAt(R)))continue;
+  for(let i=0;i<need;i++){rdCraftFor(st,r,R,depth+1);if(!haveIn(r,[st]))break;takeFrom(r,[st]);inv.add(st,k,1)}}}
+// whether the station's stock (with the works' crafting) covers a recipe, without touching the stock
+function rdCanMake(st,rc,R){if(haveIn(rc,[st]))return true;const tmp={...st};rdCraftFor(tmp,rc,R);return haveIn(rc,[tmp])}
 // ---- R&D
 function rdKindOf(id){return ceKind(id)}
 function rdCan(m,g){const c=ceOf(m),sp=c.ceo==='Innovator'?1:c.ceo==='Cautious'?6:RD.spare;return ceT(m)>=RD.cost[g]+sp*ceUpkeep(m)+ceReserve(m)}
@@ -84,15 +91,16 @@ function rdStart(m,id,why){const c=ceOf(m),g=rdLineG(m,id)+1;if(g>5||c.rd||!rdCa
   c.rd={id,g,stage:'design',until:S.T+RD.design[g],proto:{},t0:S.T};ceNews(m,`has opened an R&D project: ${ITEMS[rdGid(id,g)].name} (${why}). Its lab is going up at ${DEF[mkHomeSid(m)].name}.`);return true}
 function rdTick(){if(!rdOn())return;const T=S.T;for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead||!c.rd)continue;const P=c.rd;if(T<P.until)continue;
     if(P.stage==='design'){P.stage='materials';P.until=T+rnd(...RD.mat);continue}
-    if(P.stage==='materials'){if(!P.got){const R=mkAtHome(m);if(!R){P.until=T+60;continue}const st=mkStock(R),gid=rdGid(P.id,P.g),rc=ITEMS[gid].recipe;rdCraftFor(st,rc);
-        const cost=Math.ceil(ceComp(R.sid,gid));if(!haveIn(rc,[st])||ceT(m)<cost){P.until=T+60;continue}transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);c.cost+=cost;takeFrom(rc,[st]);inv.addAll(P.proto,rc);P.got=1}
+    if(P.stage==='materials'){if(!P.got){const R=mkAtHome(m);if(!R){P.until=T+60;continue}const st=mkStock(R),gid=rdGid(P.id,P.g),rc=ITEMS[gid].recipe;
+        const cost=Math.ceil(ceComp(R.sid,gid));if(!rdCanMake(st,rc,R)||ceT(m)<cost){P.until=T+60;continue}rdCraftFor(st,rc,R);if(!haveIn(rc,[st])){P.until=T+60;continue}transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);c.cost+=cost;takeFrom(rc,[st]);inv.addAll(P.proto,rc);P.got=1}
       P.stage='trials';P.until=T+rnd(...RD.trial);continue}
     if(P.stage==='trials')rdLaunch(m)}}
 function rdLaunch(m){const c=ceOf(m),P=c.rd,id=P.id,g=P.g,gid=rdGid(id,g),R=mkAtHome(m);(c.g=c.g||{})[id]=g;c.rd=null;
   // the prototype is the first unit on the shelf
   const st=R?mkStock(R):S.econ.stock.neutral;inv.addAll(st,P.proto);P.proto={};const rc=ITEMS[gid].recipe;if(haveIn(rc,[st])){takeFrom(rc,[st]);inv.add(st,gid,1)}
   // the old grades are retired: broken into raw ore wherever they sit on a market
-  let n=0;for(const sid in S.stations){const X=S.stations[sid];if(!X)continue;let ms;try{ms=mkStock(X)}catch(e){continue}for(let h=1;h<g;h++){const old=rdGid(id,h);const k=ms[old]||0;if(!k)continue;inv.take(ms,old,k);const v=invVec({[old]:k});for(const e of RAWS)if(v[e])inv.add(ms,e,v[e]);n+=k}}
+  // (not a pilot's own depot or station: what a player keeps in its store is its own, whatever its grade)
+  let n=0;for(const sid in S.stations){const X=S.stations[sid];if(!X||X.owner==='player')continue;let ms;try{ms=mkStock(X)}catch(e){continue}for(let h=1;h<g;h++){const old=rdGid(id,h);const k=ms[old]||0;if(!k)continue;inv.take(ms,old,k);const v=invVec({[old]:k});for(const e of RAWS)if(v[e])inv.add(ms,e,v[e]);n+=k}}
   ceNews(m,`launches the ${ITEMS[gid].name}.${n?` ${n} unsold units of the old grade are broken back into ore.`:''}`,g>=3);c.ln[id]={tw:0,last:S.T}}
 // when a line keeps losing, or a rival's higher grade outsells it
 function rdReview(){if(!rdOn())return;const T=S.T,sold={},grade={},byKind={};for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;for(const id of MK_LINE[m]){sold[id]=ceSold(m,id,CE.window);grade[id]=rdLineG(m,id);const k=rdKindOf(id);(byKind[k]=byKind[k]||[]).push([m,id])}}

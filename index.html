@@ -1826,7 +1826,7 @@ function fpNear(sid,ok){let A=null,bd=1e9;for(const F of FREEPORTS){const R=S.st
 // a goods pile split as evenly as it goes across the live freeports (setup, and moving old saves off the shared Compact pool)
 function fpSplit(o){const L=fpStores();if(!L.length)return false;for(const k in o){const n=o[k]||0;if(n<=0)continue;const q=Math.floor(n/L.length);let r=n-q*L.length;for(const st of L){const m=q+(r>0?1:0);if(r>0)r--;if(m>0)inv.add(st,k,m)}}return true}
 // how far a station's local level settles from neutral (eq, in units of locT) and how fast it drifts back each tick (rate)
-const MK_DEM={eq:1,rate:.07};
+const MK_DEM={eq:1,rate:.07};const MK_TRADE=new Set(TRADE_ITEMS);
 // what a station makes (+) and uses up (-)
 function mkProfile(R){const p={},d=DEF[R.sid],ores=Object.keys(d.ores||{});
   if(R.kind==='core'){for(const k of['plate','wire','coil','missile'])p[k]=1;for(const k of['fe','cu','ir','xc','au','nu'])p[k]=-1;p.lattice=-.5}
@@ -1845,20 +1845,26 @@ function mR(c){return c&&c.kind==='station'?S.stations[S.player.sector]:null}
 // itself; the bigger haulers pay a thinner fee and move the local price less per unit (HAUL_MK), so trade runs come to about
 // 15k an hour in a Light Hauler, 20k in a Medium and 25k in a Heavy, grade 1.
 const HAUL_FEE={courier:.035,freighter:.02,bulker:.01};const mFee=cls=>HAUL_FEE[cls]!=null?HAUL_FEE[cls]:.06;const HAUL_MK={freighter:.6,bulker:.26};const pMk=()=>HAUL_MK[S.player.cls]||1;
-function mBuy(c,id){const R=mR(c);return Math.ceil(price(c.market,id,mkSc(R))*locF(R,id)*mkK(R,id)*(1+mFee(S.player.cls)))}
-function mSell(c,id){const R=mR(c);return Math.max(1,Math.floor(price(c.market,id,mkSc(R))*locF(R,id)*mkK(R,id)*(1-mFee(S.player.cls))))}
+// a maker's part on a station's own market is priced as the station prices it (stPrice: the corporate list price, the profit
+// floor and the CEO's pricing), so what a pilot pays is what the Market and intel screens quote and the maker earns its margin
+function mStP(c,id){const R=mR(c);return!!(R&&ITEMS[id]&&ITEMS[id].maker&&c.market&&c.market===mkStock(R))}
+function mBase(c,id){const R=mR(c);return mStP(c,id)?stPrice(R,id):price(c.market,id,mkSc(R))*locF(R,id)*mkK(R,id)}
+function mBuy(c,id){return Math.ceil(mBase(c,id)*(1+mFee(S.player.cls)))}
+function mSell(c,id){return Math.max(1,Math.floor(mBase(c,id)*(1-mFee(S.player.cls))))}
 // how many units a market takes (dir +1, a sale) or gives (dir -1, a purchase) at the quoted price: as many as it can absorb before
 // its price would move past the buy/sell spread, so a big dump sells in lots and buying it straight back never pays
 // a lot: as many units as trade before the price would move past LOT_TOL (selling down to x.sell, buying up to x.buy);
 // the whole lot goes at the quoted price
 let LOT_TOL={sell:.82,buy:1.2};
-function lotCap(c,k,dir,maxN){if(maxN<=1)return maxN;const R=mR(c);if(R)mkOf(R);const st=c.market,sc=mkSc(R),s0=st[k],m0=R?R.mk[k]||0:0,p0=price(st,k,sc)*locF(R,k);
-  const at=n=>{st[k]=(s0||0)+dir*n;if(R)R.mk[k]=m0+dir*n*pMk();const p=price(st,k,sc)*locF(R,k);if(s0===undefined)delete st[k];else st[k]=s0;if(R)R.mk[k]=m0;return p};
+function lotCap(c,k,dir,maxN){if(maxN<=1)return maxN;const R=mR(c);if(R)mkOf(R);const st=c.market,sc=mkSc(R),s0=st[k],m0=R?R.mk[k]||0:0,useSt=mStP(c,k),pf=()=>useSt?stPrice(R,k):price(st,k,sc)*locF(R,k),p0=pf();
+  const at=n=>{st[k]=(s0||0)+dir*n;if(R)R.mk[k]=m0+dir*n*pMk();const p=pf();if(s0===undefined)delete st[k];else st[k]=s0;if(R)R.mk[k]=m0;return p};
   const ok=n=>dir>0?at(n)>=p0*LOT_TOL.sell:at(n)<=p0*LOT_TOL.buy;let lo=1,hi=maxN;if(ok(hi))return hi;while(hi-lo>1){const m=(lo+hi)>>1;if(ok(m))lo=m;else hi=m}return lo}
 function demandOf(R,id){const f=locF(R,id);return f>=1.22?'high':f<=.82?'low':''}
 // every strategic tick: stations drift back toward their own surplus or shortage, and AI merchants buy low and sell high
 function mkTick(){if(NET.cl)return;const L=mkStations();if(L.length<2)return;
-  for(const R of L){const m=mkOf(R),p=mkProfile(R);for(const k of TRADE_ITEMS){const t=locT(k),eq=(p[k]||0)*MK_DEM.eq*t;m[k]+=(eq-m[k])*MK_DEM.rate+(Math.random()-.5)*t*.05}}
+  for(const R of L){const m=mkOf(R),p=mkProfile(R);for(const k of TRADE_ITEMS){const t=locT(k),eq=(p[k]||0)*MK_DEM.eq*t;m[k]+=(eq-m[k])*MK_DEM.rate+(Math.random()-.5)*t*.05}
+    // every other good a market has a level for (the makers' parts: refits and pilots' buys move it) drifts back to neutral at the same rate
+    for(const k in m){if(MK_TRADE.has(k))continue;m[k]-=m[k]*MK_DEM.rate;if(Math.abs(m[k])<.01)delete m[k]}}
   tradersTick();
   for(const P of allPilots())intelTick(P)}
 // price intel: live where you are, where your faction holds the beacon, where a friendly scout is (and next door when you fly a scout)
@@ -1955,8 +1961,11 @@ function tradersTick(){if(NET.cl)return;S.traders=S.traders||[];for(const f of F
 function traderArrive(t){if(t.kind==='haul'){haulArrive(t);return}const B=S.stations[t.to],k=t.item,n=t.load[k]||0;
   if(!n){return}
   if(!trCanUse(t.side,B)){frShip(t.side,t.to,t.load,'back','return');t.load={};return}   // market gone or turned: the goods go home (Beyond: by convoy)
-  const pr=Math.max(1,Math.floor(stPrice(B,k)*.94));inv.add(mkStock(B),k,n);if(B.owner==='neutral')transfer('neutral',t.side,pr*n);mkOf(B)[k]+=n;t.load={};
-  if(t.side===S.player.sworn&&covered(t.to))feed(`${FACTIONS[t.side].short} trader delivered ${n} ${ITEMS[k].name} to ${B.name}.`,'news')}
+  // the Compact pays for what it can afford and takes only that; the rest goes home (Beyond: by convoy)
+  const pr=Math.max(1,Math.floor(stPrice(B,k)*.94)),d=B.owner==='neutral'?Math.min(n,Math.floor((S.econ.treasury.neutral||0)/pr)):n;
+  if(d>0){inv.add(mkStock(B),k,d);inv.take(t.load,k,d);if(B.owner==='neutral')transfer('neutral',t.side,pr*d);mkOf(B)[k]+=d}
+  if(Object.keys(t.load).some(x=>t.load[x]>0))frShip(t.side,t.to,t.load,'back','return');t.load={};
+  if(d>0&&t.side===S.player.sworn&&covered(t.to))feed(`${FACTIONS[t.side].short} trader delivered ${d} ${ITEMS[k].name} to ${B.name}.`,'news')}
 // ---- shipping your own goods: from a dock with your vault, pay your faction to send a freighter for the goods in one of your
 // vaults elsewhere. It flies like any supply convoy (raidable, escortable from Jobs; a lost one spills half as salvage) and
 // unloads into the vault where you ordered it. The fee goes to the faction treasury.
@@ -13845,12 +13854,12 @@ function pjRuns(){return S.pjRuns=S.pjRuns||[]}
 function pjRunOf(id){return pjRuns().find(r=>String(r.id)===String(id))||null}
 function pjJob(r){return pjList().find(j=>j.id===r.job)}
 function pjRunEnd(r,ok,why){const j=pjJob(r),R=j&&S.stations[j.sid],P=j&&xPilotOfKey(j.pid);const i=pjRuns().indexOf(r);if(i>=0)pjRuns().splice(i,1);if(!j||j.state==='done')return;
-  if(ok&&P&&R){const fee=payFrom(P,j.by,Math.min(j.bid,P.credits));eco(R,'jobs',-fee,`${j.who}'s fee`);j.paid=fee;j.msg=`done by ${j.who}:${why?' '+why+',':''} paid ${fmt(fee)} cr`;keyFeed(j.pid,`📋 ${pjTitle(j)}: ${j.msg}.`,'good')}
+  if(ok&&P&&R){const fee=payFrom(P,j.by,Math.min(Math.round(j.bid*(r.feeK!=null?r.feeK:1)),P.credits));eco(R,'jobs',-fee,`${j.who}'s fee`);j.paid=fee;j.msg=`done by ${j.who}:${why?' '+why+',':''} paid ${fmt(fee)} cr`;keyFeed(j.pid,`📋 ${pjTitle(j)}: ${j.msg}.`,'good')}
   else{j.msg=`failed: ${why||'the contractor was lost'}`;if(j.pid)keyFeed(j.pid,`📋 ${pjTitle(j)}: ${j.msg}.`,'bad')}j.state='done'}
 // a taker signs on: where it starts, what it carries
 function pjRunStart(j){const R=S.stations[j.sid],P=xPilotOfKey(j.pid);if(!R||!P)return;const side=j.by;let from=R.sid,to=R.sid,load={},D=null;
   if(j.kind==='supply'){const s=pjSrc(R,j.item,'supply',P);if(!s){pjRunEnd({job:j.id},false,'no market has it');return}D=s.D;const mk=mkStock(D),pr=Math.ceil(stPrice(D,j.item));const n=Math.min(j.n,mk[j.item]||0,Math.floor(P.credits/pr));
-    if(n<=0){pjRunEnd({job:j.id},false,'nothing bought');return}inv.take(mk,j.item,n);load[j.item]=n;payFrom(P,D.owner,n*pr);eco(R,'jobs',-n*pr,`${n} ${ITEMS[j.item].name} bought at ${D.name}`);from=D.sid}
+    if(n<=0){pjRunEnd({job:j.id},false,'nothing bought');return}inv.take(mk,j.item,n);load[j.item]=n;{const paid=payFrom(P,D.owner,n*pr);if(ITEMS[j.item].maker&&typeof ceSale==='function')ceSale(ITEMS[j.item].maker,j.item,n,paid,D.owner==='neutral'?'neutral':D.owner,D.sid)}eco(R,'jobs',-n*pr,`${n} ${ITEMS[j.item].name} bought at ${D.name}`);from=D.sid}
   else if(j.kind==='haul'){const s=pjSrc(R,j.item,'haul',P);if(!s){pjRunEnd({job:j.id},false,'no market will take it');return}D=s.D;const n=Math.min(j.n,R.stock[j.item]||0);if(n<=0){pjRunEnd({job:j.id},false,'nothing in the store to haul');return}
     inv.take(R.stock,j.item,n);load[j.item]=n;to=D.sid}
   else{const s=pjSrc(R,'fe','haul',P)||pjSrc(R,'fe','supply',P);if(s)from=s.D.sid}
@@ -13859,12 +13868,20 @@ function pjRunStart(j){const R=S.stations[j.sid],P=xPilotOfKey(j.pid);if(!R||!P)
 // arriving: what each kind does at the end of its route
 function pjArrive(r){const j=pjJob(r),R=j&&S.stations[j.sid],P=j&&xPilotOfKey(j.pid);if(!j||!R||R.owner!=='player'||!P){if(Object.keys(r.load).length)toDebris(S.sectors[r.sector],r.load);r.load={};pjRunEnd(r,false,'the depot is gone');return}
   if(r.kind==='supply'){const n=r.load[j.item]||0;inv.addAll(R.stock,r.load);r.load={};pjRunEnd(r,true,`${n} of ${j.n} brought in`);return}
-  if(r.kind==='haul'){const D=S.stations[r.dst];const n=r.load[j.item]||0;if(!D){toDebris(S.sectors[r.sector],r.load);r.load={};pjRunEnd(r,false,'the market is gone');return}
-    const f=D.owner,pr=Math.max(1,Math.floor(stPrice(D,j.item)*.95)),k=Math.min(n,Math.floor((S.econ.treasury[f]||0)/pr));inv.add(mkStock(D),j.item,k);inv.take(r.load,j.item,k);
-    if(Object.keys(r.load).length){inv.addAll(mkStock(D),r.load);r.load={}}const got=k?payTo(P,f,k*pr):0;eco(R,'jobs',got,`${k} ${ITEMS[j.item].name} sold at ${D.name}`);pjRunEnd(r,true,`${k} sold for ${fmt(got)} cr`);return}
+  if(r.kind==='haul'){
+    // back at the depot with what the market couldn't pay for
+    if(r.back){inv.addAll(R.stock,r.load);r.load={};pjRunEnd(r,true,r.why);return}
+    const D=S.stations[r.dst];const n=r.load[j.item]||0;if(!D){toDebris(S.sectors[r.sector],r.load);r.load={};pjRunEnd(r,false,'the market is gone');return}
+    // the buyer takes only what it can pay for; the fee is scaled to what sold, and the rest rides home to the depot's store
+    const f=D.owner,pr=Math.max(1,Math.floor(stPrice(D,j.item)*.95)),k=Math.min(n,Math.floor((S.econ.treasury[f]||0)/pr));if(k>0){inv.take(r.load,j.item,k);inv.add(mkStock(D),j.item,k)}
+    const got=k?payTo(P,f,k*pr):0;if(k)eco(R,'jobs',got,`${k} ${ITEMS[j.item].name} sold at ${D.name}`);r.feeK=n?k/n:0;const why=`${k} sold for ${fmt(got)} cr`;
+    if(Object.keys(r.load).some(x=>r.load[x]>0)){r.back=1;r.why=`${why}, ${n-k} brought back`;r.from=D.sid;r.to=R.sid;r.dst=R.sid;r.path=trPath(D.sid,R.sid)||[D.sid];r.leg=0;r.sector=D.sid;r.next=S.T+PJR.hop*.5;return}
+    pjRunEnd(r,true,why);return}
   r.state='work';r.until=S.T+(r.kind==='guard'?PJB.guardT:1e12)}
 // the clock: hops along the lanes out of sight, mining and guarding at the depot
-function pjRunsTick(){if(NET.cl||!S)return;for(const r of pjRuns().slice()){if(r.live)continue;const j=pjJob(r);if(!j||j.state==='done'){pjRuns().splice(pjRuns().indexOf(r),1);continue}
+function pjRunsTick(){if(NET.cl||!S)return;for(const r of pjRuns().slice()){if(r.live)continue;const j=pjJob(r);
+  // the job ended under it (the depot lost, the job cancelled): what it carries is dumped where it is
+  if(!j||j.state==='done'){if(Object.keys(r.load||{}).length&&S.sectors[r.sector])toDebris(S.sectors[r.sector],r.load);r.load={};pjRuns().splice(pjRuns().indexOf(r),1);continue}
   if(r.state==='work'){const R=S.stations[r.depot];if(!R||R.owner!=='player'){pjRunEnd(r,false,'the depot is gone');continue}
     if(r.kind==='guard'){if(S.T>=r.until)pjRunEnd(r,true,'20 minutes on guard');continue}
     if(r.kind==='mine'&&!WORLDS[r.depot]){const got=extract(S.sectors[r.depot],sRound(PJR.mine*10));const m=invMass(got);inv.addAll(R.stock,got);r.cut+=m;if(r.cut>=j.n||!m)pjRunEnd(r,true,`${Math.round(r.cut)} t cut`)}continue}
@@ -14341,7 +14358,7 @@ function ceReview(){const T=S.T,sold={},byKind={};for(const m in MAKERS){const c
       else if(fair>=1&&mine<fair*.5)ceTweak(m,id,'buyers passing it by')}}}
 // ---- the hour: profit, shares, dividends, the board
 function ceHour(){for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;const p=c.inc-c.cost;c.inc=0;c.cost=0;c.E=c.E?c.E*.6+p*.4:p;c.hist.push([S.T,p,ceT(m)]);if(c.hist.length>48)c.hist.shift();
-    let sv=0;for(const sid in S.stations){const R=S.stations[sid];if(!R)continue;let st;try{st=mkStock(R)}catch(e){continue}for(const id of MK_LINE[m])if(st[id])sv+=st[id]*ceComp(mkHomeSid(m),id)}
+    let sv=0;for(const sid in S.stations){const R=S.stations[sid];if(!R)continue;let st;try{st=mkStock(R)}catch(e){continue}for(const id of MK_LINE[m])for(let g=1;g<=5;g++){const gid=g>1?`${id}_g${g}`:id;if(st[gid])sv+=st[gid]*ceComp(mkHomeSid(m),gid)}}
     const px=Math.max(1,(ceT(m)+sv+8*c.E)/100);c.px=px;c.pxH.push(Math.round(px*10)/10);if(c.pxH.length>48)c.pxH.shift();
     if(p>0&&!c.str){const k=c.ceo==='Generous'?1.5:c.ceo==='Cautious'?.6:1,d=Math.floor(p*CE.div*k);if(d>0){const a=transfer(ceW(m),ceHomeWallet(m),Math.floor(d*CE.divHome)),b=transfer(ceW(m),'neutral',d-Math.floor(d*CE.divHome));c.div+=a+b}}
     const H=c.pxH,n=H.length;if(n>=3&&S.T-c.ceoT>=CE.grace&&H[n-1]<H[n-2]&&H[n-2]<H[n-3]){const old=c.ceo;c.ceo=pick(CE.ceos.filter(x=>x!==old));c.ceoT=S.T;ceNews(m,`'s board has replaced its CEO after two hours of falling shares: out goes a ${old}, in comes a ${c.ceo}.`)}}}
@@ -14452,11 +14469,18 @@ makersTick=(function(o){return function(){if(!rdOn())return o.apply(this,argumen
   if(!S.corpConv){try{corpConvert()}catch(e){}S.corpConv=1}
   for(const m in MAKERS){const R=mkAtHome(m);if(!R||!ceAlive(m))continue;const st=mkStock(R),gidOf=id=>rdGid(id,rdLineG(m,id)),want=id=>Math.min(CE.cap,CE.shelf+ceSold(m,id,3600));
     const ids=MK_LINE[m].filter(id=>{const gid=gidOf(id);return ITEMS[gid]&&Object.keys(ITEMS[gid].recipe).length&&(st[gid]||0)<want(id)&&!(S.T>CE.shut&&!ceSold(m,id,CE.shut)&&(st[gid]||0)>0)}).sort((a,b)=>(st[gidOf(a)]||0)/want(a)-(st[gidOf(b)]||0)/want(b));
-    for(const id of ids){const gid=gidOf(id),rc=ITEMS[gid].recipe;rdCraftFor(st,rc);if(!haveIn(rc,[st]))continue;const cost=Math.ceil(ceComp(R.sid,gid));if(ceT(m)-cost<ceReserve(m))continue;
-      transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);ceOf(m).cost+=cost;takeFrom(rc,[st]);inv.add(st,gid,1);break}}}})(makersTick);
-// a grade's inputs the station doesn't stock (Calibration Matrices, lattices, cores) are made in the works from what it does
-function rdCraftFor(st,rc,depth){depth=depth||0;if(depth>3)return;for(const k in rc){const need=rc[k]-(st[k]||0);if(need<=0||RAWS.includes(k))continue;const r=ITEMS[k]&&ITEMS[k].recipe;if(!r)continue;
-  for(let i=0;i<need;i++){rdCraftFor(st,r,depth+1);if(!haveIn(r,[st]))break;takeFrom(r,[st]);inv.add(st,k,1)}}}
+    for(const id of ids){const gid=gidOf(id),rc=ITEMS[gid].recipe;if(!rdCanMake(st,rc,R))continue;const cost=Math.ceil(ceComp(R.sid,gid));if(ceT(m)-cost<ceReserve(m))continue;
+      rdCraftFor(st,rc,R);if(!haveIn(rc,[st]))continue;transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);ceOf(m).cost+=cost;takeFrom(rc,[st]);inv.add(st,gid,1);break}}}})(makersTick);
+// a grade's Calibration Matrices, lattices and cores the station doesn't stock are made in the works from the station's stock
+// (design: "a grade's Calibration Matrices, lattices and cores are made in the works from the station's stock"); nothing else
+// is made (plates, conduit and coils must be on the market), and lattices and cores only where the station has a forge (as at
+// a dock: a faction's home station, or a production module). Callers check with rdCanMake before paying, then craft.
+const RD_CRAFT=new Set(['matrix','lattice','core']);
+function rdForgeAt(R){if(!R)return false;const d=DEF[R.sid];if(R.kind==='core'&&d&&d.home===R.owner)return true;return(devOf(R).prod||0)>=1&&!starving(R)}
+function rdCraftFor(st,rc,R,depth){depth=depth||0;if(depth>3)return;for(const k in rc){const need=rc[k]-(st[k]||0);if(need<=0||!RD_CRAFT.has(k))continue;const I=ITEMS[k],r=I&&I.recipe;if(!r||(I.forge&&!rdForgeAt(R)))continue;
+  for(let i=0;i<need;i++){rdCraftFor(st,r,R,depth+1);if(!haveIn(r,[st]))break;takeFrom(r,[st]);inv.add(st,k,1)}}}
+// whether the station's stock (with the works' crafting) covers a recipe, without touching the stock
+function rdCanMake(st,rc,R){if(haveIn(rc,[st]))return true;const tmp={...st};rdCraftFor(tmp,rc,R);return haveIn(rc,[tmp])}
 // ---- R&D
 function rdKindOf(id){return ceKind(id)}
 function rdCan(m,g){const c=ceOf(m),sp=c.ceo==='Innovator'?1:c.ceo==='Cautious'?6:RD.spare;return ceT(m)>=RD.cost[g]+sp*ceUpkeep(m)+ceReserve(m)}
@@ -14465,15 +14489,16 @@ function rdStart(m,id,why){const c=ceOf(m),g=rdLineG(m,id)+1;if(g>5||c.rd||!rdCa
   c.rd={id,g,stage:'design',until:S.T+RD.design[g],proto:{},t0:S.T};ceNews(m,`has opened an R&D project: ${ITEMS[rdGid(id,g)].name} (${why}). Its lab is going up at ${DEF[mkHomeSid(m)].name}.`);return true}
 function rdTick(){if(!rdOn())return;const T=S.T;for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead||!c.rd)continue;const P=c.rd;if(T<P.until)continue;
     if(P.stage==='design'){P.stage='materials';P.until=T+rnd(...RD.mat);continue}
-    if(P.stage==='materials'){if(!P.got){const R=mkAtHome(m);if(!R){P.until=T+60;continue}const st=mkStock(R),gid=rdGid(P.id,P.g),rc=ITEMS[gid].recipe;rdCraftFor(st,rc);
-        const cost=Math.ceil(ceComp(R.sid,gid));if(!haveIn(rc,[st])||ceT(m)<cost){P.until=T+60;continue}transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);c.cost+=cost;takeFrom(rc,[st]);inv.addAll(P.proto,rc);P.got=1}
+    if(P.stage==='materials'){if(!P.got){const R=mkAtHome(m);if(!R){P.until=T+60;continue}const st=mkStock(R),gid=rdGid(P.id,P.g),rc=ITEMS[gid].recipe;
+        const cost=Math.ceil(ceComp(R.sid,gid));if(!rdCanMake(st,rc,R)||ceT(m)<cost){P.until=T+60;continue}rdCraftFor(st,rc,R);if(!haveIn(rc,[st])){P.until=T+60;continue}transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);c.cost+=cost;takeFrom(rc,[st]);inv.addAll(P.proto,rc);P.got=1}
       P.stage='trials';P.until=T+rnd(...RD.trial);continue}
     if(P.stage==='trials')rdLaunch(m)}}
 function rdLaunch(m){const c=ceOf(m),P=c.rd,id=P.id,g=P.g,gid=rdGid(id,g),R=mkAtHome(m);(c.g=c.g||{})[id]=g;c.rd=null;
   // the prototype is the first unit on the shelf
   const st=R?mkStock(R):S.econ.stock.neutral;inv.addAll(st,P.proto);P.proto={};const rc=ITEMS[gid].recipe;if(haveIn(rc,[st])){takeFrom(rc,[st]);inv.add(st,gid,1)}
   // the old grades are retired: broken into raw ore wherever they sit on a market
-  let n=0;for(const sid in S.stations){const X=S.stations[sid];if(!X)continue;let ms;try{ms=mkStock(X)}catch(e){continue}for(let h=1;h<g;h++){const old=rdGid(id,h);const k=ms[old]||0;if(!k)continue;inv.take(ms,old,k);const v=invVec({[old]:k});for(const e of RAWS)if(v[e])inv.add(ms,e,v[e]);n+=k}}
+  // (not a pilot's own depot or station: what a player keeps in its store is its own, whatever its grade)
+  let n=0;for(const sid in S.stations){const X=S.stations[sid];if(!X||X.owner==='player')continue;let ms;try{ms=mkStock(X)}catch(e){continue}for(let h=1;h<g;h++){const old=rdGid(id,h);const k=ms[old]||0;if(!k)continue;inv.take(ms,old,k);const v=invVec({[old]:k});for(const e of RAWS)if(v[e])inv.add(ms,e,v[e]);n+=k}}
   ceNews(m,`launches the ${ITEMS[gid].name}.${n?` ${n} unsold units of the old grade are broken back into ore.`:''}`,g>=3);c.ln[id]={tw:0,last:S.T}}
 // when a line keeps losing, or a rival's higher grade outsells it
 function rdReview(){if(!rdOn())return;const T=S.T,sold={},grade={},byKind={};for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;for(const id of MK_LINE[m]){sold[id]=ceSold(m,id,CE.window);grade[id]=rdLineG(m,id);const k=rdKindOf(id);(byKind[k]=byKind[k]||[]).push([m,id])}}

@@ -15,12 +15,12 @@ function pjRuns(){return S.pjRuns=S.pjRuns||[]}
 function pjRunOf(id){return pjRuns().find(r=>String(r.id)===String(id))||null}
 function pjJob(r){return pjList().find(j=>j.id===r.job)}
 function pjRunEnd(r,ok,why){const j=pjJob(r),R=j&&S.stations[j.sid],P=j&&xPilotOfKey(j.pid);const i=pjRuns().indexOf(r);if(i>=0)pjRuns().splice(i,1);if(!j||j.state==='done')return;
-  if(ok&&P&&R){const fee=payFrom(P,j.by,Math.min(j.bid,P.credits));eco(R,'jobs',-fee,`${j.who}'s fee`);j.paid=fee;j.msg=`done by ${j.who}:${why?' '+why+',':''} paid ${fmt(fee)} cr`;keyFeed(j.pid,`📋 ${pjTitle(j)}: ${j.msg}.`,'good')}
+  if(ok&&P&&R){const fee=payFrom(P,j.by,Math.min(Math.round(j.bid*(r.feeK!=null?r.feeK:1)),P.credits));eco(R,'jobs',-fee,`${j.who}'s fee`);j.paid=fee;j.msg=`done by ${j.who}:${why?' '+why+',':''} paid ${fmt(fee)} cr`;keyFeed(j.pid,`📋 ${pjTitle(j)}: ${j.msg}.`,'good')}
   else{j.msg=`failed: ${why||'the contractor was lost'}`;if(j.pid)keyFeed(j.pid,`📋 ${pjTitle(j)}: ${j.msg}.`,'bad')}j.state='done'}
 // a taker signs on: where it starts, what it carries
 function pjRunStart(j){const R=S.stations[j.sid],P=xPilotOfKey(j.pid);if(!R||!P)return;const side=j.by;let from=R.sid,to=R.sid,load={},D=null;
   if(j.kind==='supply'){const s=pjSrc(R,j.item,'supply',P);if(!s){pjRunEnd({job:j.id},false,'no market has it');return}D=s.D;const mk=mkStock(D),pr=Math.ceil(stPrice(D,j.item));const n=Math.min(j.n,mk[j.item]||0,Math.floor(P.credits/pr));
-    if(n<=0){pjRunEnd({job:j.id},false,'nothing bought');return}inv.take(mk,j.item,n);load[j.item]=n;payFrom(P,D.owner,n*pr);eco(R,'jobs',-n*pr,`${n} ${ITEMS[j.item].name} bought at ${D.name}`);from=D.sid}
+    if(n<=0){pjRunEnd({job:j.id},false,'nothing bought');return}inv.take(mk,j.item,n);load[j.item]=n;{const paid=payFrom(P,D.owner,n*pr);if(ITEMS[j.item].maker&&typeof ceSale==='function')ceSale(ITEMS[j.item].maker,j.item,n,paid,D.owner==='neutral'?'neutral':D.owner,D.sid)}eco(R,'jobs',-n*pr,`${n} ${ITEMS[j.item].name} bought at ${D.name}`);from=D.sid}
   else if(j.kind==='haul'){const s=pjSrc(R,j.item,'haul',P);if(!s){pjRunEnd({job:j.id},false,'no market will take it');return}D=s.D;const n=Math.min(j.n,R.stock[j.item]||0);if(n<=0){pjRunEnd({job:j.id},false,'nothing in the store to haul');return}
     inv.take(R.stock,j.item,n);load[j.item]=n;to=D.sid}
   else{const s=pjSrc(R,'fe','haul',P)||pjSrc(R,'fe','supply',P);if(s)from=s.D.sid}
@@ -29,12 +29,20 @@ function pjRunStart(j){const R=S.stations[j.sid],P=xPilotOfKey(j.pid);if(!R||!P)
 // arriving: what each kind does at the end of its route
 function pjArrive(r){const j=pjJob(r),R=j&&S.stations[j.sid],P=j&&xPilotOfKey(j.pid);if(!j||!R||R.owner!=='player'||!P){if(Object.keys(r.load).length)toDebris(S.sectors[r.sector],r.load);r.load={};pjRunEnd(r,false,'the depot is gone');return}
   if(r.kind==='supply'){const n=r.load[j.item]||0;inv.addAll(R.stock,r.load);r.load={};pjRunEnd(r,true,`${n} of ${j.n} brought in`);return}
-  if(r.kind==='haul'){const D=S.stations[r.dst];const n=r.load[j.item]||0;if(!D){toDebris(S.sectors[r.sector],r.load);r.load={};pjRunEnd(r,false,'the market is gone');return}
-    const f=D.owner,pr=Math.max(1,Math.floor(stPrice(D,j.item)*.95)),k=Math.min(n,Math.floor((S.econ.treasury[f]||0)/pr));inv.add(mkStock(D),j.item,k);inv.take(r.load,j.item,k);
-    if(Object.keys(r.load).length){inv.addAll(mkStock(D),r.load);r.load={}}const got=k?payTo(P,f,k*pr):0;eco(R,'jobs',got,`${k} ${ITEMS[j.item].name} sold at ${D.name}`);pjRunEnd(r,true,`${k} sold for ${fmt(got)} cr`);return}
+  if(r.kind==='haul'){
+    // back at the depot with what the market couldn't pay for
+    if(r.back){inv.addAll(R.stock,r.load);r.load={};pjRunEnd(r,true,r.why);return}
+    const D=S.stations[r.dst];const n=r.load[j.item]||0;if(!D){toDebris(S.sectors[r.sector],r.load);r.load={};pjRunEnd(r,false,'the market is gone');return}
+    // the buyer takes only what it can pay for; the fee is scaled to what sold, and the rest rides home to the depot's store
+    const f=D.owner,pr=Math.max(1,Math.floor(stPrice(D,j.item)*.95)),k=Math.min(n,Math.floor((S.econ.treasury[f]||0)/pr));if(k>0){inv.take(r.load,j.item,k);inv.add(mkStock(D),j.item,k)}
+    const got=k?payTo(P,f,k*pr):0;if(k)eco(R,'jobs',got,`${k} ${ITEMS[j.item].name} sold at ${D.name}`);r.feeK=n?k/n:0;const why=`${k} sold for ${fmt(got)} cr`;
+    if(Object.keys(r.load).some(x=>r.load[x]>0)){r.back=1;r.why=`${why}, ${n-k} brought back`;r.from=D.sid;r.to=R.sid;r.dst=R.sid;r.path=trPath(D.sid,R.sid)||[D.sid];r.leg=0;r.sector=D.sid;r.next=S.T+PJR.hop*.5;return}
+    pjRunEnd(r,true,why);return}
   r.state='work';r.until=S.T+(r.kind==='guard'?PJB.guardT:1e12)}
 // the clock: hops along the lanes out of sight, mining and guarding at the depot
-function pjRunsTick(){if(NET.cl||!S)return;for(const r of pjRuns().slice()){if(r.live)continue;const j=pjJob(r);if(!j||j.state==='done'){pjRuns().splice(pjRuns().indexOf(r),1);continue}
+function pjRunsTick(){if(NET.cl||!S)return;for(const r of pjRuns().slice()){if(r.live)continue;const j=pjJob(r);
+  // the job ended under it (the depot lost, the job cancelled): what it carries is dumped where it is
+  if(!j||j.state==='done'){if(Object.keys(r.load||{}).length&&S.sectors[r.sector])toDebris(S.sectors[r.sector],r.load);r.load={};pjRuns().splice(pjRuns().indexOf(r),1);continue}
   if(r.state==='work'){const R=S.stations[r.depot];if(!R||R.owner!=='player'){pjRunEnd(r,false,'the depot is gone');continue}
     if(r.kind==='guard'){if(S.T>=r.until)pjRunEnd(r,true,'20 minutes on guard');continue}
     if(r.kind==='mine'&&!WORLDS[r.depot]){const got=extract(S.sectors[r.depot],sRound(PJR.mine*10));const m=invMass(got);inv.addAll(R.stock,got);r.cut+=m;if(r.cut>=j.n||!m)pjRunEnd(r,true,`${Math.round(r.cut)} t cut`)}continue}
