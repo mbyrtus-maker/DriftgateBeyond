@@ -36,7 +36,9 @@ function frAway(st){return!frSeed&&frPower(st.owner)&&!(st.R&&st.R.kind==='core'
 {const o=grTick;grTick=function(){frSeed=!S.grInit;try{return o.apply(this,arguments)}finally{frSeed=false}}}
 function frSiteStore(st){return st.R?dStore(st.R):st.o.stock}
 function frAsk(st,ld){const f=st.owner,want={};for(const k in ld)want[k]=ld[k]*FR.kitAsk;
-  if(st.R)return depotAsk(st.R,want);
+  // a depot's kits come on their own convoy, so they don't hold up its other supplies (upgrades, capital kits)
+  if(st.R){const R=st.R,key='kit:'+R.sid;if(haulBusy(key))return false;const home=S.econ.stock[f],load={};for(const k in want){const lack=want[k]-(dStore(R)[k]||0);if(lack<=0)continue;const n=Math.min(lack,home[k]||0);if(n>0)load[k]=inv.take(home,k,n)}
+    if(!Object.keys(load).length)return false;return!!haulSend(f,FAC_HOME(f),R.sid,load,key,'supplies')}
   const o=st.o,oid=st.key.slice(2),key='okit:'+oid;if(haulBusy(key))return false;const home=S.econ.stock[f],load={};
   for(const k in want){const lack=want[k]-(o.stock[k]||0);if(lack<=0)continue;const n=Math.min(lack,home[k]||0);if(n>0)load[k]=inv.take(home,k,n)}
   if(!Object.keys(load).length)return false;const t=haulSend(f,FAC_HOME(f),o.sector,load,key,'supplies');if(t)t.okit=oid;return!!t}

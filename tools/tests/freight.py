@@ -22,7 +22,7 @@ async def main():
       const n=RUN(()=>!S.traders.includes(t),400);return JSON.stringify({convoy:!!t,load:t&&t.load,left:o.stock.fe,plateKept:o.stock.plate,arrived:n>=0,home:(S.econ.stock.halcyon.fe||0)-h0})})()"""))
     print('ledger',await ev(LED))
     print('depot asks for kits',await ev("""(()=>{const R=S.stations.hr,ds=dStore(R);const ro=S.mrs['S.hr'];devLedger(()=>{const m=ro.m.pop();inv.addAll(S.econ.stock.halcyon,m.load)});const pl=ds.plate||0,wi=ds.wire||0;devLedger(()=>{inv.take(ds,'plate',pl);inv.take(ds,'wire',wi);inv.add(S.econ.stock.halcyon,'plate',pl);inv.add(S.econ.stock.halcyon,'wire',wi)});
-      ro.t=S.T-1;mrTick();const t=S.traders.find(x=>x.key==='in:hr');const n=RUN(()=>!S.traders.includes(t),400);ro.t=S.T-1;mrTick();return JSON.stringify({asked:!!t,load:t&&t.load,arrived:n>=0,roster:ro.m.length})})()"""))
+      ro.t=S.T-1;mrTick();const t=S.traders.find(x=>x.key==='kit:hr');const n=RUN(()=>!S.traders.includes(t),400);ro.t=S.T-1;mrTick();return JSON.stringify({asked:!!t,load:t&&t.load,arrived:n>=0,roster:ro.m.length})})()"""))
     print('ledger',await ev(LED))
     print('outpost garrison by convoy',await ev("""(()=>{grTick();const ro=S.gar['O.kestrel'];const n0=ro?ro.m.length:0;const t=S.traders.find(x=>x.key==='okit:kestrel');const n=t?RUN(()=>!S.traders.includes(t),400):-2;if(ro)ro.t=S.T-1;grTick();return JSON.stringify({built0:n0,asked:!!t,okit:t&&t.okit,arrived:n>=0,after:ro&&ro.m.length,line:grLine('O.kestrel')})})()"""))
     print('ledger',await ev(LED))
