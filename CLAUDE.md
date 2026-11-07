@@ -19,6 +19,7 @@
 - **The ledger is exact:** goods are never created or destroyed except by mining real rock; every unit moves between stores, holds, debris and wrecks. `ledger()` must stay exact (`devLedger(fn)` checks a change).
 - **Multiplayer:** the host simulates; guests send inputs. Code that acts for a guest runs on the host inside `runAs(pid,fn)`; guest dock actions arrive as `{t:'act'}` and run through `dockAction` on the host.
 - Faction balance target (Beyond, 3 Nov 2026): the Brood about 20%, the three powers about 25% each, balanced on stats with neutral leaders (traits are left to sway real galaxies), checked with a war check after any change that moves faction strength.
+- **Every power mines at the same rate** (`BAL.ext` 1.0 each; the user, 3 and 7 Nov 2026). Never balance with mining rates. Each power's edge is its in-game faction perk: Halcyon the Trade Charter (mercantile), Varkesh the Dominion hulls, Ostrova its own perk (being redesigned, 7 Nov 2026). Tune those perks, the Brood's dials, or real game changes.
 
 ## Tests and checks
 - Browser tests: `tools/tests/run.sh` (quick, ~10 min) or `run.sh full` (adds the training courses); multiplayer tests take `$PWD/index.html` (see `tools/tests/README.md`). The limpet test is timing-sensitive under load.

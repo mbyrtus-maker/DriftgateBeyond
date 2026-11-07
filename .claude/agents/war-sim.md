@@ -23,6 +23,7 @@ The balance target (3 Nov 2026): the Brood about **20%** of galaxies, Halcyon, V
 ## Reporting
 - One line of results: each side's share in %, unfinished count, page errors if any.
 - Compare with the most recent "War check" entry in `BEYOND_DESIGN.md` (search for "War check") and say what moved and whether it's outside noise.
+- Never suggest mining rates (`BAL.ext` stays 1.0 for every power, the user's rule). Levers are each power's faction perk (Halcyon's Trade Charter, Varkesh's Dominion hulls and `tough`, Ostrova's perk), the Brood's dials, or real game changes.
 - If a side is off target, suggest at most two specific tuning levers (name the constant and file, e.g. `FACTIONS.varkesh.tough` in `src/js/`) and, if you tested them through a tune file, their results.
 - Keep the raw JSON in your scratch folder and give its full path.
 
