@@ -142,3 +142,9 @@ function rdSeedSystems(){const all=Object.keys(MAKERS),sys=m=>(MK_LINE[m]||[]).f
     const type=R.owner==='neutral'?'free':R.kind==='core'?'core':'depot',[a,b]=RD_SEED[type],n=ri(a,b);
     for(let i=0;i<n;i++){const loc=local.length&&(Math.random()<CORP_SEED.local||!foreign.length),id=pick(loc?local:foreign);inv.add(st,id,loc?ri(1,2):1)}}}
 {const o=partsSeed;partsSeed=function(){o.apply(this,arguments);try{if(S&&!S.training)rdSeedSystems()}catch(e){console.error(e)}}}
+// ---- the Hollow Relay is gone (user, 7 Nov 2026: "Remove hollow relay"; it sat one jump from Ostrova's home and its tolls
+// drained the other two powers all game). A galaxy saved with it: its stores and fortification fall as debris in Hollow
+// Verge, and attacks on it are called off (their forces go back to their stores).
+function hollowGone(){const o=S&&S.outposts&&S.outposts.hollow;if(!o)return;const s=S.sectors[o.sector];if(s){toDebris(s,o.stock||{});toDebris(s,o.fort||{})}o.stock={};o.fort={};
+  for(const ev of S.events||[])if(ev.target==='hollow'&&ev.stage!=='done'){inv.addAll(S.econ.stock[ev.att]||S.econ.stock.pirate,ev.force||{});ev.force={};ev.stage='done'}delete S.outposts.hollow}
+{const o=startWith;startWith=function(st){const r=o.apply(this,arguments);try{if(S&&!NET.cl)hollowGone()}catch(e){console.error(e)}return r}}

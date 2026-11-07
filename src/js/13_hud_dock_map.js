@@ -517,7 +517,7 @@ function drawMap(){
   mapKeyBox={x:w-70,y:h-30,w:60,h:22};if(!mapKey){c.strokeStyle='rgba(236,228,207,.35)';c.lineWidth=1;c.strokeRect(w-70,h-30,60,22);c.fillStyle='#b8bfcf';c.textAlign='center';c.fillText('KEY ▸',w-40,h-15);return}
   c.fillStyle='rgba(11,16,32,.88)';c.fillRect(w-380,h-196,374,190);c.fillStyle='#b8bfcf';c.textAlign='right';c.fillText('KEY ▾',lx,ly);ly-=18;
   for(const[l,col]of[['Brood',FACTIONS.brood.col],['Unbound','#d8cd98'],['You','#f0b24a'],...FAC_IDS.map(f=>[FACTIONS[f].short,FACTIONS[f].col]).reverse()]){c.fillStyle=col;c.fillRect(lx-8,ly-8,8,8);c.fillStyle='#8c91a5';c.fillText(l,lx-14,ly);ly-=16}
-  c.fillStyle='#5a647c';c.fillText('◆ Beacon: team colour · hollow unclaimed · amber ring yours',lx,ly);ly-=16;c.fillText('F Forge · R Relay · Y Salvage Yard · ■ built depot · ▣ your vault',lx,ly);ly-=16;c.fillText('Dashed ring: sensors cover it · dimmed: no coverage',lx,ly);
+  c.fillStyle='#5a647c';c.fillText('◆ Beacon: team colour · hollow unclaimed · amber ring yours',lx,ly);ly-=16;c.fillText('F Forge · Y Salvage Yard · ■ built depot · ▣ your vault',lx,ly);ly-=16;c.fillText('Dashed ring: sensors cover it · dimmed: no coverage',lx,ly);
 }
 let mapKey=false,mapKeyBox=null;
 mcv.addEventListener('click',e=>{const r=mcv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;if(mapKeyBox&&x>=r.width-75&&y>=r.height-(mapKey?200:34)&&x<=r.width&&y<=r.height){mapKey=!mapKey;drawMap();return}let best=null,bd=34;for(const d of SECTOR_DEFS){const[sx,sy]=mapXY(d,r.width,r.height),dd=hyp(sx-x,sy-y);if(dd<bd){bd=dd;best=d.id}}if(best){mapSel=best;drawMap();renderMapSide()}});

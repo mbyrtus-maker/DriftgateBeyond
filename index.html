@@ -1313,7 +1313,7 @@ const NEIGH={};SECTOR_DEFS.forEach(d=>NEIGH[d.id]=[]);LINKS.forEach(([a,b])=>{NE
 const SPACE=1.8;// systems are wide: gates, fields, beacons, spawn points, the edge and the radars all scale with this
 const SPREAD=1.2; // spacing rules that don't scale with SPACE (belt gaps, rock spacing, station works rings) are 20% wider too
 const GATES={};SECTOR_DEFS.forEach(d=>{GATES[d.id]=NEIGH[d.id].map(n=>{const e=DEF[n],a=Math.atan2(e.y-d.y,e.x-d.x),h=Math.round(((hashStr(d.id+n)%2400)-1200)*1.25);return{to:n,x:Math.round(Math.cos(a)*2500*SPACE),y:h,z:Math.round(Math.sin(a)*2500*SPACE)}})});
-const OUTPOST_DEFS={kestrel:{sector:'ke',name:'Kestrel Forge',type:'forge'},shoal:{sector:'sh',name:'Shoal Forge',type:'forge'},cinder:{sector:'ci',name:'Cinder Forge',type:'forge'},hollow:{sector:'ho',name:'Hollow Relay',type:'relay'},wrack:{sector:'wr',name:'Wrack Salvage Yard',type:'yard'}};
+const OUTPOST_DEFS={kestrel:{sector:'ke',name:'Kestrel Forge',type:'forge'},shoal:{sector:'sh',name:'Shoal Forge',type:'forge'},cinder:{sector:'ci',name:'Cinder Forge',type:'forge'},wrack:{sector:'wr',name:'Wrack Salvage Yard',type:'yard'}};
 const OUT_BY_SECTOR={};for(const k in OUTPOST_DEFS)OUT_BY_SECTOR[OUTPOST_DEFS[k].sector]=k;
 const TYPE_TEXT={forge:'Forge · Lattice and Cores',relay:'Relay · gate tolls and strike-group intel',yard:'Salvage Yard · harvests sector debris'};
 function oStats(o){const L=o.level;return{sMax:400+350*L,hMax:900+450*L,dmg:7+3*L,rof:1.6+.3*L,range:950}}
@@ -1411,7 +1411,7 @@ function oresNoNu(d){if(!d.ores.nu)return d.ores;const o={...d.ores};delete o.nu
 const STN={fdepot:{sMax:1200,hMax:2500,tur:2,dmg:11,range:1200},free:{sMax:3600,hMax:10000,tur:6,dmg:16,range:1500},core:{sMax:3200,hMax:9000,tur:6,dmg:15,range:1500},depot:{sMax:2000,hMax:4000,tur:4,dmg:12,range:1300},hive:{sMax:4200,hMax:14000,tur:6,dmg:18,range:1600}};
 // balance levers, tuned by simulation so each of the four powers (the Brood included) wins about a quarter of galaxies
 // (tuned for the 2-hour deadline and the 20-minute hold over 18 rounds of simulated galaxies)
-const BAL={hollowToll:22,carFab:14,carAsk:30,hiveRegrow:240,aiEff:.7,brBuild:1.15,brOff:.55,brLevT:3300,brN:2,brHive:4,antiBrood:1.9,halProsp:.01,halImp:.005,brGrazeCap:300,brGrazeN:5,brGraze:1.9,coal:.35,devGap:1,ext:{halcyon:1,varkesh:1,ostrova:1}};   // ext: each faction's station mining rate (Beyond: tuned 3 Nov 2026 with neutral leaders)
+const BAL={carFab:14,carAsk:30,hiveRegrow:240,aiEff:.7,brBuild:1.15,brOff:.55,brLevT:3300,brN:2,brHive:4,antiBrood:1.9,halProsp:.01,halImp:.005,brGrazeCap:300,brGrazeN:5,brGraze:1.9,coal:.35,devGap:1,ext:{halcyon:1,varkesh:1,ostrova:1}};   // ext: each faction's station mining rate (Beyond: tuned 3 Nov 2026 with neutral leaders)
 const CAP_GATE=2700;   // faction carriers and escorts launch from minute 45 at the earliest (a build may start once it would finish by then)
 function capGateOK(f,dur){return f==='brood'||f==='pirate'||S.T+(dur||0)>=CAP_GATE}
 const CAP_SEAL={yard:2,carrier:3,escort:1},sealed=f=>f!=='brood'&&f!=='pirate',withSeal=(C,f,n)=>sealed(f)?{...C,seal:n}:C;
@@ -1795,7 +1795,7 @@ function bmbPick(f,i,role,tier,srcs){return facVet(f)&&i%2===0&&haveIn(loadout(r
 function pickFighter(role){return wpick(role==='raider'?{interceptor:2,striker:1.4,heavy:.4}:role==='pirate'?{interceptor:1.4,striker:2,heavy:.7}:{interceptor:1,striker:2,heavy:1.1})}
 function wallet(side){return side==='player'?{get:()=>S.player.credits,add:n=>{S.player.credits+=n}}:{get:()=>S.econ.treasury[side]||0,add:n=>{S.econ.treasury[side]=(S.econ.treasury[side]||0)+n}}}
 function transfer(from,to,n){n=Math.floor(n);if(n<=0)return 0;const a=wallet(from),b=wallet(to);n=Math.min(n,a.get());if(n<=0)return 0;a.add(-n);b.add(n);return n}
-function hasIntel(){const h=S.outposts.hollow.owner;return h==='player'||(!!S.player.sworn&&h===S.player.sworn)}
+function hasIntel(){const h=S.outposts.hollow&&S.outposts.hollow.owner;if(!h)return false;return h==='player'||(!!S.player.sworn&&h===S.player.sworn)}
 function holderIn(st,path){if(typeof path!=='string'||!path)return null;const p=path.split(':');if(p[0]==='stock')return st.econ.stock[p[1]];if(p[0]==='out')return st.outposts[p[1]].stock;if(p[0]==='frig'){const t=(st.frigates||[]).find(x=>String(x.id)===p[1]);return t?t.load:(st.econ.stock[p[2]]||st.player.vault)}if(p[0]==='pbay'){const R=p[1]&&st.pilots&&st.pilots[p[1]]||st.player;return R.bay=R.bay||{}}if(p[0]==='scout'){const t=(st.scouts||[]).find(x=>String(x.id)===p[1]);return t?t.load:st.econ.stock[p[2]]}if(p[0]==='trader'){const t=(st.traders||[]).find(x=>String(x.id)===p[1]);return t?t.load:st.econ.stock[p[2]]}if(p[0]==='raid'){const r=(st.raids||[]).find(x=>String(x.id)===p[1]);return r?r.kit:(st.econ.stock[p[2]]||st.econ.stock.pirate)}if(p[0]==='ev'){const ev=st.events.find(v=>String(v.id)===p[1]);return ev&&ev.force?ev.force:st.econ.stock[p[2]]}return st.econ.stock.pirate}
 const holder=path=>holderIn(S,path);
 function stockTarget(id){return RAWS.includes(id)?300:id==='plate'||id==='wire'?90:id==='coil'?40:id==='seal'?6:16}
@@ -2034,7 +2034,7 @@ function strategicTick(){
   for(const f of FAC_IDS)factionIndustry(f);try{patTick()}catch(e){frameErr('patronage',e)}factionIndustry('brood');neutralIndustry();lifeTick();devTick();hgTick();logiTick();weTick();carTick();sortieTick();wkRepair();fpContracts();blkContracts();contContracts();
   pirateIndustry();
   const h=S.outposts.hollow;
-  if(h.owner){let got=0;for(const f of FAC_IDS){if(f===h.owner)continue;got+=transfer(f,h.owner,BAL.hollowToll)}if(h.owner==='player'){S.tollAcc+=got;if(S.tollAcc>=300){feed(`Hollow Relay tolls: +${fmt(S.tollAcc)} cr`,'good');S.tollAcc=0}}}
+  if(h&&h.owner){let got=0;for(const f of FAC_IDS){if(f===h.owner)continue;got+=transfer(f,h.owner,22)}if(h.owner==='player'){S.tollAcc+=got;if(S.tollAcc>=300){feed(`Hollow Relay tolls: +${fmt(S.tollAcc)} cr`,'good');S.tollAcc=0}}}
   for(const f of[...FAC_IDS,'pirate','brood'])if(T>=S.ai[f].next){S.ai[f].next=T+(f==='pirate'?rnd(110,170):f==='brood'?rnd(95,150)*BAL.brOff:rnd(75,135));planOffensive(f)}
   for(const f of[...FAC_IDS,'brood'])if(T>=(S.ai[f].build||0)){S.ai[f].build=T+(f==='brood'?rnd(220,340)*BAL.brBuild:rnd(150,260));planBuild(f)}
 }
@@ -3928,7 +3928,7 @@ function popWants(){const d=DEF[W.sid],oid=OUT_BY_SECTOR[W.sid],o=oid&&S.outpost
   if(d.home){want.push(['miner',d.home,2,1],['patrol',d.home,1,1,3],['hauler',d.home,1,d.kind==='core'?.4:.3]);
     if(d.kind==='frontier'){for(const f of FAC_IDS)if(f!==d.home)want.push(['raider',f,1,.12,3]);want.push(['pirate','pirate',1,.15,3])}}
   else if(d.kind==='contested'){if(FACTIONS[o.owner]){want.push(['miner',o.owner,2,1],['patrol',o.owner,1,1,3]);if(o.owner!=='brood')want.push(['hauler',o.owner,1,.5])}for(const f of FAC_IDS)if(f!==o.owner)want.push(['raider',f,1,.2,3]);want.push(['pirate','pirate',o.owner==='pirate'?2:1,o.owner==='pirate'?1:.3,3])}
-  else if(d.kind==='hub'){for(const f of FAC_IDS)want.push(['hauler',f,1,.6]);want.push(['pirate','pirate',1,.6,3]);if(FACTIONS[o.owner])want.push(['patrol',o.owner,1,1,3])}
+  else if(d.kind==='hub'){for(const f of FAC_IDS)want.push(['hauler',f,1,.6]);want.push(['pirate','pirate',1,.6,3]);if(o&&FACTIONS[o.owner])want.push(['patrol',o.owner,1,1,3])}
   else if(d.kind==='den'){want.push(['pirate','pirate',o.owner==='pirate'?2:1,1,4]);if(FACTIONS[o.owner])want.push(['patrol',o.owner,1,1,3])}
   else if(d.kind==='hive')want.push(['patrol','brood',2,1,4],['miner','brood',3,1]);
   else if(d.kind==='deep'){want.push(['pirate','pirate',1,.3,3]);for(const f of FAC_IDS)want.push(['raider',f,1,.07,3])}
@@ -5517,7 +5517,7 @@ function jumpFx(c){const out=W.jump,k=out?clamp((out.t-.25)/1.1,0,1):JIN.t<JIN.d
   const g=c.createRadialGradient(cx,cy,0,cx,cy,R*.5);g.addColorStop(0,`rgba(200,225,255,${.18*k})`);g.addColorStop(1,'rgba(200,225,255,0)');c.fillStyle=g;c.fillRect(0,0,VW,VH);c.restore()}
 function doJump(to){
   const from=W.sid,h=S.outposts.hollow;
-  if((from==='ho'||to==='ho')&&h.owner&&h.owner!=='player'&&h.owner!==S.player.sworn){const n=transfer('player',h.owner,40);if(n)feed(`Paid ${n} cr gate toll to ${sideName(h.owner)} at Hollow Relay.`,'news')}
+  if((from==='ho'||to==='ho')&&h&&h.owner&&h.owner!=='player'&&h.owner!==S.player.sworn){const n=transfer('player',h.owner,40);if(n)feed(`Paid ${n} cr gate toll to ${sideName(h.owner)} at Hollow Relay.`,'news')}
   exitSector();S.player.sector=to;const g=GATES[to].find(g=>g.to===from);const l=hyp(g.x,g.y,g.z),ux=-g.x/l,uy=-g.y/l,uz=-g.z/l;
   const P=S.player;P.x=g.x+ux*230;P.y=g.y+uy*230;P.z=g.z+uz*230;P.vx=ux*180;P.vy=uy*180;P.vz=uz*180;const q=qLook(ux,uy,uz,0,1,0,q0());P.q=[q.x,q.y,q.z,q.w];
   enterSector(to);if(NET.cl){const q=W.player;netSend({t:'jump',to,x:q.x,y:q.y,z:q.z,vx:q.vx,vy:q.vy,vz:q.vz,q:[q.q.x,q.q.y,q.q.z,q.q.w]})}setTimeout(()=>{$('fade').style.opacity=0},120);save();
@@ -7106,7 +7106,7 @@ function drawMap(){
   mapKeyBox={x:w-70,y:h-30,w:60,h:22};if(!mapKey){c.strokeStyle='rgba(236,228,207,.35)';c.lineWidth=1;c.strokeRect(w-70,h-30,60,22);c.fillStyle='#b8bfcf';c.textAlign='center';c.fillText('KEY ▸',w-40,h-15);return}
   c.fillStyle='rgba(11,16,32,.88)';c.fillRect(w-380,h-196,374,190);c.fillStyle='#b8bfcf';c.textAlign='right';c.fillText('KEY ▾',lx,ly);ly-=18;
   for(const[l,col]of[['Brood',FACTIONS.brood.col],['Unbound','#d8cd98'],['You','#f0b24a'],...FAC_IDS.map(f=>[FACTIONS[f].short,FACTIONS[f].col]).reverse()]){c.fillStyle=col;c.fillRect(lx-8,ly-8,8,8);c.fillStyle='#8c91a5';c.fillText(l,lx-14,ly);ly-=16}
-  c.fillStyle='#5a647c';c.fillText('◆ Beacon: team colour · hollow unclaimed · amber ring yours',lx,ly);ly-=16;c.fillText('F Forge · R Relay · Y Salvage Yard · ■ built depot · ▣ your vault',lx,ly);ly-=16;c.fillText('Dashed ring: sensors cover it · dimmed: no coverage',lx,ly);
+  c.fillStyle='#5a647c';c.fillText('◆ Beacon: team colour · hollow unclaimed · amber ring yours',lx,ly);ly-=16;c.fillText('F Forge · Y Salvage Yard · ■ built depot · ▣ your vault',lx,ly);ly-=16;c.fillText('Dashed ring: sensors cover it · dimmed: no coverage',lx,ly);
 }
 let mapKey=false,mapKeyBox=null;
 mcv.addEventListener('click',e=>{const r=mcv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;if(mapKeyBox&&x>=r.width-75&&y>=r.height-(mapKey?200:34)&&x<=r.width&&y<=r.height){mapKey=!mapKey;drawMap();return}let best=null,bd=34;for(const d of SECTOR_DEFS){const[sx,sy]=mapXY(d,r.width,r.height),dd=hyp(sx-x,sy-y);if(dd<bd){bd=dd;best=d.id}}if(best){mapSel=best;drawMap();renderMapSide()}});
@@ -7819,7 +7819,7 @@ function hMissile(pid,m){const e=MP.rp[pid],P=S.pilots[pid];if(!e)return;inW(wor
   else if(P.rack>0){const n=CLASSES[P.cls].twin?Math.min(2,P.rack,m.n|0||1):1;P.rack-=n;for(let i=0;i<n;i++)launchMissile(e,T,P.tiers.weapon,CLASSES[P.cls].torp?'torpedo':'missile',n>1?(i?1:-1):0);if(S.unb){if(e.jamMode)for(let i=n0;i<W.missiles.length;i++){const mm=W.missiles[i];if(mm.src===e){mm.harp=1;mm.col='#b7c6ff'}}runAs(pid,()=>unbShot())}}})}
 function poseFrom(P,m){for(const k of['x','y','z','vx','vy','vz'])if(typeof m[k]==='number'&&isFinite(m[k]))P[k]=m[k];if(Array.isArray(m.q)&&m.q.length===4)P.q=m.q}
 function hJump(pid,m){const P=S.pilots[pid],from=P.sector,to=String(m.to);if(S.gateDown&&S.gateDown[gateKey(from,to)])return;if(P.docked||!GATES[from]||!GATES[from].some(g=>g.to===to))return;if(P.convoy&&MP.rp[pid])runAs(pid,()=>convoyJump());
-  runAs(pid,()=>{const h=S.outposts.hollow;if((from==='ho'||to==='ho')&&h.owner&&h.owner!=='player'&&h.owner!==S.player.sworn){const n=transfer('player',h.owner,40);if(n)feed(`Paid ${n} cr gate toll to ${sideName(h.owner)} at Hollow Relay.`,'news')}});
+  runAs(pid,()=>{const h=S.outposts.hollow;if((from==='ho'||to==='ho')&&h&&h.owner&&h.owner!=='player'&&h.owner!==S.player.sworn){const n=transfer('player',h.owner,40);if(n)feed(`Paid ${n} cr gate toll to ${sideName(h.owner)} at Hollow Relay.`,'news')}});
   despawnRP(pid);P.sector=to;poseFrom(P,m);delete MP.inp[pid];if(!WORLDS[to])openWorld(to);if(!P.docked)spawnRP(pid);netRoster()}
 function hDock(c,m){const pid=c.pid,P=S.pilots[pid],e=MP.rp[pid];if(!e)return;const w=worldOf(e);let ok=false;
   inW(w,()=>{if(m.d==='lair'){const L=(S.lairs||[]).find(x=>x.id===+m.id&&x.pid===pid&&x.sid===P.sector&&x.hull>0);ok=!!L&&d3(L,e)<320;if(ok)P.lairId=L.id}else if(m.d==='station'){const SE=W.stationEnt;ok=!!SE&&((!!P.sworn&&SE.fac===P.sworn)||(!S.unb&&tradeOK(P,SE.fac))||(S.unb&&SE.fac==='neutral'&&runAs(pid,()=>unbFreeportOK())))&&d3(SE,e)<520}else{const OE=W.outpostEnt;ok=!!OE&&OE.o.id===m.d&&!OE.o.breached&&!!P.sworn&&OE.o.owner===P.sworn&&d3(OE,e)<520}});
@@ -14437,6 +14437,12 @@ function rdSeedSystems(){const all=Object.keys(MAKERS),sys=m=>(MK_LINE[m]||[]).f
     const type=R.owner==='neutral'?'free':R.kind==='core'?'core':'depot',[a,b]=RD_SEED[type],n=ri(a,b);
     for(let i=0;i<n;i++){const loc=local.length&&(Math.random()<CORP_SEED.local||!foreign.length),id=pick(loc?local:foreign);inv.add(st,id,loc?ri(1,2):1)}}}
 {const o=partsSeed;partsSeed=function(){o.apply(this,arguments);try{if(S&&!S.training)rdSeedSystems()}catch(e){console.error(e)}}}
+// ---- the Hollow Relay is gone (user, 7 Nov 2026: "Remove hollow relay"; it sat one jump from Ostrova's home and its tolls
+// drained the other two powers all game). A galaxy saved with it: its stores and fortification fall as debris in Hollow
+// Verge, and attacks on it are called off (their forces go back to their stores).
+function hollowGone(){const o=S&&S.outposts&&S.outposts.hollow;if(!o)return;const s=S.sectors[o.sector];if(s){toDebris(s,o.stock||{});toDebris(s,o.fort||{})}o.stock={};o.fort={};
+  for(const ev of S.events||[])if(ev.target==='hollow'&&ev.stage!=='done'){inv.addAll(S.econ.stock[ev.att]||S.econ.stock.pirate,ev.force||{});ev.force={};ev.stage='done'}delete S.outposts.hollow}
+{const o=startWith;startWith=function(st){const r=o.apply(this,arguments);try{if(S&&!NET.cl)hollowGone()}catch(e){console.error(e)}return r}}
 
 //@src 17_main.js
 // ============================================================ main loop

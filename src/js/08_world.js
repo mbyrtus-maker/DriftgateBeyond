@@ -64,7 +64,7 @@ function popWants(){const d=DEF[W.sid],oid=OUT_BY_SECTOR[W.sid],o=oid&&S.outpost
   if(d.home){want.push(['miner',d.home,2,1],['patrol',d.home,1,1,3],['hauler',d.home,1,d.kind==='core'?.4:.3]);
     if(d.kind==='frontier'){for(const f of FAC_IDS)if(f!==d.home)want.push(['raider',f,1,.12,3]);want.push(['pirate','pirate',1,.15,3])}}
   else if(d.kind==='contested'){if(FACTIONS[o.owner]){want.push(['miner',o.owner,2,1],['patrol',o.owner,1,1,3]);if(o.owner!=='brood')want.push(['hauler',o.owner,1,.5])}for(const f of FAC_IDS)if(f!==o.owner)want.push(['raider',f,1,.2,3]);want.push(['pirate','pirate',o.owner==='pirate'?2:1,o.owner==='pirate'?1:.3,3])}
-  else if(d.kind==='hub'){for(const f of FAC_IDS)want.push(['hauler',f,1,.6]);want.push(['pirate','pirate',1,.6,3]);if(FACTIONS[o.owner])want.push(['patrol',o.owner,1,1,3])}
+  else if(d.kind==='hub'){for(const f of FAC_IDS)want.push(['hauler',f,1,.6]);want.push(['pirate','pirate',1,.6,3]);if(o&&FACTIONS[o.owner])want.push(['patrol',o.owner,1,1,3])}
   else if(d.kind==='den'){want.push(['pirate','pirate',o.owner==='pirate'?2:1,1,4]);if(FACTIONS[o.owner])want.push(['patrol',o.owner,1,1,3])}
   else if(d.kind==='hive')want.push(['patrol','brood',2,1,4],['miner','brood',3,1]);
   else if(d.kind==='deep'){want.push(['pirate','pirate',1,.3,3]);for(const f of FAC_IDS)want.push(['raider',f,1,.07,3])}

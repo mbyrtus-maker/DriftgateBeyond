@@ -2018,3 +2018,6 @@ Measured in game (200 m/s sideways, thrusting forward for 1 s): Light Fighter ke
 
 ## Bigger asteroids (Nov 2026)
 Every rock is 1.5x the size it was (`AST_K` in `astR`): a 100-unit rock is about 70 m across in radius instead of 47, a 300-unit rock 107 instead of 71. The radius is used for drawing and for everything solid alike (shots, missiles, collisions, fault points on the surface, where chunks land), so what you see is what you hit. Ore amounts, mining pay and the number of fault points are unchanged; belts look denser and are a little harder to thread at speed. Salvage points on wrecks and loose chunks keep their sizes.
+
+
+- **Driftgate Beyond (7 Nov 2026): the Hollow Relay is removed in Beyond** (its tolls favoured Ostrova, one jump away). Driftgate 1 keeps it. See BEYOND_DESIGN.md, corporate economy stage 2.
