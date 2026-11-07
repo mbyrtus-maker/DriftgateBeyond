@@ -38,6 +38,9 @@ async def main():
     print('ledger',await ev(LED))
     print('arrives and fights',await ev("""(()=>{const ev=window._EV;if(!ev)return 'none';for(let i=0;i<120&&ev.stage==='inbound';i++){S.T+=10;raidsTick();updateEvents()}return JSON.stringify({stage:ev.stage,token:!!S.raids.find(x=>x.strike===ev.id)})})()"""))
     print('ledger',await ev(LED))
+    print('Overgrowth walls the powers, not the Brood',await ev("""(()=>{const a='hr',b=NEIGH.hr.find(n=>NEIGH[n].length>1&&!DEF[n].home)||NEIGH.hr[0];const O={id:S.nextId++,a,b,key:gateKey(a,b),stage:'grown',t0:S.T,hp:OG.hp,hitT:-1e9,load:{},strikeT:S.T+1e6};(S.og=S.og||[]).push(O);S.gateDown[O.key]=S.T+1e9;
+      const mk=side=>({id:S.nextId++,side,src:a,cap:null,tgt:null,dep:null,dest:b,sector:a,path:[a,b],leg:0,next:S.T,state:'out',ships:[{cls:'striker',tier:1,ld:{}}],kit:{},loot:{},back:[],T0:S.T});const h=mk('halcyon'),br=mk('brood');ogDetour(h,'halcyon',b);ogDetour(br,'brood',b);
+      const res={halcyon:h.path.join('>')+(h.next>S.T?' (waits)':''),brood:br.path.join('>'),wallH:ogWall('halcyon',a,b),wallB:ogWall('brood',a,b)};S.og=S.og.filter(x=>x!==O);delete S.gateDown[O.key];return JSON.stringify(res)})()"""))
     for i in range(3):await ev("(()=>{for(let i=0;i<30;i++){S.T+=10;strategicTick();updateEvents()}})()")
     print('an hour on',await ev(LED),await ev("JSON.stringify({raids:S.raids.length,prowls:S.raids.filter(r=>r.prowl).length,home:S.raids.filter(r=>r.ret).length})"))
     print('errors',errs[:4]);await b.close()
