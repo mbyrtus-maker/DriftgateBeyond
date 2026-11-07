@@ -87,8 +87,11 @@ const HAUL_FEE={courier:.035,freighter:.02,bulker:.01};const mFee=cls=>HAUL_FEE[
 // floor and the CEO's pricing), so what a pilot pays is what the Market and intel screens quote and the maker earns its margin
 function mStP(c,id){const R=mR(c);return!!(R&&ITEMS[id]&&ITEMS[id].maker&&c.market&&c.market===mkStock(R))}
 function mBase(c,id){const R=mR(c);return mStP(c,id)?stPrice(R,id):price(c.market,id,mkSc(R))*locF(R,id)*mkK(R,id)}
-function mBuy(c,id){return Math.ceil(mBase(c,id)*(1+mFee(S.player.cls)))}
-function mSell(c,id){return Math.max(1,Math.floor(mBase(c,id)*(1-mFee(S.player.cls))))}
+// what a pilot in hull cls pays for (or gets for) a maker's part on R's market: the AI pilots' shopping uses these too
+function mkPartPrice(R,id,cls){return Math.ceil(stPrice(R,id)*(1+mFee(cls)))}
+function mkPartSell(R,id,cls){return Math.max(1,Math.floor(stPrice(R,id)*(1-mFee(cls))))}
+function mBuy(c,id){return mStP(c,id)?mkPartPrice(mR(c),id,S.player.cls):Math.ceil(mBase(c,id)*(1+mFee(S.player.cls)))}
+function mSell(c,id){return mStP(c,id)?mkPartSell(mR(c),id,S.player.cls):Math.max(1,Math.floor(mBase(c,id)*(1-mFee(S.player.cls))))}
 // how many units a market takes (dir +1, a sale) or gives (dir -1, a purchase) at the quoted price: as many as it can absorb before
 // its price would move past the buy/sell spread, so a big dump sells in lots and buying it straight back never pays
 // a lot: as many units as trade before the price would move past LOT_TOL (selling down to x.sell, buying up to x.buy);

@@ -4,7 +4,7 @@
 # part, brings the rest home and is paid a scaled fee; (4) makers' parts' local price levels drift back to neutral; (5) an R&D
 # launch leaves a pilot's depot stock alone; (6) the works craft a grade's inputs only after the money checks, and no lattice
 # without a forge; (7) a merchant the Compact can't pay in full delivers only what was paid for; (8) the share price counts
-# graded stock. Ledger exact throughout.
+# graded stock; (9) an AI pilot (a depot crew) buys and upgrades a maker's part at the player's price. Ledger exact throughout.
 import asyncio,json
 from playwright.async_api import async_playwright
 import os
@@ -40,7 +40,7 @@ async def main():
       const msg=pjPost(P,sid+':supply:plate:10:fast');const j=pjList()[pjList().length-1];j.claimAt=S.T;pjTick();const r=pjRunOf(j.run);if(!r)return JSON.stringify({err:'no run: '+msg+' '+j.msg});
       const s=S.sectors[r.sector],d0=s.debris.fe,load=JSON.stringify(r.load);R.owner='varkesh';pjTick();R.owner='player';return JSON.stringify({load,runs:pjRuns().length,state:j.state,debrisFe:Math.round((s.debris.fe-d0)*100)/100})})()"""))
     print('supply lost',json.dumps(r))
-    if r.get('err') or r['runs']!=0 or r['debrisFe']!=30: bad.append(f"supply run lost mid-flight: {r}")
+    if r.get('err') or r['runs']!=0 or r['debrisFe']!=3*json.loads(r['load']).get('plate',0) or not r['debrisFe']: bad.append(f"supply run lost mid-flight: {r}")
     print('ledger',l:=await ev(LED))
     if l!='exact': bad.append('ledger after the lost supply run: '+l)
     # (3) Haul 20 plate to a market that can pay for 5: paid for 5, 15 ride home into the store, the fee a quarter
@@ -96,6 +96,31 @@ async def main():
     if abs(r['diff']-r['want'])>.05: bad.append(f"share price doesn't count graded stock: {r}")
     print('ledger',l:=await ev(LED))
     if l!='exact': bad.append('ledger at the end: '+l)
+    # (9) an AI pilot (a hauling crew at your depot) with credits in its purse docks at a market and buys a maker's part as a
+    # player would: the player's price for its hull, the maker credited 85%, the shelf one down; a second visit with a higher
+    # grade on the shelf upgrades (the old part sold back); then the crew leaves: its purse goes to the Compact, its part to debris
+    r=json.loads(await ev("""(()=>{const P=S.player,R=S.stations[window._SID];P.rp=Math.max(P.rp||0,5000);transfer('neutral','player',20000);R.crew=R.crew||[];const hm=crewHire(R,P,'freighter');const c=R.crew[R.crew.length-1];if(!c)return JSON.stringify({err:'no crew: '+hm});
+      const k='c'+c.id,D=Object.values(S.stations).find(x=>x&&x.owner==='neutral'&&isFreeF(x));const ms=mkStock(D),base=Object.keys(ITEMS).find(i=>ITEMS[i].maker&&ITEMS[i].part==='cargo'&&!ITEMS[i].grade&&i.startsWith('mp_')),m=ITEMS[base].maker;
+      for(const i of Object.keys(ms))if(ITEMS[i]&&ITEMS[i].part==='cargo'&&ITEMS[i].maker)devLedger(()=>{const n=ms[i];inv.take(ms,i,n);inv.add(S.econ.stock.neutral,i,n)});
+      devLedger(()=>inv.add(ms,base,1));transfer('neutral',aipW(k),2000);const want=mkPartPrice(D,base,c.cls);
+      const keep=S.player.cls;S.player.cls=c.cls;exitSector();S.player.sector=D.sid;const pl=mBuy({kind:'station',market:ms},base);S.player.sector=window._SID;S.player.cls=keep;
+      const p0=aipPurse(k),t0=ceT(m),n0=ms[base]||0,f0=S.econ.treasury.neutral;const got=aipShop(k,D,c.cls,'haul',5,R.sid);
+      const one={k,base,want,playerQuote:pl,paid:p0-aipPurse(k),makerGot:ceT(m)-t0,makerWant:Math.floor(want*(1-CE.dues)),shelf:[n0,ms[base]||0],fitted:JSON.stringify(S.aip[k].kit),got};
+      const g2=rdGid(base,2);devLedger(()=>inv.add(ms,g2,1));const p1=aipPurse(k);const up=aipShop(k,D,c.cls,'haul',5,R.sid);one.up=up;one.kit2=JSON.stringify(S.aip[k].kit);one.upCost=p1-aipPurse(k);one.upWant=mkPartPrice(D,g2,c.cls)-mkPartSell(D,base,c.cls);one.oldBack=ms[base]||0;
+      const fly=aipGrades(k);one.cargoG=fly&&fly.cargo;
+      const pu=aipPurse(k),fN=S.econ.treasury.neutral,dS=S.sectors[R.sid].debris.fe+S.sectors[R.sid].debris.cu+S.sectors[R.sid].debris.ir+S.sectors[R.sid].debris.xc;R.crew=R.crew.filter(x=>x!==c);S.aipT=0;aipTick();
+      one.purseToCompact=S.econ.treasury.neutral-fN===pu;one.gone=!S.aip[k]&&!(aipW(k) in S.econ.treasury);one.debris=Math.round((S.sectors[R.sid].debris.fe+S.sectors[R.sid].debris.cu+S.sectors[R.sid].debris.ir+S.sectors[R.sid].debris.xc-dS)*100)/100;
+      return JSON.stringify(one)})()"""))
+    print('ai pilot buys',json.dumps(r))
+    if r.get('err'): bad.append('ai pilot: '+r['err'])
+    else:
+      if r['got']!=1 or r['paid']!=r['want'] or r['paid']!=r['playerQuote']: bad.append(f"AI pilot paid {r['paid']} (Market quote {r['playerQuote']}, mkPartPrice {r['want']})")
+      if r['makerGot']!=r['makerWant']: bad.append(f"maker credited {r['makerGot']} (want {r['makerWant']})")
+      if r['shelf'][1]!=r['shelf'][0]-1: bad.append(f"shelf {r['shelf']} (want one down)")
+      if r['up']!=1 or r['upCost']!=r['upWant'] or r['oldBack']!=1 or r['cargoG']!=2: bad.append(f"AI pilot upgrade: {r}")
+      if not r['purseToCompact'] or not r['gone'] or not r['debris']>0: bad.append(f"crew gone: purse/kit not settled {r}")
+    print('ledger',l:=await ev(LED))
+    if l!='exact': bad.append('ledger after the AI pilot: '+l)
     print('errors',bad+errs[:5])
     await b.close()
 asyncio.run(main())
