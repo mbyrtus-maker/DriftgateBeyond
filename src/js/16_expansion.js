@@ -88,7 +88,7 @@ function renderDebrief(side,how){const box=$('dbBox');if(!box||!S)return;try{if(
   box.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>dbSet(dbAt(+b.dataset.t))));
   requestAnimationFrame(()=>dbSet(dbIdx))}catch(e){box.innerHTML='';frameErr('debrief',e)}}
 addEventListener('resize',()=>{if($('win')&&!$('win').hidden&&$('dbMap'))dbDrawMap()});
-{const o=galaxyWon;galaxyWon=function(side,how){if(S&&!NET.cl&&!S.won)histNote(`${xSideName(side)} won the galaxy.`,6,null,side),histOf().notes[histOf().notes.length-1].won=1;const r=o.apply(this,arguments);renderDebrief(side,how);return r}}
+{const o=galaxyWon;galaxyWon=function(side,how){if(S&&S.training)return;if(S&&!NET.cl&&!S.won)histNote(`${xSideName(side)} won the galaxy.`,6,null,side),histOf().notes[histOf().notes.length-1].won=1;const r=o.apply(this,arguments);renderDebrief(side,how);return r}}
 {const o=$('bNext');if(o)o.addEventListener('click',()=>{if(dbPlayT){clearInterval(dbPlayT);dbPlayT=null}},true)}
 
 // ============================================================ 2. named aces: veteran pilots with a memory
@@ -106,7 +106,7 @@ const ACE_CLS={halcyon:['striker','interceptor'],varkesh:['heavy','striker'],ost
 const ACE_TAUNT=['That one is mine. Tell your command.','Fly better next time, pilot.','I keep a list. You are on it twice now.','Scrap. Somebody sweep that up.','You hesitated.'];
 const ACE_LAST=['Not like this—','Tell my wing… keep the list—','Good shot. Damn it.','I will be back for you.'];
 function aceMem(){try{return JSON.parse(localStorage.getItem(ACE_KEY)||'{}')||{}}catch(e){return{}}}
-function aceMemSave(){if(!S||!S.aces||NET.cl)return;try{const m={};for(const A of S.aces)(m[A.side]=m[A.side]||[]).push({n:A.name,nk:A.nick,k:A.vk||0,d:A.vd||0,r:A.ret?1:0});localStorage.setItem(ACE_KEY,JSON.stringify(m))}catch(e){}}
+function aceMemSave(){if(!S||!S.aces||NET.cl||S.training)return;try{const m={};for(const A of S.aces)(m[A.side]=m[A.side]||[]).push({n:A.name,nk:A.nick,k:A.vk||0,d:A.vd||0,r:A.ret?1:0});localStorage.setItem(ACE_KEY,JSON.stringify(m))}catch(e){}}
 function aceNew(side,used){const pool=ACE_NAMES[side].filter(x=>!used.has(x[0]));const nm=pool.length?pick(pool):pick(ACE_NAMES[side]);used.add(nm[0]);
   return{id:'A'+(S.nextId++),side,name:nm[0],nick:nm[1],cls:pick(ACE_CLS[side]),alive:true,back:0,k:0,d:0,vk:0,vd:0,heat:{},out:null,bounty:aceBase(side)}}
 function aceInit(){if(!S||S.aces||NET.cl)return;const m=aceMem(),used=new Set();S.aces=[];
@@ -692,8 +692,8 @@ function capNearest(){let best=null,bh=1e9;for(const t of S.frigates||[]){if(!ca
 const AICAR={cool:150,threat:5000,minCraft:3};
 function aiCarSortie(){if(NET.cl||!S||S.training)return;for(const t of S.frigates||[]){if(!isCar(t)||fOwn(t)||!t.live||t.hull<=0)continue;const w=WORLDS[t.sector];if(!w||S.T<(t.sorT||0)||sortiesOf(t).length)continue;
     const sd=sideNorm(t.side),near=NEIGH[t.sector];let to=null,tgt=null;
-    if(t.dest&&near.includes(t.dest)){if(hostileStationAt(t.dest,sd)){to=t.dest;tgt='st'}else{const o=frigatesIn(t.dest).find(x=>hostile(sd,x.side));if(o){to=t.dest;tgt='c'+o.id}}}
-    if(!to&&(!t.dest||t.dest===t.sector)){let bh=2;for(const n of near){const R=S.stations[n];if(R&&R.kind==='depot'&&hostileStationAt(n,sd)){const h=R.hull/(R.hMax||1);if(h<bh){bh=h;to=n;tgt='st'}}}}
+    if(t.dest&&near.includes(t.dest)){if(hostileStationAt(t.dest,sd)&&capSiegeAt(t.dest,t)){to=t.dest;tgt='st'}else{const o=frigatesIn(t.dest).find(x=>hostile(sd,x.side));if(o){to=t.dest;tgt='c'+o.id}}}
+    if(!to&&(!t.dest||t.dest===t.sector)){let bh=2;for(const n of near){const R=S.stations[n];if(R&&R.kind==='depot'&&hostileStationAt(n,sd)&&capSiegeAt(n,t)){const h=R.hull/(R.hMax||1);if(h<bh){bh=h;to=n;tgt='st'}}}}
     if(!to)continue;
     inW(w,()=>{const E=W.ents.find(x=>x.tok===t&&x.alive);if(!E)return;if(W.ents.some(o=>o.type==='ship'&&o.alive&&o.role!=='frigate'&&hostE(sd,o)&&d3(o,E)<AICAR.threat))return;
       if((E.flights||[]).filter(p=>p.alive&&p.wg==='B'&&W.ents.includes(p)).length+(E.bay||[]).length<AICAR.minCraft)return;
@@ -1159,7 +1159,7 @@ const DEPOT_PL=[.004,.035,.06,.11];
 // carriers strike a depot next door through the same strike as a pilot's (live or off-screen alike): one wing (6 craft)
 // against L1–L2, both wings against L3–L4; at most one strike at a time, 150 s apart
 function carWingsFor(R){return stationLevel(R)>=2?CAR_WING:SORTIE.wing}
-function carStrikeOff(t,sid){if(t.live)return;const Rs=S.stations[sid];if(!Rs||!hostileStationAt(sid,t.side))return;
+function carStrikeOff(t,sid){if(t.live)return;const Rs=S.stations[sid];if(!Rs||!capSiegeAt(sid,t))return;
   if(sortiesOf(t).length||S.T<(t.sorT||0))return;const n=Math.min((t.wing||[]).length,carWingsFor(Rs));if(n<AICAR.minCraft)return;
   const craft=t.wing.splice(0,n),force={};for(const c of craft){const ld=carKit(c);for(const k in ld){const m=Math.min(ld[k],t.load[k]||0);if(m>0)inv.addAll(force,{[k]:inv.take(t.load,k,m)})}}
   const ev={id:S.nextId++,type:'sortie',wg:null,car:t.id,side:t.side,from:t.sector,to:sid,sector:sid,tgt:'st',craft,force,pending:0,stage:'out',until:S.T+(sid===t.sector?1:SORTIE.transit),start:S.T,lost:0,dmg:0,n0:craft.length,mode:t.side!=='brood'&&aAvail(t)>0?'cap':'raze'};

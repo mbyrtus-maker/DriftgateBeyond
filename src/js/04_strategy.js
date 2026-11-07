@@ -23,8 +23,6 @@ function strategicTick(){
   diffuse();scoutsTick();beaconTick();bcnMissionsTick();cReqTick();mkTick();coalTick();threatTick();capitalTick();victoryTick();campTick();for(const ev of S.events)announce(ev);
   for(const f of FAC_IDS)factionIndustry(f);try{patTick()}catch(e){frameErr('patronage',e)}factionIndustry('brood');neutralIndustry();lifeTick();devTick();hgTick();logiTick();weTick();carTick();sortieTick();wkRepair();fpContracts();blkContracts();contContracts();
   pirateIndustry();
-  const h=S.outposts.hollow;
-  if(h&&h.owner){let got=0;for(const f of FAC_IDS){if(f===h.owner)continue;got+=transfer(f,h.owner,22)}if(h.owner==='player'){S.tollAcc+=got;if(S.tollAcc>=300){feed(`Hollow Relay tolls: +${fmt(S.tollAcc)} cr`,'good');S.tollAcc=0}}}
   for(const f of[...FAC_IDS,'pirate','brood'])if(T>=S.ai[f].next){S.ai[f].next=T+(f==='pirate'?rnd(110,170):f==='brood'?rnd(95,150)*BAL.brOff:rnd(75,135));planOffensive(f)}
   for(const f of[...FAC_IDS,'brood'])if(T>=(S.ai[f].build||0)){S.ai[f].build=T+(f==='brood'?rnd(220,340)*BAL.brBuild:rnd(150,260));planBuild(f)}
 }
@@ -190,20 +188,20 @@ function factionIndustry(f){
   if(f!=='brood')specStock(f,st,need);craftAbstract(st,'missile',2,need||war?8:40);craftAbstract(st,'torpedo',war?2:1,war?(need?14:36):need?4:14);if(f!=='brood'&&!need&&!war){craftAbstract(st,'drone',2,30);craftAbstract(st,'swarm',1,8);craftAbstract(st,'tune',1,10)}
   if(invValue(fl)<400+250*forgesOwned(f)){for(const[k,n,res]of[['plate',3,need?60:30],['wire',2,need?40:30],['coil',1,need?20:10],['lattice',1,need?12:2],['missile',1,6],['torpedo',1,4]])if((st[k]||0)>res)inv.add(fl,k,inv.take(st,k,n))}
 }
-function pirateIndustry(){const st=S.econ.stock.pirate;for(const id of['wr','ho']){const s=S.sectors[id];for(const e of RAWS){const m=Math.min(s.debris[e],3);s.debris[e]-=m;inv.add(st,e,m)}}craftAbstract(st,'plate',4,60);craftAbstract(st,'wire',4,60);craftAbstract(st,'coil',1,20);craftAbstract(st,'missile',1,10);craftAbstract(st,'torpedo',1,4)}
+// the Unbound salvage the debris that drifts into the Wrack (Hollow Verge, once the Relay's system, is an ordinary hub now)
+function pirateIndustry(){const st=S.econ.stock.pirate;for(const id of['wr']){const s=S.sectors[id];for(const e of RAWS){const m=Math.min(s.debris[e],3);s.debris[e]-=m;inv.add(st,e,m)}}craftAbstract(st,'plate',4,60);craftAbstract(st,'wire',4,60);craftAbstract(st,'coil',1,20);craftAbstract(st,'missile',1,10);craftAbstract(st,'torpedo',1,4)}
 function territory(f){const t=new Set();for(const d of SECTOR_DEFS)if(d.home===f)t.add(d.id);for(const id in S.stations)if(S.stations[id].owner===f)t.add(id);for(const id in S.outposts)if(S.outposts[id].owner===f)t.add(S.outposts[id].sector);return t}
 function evOwner(ev){return ev.st?(S.stations[ev.st]||{}).owner:ev.target?S.outposts[ev.target].owner:null}
 function evName(ev){return ev.st?(S.stations[ev.st]?S.stations[ev.st].name:ev.stName):ev.target?S.outposts[ev.target].name:DEF[ev.sector].name}
-// a side sees a sector if it has a station or depot there or next door, an outpost there (a relay also sees next door),
-// or a scout there or next door. The player adds their own sector (and neighbours when flying a scout). Holding the Hollow Relay taps the whole gate network.
+// a side sees a sector if it has a station or depot there or next door, an outpost there, or a scout there or next door.
+// The player adds their own sector (and neighbours when flying a scout).
 function covOf(side,sensorsOnly){const C=new Set(),add=(sid,nb)=>{C.add(sid);if(nb)for(const n of NEIGH[sid])C.add(n)};
   for(const id in S.stations)if(S.stations[id].owner===side)add(id,true);
-  if(!sensorsOnly)for(const id in S.outposts){const o=S.outposts[id];if(o.owner===side)add(o.sector,o.type==='relay')}
+  if(!sensorsOnly)for(const id in S.outposts){const o=S.outposts[id];if(o.owner===side)add(o.sector,false)}
   for(const sc of S.scouts||[])if(sc.side===side)add(sc.sector,true);for(const x of S.frigates||[])if(x.side===side)add(x.sector,true);for(const sid in S.beacons||{})if(S.beacons[sid].owner===side)C.add(sid);return C}
 let covC=null,covK='';
 function playerCov(){const k=Math.floor(S.T)+'|'+(CTX||'')+'|'+(S.player.sworn||'')+'|'+S.player.sector+'|'+S.player.cls+(refitsOf(S.player).scan?'s':'')+'|'+(S.scouts||[]).length+'|'+Object.keys(S.stations).length+'|'+(S.frigates||[]).map(x=>x.sector).join('')+'|'+(S.bcnV||0);if(covC&&covK===k)return covC;
-  const sw=S.player.sworn,C=sw?covOf(sw):new Set();if(!sw)for(const f of FAC_IDS)for(const x of covOf(f))C.add(x);for(const x of covOf('player'))C.add(x);C.add(S.player.sector);if(CLASSES[S.player.cls].radar||refitsOf(S.player).scan)for(const n of NEIGH[S.player.sector])C.add(n);
-  if(hasIntel())for(const d of SECTOR_DEFS)C.add(d.id);covC=C;covK=k;return C}
+  const sw=S.player.sworn,C=sw?covOf(sw):new Set();if(!sw)for(const f of FAC_IDS)for(const x of covOf(f))C.add(x);for(const x of covOf('player'))C.add(x);C.add(S.player.sector);if(CLASSES[S.player.cls].radar||refitsOf(S.player).scan)for(const n of NEIGH[S.player.sector])C.add(n);covC=C;covK=k;return C}
 function covered(sid){return playerCov().has(sid)}
 function evKnown(ev){return(!!S.player.sworn&&ev.att===S.player.sworn)||ev.seen||covered(ev.sector)}
 function covSource(sid){const pf=S.player.sworn,mine=f=>pf?f===pf:FAC_IDS.includes(f);if(sid===S.player.sector&&W)return'Your sensors';if(S.beacons&&S.beacons[sid]&&mine(S.beacons[sid].owner))return`${FAC(S.beacons[sid].owner).short} beacon`;
@@ -211,7 +209,7 @@ function covSource(sid){const pf=S.player.sworn,mine=f=>pf?f===pf:FAC_IDS.includ
   for(const id in S.stations){const R=S.stations[id];if(friendSide(R.owner)&&(id===sid||NEIGH[id].includes(sid)))return`${R.name} sensors`}
   if(CLASSES[S.player.cls].radar&&NEIGH[S.player.sector].includes(sid))return'Your long-range radar';
   for(const id in S.outposts){const o=S.outposts[id];if(friendSide(o.owner)&&o.sector===sid)return o.name}
-  return hasIntel()?'Hollow Relay intercept':'Sensors'}
+  return'Sensors'}
 function announce(ev){if((NET.cl?MP.seenEv.has(ev.id):ev.seen)||ev.stage==='done'||(ev.type!=='offensive'&&ev.type!=='build'))return;const pf=S.player.sworn;if((!pf||ev.att!==pf)&&!covered(ev.sector))return;if(NET.cl)MP.seenEv.add(ev.id);else ev.seen=true;
   const eta=Math.max(0,Math.round(ev.eta-S.T)),src=pf&&ev.att===pf?'':covSource(ev.sector)+': ',nm=DEF[ev.sector].name,when=ev.stage==='inbound'?`ETA ${eta}s.`:'Under way now.';
   if(ev.type==='build'){if(ev.att==='brood')feed(`⚠ ${src}a Brood Seeder is drifting toward ${nm} to grow a Bloom Node. ${when}`,'warn');
@@ -271,27 +269,28 @@ const force={};takeFrom(EC,[st]);inv.addAll(force,EC);S.events.push({id:S.nextId
   for(const t of S.frigates){if(!t.live&&t.sector===capBase(t))capRefill(t);
     if(!fOwn(t)&&isEsc(t)&&t.side!=='brood'&&t.sector!==capBase(t)&&(t.aload||0)<1&&capCanRefill(t))t.dest=capBase(t);
     else if(!fOwn(t)&&!(t.call&&t.call.until>S.T)&&(!t.dest||t.dest===t.sector)&&Math.random()<.35)t.dest=frigOrders(t);
-    if(t.live)continue;if(isCar(t)&&t.dest&&t.dest!==t.sector&&HOP[t.sector][t.dest]===1&&hostileStationAt(t.dest,t.side)){t.moveT=0;if(!fOwn(t)){const Rk=S.stations[t.dest].kind;if(Rk==='core'||Rk==='hive'){t.soT=t.soT||S.T;if(S.T-t.soT>600){t.dest=null;t.soT=0}}else t.soT=0}continue}const nx=frigHop(t);if(!nx){t.moveT=0;t.spin=null;continue}t.moveT=(t.moveT||0)+pmul(t,'eng');if(t.moveT<(isEsc(t)?1.2:2))continue;t.moveT=0;t.spin=null;t.jumpTo=null;t.sector=nx;t.hold=0;
+    if(t.live)continue;if(isCar(t)&&t.dest&&t.dest!==t.sector&&HOP[t.sector][t.dest]===1&&capSiegeAt(t.dest,t)){t.moveT=0;if(!fOwn(t)){const Rk=S.stations[t.dest].kind;if(Rk==='core'||Rk==='hive'){t.soT=t.soT||S.T;if(S.T-t.soT>600){t.dest=null;t.soT=0}}else t.soT=0}continue}const nx=frigHop(t);if(!nx){t.moveT=0;t.spin=null;continue}t.moveT=(t.moveT||0)+pmul(t,'eng');if(t.moveT<(isEsc(t)?1.2:2))continue;t.moveT=0;t.spin=null;t.jumpTo=null;t.sector=nx;t.hold=0;
     if(fOwn(t)&&t.sector===t.dest)feedTo(t.owner,`${t.name} has arrived in ${DEF[t.sector].name}.`,'info');if(WORLDS[nx])inW(WORLDS[nx],()=>spawnFrigate(t,true))}
   // abstract fighting away from the player
   for(const t of S.frigates.slice()){if(t.live||t.hull<=0)continue;const own=t.sector;let hit=0;
     for(const o of frigatesIn(own))if(o!==t&&!o.live&&hostE(t.side,o))hit+=isEsc(o)?rnd(150,260):isCar(o)?wingPower(o)*rnd(40,70):rnd(250,420);
     if(isCar(t)&&hit>0&&Math.random()<.08)wingLoseN(t,S.sectors[own]);
     // a carrier strikes its target from next door (or where it sits); escorts strike where they are
-    const sid=isCar(t)&&t.dest&&HOP[t.sector][t.dest]===1&&hostileStationAt(t.dest,t.side)?t.dest:own;
+    const sid=isCar(t)&&t.dest&&HOP[t.sector][t.dest]===1&&capSiegeAt(t.dest,t)?t.dest:own;
     const Rs=S.stations[sid];if(Rs&&hostileStationAt(sid,t.side)){if(sid===own)hit+=BAL2.on&&Rs.kind==='core'?rnd(...BAL2.depHit[3])*(1+.15*(devOf(Rs).def||0)):Rs.kind==='core'?150:Rs.kind==='hive'?200:BAL2.on&&Rs.kind==='depot'?(stLvHit(Rs),rnd(...BAL2.depHit[stLvRef(Rs)-1])):90;distressCall(sid,Rs.name,Rs.owner,t.side);
-      if(isCar(t)&&BAL2.on){carStrikeOff(t,sid)}else if(!WORLDS[sid]){const k=isEsc(t)?.7:isCar(t)?wingPower(t)/5:1;if(isCar(t)&&Math.random()<.03)wingLoseN(t,S.sectors[sid]);
+      // the station's guns fire on any hostile capital; the capital's strike on it needs a war between powers (capSiegeAt)
+      if(!capSiegeAt(sid,t)){}else if(isCar(t)&&BAL2.on){carStrikeOff(t,sid)}else if(!WORLDS[sid]){const k=isEsc(t)?.7:isCar(t)?wingPower(t)/5:1;if(isCar(t)&&Math.random()<.03)wingLoseN(t,S.sectors[sid]);
         offReboot(Rs);if(Rs.shield>0){Rs.shield=Math.max(0,Rs.shield-700*k*(BAL2.on?BAL2.escK[stLvRef(Rs)]||1:1));if(Rs.shield<=0&&BAL2.on)Rs.shRb=S.T+20}else{Rs.hull-=rnd(320,420)*k*(BAL2.on?BAL2.escK[stLvRef(Rs)]||1:1);wkAbstractHit(sid,t.side,.3)}
         if(Rs.hull<=0){if(Rs.kind==='depot'){if(Rs.owner!=='brood'&&t.side!=='brood'){const g=garrison(Rs),n=capLoads(sid,t.side);if(n>=g){useLoads(sid,t.side,g,Rs);captureDepot(sid,t.side)}else if(n>0||fOwn(t))Rs.hull=1;else razeStation(sid,t.side)}else razeStation(sid,t.side)}else if(Rs.kind==='free')razeStation(sid,'brood');else Rs.hull=1}}}
     if(hit){t.fightT=S.T;t.hull-=hit/toughK(t.side);if(t.hull<=0)killFrigateToken(t,'in battle')}else t.hull=Math.min(capHullMax(t),t.hull+capHullMax(t)*.03)}
   // outposts: a capital carrying an assault load takes an unguarded hostile outpost after a minute
   for(const t of S.frigates){const own=t.side==='player'?'player':t.side;if(!(aAvail(t)>0)||frigatesIn(t.sector).some(o=>hostE(t.side,o))){t.hold=0;continue}
-    const oid=OUT_BY_SECTOR[t.sector],o=oid&&S.outposts[oid];if(!o||!o.owner||!hostile(t.side,o.owner)||(own==='player'&&!!S.player.sworn&&o.owner===S.player.sworn)||outLockBars(t.sector,own)){t.hold=0;continue}t.hold=(t.hold||0)+1;
+    const oid=OUT_BY_SECTOR[t.sector],o=oid&&S.outposts[oid];if(!o||!o.owner||!(fOwn(t)?hostile(t.side,o.owner):fightsAt(t.side,o.owner))||(own==='player'&&!!S.player.sworn&&o.owner===S.player.sworn)||outLockBars(t.sector,own)){t.hold=0;continue}t.hold=(t.hold||0)+1;
     if(t.hold>=6){aSend(t,t.sector,ASSAULT.outLoss);capture(o,own);t.hold=0}}}
 function killFrigateToken(t,how){capPingPay(t);toDebris(S.sectors[t.sector],t.load);t.load={};if(t.store){toDebris(S.sectors[t.sector],t.store);t.store={}}if(t.fab){toDebris(S.sectors[t.sector],t.fab.kit);t.fab=null}S.frigates=S.frigates.filter(x=>x!==t);if(friendSide(t.side)||covered(t.sector))feed(`${t.side==='player'?'Your '+capName(t):t.owner&&S.pilots&&S.pilots[t.owner]?S.pilots[t.owner].name+'\'s '+capName(t):t.side==='brood'?'A Brood '+broodCap(t):sideName(t.side)+' '+capName(t)} ${t.side==='brood'?'':t.name+' '}was destroyed ${how} in ${DEF[t.sector].name}.`,friendSide(t.side)?'bad':'good')}
 function frigOrders(t){let best=t.sector,bs=-1e9;const bro=t.side==='brood',bcc=bro?controlCounts():null,bmx=bro?Math.max(1,...FAC_IDS.map(k=>bcc[k]||0)):1;for(const d of SECTOR_DEFS){const h=HOP[d.id][t.sector];if(h>(bro?5:3))continue;let sc=-(bro?.55:.8)*h+rnd(0,1);const Rs=S.stations[d.id];
     if(bro){const ow=sideNorm(sectorOwner(d.id));if(FAC_IDS.includes(ow))sc+=2.5*(bcc[ow]||0)/bmx}   // Leviathans range further and go for the leading faction
-    if(Rs&&hostile(t.side,Rs.owner)&&(Rs.kind==='depot'||Rs.kind==='free'&&t.side==='brood'))sc+=Rs.owner==='brood'?7:t.side==='brood'?5:3;else if(Rs&&Rs.owner!==t.side)sc-=4;
+    if(Rs&&fightsAt(t.side,Rs.owner)&&hostile(t.side,Rs.owner)&&(Rs.kind==='depot'||Rs.kind==='free'&&t.side==='brood'))sc+=Rs.owner==='brood'?7:t.side==='brood'?5:3;else if(Rs&&Rs.owner!==t.side)sc-=4;
     if(frigatesIn(d.id).some(o=>hostE(t.side,o)))sc+=3;
     if(!Rs&&d.kind!=='hive'&&d.kind!=='den'&&d.kind!=='core'){sc+=2.5;const oid=OUT_BY_SECTOR[d.id];if(oid&&S.outposts[oid].owner!==t.side)sc+=2}
     if(territory(t.side).has(d.id)&&frigatesIn(d.id).some(o=>hostE(t.side,o)))sc+=4;
@@ -341,7 +340,8 @@ function deadlineTick(){if(S.won||NET.cl)return false;S.dl=S.dl||{};const left=T
 function broodWatch(n){const b=n.brood||0,w=S.broodWarn||0;if(b<w){S.broodWarn=b;return}if(b<5||b<=w)return;S.broodWarn=b;if(STRAT_SIM())return;
   const msg=b>=VIC_NEED?`⚠ The Brood holds ${b} systems. If it keeps ${VIC_NEED} for ${Math.round(WIN_TIME/60)} minutes, the galaxy is lost.`:`⚠ The Brood has spread to ${b} systems: ${VIC_NEED-b} more and it starts the clock on the galaxy. Kill its Seeders and burn its nodes.`;
   allFeed(msg,'bad');if(running&&!NET.cl){flash(msg,true);try{SFX.accord()}catch(e){}}}
-function victoryTick(){if(deadlineTick())return;const n=controlCounts(),need=VIC_NEED;broodWatch(n);const dtV=S.T-(S.vicLastT==null?S.T:S.vicLastT);S.vicLastT=S.T;
+// the practice galaxy never ends: no clock, no win screen, and above all no win that deletes the real save or writes the legacy
+function victoryTick(){if(S.training)return;if(deadlineTick())return;const n=controlCounts(),need=VIC_NEED;broodWatch(n);const dtV=S.T-(S.vicLastT==null?S.T:S.vicLastT);S.vicLastT=S.T;
   // free-for-all: the leader's clock keeps running (it stays with the leader while it holds 7)
   if(S.ffa&&S.victory&&S.victory.side===S.ffa.hold){if(S.T-S.victory.since>=WIN_TIME)galaxyWon(S.ffa.hold);return}
  let lead=null;for(const k in n)if(n[k]>=need&&(!lead||n[k]>n[lead]))lead=k;
@@ -353,7 +353,7 @@ function victoryTick(){if(deadlineTick())return;const n=controlCounts(),need=VIC
   if(!S.victory||S.victory.side!==lead){S.victory={side:lead,since:S.T};feed(`${lead==='brood'?'⚠ The Brood':sideName(lead)} now controls ${n[lead]} of ${SECTOR_DEFS.length} systems. Hold ${VIC_NEED} for ${Math.round(WIN_TIME/60)} minutes and the galaxy is ${lead===S.player.sworn?'yours':'theirs'}.`,lead===S.player.sworn?'good':'bad');return}
   if(S.T-S.victory.since>=WIN_TIME)galaxyWon(lead)}
 function loadLegacy(){try{return JSON.parse(localStorage.getItem('dgbeyond.legacy')||'{}')||{}}catch(e){return{}}}
-function galaxyWon(side,how){{const v=$('winV');if(v)v.hidden=true}if(!NET.cl)legAward(side);if(NET.host)for(const c of readyCl())send(c.L,{t:'won',side,how});const lg=loadLegacy();lg.wins=lg.wins||{};lg.wins[side]=(lg.wins[side]||0)+1;lg.last=side;try{localStorage.setItem('dgbeyond.legacy',JSON.stringify(lg));localStorage.removeItem(SAVE_KEY)}catch(e){}
+function galaxyWon(side,how){if(S&&S.training)return;{const v=$('winV');if(v)v.hidden=true}if(!NET.cl)legAward(side);if(NET.host)for(const c of readyCl())send(c.L,{t:'won',side,how});const lg=loadLegacy();lg.wins=lg.wins||{};lg.wins[side]=(lg.wins[side]||0)+1;lg.last=side;try{localStorage.setItem('dgbeyond.legacy',JSON.stringify(lg));localStorage.removeItem(SAVE_KEY)}catch(e){}
   S.won=side;hideSheets();const mine=side===S.player.sworn,n=controlCounts()[side]||0;
   $('winT').textContent=side==='brood'?'The Bloom spreads':mine||side==='player'?'Victory':`${FACTIONS[side].short} rules`;
   const held=how==='tie'?`held the most systems (${n} of ${SECTOR_DEFS.length}) when the two-hour deadline arrived`:`held ${n} of ${SECTOR_DEFS.length} systems for ${Math.round(WIN_TIME/60)} minutes`;
