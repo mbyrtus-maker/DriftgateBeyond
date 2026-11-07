@@ -90,5 +90,6 @@ js/16zzu_staging.js
 js/16zzv_bounty.js
 js/16zzw_overgrowth.js
 js/16zzx_surge.js
+js/16zzy_bloom.js
 js/17_main.js
 end.html

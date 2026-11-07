@@ -24,7 +24,8 @@ function ogGateOf(e){if(e.gj&&e.gj.g)return e.gj.g;const D=e.ai&&e.ai.dest;if(D&
 function ogSeedAt(a,b){const st=S.econ.stock.brood,g=S.surge&&S.surge.store,srcs=[st,g].filter(Boolean);if(!haveIn(OG.cost,srcs))return null;const load={};takeFrom(OG.cost,srcs);inv.addAll(load,OG.cost);
   const O={id:S.nextId++,a,b,key:gateKey(a,b),stage:'seed',t0:S.T,hp:OG.hp*.25,hitT:-1e9,load,strikeT:S.T+rnd(OG.strike[0],OG.strike[1]),guard:1};(S.og=S.og||[]).push(O);
   ogSay(O,`⚠ A Bloom Node is growing Overgrowth over ${ogName(O)} against the capital ship next door.`,'warn');return O}
-function ogGuardTick(){if(NET.cl||!S||S.training)return;for(const t of S.frigates||[]){if(!(t.hull>0)||t.side==='brood'||!hostile('brood',t.side))continue;
+OG.guardMax=99;   // most guard growths at once (a balance dial)
+function ogGuardTick(){if(NET.cl||!S||S.training)return;for(const t of S.frigates||[]){if((S.og||[]).filter(O=>O.guard).length>=OG.guardMax)return;if(!(t.hull>0)||t.side==='brood'||!hostile('brood',t.side))continue;
   for(const n of NEIGH[t.sector]||[]){const R=S.stations[n];if(!R||R.owner!=='brood'||R.kind!=='depot')continue;const k=gateKey(n,t.sector);if(ogAt(n,t.sector)||(S.gateDown&&S.gateDown[k]))continue;
     if((S.og||[]).some(O=>O.guard&&(O.a===n||O.b===n)&&!ogSealed(O.a,O.b)))continue;if(ogOpenGates(t.sector,k)<1)continue;ogSeedAt(n,t.sector)}}}
 {const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{ogGuardTick()}catch(e){console.error(e)}return r}}
