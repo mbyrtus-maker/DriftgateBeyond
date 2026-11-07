@@ -335,7 +335,7 @@ function renderDock(){
   }else if(dockTab==='outpost'){
     const o=c.o,os=oStats(o);
     h+=`<div class="grid2"><div><div class="h3">${esc(o.name)} · Level ${o.level}</div><div class="kv"><span>Shield</span><b>${Math.round(o.shield)} / ${os.sMax}</b><span>Hull</span><b>${Math.round(o.hull)} / ${os.hMax}</b><span>Turret</span><b>${os.dmg} dmg · ${os.rof.toFixed(1)}/s</b><span>Ore skimmed per cycle</span><b>${o.type==='yard'?(2+o.level)+' t of each debris type':(2+o.level)+' t'}</b>${o.type==='relay'?`<span>Toll income per cycle</span><b>up to 66 cr</b>`:''}</div>
-      <p class="note" style="margin-top:12px">${o.type==='forge'?'You can fabricate Crystal Lattice and Resonance Cores here and fit grade 4–5 components.':o.type==='relay'?'You collect gate tolls from every faction and see strike groups coming, with longer warning.':'You harvest debris that drifts into the Wrack.'} Factions and the Unbound will raid this outpost. Each lost fight costs a fortification level.</p></div>
+      <p class="note" style="margin-top:12px">${o.type==='forge'?'You can fabricate Crystal Lattice and Resonance Cores here and fit grade 4–5 components.':'You harvest debris that drifts into the Wrack.'} Factions and the Unbound will raid this outpost. Each lost fight costs a fortification level.</p></div>
       <div><div class="h3">Fortify</div>${o.level<5?(()=>{const r=fortRecipe(o.level+1);return`<div>${Object.keys(r).map(i=>chip(i,r[i],countIn(i,srcs))).join('')}</div><div style="margin-top:10px"><button class="btn pri" data-act="fort" ${haveIn(r,srcs)?'':'disabled'}>Raise to level ${o.level+1}</button></div><p class="note" style="margin-top:8px">Parts move into the outpost's structure. If it falls, a share of them scatters as debris.</p>`})():'<div class="note">Maximum fortification.</div>'}</div></div>`;
   }
   renderRepair(c,P,p);
@@ -493,7 +493,7 @@ function drawMap(){
     {const Rs=S.stations[d.id];if(Rs&&!d.home&&Rs.kind==='depot'){c.fillStyle=sideCol(Rs.owner);c.fillRect(x+r*.55,y-r*1.15,9,9);c.strokeStyle='#070b16';c.lineWidth=1.5;c.strokeRect(x+r*.55,y-r*1.15,9,9)}
       if(!Rs&&d.home&&d.kind==='frontier'){c.strokeStyle='#ff5d4f';c.lineWidth=2;c.beginPath();c.moveTo(x-6,y-6);c.lineTo(x+6,y+6);c.moveTo(x+6,y-6);c.lineTo(x-6,y+6);c.stroke()}}
     brMapMarks(c,d,x,y,r,t);
-    const oid=OUT_BY_SECTOR[d.id];if(oid){const o=S.outposts[oid];c.fillStyle=col;c.font='800 13px "Big Shoulders Display",sans-serif';c.textAlign='center';c.fillText(o.type==='forge'?'F':o.type==='relay'?'R':'Y',x,y+5);if(o.owner==='player'){c.strokeStyle=PLAYER_COL;c.lineWidth=1.5;c.beginPath();c.arc(x,y,r+6,0,TAU);c.stroke()}}
+    const oid=OUT_BY_SECTOR[d.id];if(oid){const o=S.outposts[oid];c.fillStyle=col;c.font='800 13px "Big Shoulders Display",sans-serif';c.textAlign='center';c.fillText(o.type==='forge'?'F':'Y',x,y+5);if(o.owner==='player'){c.strokeStyle=PLAYER_COL;c.lineWidth=1.5;c.beginPath();c.arc(x,y,r+6,0,TAU);c.stroke()}}
     if(!covered(d.id)){c.fillStyle='rgba(7,11,22,.55)';c.beginPath();c.arc(x,y,r+3,0,TAU);c.fill()}else{c.strokeStyle='rgba(122,217,167,.25)';c.setLineDash([2,4]);c.lineWidth=1;c.beginPath();c.arc(x,y,r+21,0,TAU);c.stroke();c.setLineDash([])}
     {const fs=(S.frigates||[]).filter(t=>t.sector===d.id&&(capFriendly(t)||covered(d.id)||capTracked(t,S.player.sworn)));capMapMarks(c,d,x,y,r,fs);
       if(S.yards&&Object.keys(S.yards).some(k=>S.yards[k].sector===d.id&&k!=='brood')){c.fillStyle='#ece4cf';c.font='600 9px "Saira Semi Condensed",sans-serif';c.textAlign='left';c.fillText('YARD',x+r+3,y+r+2)}

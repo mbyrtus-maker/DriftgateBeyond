@@ -144,7 +144,13 @@ function rdSeedSystems(){const all=Object.keys(MAKERS),sys=m=>(MK_LINE[m]||[]).f
 {const o=partsSeed;partsSeed=function(){o.apply(this,arguments);try{if(S&&!S.training)rdSeedSystems()}catch(e){console.error(e)}}}
 // ---- the Hollow Relay is gone (user, 7 Nov 2026: "Remove hollow relay"; it sat one jump from Ostrova's home and its tolls
 // drained the other two powers all game). A galaxy saved with it: its stores and fortification fall as debris in Hollow
-// Verge, and attacks on it are called off (their forces go back to their stores).
-function hollowGone(){const o=S&&S.outposts&&S.outposts.hollow;if(!o)return;const s=S.sectors[o.sector];if(s){toDebris(s,o.stock||{});toDebris(s,o.fort||{})}o.stock={};o.fort={};
-  for(const ev of S.events||[])if(ev.target==='hollow'&&ev.stage!=='done'){inv.addAll(S.econ.stock[ev.att]||S.econ.stock.pirate,ev.force||{});ev.force={};ev.stage='done'}delete S.outposts.hollow}
+// Verge, and attacks on it are called off (their forces go back to their stores), as are campaign moves and orders aimed at it (also in a galaxy saved after the Relay was
+// already cleared but with such a plan still standing).
+function hollowGone(){if(!S||!S.outposts)return;const o=S.outposts.hollow;if(o){const s=S.sectors[o.sector];if(s){toDebris(s,o.stock||{});toDebris(s,o.fort||{})}o.stock={};o.fort={};delete S.outposts.hollow}
+  for(const ev of S.events||[])if(ev.target==='hollow'&&ev.stage!=='done'){inv.addAll(S.econ.stock[ev.att]||S.econ.stock.pirate,ev.force||{});ev.force={};ev.stage='done'}
+  // campaign plans: a strike or the target a supply drive is building up to is called off (the stock held for it goes back
+  // to the faction's stores), and orders aimed at the Relay are dropped
+  for(const f in S.plans||{}){const P=S.plans[f];if(!P)continue;const hit=x=>!!x&&x.out==='hollow';
+    if(hit(P.mv)||hit(P.next)&&P.mv&&(P.mv.kind==='mine'||P.mv.kind==='haul')){P.mv=null;P.gap=S.T+rnd(20,40)}
+    if(hit(P.next)){P.next=null;P.boost=0}if(!P.mv)campResBack(f,P);if(P.side)P.side=P.side.filter(o=>o.out!=='hollow')}}
 {const o=startWith;startWith=function(st){const r=o.apply(this,arguments);try{if(S&&!NET.cl)hollowGone()}catch(e){console.error(e)}return r}}

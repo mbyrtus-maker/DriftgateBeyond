@@ -57,7 +57,10 @@ function surgeFell(ev){if(!ev.st&&!ev.target)return false;if(ev.st){const R=S.st
 // razes is seeded at once with a Bloom Node, grown from the surge mass (two frames' worth), with the survivors standing guard;
 // once the node takes root they become its garrison. Whatever kit is left over flies home as usual.
 SURGE.dig=12;
-function surgeGarrison(key,sid,force,tier){const ro=(S.gar=S.gar||{})[key]||(S.gar[key]={f:'brood',sid,m:[],t:S.T,nid:1});let n=0;
+// The site's old roster belonged to the side that lost it: its docked ships' kits fall as debris (as grTick does when a site
+// changes hands) and the surge starts a fresh Brood roster, so grTick keeps the survivors instead of dumping them too.
+function surgeGarrison(key,sid,force,tier){const G=S.gar=S.gar||{};let ro=G[key];if(ro&&ro.f!=='brood'){const s=S.sectors[ro.sid];for(const m of ro.m)if(!m.live&&s)toDebris(s,m.load);delete G[key];ro=null}
+  if(!ro)ro=G[key]={f:'brood',sid,m:[],t:S.T,nid:1};let n=0;
   while(n<SURGE.dig){let c=pickFighter('patrol'),t=tier,ld=loadout('patrol',t,c);if(!haveIn(ld,[force])){c='striker';ld=loadout('patrol',t,c)}if(!haveIn(ld,[force])){c='interceptor';t=1;ld=loadout('patrol',t,c)}if(!takeFrom(ld,[force]))break;ro.m.push({id:ro.nid++,c,t,load:ld,live:false,next:0});n++}
   return n}
 function surgeSeed(ev){const g=surgeOf(),f='brood',sid=ev.sector;if(!canBuildIn(sid,f))return false;const st=S.econ.stock[f],need={...DEPOT_COST,...BROOD_SEED};

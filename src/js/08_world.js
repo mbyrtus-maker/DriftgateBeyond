@@ -156,7 +156,7 @@ function frigTurrets(e,dt){mdlFrigTurrets(e);const R=e.st.radius*1.1,C=e.tok&&fO
     if(t){const es=e.cls==='escort';tu.cool=es?.3:.42;turretShot(wp,t,1300,es?15:10,e.side,12,'pd');if(W.t-(e.pdSnd||0)>2.2&&W.t-(W.pdG||-9)>1.1){const v=vAt(e);if(v>.04){e.pdSnd=W.t;W.pdG=W.t;SFX.pd(Math.min(1,v*1.4))}}}else tu.cool=.3}}
 function frigateThink(e,dt){const t=e.tok;if(!t||!S.frigates.includes(t)){e.role='leave';return}if(t.dummy){e.vx=e.vy=e.vz=0;e.thrusting=e.boosting=false;e.hull=e.st.hull;e.shield=e.st.sCap;return}t.hull=e.hull;t.shield=e.shield;if(jamDark(e)){e.charging=0;e.thrusting=false;return}const C=fOwn(t)?fctl(t):null;
   frigTurrets(e,dt);
-  const nx=isCar(t)&&!fOwn(t)&&t.dest&&HOP[t.sector][t.dest]===1&&hostileStationAt(t.dest,t.side)?null:frigHop(t);   // an AI carrier stands off next door from a hostile station, as off-screen, and strikes it with Bravo
+  const nx=isCar(t)&&!fOwn(t)&&t.dest&&HOP[t.sector][t.dest]===1&&capSiegeAt(t.dest,t)?null:frigHop(t);   // an AI carrier stands off next door from a hostile station, as off-screen, and strikes it with Bravo
   if(nx){if(!t.spin||t.spin.to!==nx)t.spin={to:nx,p:0};t.spin.p+=dt/JUMP_TIME*pmul(t,'eng')*(isEsc(t)?ESC_JUMP:1);e.charging=t.spin.p;drumTick(e,t.spin.p,dt);if(Math.random()<.3)fxSpark({x:e.x+rnd(-80,80),y:e.y+rnd(-40,40),z:e.z+rnd(-80,80)},'#bfe0ff',2);
     if(t.spin.p>=1){t.spin=null;t.jumpTo=null;e.charging=0;e.drumT=0;{const v=vAt(e);if(v>.03)SFX.fjump(Math.min(1,v*1.4))}fxWarp(e,sideCol(e.side));fxBoom(e,220,'#bfe0ff');
       if(W.bridge&&W.bridge.f===e){W.pendingFJump={tok:t,to:nx};return}

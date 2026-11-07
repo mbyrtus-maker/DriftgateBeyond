@@ -5,7 +5,8 @@ function scheduleEvent(){
   const t=wpick({comet:2,storm:1.4,gate:1,derelict:1.6,requisition:1.4});
   const nonCore=SECTOR_DEFS.filter(d=>d.kind!=='core').map(d=>d.id);
   if(t==='comet'){
-    const sid=pick(['ke','sh','ci','ho','wr']),s=S.sectors[sid],ore={};let tot=0;
+    const sid=pick(Object.values(OUTPOST_DEFS).map(d=>d.sector)),s=S.sectors[sid],ore={};   // a comet drifts into an outpost's system (Hollow Verge left the list with its Relay)
+    let tot=0;
     const ids=Object.keys(S.sectors).sort(()=>Math.random()-.5);
     for(const id of ids){const d=S.sectors[id].debris;const m=Math.min(d.xc,70-(ore.xc||0));if(m>0){d.xc-=m;inv.add(ore,'xc',m);tot+=m}}
     for(const id of ids){const d=S.sectors[id].debris;for(const e of['ir','fe','cu']){const m=Math.min(d[e],Math.max(0,110-tot),25);if(m>0){d[e]-=m;inv.add(ore,e,m);tot+=m}}}
@@ -65,7 +66,7 @@ function updateEvents(){
   for(const ev of S.events){
     if(ev.type==='offensive'&&!ev.dist&&ev.stage!=='done'&&T>=ev.eta){ev.dist=1;const ow=evOwner(ev);if(ow&&ow!==ev.att)distressCall(ev.sector,evName(ev),ow,ev.att)}
     if(ev.type==='build'){buildTick(ev,T);continue}
-    if(ev.type==='yardbuild'||ev.type==='frigbuild'||ev.type==='escbuild'||ev.type==='sortie'||ev.type==='pirbuild'||ev.type==='rigger')continue;   // capitalTick / sortieTick / pirTick / riggerTick finish these
+    if(ev.type==='yardbuild'||ev.type==='frigbuild'||ev.type==='escbuild'||ev.type==='dstbuild'||ev.type==='sortie'||ev.type==='pirbuild'||ev.type==='rigger')continue;   // capitalTick / dstTick / sortieTick / pirTick / riggerTick finish these
     if(ev.type==='response'){responseTick(ev);continue}
     if(ev.type!=='offensive'){if(T>ev.until)ev.stage='done';continue}
     if(ev.stage==='inbound'&&T>=ev.eta){if(ev.hold&&T<ev.hold&&!WORLDS[ev.sector])continue;const lw=liveIn(ev.sector);if(lw)inW(lw,()=>engageOffensive(ev));else resolveAbstract(ev)}

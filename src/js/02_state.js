@@ -58,7 +58,7 @@ const SPREAD=1.2; // spacing rules that don't scale with SPACE (belt gaps, rock 
 const GATES={};SECTOR_DEFS.forEach(d=>{GATES[d.id]=NEIGH[d.id].map(n=>{const e=DEF[n],a=Math.atan2(e.y-d.y,e.x-d.x),h=Math.round(((hashStr(d.id+n)%2400)-1200)*1.25);return{to:n,x:Math.round(Math.cos(a)*2500*SPACE),y:h,z:Math.round(Math.sin(a)*2500*SPACE)}})});
 const OUTPOST_DEFS={kestrel:{sector:'ke',name:'Kestrel Forge',type:'forge'},shoal:{sector:'sh',name:'Shoal Forge',type:'forge'},cinder:{sector:'ci',name:'Cinder Forge',type:'forge'},wrack:{sector:'wr',name:'Wrack Salvage Yard',type:'yard'}};
 const OUT_BY_SECTOR={};for(const k in OUTPOST_DEFS)OUT_BY_SECTOR[OUTPOST_DEFS[k].sector]=k;
-const TYPE_TEXT={forge:'Forge · Lattice and Cores',relay:'Relay · gate tolls and strike-group intel',yard:'Salvage Yard · harvests sector debris'};
+const TYPE_TEXT={forge:'Forge · Lattice and Cores',yard:'Salvage Yard · harvests sector debris'};
 function oStats(o){const L=o.level;return{sMax:400+350*L,hMax:900+450*L,dmg:7+3*L,rof:1.6+.3*L,range:950}}
 function sideCol(s){return s==='player'?PLAYER_COL:s==='neutral'?NEUTRAL.col:s==='pirate'?PIRATE.col:FACTIONS[s]?FACTIONS[s].col:'#7f8aa3'}
 function sideName(s){return s==='player'?'You':s==='neutral'?NEUTRAL.short:s==='pirate'?'The Unbound':FACTIONS[s]?FACTIONS[s].short:'Unclaimed'}
@@ -345,6 +345,9 @@ function underCapSiege(sid,owner){return(S.frigates||[]).some(t=>hostile(t.side,
 // an assault force for a depot siege: enough assault loads for its garrison, carried with the fighters
 function siegeLoads(ev,srcs){const R=ev.st&&S.stations[ev.st];if(!R||R.kind!=='depot'||ev.att==='brood'||ev.att==='pirate'||R.owner==='brood')return;const g=garrison(R);ev.aload=0;for(let i=0;i<g;i++){if(!takeFrom(ASSAULT_LD,srcs))break;inv.addAll(ev.force,ASSAULT_LD);ev.aload++}}
 function hostileStationAt(sid,side){const Rs=S.stations[sid];return!!(Rs&&(Rs.owner!=='neutral'||side==='brood')&&hostile(side,Rs.owner))}
+// a capital may besiege (strike, raze, capture) a station only where its side fights there: between two powers that is a
+// war (warWith, through fightsAt), not mere hostility; a pilot's own capital goes where its pilot sends it
+function capSiegeAt(sid,t){if(!hostileStationAt(sid,t.side))return false;return fOwn(t)||fightsAt(t.side,S.stations[sid].owner)}
 function makeEscort(side,sector,load,owner){const t={id:S.nextId++,side,sector,dest:null,cls:'escort',hull:ESC_HULL,shield:1800,load,name:escName(side),hold:0,aload:0};if(owner)t.owner=owner;S.frigates.push(t);capRefill(t);if(WORLDS[sector])inW(WORLDS[sector],()=>spawnFrigate(t,true));return t}
 const HULL_COST={interceptor:{},striker:{plate:10,wire:8,coil:3},heavy:{plate:20,wire:12,coil:6,lattice:1},bomber:{plate:18,wire:10,coil:8,lattice:2},
   skiff:{},prospector:{plate:10,wire:8,coil:2},dredger:{plate:22,wire:14,coil:6,lattice:1},courier:{},freighter:{plate:12,wire:6,coil:2},bulker:{plate:26,wire:12,coil:6,lattice:1},
@@ -393,7 +396,7 @@ function FAC_HOME(f){return SECTOR_DEFS.find(d=>d.home===f&&d.kind==='core').id}
 // fac: the design faction (and allegiance, for training and the Unbound); port: a freeport sector for an independent contractor
 function newGame(fac,cls,pname,port){
   WORLDS={};LW=null;W=null;   // worlds left open from a previous galaxy would hand their ships' cargo to the new one when closed
-  S={v:3,nuV:1,T:0,nextId:1,sectors:{},outposts:{},econ:{stock:{},treasury:{},fleet:{}},events:[],contracts:[],gateDown:{},ai:{},timers:{tick:2,event:35,contract:12},tollAcc:0,
+  S={v:3,nuV:1,T:0,nextId:1,sectors:{},outposts:{},econ:{stock:{},treasury:{},fleet:{}},events:[],contracts:[],gateDown:{},ai:{},timers:{tick:2,event:35,contract:12},
     player:{faction:fac,sworn:fac,home:null,job:null,stand:{halcyon:0,varkesh:0,ostrova:0,neutral:0},cls,hullInv:{},bay:{drone:CLASSES[cls].drones||0},tiers:{engine:1,power:1,shield:1,weapon:1,armor:1,drill:1,cargo:1,payload:1},cargo:{},vault:{plate:6,wire:6},rack:rackCapC(cls,1),magV:1,swarm:(CLASSES[cls]&&CLASSES[cls].swarm)||0,wpn:'kinetic',credits:1800,sector:FAC_HOME(fac),docked:'station',x:0,y:0,z:0,vx:0,vy:0,vz:0,q:[0,0,0,1],hull:0,shield:0,energy:0,fa:true,kills:0,tune:{}}};
   for(const d of SECTOR_DEFS)S.sectors[d.id]=genSector(d);
   if(port&&FREEPORTS.some(F=>F.sid===port)){const P=S.player;P.sworn=null;P.home=port;P.sector=port;P.docked='station'}

@@ -39,7 +39,6 @@ function bmbPick(f,i,role,tier,srcs){return facVet(f)&&i%2===0&&haveIn(loadout(r
 function pickFighter(role){return wpick(role==='raider'?{interceptor:2,striker:1.4,heavy:.4}:role==='pirate'?{interceptor:1.4,striker:2,heavy:.7}:{interceptor:1,striker:2,heavy:1.1})}
 function wallet(side){return side==='player'?{get:()=>S.player.credits,add:n=>{S.player.credits+=n}}:{get:()=>S.econ.treasury[side]||0,add:n=>{S.econ.treasury[side]=(S.econ.treasury[side]||0)+n}}}
 function transfer(from,to,n){n=Math.floor(n);if(n<=0)return 0;const a=wallet(from),b=wallet(to);n=Math.min(n,a.get());if(n<=0)return 0;a.add(-n);b.add(n);return n}
-function hasIntel(){const h=S.outposts.hollow&&S.outposts.hollow.owner;if(!h)return false;return h==='player'||(!!S.player.sworn&&h===S.player.sworn)}
 function holderIn(st,path){if(typeof path!=='string'||!path)return null;const p=path.split(':');if(p[0]==='stock')return st.econ.stock[p[1]];if(p[0]==='out')return st.outposts[p[1]].stock;if(p[0]==='frig'){const t=(st.frigates||[]).find(x=>String(x.id)===p[1]);return t?t.load:(st.econ.stock[p[2]]||st.player.vault)}if(p[0]==='pbay'){const R=p[1]&&st.pilots&&st.pilots[p[1]]||st.player;return R.bay=R.bay||{}}if(p[0]==='scout'){const t=(st.scouts||[]).find(x=>String(x.id)===p[1]);return t?t.load:st.econ.stock[p[2]]}if(p[0]==='trader'){const t=(st.traders||[]).find(x=>String(x.id)===p[1]);return t?t.load:st.econ.stock[p[2]]}if(p[0]==='raid'){const r=(st.raids||[]).find(x=>String(x.id)===p[1]);return r?r.kit:(st.econ.stock[p[2]]||st.econ.stock.pirate)}if(p[0]==='ev'){const ev=st.events.find(v=>String(v.id)===p[1]);return ev&&ev.force?ev.force:st.econ.stock[p[2]]}return st.econ.stock.pirate}
 const holder=path=>holderIn(S,path);
 function stockTarget(id){return RAWS.includes(id)?300:id==='plate'||id==='wire'?90:id==='coil'?40:id==='seal'?6:16}
@@ -105,7 +104,7 @@ function intelSectors(P){const s=new Set([P.sector]);for(const id in S.beacons||
   for(const t of S.scouts||[])if(intelSide(P,t.side))s.add(t.sector);
   for(const t of S.traders||[])if(intelSide(P,t.side))s.add(t.sector);   // your faction's freighters and traders read the markets they pass
   for(const Q of allPilots())if(Q!==P&&!Q.off&&!!Q.sworn&&intelSide(P,Q.sworn)&&isScoutCls(Q.cls))s.add(Q.sector);if(isScoutCls(P.cls)||P.cls==='wraith')for(const n of NEIGH[P.sector]||[])s.add(n);
-  if(S.outposts.hollow&&P.sworn&&S.outposts.hollow.owner===P.sworn)for(const d of SECTOR_DEFS)s.add(d.id);return s}
+  return s}
 function intelTick(P){const first=!P.pintel;P.pintel=P.pintel||{};const live=intelSectors(P);if(first)for(const R of mkStations())if(intelSide(P,R.owner))live.add(R.sid);for(const R of mkStations()){if(!live.has(R.sid))continue;if(pilotHostile(P,R.owner)&&R.owner!=='neutral')continue;mkOf(R);
   const st=mkStock(R),b={},sl={},n={};for(const k of TRADE_ITEMS){const pr=stPrice(R,k);b[k]=Math.ceil(pr*(1+mFee(P.cls)));sl[k]=Math.max(1,Math.floor(pr*(1-mFee(P.cls))));n[k]=st[k]||0}P.pintel[R.sid]={T:first&&R.sid!==P.sector?S.T-600:S.T,b,s:sl,n}}}
 function intelAge(e){if(!e)return'no data';const a=S.T-e.T;return a<15?'live':a<90?Math.round(a)+' s ago':Math.round(a/60)+' min ago'}

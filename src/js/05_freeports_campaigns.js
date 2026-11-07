@@ -445,9 +445,9 @@ function fpAct(act,arg,c,P,srcs){
 // or fly with the strike. Each move that succeeds pays the pilots who helped from the treasury; when the campaign reaches its
 // goal and the faction wins the galaxy, every pilot who served it earns a victory bonus. The Brood and the Unbound have no campaign: they play for themselves.
 const DOCTRINE={
-  halcyon:{name:'Trade Charter',why:'buy the frontier with depots and relays',prep:['haul','haul','mine'],haul:'plate',mine:'cu',w:{build:1.7,relay:3,forge:1,yard:1.2,neutral:2.6,depot:.8,hub:2.2,deep:1,contested:1}},
-  varkesh:{name:'Iron Advance',why:'push the line forward one siege at a time',prep:['haul','mine','haul'],haul:'wire',mine:'ir',w:{build:.7,relay:1,forge:2.2,yard:1.4,neutral:1.4,depot:2.2,hub:1.2,deep:1.3,contested:2.1}},
-  ostrova:{name:'Lattice Ascendancy',why:'seize the crystal: forges and the deep fields',prep:['mine','mine','haul'],haul:'coil',mine:'xc',w:{build:1,relay:1,forge:4.8,yard:1,neutral:1.7,depot:1.3,hub:1,deep:3.5,contested:1}}};
+  halcyon:{name:'Trade Charter',why:'buy the frontier with depots',prep:['haul','haul','mine'],haul:'plate',mine:'cu',w:{build:1.7,forge:1,yard:1.2,neutral:2.6,depot:.8,hub:2.2,deep:1,contested:1}},
+  varkesh:{name:'Iron Advance',why:'push the line forward one siege at a time',prep:['haul','mine','haul'],haul:'wire',mine:'ir',w:{build:.7,forge:2.2,yard:1.4,neutral:1.4,depot:2.2,hub:1.2,deep:1.3,contested:2.1}},
+  ostrova:{name:'Lattice Ascendancy',why:'seize the crystal: forges and the deep fields',prep:['mine','mine','haul'],haul:'coil',mine:'xc',w:{build:1,forge:4.8,yard:1,neutral:1.7,depot:1.3,hub:1,deep:3.5,contested:1}}};
 const CAMP_PAY={take:900,build:700,mine:450,haul:550},CAMP_GOAL=3000,CAMP_HAUL_N={plate:16,wire:14,coil:6},CAMP_MINE_N={xc:24,ir:36,cu:48,fe:48};
 function stN(sid){return S.stations[sid]?S.stations[sid].name:DEF[sid]?DEF[sid].name+' depot':'the depot'}
 function pkey(){return NET.on?curPid():'me'}
@@ -476,7 +476,7 @@ function campTargets(f){const terr=territory(f),D=DOCTRINE[f],C=S.coal,out=[];
     out.push({...s,sid:d.id})}
   return out}
 function campTitle(m){const nm=DEF[m.sector]?DEF[m.sector].name:'?';
-  if(m.kind==='take')return m.st?`Besiege ${S.stations[m.st]?S.stations[m.st].name:m.stName||'the depot'} in ${nm}`:`Take ${S.outposts[m.out].name} in ${nm}`;
+  if(m.kind==='take')return m.st?`Besiege ${S.stations[m.st]?S.stations[m.st].name:m.stName||'the depot'} in ${nm}`:`Take ${S.outposts[m.out]?S.outposts[m.out].name:'the outpost'} in ${nm}`;
   if(m.kind==='build')return`Build a depot in ${nm}`;
   if(m.kind==='mine')return`Mine ${m.need} ${ITEMS[m.item].name} for the push on ${DEF[m.obj].name}`;
   return`Haul ${m.need} ${ITEMS[m.item].name}: ${stN(m.from)} → ${stN(m.to)}`}
@@ -486,8 +486,8 @@ function campPrep(f,pk,P){const D=DOCTRINE[f];let kind=P&&P.lastPrep==='haul'?'m
   if(kind==='haul'){const item=f==='halcyon'&&pk.kind==='build'?'plate':D.haul;return mkMove(f,{kind:'haul',item,need:CAMP_HAUL_N[item]||10,from,to:front,sector:front,obj:pk.sid,dur:420})}
   return mkMove(f,{kind:'mine',item:D.mine,need:CAMP_MINE_N[D.mine]||36,sector:home,obj:pk.sid,dur:360})}
 function campStrike(f,pk){return mkMove(f,{kind:pk.kind,sector:pk.sid,st:pk.st||null,out:pk.out||null,obj:pk.sid})}
-function campValid(f,pk){if(!pk)return false;return campTargets(f).some(t=>t.sid===pk.sid&&t.kind===pk.kind&&(t.st||null)===(pk.st||null)&&(t.out||null)===(pk.out||null))}
-function campDone(m){if(m.kind==='take')return m.st?!S.stations[m.st]||sideNorm(S.stations[m.st].owner)===m.f:sideNorm(S.outposts[m.out].owner)===m.f;if(m.kind==='build'){const R=S.stations[m.sector];return!!R&&sideNorm(R.owner)===m.f}return m.prog>=m.need}
+function campValid(f,pk){if(!pk||pk.out&&!S.outposts[pk.out])return false;return campTargets(f).some(t=>t.sid===pk.sid&&t.kind===pk.kind&&(t.st||null)===(pk.st||null)&&(t.out||null)===(pk.out||null))}
+function campDone(m){if(m.kind==='take')return m.st?!S.stations[m.st]||sideNorm(S.stations[m.st].owner)===m.f:!!S.outposts[m.out]&&sideNorm(S.outposts[m.out].owner)===m.f;if(m.kind==='build'){const R=S.stations[m.sector];return!!R&&sideNorm(R.owner)===m.f}return m.prog>=m.need}
 function campNew(f,P){let m=null;
   if(P.next&&campValid(f,P.next)){m=campStrike(f,P.next);m.boost=P.boost||0}
   else{campResBack(f,P);const tg=campTargets(f);if(!tg.length)return null;const pk=wpickArr(tg.map(t=>[t,t.w]));P.next=pk;P.boost=0;m=campPrep(f,pk,P);P.lastPrep=m.kind;sideChain(f,P,pk,m)}
@@ -498,7 +498,7 @@ function campNew(f,P){let m=null;
   if(!NET.on&&S.player.sworn!==f&&covered(m.sector)){m.intel=1;feed(`Intel (${covSource(m.sector)}): ${FACTIONS[f].short} is preparing to ${m.title.charAt(0).toLowerCase()+m.title.slice(1)}.`,'news')}
   return m}
 // launch the strike: a strike group against the outpost or depot, or a constructor convoy, built from the faction's own stores
-function campOffensive(f,m,mn){const isSt=!!m.st,Rr=isSt?S.stations[m.st]:null,o=isSt?null:S.outposts[m.out];if(isSt?!Rr||!hostile(f,Rr.owner):o.owner===f)return'gone';
+function campOffensive(f,m,mn){const isSt=!!m.st,Rr=isSt?S.stations[m.st]:null,o=isSt?null:S.outposts[m.out];if(isSt?!Rr||!hostile(f,Rr.owner):!o||o.owner===f)return'gone';
   const lvl=isSt?2:o.level,owner=isSt?Rr.owner:o.owner,bonus=Math.min(6,2*(m.boost||0)),n=clamp(4+lvl+ri(0,1)+bonus,4,11),tier=factionTier(f),force={},srcs=[campOf(f).res||(campOf(f).res={}),S.econ.fleet[f],S.econ.stock[f]],cls=[];let got=0;
   const nb=isSt?Math.max(3,Math.floor(n/2)):owner?Math.max(1,Math.floor(n/3)):0;
   for(let i=0;i<n;i++){let cl=i<nb?bmbPick(f,i,'patrol',tier,srcs):pickFighter('patrol'),ld=loadout('patrol',tier,cl);if(!haveIn(ld,srcs)){cl='striker';ld=loadout('patrol',tier,cl)}if(takeFrom(ld,srcs)){inv.addAll(force,ld);cls.push(cl);got++}else break}
@@ -620,7 +620,7 @@ function sideTick(f,P){const L=sideOf(P),T=S.T,pl=sidePilots(f);
       if(WORLDS[o.sector]){const d=Math.round(((o.hp0||1)-sideHp(Tg))*100);if(d>(o.dmg||0)){const g=d-(o.dmg||0);o.dmg=d;for(const[k,,e]of here)if(e)sideHelp(o,k,g)}}o.prog=Math.max(o.abs||0,o.dmg||0)}
     else if(o.kind==='beacon'){if(Math.random()<.05*o.ai*SIDE_AI){const nx=o.sids.find(x=>S.beacons[x]&&S.beacons[x].owner!==f&&bcnCan(S.beacons[x],f));if(nx&&!WORLDS[nx])beaconFlip(nx,f,null)}o.prog=o.sids.filter(x=>S.beacons[x]&&S.beacons[x].owner===f).length}
     else if(o.kind==='counter'){const ev=S.events.find(e=>e.id===o.evId);if(ev&&T>=ev.eta-20)for(const[k,,e]of here)if(e)sideHelp(o,k,10);
-      if(!ev||ev.stage==='done'){const ow=o.st?(S.stations[o.st]||{}).owner:o.out?S.outposts[o.out].owner:null;sideEnd(f,P,o,sideNorm(ow)===f,'the target fell');continue}}
+      if(!ev||ev.stage==='done'){const ow=o.st?(S.stations[o.st]||{}).owner:o.out?(S.outposts[o.out]||{}).owner:null;sideEnd(f,P,o,sideNorm(ow)===f,'the target fell');continue}}
     else if(o.kind==='hunt'){const t=(S.frigates||[]).find(x=>x.id===o.tok);if(!t||t.hull<=0){sideEnd(f,P,o,true);continue}o.sector=t.sector;for(const[k,,e]of pl.filter(x=>x[1]===t.sector))if(e)sideHelp(o,k,10)}
     if(o.kind!=='counter'&&o.kind!=='hunt'&&o.prog>=o.need){sideEnd(f,P,o,true);continue}
     if(T>=o.until)sideEnd(f,P,o,false,o.kind==='hunt'?'it got away':o.kind==='counter'?'it ran out of time':'time ran out')}
@@ -753,8 +753,8 @@ function campHud(){const el=$('hOrd');if(!el)return;if(S.unb){ujobHud(el);return
   h+=jobHudRow();
   if(multi)h+=`<div class="onx"><kbd>⇧P</kbd> next order · ${si+1} of ${L.length}</div>`;
   if(el._h!==h){el._h=h;el.innerHTML=h}}
-// map: the next move of your faction, and of rivals where your sensors (or the Hollow Relay) can see it
-function campKnown(m){return!!m&&((!!S.player.sworn&&m.f===S.player.sworn)||covered(m.sector)||hasIntel())}
+// map: the next move of your faction, and of rivals where your sensors can see it
+function campKnown(m){return!!m&&((!!S.player.sworn&&m.f===S.player.sworn)||covered(m.sector))}
 function campMapHtml(){if(!S.plans)return'';let h='';for(const f of FAC_IDS){const C=S.plans[f];if(!C)continue;const m=C.mv,n=controlCounts()[f]||0;
     h+=`<span style="color:${sideCol(f)}">${esc(FACTIONS[f].short)} · ${esc(DOCTRINE[f].name)}</span><b>${n}/${VIC_NEED}${m?(campKnown(m)?' · '+esc(m.title):' · plans unknown'):C.goal?' · holding':''}</b>`}
   return h?`<div><div class="h3">Faction campaigns</div><div class="kv">${h}</div><p class="note" style="margin-top:6px">Your faction's next move is on your HUD: press P to sign on. Rival moves show when your sensors cover the target.</p></div>`:''}

@@ -16,6 +16,7 @@ The balance target (3 Nov 2026): the Brood about **20%** of galaxies, Halcyon, V
    - 16 hours, never 2.2: Beyond galaxies take about 4.5 h to settle.
    - Leaders are neutral unless the task says `LEADERS=1`.
    - A tuning idea goes in a JS file passed as the 4th argument (it runs in the game's scope before the games start), so you can test it without touching `src/`.
+   - Tune files must set `BR0.*` for the Brood dials (`brOff`, `brBuild`, `brGraze`, `hiveRegrow`, `brLevT`): `broodRamp` resets `BAL.br*` from `BR0` every tick, so a `BAL.br*` setting is silently lost.
 4. Quick look first if asked: 120 games, same settings (about 5 min). Say it's a quick look; it is noisier.
 5. Duels between hulls or designs: `tools/duel.py jobs.json N out.json` (each job `[clsA,mkA,tuneA,clsB,mkB,tuneB]`). Its scratch path `D=` is hard-coded at the top: copy the script into your scratch folder and point `D` there rather than editing the repo copy.
 
