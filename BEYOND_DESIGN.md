@@ -2738,3 +2738,51 @@ Written so it can be picked up later; nothing here is in the game.
 - **What sets the price** (v15): book value, smoothed earnings x 8 h, R&D at cost while it runs (1.0 to 1.4 times), a launch premium used up as the new line's earnings come in, dividends x 4 h; calm investors' mood; news (launches, projects, CEOs, tension, war, peace) priced within half an hour.
 - **Target:** a pilot holding a share 2 hours is usually ahead with interest (v15: +9% after a 1% fee each way, ahead 82%; 84% at 0.5%).
 - **Guards still to build:** one pilot's bulk buying of a product counts as a one-off for investors (cash, not lasting earnings) and doesn't start a craze or make rivals tweak on its own (see the bulk-buyer test above); possibly bulk buying as a commissioned production run with a lead time and a premium.
+
+### Bug pass and fixes (7 Nov 2026)
+Five sub-bots (war-sim, economy, mp-test, training-mission, visuals; `.claude/agents/`) read their areas, ran their tests and wrote probes, then fixed what they found, each in its own worktree. The report: https://claude.ai/artifact/DViUTYzwv4A24V63vZ8Pmx. Decisions by the user today: be ambitious and fix the bugs, including the ones that move balance; boost the Trade Charter if Halcyon needs it; keep Crimson and Magenta; a replacement maker keeps its hue and takes a new logo; AI pilots buy makers' parts as players do (being built).
+
+**War and strategy**
+- **Destroyers launch in live play.** `updateEvents` closed every event type it didn't know once its time ran out, so a destroyer in the slip was dropped (materials and all) before `dstTick` could launch it. The fast simulator ran the two in the other order and hid it. `dstbuild` is now left for `dstTick`, like the other slips.
+- **Old saves aimed at the Hollow Relay** no longer crash the campaign tick: moves, plans and side ops aimed at it end, their held stock goes back to the faction's stores, and the campaign code copes with any missing outpost.
+- **The practice galaxy never ends:** no victory clock, no win, nothing written to the save, legacy, legend or aces records in training.
+- **The Brood's ramp is the right way round.** Its offensive and Seeder timers are intervals but were multiplied by its strength scale, so it attacked most often when smallest (every 16 to 26 s holding only the Bloom). They are now divided, as the design says. Base values retuned with grazing 3.2: `BR0.brOff` .16, `BR0.brBuild` .38 (an offensive every 49 to 77 s with the Bloom alone, every 13 to 21 s at twelve systems). Tune files set `BR0.*`: the ramp resets `BAL.br*` every tick.
+- **Trade Charter:** quartered (prospecting .0025, imports .001), Halcyon fell to 12% once the ramp was fixed; it is now half its old strength (`halProsp` .005, `halImp` .0025).
+- **A surge that digs in keeps its ships:** the old owner's roster drops its docked kits as debris and the surge starts a new Brood roster (before, the 12 ships were thrown away the next tick).
+- **Capital ships need a war to besiege** a power's depot or outpost (`capSiegeAt`), as campaigns and offensives already did. The Brood and Unbound are always at war; a pilot's own capital goes where it is sent.
+- **The last of the Hollow Relay is gone:** its tolls, intel, sensor reach, doctrine weights, dock and map text; the Unbound salvage only the Wrack now; comets drift into the four outpost systems.
+- **Quick looks** (120 galaxies, 16 h; Halcyon / Varkesh / Ostrova / Brood / unfinished): 24 / 32 / 15 / 20 / 9 and 22 / 25 / 14 / 28 / 11. Open: Ostrova runs low since the Relay went, and unfinished galaxies rose from about 3% to about 10%. A 600-galaxy check follows below.
+
+**Economy**
+- **A maker's part costs a pilot what the station prices it at:** 1.5 times its component cost or the market price if higher, never below the profit floor, with the CEO's pricing, then the pilot's fee. The Market, the intel prices and the charge agree, and the maker earns its margin (before, a pilot paid the plain market price, often under half). A Supply job that buys a maker's part pays the maker too.
+- **Makers' parts' local prices settle back** at the trade goods' rate (7% a tick); refits used to push them up for good (half as much again over 4 h).
+- **A posted job's cargo is never lost:** a contractor whose job ends under it drops what it carries as debris where it is.
+- **A buyer pays for what it can afford and takes only that:** a Haul job sells what the market can pay for, the rest rides back to your depot and the fee is scaled; a merchant whose freeport can't pay for the whole load delivers what was paid for and sends the rest home by convoy.
+- **R&D leaves your goods alone:** a new grade's launch breaks the old grade's unsold stock into ore on the powers' and the Compact's markets only.
+- **What the works make themselves:** only Calibration Matrices, Crystal Lattices and Resonance Cores from the station's stock (lattices and cores need a forge), and nothing before the maker has shown it can pay and keep its reserve.
+- **Share prices count every grade** of shelf stock.
+- **Soaks** (4 h, AI only): ledger exact, no maker failed; 10 to 11 of 12 makers lost 1k to 2.5k each, as before the fixes. Answered by the user: AI pilots buy makers' parts as players do (being built).
+
+**Multiplayer**
+- **A guest installs systems on the host** (the Loadout's Install button had its own path that ran on the guest's page).
+- **A guest's makers follow the host's:** the guest applies the corporation books on joining and whenever an update changes them (a tweak, a grade, a new company, a new logo).
+- **A guest flies with its fitted parts:** its stats were missing them (hold, speed, grades) because each host update replaced the record the fit was looked up by.
+- **A tweak takes effect at once** on every ship already fitted with that line's parts.
+- **Joint defence guards every pilot's own Station**; guests hear their own marque revocation, Bloom, Leviathan and fresh-rock news; a guest's crew ships fly their owner's colours.
+- **Tests:** `mp_guest_kit.py` rewritten for grades by invention; new `mp_guest_corp.py`.
+
+**Training**
+- **Practice drones are the trainee's alone:** the freeport's guns were shooting them within nine seconds; no station, AI ship or turret takes a training drone as hostile now, and the targeting steps bring a fresh set if none are left.
+- **Keys in the prompts come from the game:** dock-tab numbers from the live tab list (Allegiance is 5), weapon keys from the bindings.
+- **A job is always waiting** at Flight step 17 (one guaranteed freeport request).
+- **Lost cargo doesn't strand the Contracts lesson:** part deliveries count, and the lesson says how many you still have.
+- **Mining:** the Medium Miner comes with its drones (docking no longer bills a full bay); a pilot shot down mid-lesson is put back in it; the detonate step needs a chunk of your own to appear; the scoop step says to blast again if nothing is left.
+- Driftgate 1's lessons no longer mention the Hollow Relay.
+
+**Visuals**
+- **Models:** the Shrike's assault bay and shield generator sit in its hull and its dorsal plates lie on the spine; the shield and hull works, the frigate yard and the Wrack Salvage Yard have no floating parts. Unbound drones fly as Raiders and their destroyer as the Ravager; neutral and player frigates, drones and mites take their side's colour.
+- **Your colour everywhere:** the galaxy map key, your capitals' names on the zoomed map, your capitals and Lairs in the sector view.
+- **Company colours: Crimson and Magenta kept (user).** Forest and Bronze were tried for an hour (to clear the hostile red and the target highlight) and dropped; a save holding one reads as the colour it replaced.
+- **Flight labels don't overlap;** edge arrows keep clear of labels and HUD panels. The gun line reads "600 ROUNDS"; the missile count shows once.
+- **Small windows:** below 900 px wide or 600 px tall the Command panel folds to its header and the stats and radar shrink.
+- **Makers' logos in the game.** A maker that fails and reopens keeps its accent (it still belongs to its home power) and takes one of 12 spare logos (an anvil, a gear wheel, a comet and its tails, a key, a lattice, a crane hook, a sextant, a swept wing of three feathers, a lightning bolt, a ringed planet, a turbine of three blades, a bridge span), never one another maker shows, preferring one not yet used in this galaxy; the News names it. Until the R&D stations carry their logo boards, logos show in the Corporations view (row and detail, on a dark board with an accent rim), the Market's made-by line and works list, and the Loadout. The art lives in `tools/previews/beyond_corp.py`; `tools/corp_logos_js.py` writes it into `src/js/16zzz_logos.js`; review sheet `tools/previews/beyond_corp_logos.png`.
