@@ -25,6 +25,9 @@
 - War check: balance on stats only: `fastsim.py` starts every leader without traits (set `LEADERS=1` to keep them). Run Beyond's with `PPORT=mw` (the player an idle contractor) and **16 hours** (`... FILE 600 16 - 2 OUT.json`, about 25 min): Beyond has no deadline and galaxies take about 4.5 h to settle, so a 2.2 h run reports nearly every galaxy unfinished. Driftgate 1's form: `PFAC=<halcyon|varkesh|ostrova|pirate> python3 tools/fastsim.py FILE GAMES HOURS TUNE_JS|- WORKERS OUT.json` (480 games, 2.2 h per side; run the four sides, ~25 min). `fastsim.py` has a hard-coded scratch directory `D=` at the top: point it at your own scratchpad and copy the page there first. Run-to-run noise is about ±2 points.
 - Don't `pkill -f` with a pattern that matches your own command line (it kills the shell).
 
+## Sub-bots
+Five agents in `.claude/agents/` take whole jobs off the main session: `war-sim` (war check and duels), `economy` (ledger, prices, pay rates, corporations), `mp-test` (host/guest tests), `training-mission` (training courses), `visuals` (models, preview sheets, art). They report back and leave any changes uncommitted; the main session agrees design with the user, commits and publishes.
+
 ## Workflow
 - Every change: update `BEYOND_DESIGN.md` (and `DESIGN_NOTES.md` only for Driftgate 1-era systems you change), build, syntax check, test what you touched, commit, `git pull -q --rebase`, push.
 - Commit messages end with the Co-Authored-By / Claude-Session lines the session gives you.
