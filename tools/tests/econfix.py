@@ -37,15 +37,15 @@ async def main():
     if l!='exact': bad.append('ledger after buys: '+l)
     # (2) a Supply run in flight when its depot changes hands: the load is dumped where the run is
     r=json.loads(await ev("""(()=>{const P=S.player;exitSector();W=null;transfer('neutral','player',20000);const sid=Object.keys(S.sectors).find(id=>!S.stations[id]&&canBuildIn(id,'player')&&!OUT_BY_SECTOR[id]);let R;devLedger(()=>{R=depMake(P,sid,stationSite(sid),{},{})});window._SID=sid;
-      const msg=pjPost(P,sid+':supply:plate:10:fast');const j=pjList()[pjList().length-1];j.claimAt=S.T;pjTick();const r=pjRunOf(j.run);if(!r)return JSON.stringify({err:'no run: '+msg+' '+j.msg});
+      for(const I of indL())if(!I.live&&I.at!=='job'){if(I.go&&I.go.kid){const k=(S.contracts||[]).find(c=>c.id===I.go.kid);if(k)k.ind=null}I.go=null;I.at='dock';I.restT=0};const msg=pjPost(P,sid+':supply:plate:10:fast');const j=pjList()[pjList().length-1];j.claimAt=S.T;pjTick();const r=pjRunOf(j.run);if(!r)return JSON.stringify({err:'no run: '+msg+' '+j.msg});if(r.pick)pjPick(r);
       const s=S.sectors[r.sector],d0=s.debris.fe,load=JSON.stringify(r.load);R.owner='varkesh';pjTick();R.owner='player';return JSON.stringify({load,runs:pjRuns().length,state:j.state,debrisFe:Math.round((s.debris.fe-d0)*100)/100})})()"""))
     print('supply lost',json.dumps(r))
     if r.get('err') or r['runs']!=0 or r['debrisFe']!=3*json.loads(r['load']).get('plate',0) or not r['debrisFe']: bad.append(f"supply run lost mid-flight: {r}")
     print('ledger',l:=await ev(LED))
     if l!='exact': bad.append('ledger after the lost supply run: '+l)
     # (3) Haul 20 plate to a market that can pay for 5: paid for 5, 15 ride home into the store, the fee a quarter
-    r=json.loads(await ev("""(()=>{const P=S.player,sid=window._SID,R=S.stations[sid];devLedger(()=>{R.stock.plate=40});const msg=pjPost(P,sid+':haul:plate:20:fast');const j=pjList()[pjList().length-1];j.claimAt=S.T;pjTick();
-      const r=pjRunOf(j.run);if(!r)return JSON.stringify({err:'no run: '+msg+' '+j.state+' '+j.msg});const D=S.stations[r.dst],f=D.owner,pr=Math.max(1,Math.floor(stPrice(D,'plate')*.95));
+    r=json.loads(await ev("""(()=>{const P=S.player,sid=window._SID,R=S.stations[sid];devLedger(()=>{R.stock.plate=40});for(const I of indL())if(!I.live&&I.at!=='job'){if(I.go&&I.go.kid){const k=(S.contracts||[]).find(c=>c.id===I.go.kid);if(k)k.ind=null}I.go=null;I.at='dock';I.restT=0};const msg=pjPost(P,sid+':haul:plate:20:fast');const j=pjList()[pjList().length-1];j.claimAt=S.T;pjTick();
+      const r=pjRunOf(j.run);if(!r)return JSON.stringify({err:'no run: '+msg+' '+j.state+' '+j.msg});if(r.pick)pjPick(r);const D=S.stations[r.dst],f=D.owner,pr=Math.max(1,Math.floor(stPrice(D,'plate')*.95));
       const spare=Math.max(0,(S.econ.treasury[f]||0)-pr*5),park=f==='neutral'?'halcyon':'neutral';transfer(f,park,spare);const st0=mkStock(D).plate||0,c0=P.credits,store0=R.stock.plate||0;
       r.leg=r.path.length-1;r.next=S.T;pjRunsTick();const sold=(mkStock(D).plate||0)-st0,paid=P.credits-c0,back=r.load.plate||0,going=pjRuns().includes(r);transfer(park,f,spare);
       for(let i=0;i<100&&pjRuns().includes(r);i++){S.T+=10;pjRunsTick()}const c1=P.credits;

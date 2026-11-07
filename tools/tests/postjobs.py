@@ -21,7 +21,7 @@ async def main():
       const m=pjPost(P,`${sid}:supply:plate:20:999999`);const j=S.pj[S.pj.length-1];out.cap=Math.round(j.bid/j.mean*100)+'%';out.withdraw=pjCancel(P,j.id);return JSON.stringify(out)})()"""))
     print('ledger',await ev(LED))
     print('done by AI',await ev("""(()=>{const P=S.player,sid=window._SID,R=S.stations[sid];pjPost(P,`${sid}:haul:plate:20:fast`);pjPost(P,`${sid}:mine:x:15:medium`);pjPost(P,`${sid}:guard:x:0:medium`);
-      const pl0=R.stock.plate||0,st0=invMass(R.stock),c0=P.credits;for(const j of S.pj)if(j.state==='open')j.claimAt=S.T;pjTick();const guard=depGunK({rec:R},{role:'raider',side:'pirate'});exitSector();for(let i=0;i<300&&S.pj.some(j=>j.state==='taken');i++){S.T+=10;pjTick()}enterSector(sid);
+      for(const I of indL())if(!I.live&&I.at!=='job'){if(I.go&&I.go.kid){const k=(S.contracts||[]).find(c=>c.id===I.go.kid);if(k)k.ind=null}I.go=null;I.at='dock';I.restT=0};const pl0=R.stock.plate||0,st0=invMass(R.stock),c0=P.credits;for(const j of S.pj)if(j.state==='open')j.claimAt=S.T;pjTick();const guard=depGunK({rec:R},{role:'raider',side:'pirate'});exitSector();for(let i=0;i<300&&S.pj.some(j=>j.state==='taken');i++){S.T+=10;pjTick()}enterSector(sid);
       return JSON.stringify({states:S.pj.map(j=>j.kind+':'+j.state),msgs:S.pj.filter(j=>j.msg).map(j=>j.msg).slice(-5),plate:[pl0,R.stock.plate||0],store:[st0,invMass(R.stock)],spent:c0-P.credits,guardK:guard})})()"""))
     print('still taken',await ev("JSON.stringify(S.pj.filter(j=>j.state==='taken').map(j=>({kind:j.kind,run:j.run,due:j.due,r:JSON.stringify(pjRunOf(j.run))})))"))
     print('ledger',await ev(LED))

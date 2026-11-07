@@ -36,10 +36,21 @@ async def main():
     # the guest undocks: its ship flies on the host as an independent (side Compact), and hostility to it follows the guest's own standing
     await ev(C,"(()=>{undock();return 1})()");await C.wait_for_timeout(3000)
     print('guest ship on host:',await ev(H,"(()=>{const e=MP.rp.clipid1;if(!e)return 'no ship';return JSON.stringify({side:e.side,fac:e.fac,varkesh:hostE('varkesh',e),brood:hostE('brood',e)})})()"))
+    # an independent pilot (simulated on the host) flies in the guest's system: the guest sees its label, and has the
+    # independents in its synced state for the freeport's Overview
+    print('independent on host:',await ev(H,"(()=>{indInit();const sid=S.pilots.clipid1.sector,w=WORLDS[sid];if(!w)return 'no world for the guest';const I=indL().find(x=>!x.live&&x.at!=='job');I.sector=sid;I.at='fly';I.path=[sid,NEIGH[sid][0]];I.leg=0;I.go={k:'look'};const e=inW(w,()=>indSpawn(I,false));window._IE=e&&e.id;return JSON.stringify({sid,name:I.name,id:e&&e.id,label:e&&shipLabel(e)})})()"))
+    # the host's state reaches the guest with its five-second sync (the host's clock runs slowly under the test renderer)
+    g=None
+    for i in range(12):
+      await C.wait_for_timeout(2500)
+      g=json.loads(await ev(C,"(()=>{const L=Object.values((LW&&LW.pup)||{}).filter(e=>e.indLbl).map(e=>shipLabel(e));return JSON.stringify({labels:L,synced:((S.ind&&S.ind.L)||[]).length,overview:indDockedHtml(S.ind&&S.ind.L[0]?S.ind.L[0].home:'mw').includes('Independents here')})})()"))
+      if g['synced'] and g['labels']:break
+    print('guest sees independents:',json.dumps(g))
+    if not g['labels'] or not all(x.startswith('Independent · ') for x in g['labels']) or not g['synced'] or not g['overview']:errs.append('guest view of independents: '+json.dumps(g))
     print('guest hated by Varkesh:',await ev(H,"(()=>{const P=S.pilots.clipid1,e=MP.rp.clipid1;P.stand.varkesh=-70;const a=hostE('varkesh',e),b=hostE('halcyon',e);P.stand.varkesh=0;return JSON.stringify({varkesh:a,halcyon:b,hostStillFine:hostile('varkesh','player')})})()"))
     print('guest job and pay:',await ev(H,"(()=>{relInit();S.rel.varkesh.ostrova=S.rel.ostrova.varkesh=-60;Object.assign(pairOf('varkesh','ostrova'),{war:true,warT:S.T});const P=S.pilots.clipid1;P.job={by:'ostrova',kind:'fight'};const t0=S.econ.treasury.ostrova,c0=P.credits;payKill({side:'varkesh',role:'patrol',cls:'interceptor',tier:1,dmg:{clipid1:100}},null,{src:MP.rp.clipid1});P.job=null;return JSON.stringify({got:P.credits-c0,fromOstrova:t0-S.econ.treasury.ostrova})})()"))
     await C.wait_for_timeout(8000)
     print('guest sees standing:',await ev(C,"JSON.stringify(S.player.stand)"))
     print('ledger:',await ev(H,"(()=>{const l=ledger();let b=[];for(const e of RAWS)if(Math.abs(l.tot[e]-S.ledger0.tot[e])>1e-6)b.push(e);return b.length?'DRIFT '+b:'exact'})()"))
-    print('errors',errs[:8]);await b.close()
+    print('errors',[e for e in errs if 'GL Driver' not in e][:8]);await b.close()
 asyncio.run(main())

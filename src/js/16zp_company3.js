@@ -101,7 +101,7 @@ function jbHtml(P){const D=myDepots(P),k=pkeyOf(P),crews=[];for(const R of D)for
   return h+`</div><div class="codet">${jbDetail(P,D,crews,posted)}</div></div>`}
 function jbDetail(P,D,crews,posted){const k=coPk.crews;
   if(k==='post'){const F=pjForm;if(!F.sid||!D.some(R=>R.sid===F.sid))F.sid=D[0].sid;const R=S.stations[F.sid],goods=['fe','cu','ir','au','nu','xc','plate','wire','coil','lattice','frame'].filter(x=>ITEMS[x]);
-    const mean=pjMean(F.kind,R,F.item,F.n);let d=`<div class="ldname"><b>Post a job</b></div><div class="note" style="margin:0 0 10px">For the Compact's contractors and the pilots of the powers that deal with you (and other players). Paid when it's done.</div>`;
+    const mean=pjMean(F.kind,R,F.item,F.n);let d=`<div class="ldname"><b>Post a job</b></div><div class="note" style="margin:0 0 10px">For the independent pilots (and other players): the nearest free one whose hull fits takes it. Paid when it's done.</div>`;
     d+=`<div class="lab">1 · What</div><div class="coopts">${Object.entries(PJB.kinds).map(([x,n])=>`<button class="${F.kind===x?'on':''}" type="button" data-co="pjf" data-arg="kind:${x}">${n}</button>`).join('')}</div>`;
     d+=`<div class="lab">2 · Where</div><div class="coopts">${D.map(Q=>`<button class="${F.sid===Q.sid?'on':''}" type="button" data-co="pjf" data-arg="sid:${Q.sid}">${esc(Q.name)}</button>`).join('')}</div>`;
     if(F.kind==='supply'||F.kind==='haul')d+=`<div class="coopts">${goods.map(x=>`<button class="${F.item===x?'on':''}" type="button" data-co="pjf" data-arg="item:${x}" title="${esc(ITEMS[x].name)}">${gIcon(x,14)}${esc(ITEMS[x].name)}</button>`).join('')}</div>`;
