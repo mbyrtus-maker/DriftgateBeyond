@@ -13,7 +13,7 @@ function marqWar(f,x){return x==='brood'||(FAC_IDS.includes(x)&&x!==f&&warWith(f
 {const o=pilotHostile;pilotHostile=function(P,x){P=P||S.player;const f=marqOf(P);if(f&&x&&x!=='player'){if(x==='pirate'){if(P.aggro&&P.aggro.pirate>S.T)return true;return false}if(x===f)return false;if(FAC_IDS.includes(x))return hostile(f,x)||o.apply(this,arguments);if(x==='brood')return true}return o.apply(this,arguments)}}
 {const o=tradeOK;tradeOK=function(P,owner){P=P||S.player;const f=marqOf(P);if(f&&FAC_IDS.includes(owner)){if(owner===f)return true;if(hostile(f,owner))return false}return o.apply(this,arguments)}}
 {const o=bountyPayer;bountyPayer=function(victim,P){P=P||S.player;const f=marqOf(P);if(f&&marqWar(f,victim))return f;return o.apply(this,arguments)}}
-{const o=standAdd;standAdd=function(f,n,why,P){const r=o.apply(this,arguments);try{P=P||S.player;if(P&&P.marque===f&&standOf(f,P)<=STAND.hostile){P.marque=null;const m=`⚑ ${FACTIONS[f].short} revokes your letter of marque: you're Hostile with them.`;if(P===S.player)feed(m,'bad')}}catch(e){}return r}}
+{const o=standAdd;standAdd=function(f,n,why,P){const r=o.apply(this,arguments);try{P=P||S.player;if(P&&P.marque===f&&standOf(f,P)<=STAND.hostile){P.marque=null;const m=`⚑ ${FACTIONS[f].short} revokes your letter of marque: you're Hostile with them.`;audTell(P,m,'bad')}}catch(e){}return r}}
 function marqTake(P,f){if(P.sworn)return'You fly for a faction: privateers are independents.';if(P.decl)return'You lead your own faction.';if(!FAC_IDS.includes(f))return'';
   if(P.marque===f){P.marque=null;return`You strike the ${FACTIONS[f].short} flag: you fly as an independent again.`}
   if(standOf(f,P)<MARQ.min)return`${FACTIONS[f].short} won't sponsor you: your standing with them is ${standName(standOf(f,P))}.`;

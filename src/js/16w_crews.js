@@ -10,7 +10,7 @@ const CRW={sync:1,guardR:380,guardReach:2600,idleR:240,mineGap:70,flee:4};
 function crewMine(P){return(R)=>R&&R.owner==='player'&&R.kind==='depot'&&(R.pid||'me')===pkeyOf(P)}
 function crewEnts(){return W?W.ents.filter(e=>e.crewId&&e.alive):[]}
 function crewBase(R){return{x:R.x||0,y:R.y||0,z:R.z||0,vx:0,vy:0,vz:0}}
-function crewSpawn(R,id,c){const P=S.player,e=makeNPC('crew',P.faction||'halcyon',c.cls,1,{},null);e.side='player';e.crewId=c.id;e.crewR=id;e.job=c.job;e.pname=c.name;
+function crewSpawn(R,id,c){const P=lairOwner({pid:R.pid||'me'})||S.player,e=makeNPC('crew',P.faction||'halcyon',c.cls,1,{},null);e.side='player';e.crewId=c.id;e.crewR=id;e.job=c.job;e.pname=c.name;
   const b=crewBase(R),o=rdir(1);e.x=b.x+o.x*170;e.y=b.y+o.y*170;e.z=b.z+o.z*170;faceInstant(e,o.x,o.y,o.z);e.slot=(R.crew||[]).indexOf(c);W.ents.push(e);return e}
 function crewSync(){if(!W||!S||S.unb||S.training||NET.cl)return;const mine=crewMine(S.player),live=crewEnts();
   for(const e of live){const R=S.stations[e.crewR],c=R&&(R.crew||[]).find(x=>x.id===e.crewId);if(!c||c.laid||R.sid!==W.sid||c.job!==e.job){fxWarp(e,PLAYER_COL);despawn(e)}}

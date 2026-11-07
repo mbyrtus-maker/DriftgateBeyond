@@ -26,7 +26,7 @@ function crRunsTick(){if(NET.cl||!S)return;for(const r of crRuns().slice()){if(r
 {const o=strategicTick;strategicTick=function(){const x=o.apply(this,arguments);try{crRunsTick()}catch(e){console.error(e)}return x}}
 {const o=ledger;ledger=function(){const r=o.apply(this,arguments);try{const L=r.L['Your ship, hold, vault'];for(const x of S.crRuns||[]){const v=invVec(x.load||{});for(const e of RAWS){L[e]+=v[e];r.tot[e]+=v[e]}}}catch(e){}return r}}
 // live: the hauling crew's ship on its way
-function crSpawn(r,arrive){if(r.live||!W)return;const P=S.player,e=makeNPC('crew',P.faction||'halcyon',r.cls,1,{},`crr:${r.id}`);e.side='player';e.crRun=r.id;e.pname=r.name;e.cargo=r.load;r.load={};r.live=true;
+function crSpawn(r,arrive){if(r.live||!W)return;const P=lairOwner({pid:r.pid||'me'})||S.player,e=makeNPC('crew',P.faction||'halcyon',r.cls,1,{},`crr:${r.id}`);e.side='player';e.crRun=r.id;e.pname=r.name;e.cargo=r.load;r.load={};r.live=true;
   const gs=GATES[W.sid]||[],prev=r.path[r.leg-1],gin=gs.find(g=>g.to===prev),SE=W.stationEnt;
   if(arrive&&gin){e.x=gin.x*.93;e.y=gin.y*.93;e.z=gin.z*.93;fxWarp(e,PLAYER_COL)}else if(SE&&r.leg===0){const o=rdir(1);e.x=SE.x+o.x*200;e.y=SE.y+o.y*80;e.z=SE.z+o.z*200}else{const g=pick(gs);if(g){e.x=g.x*.9;e.y=g.y*.9;e.z=g.z*.9}}
   faceInstant(e,-e.x,-e.y,-e.z);W.ents.push(e);return e}

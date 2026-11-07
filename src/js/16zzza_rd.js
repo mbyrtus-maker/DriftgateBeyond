@@ -37,7 +37,11 @@ function rdOn(){return!!(S&&S.corp&&!S.training)}
 // names and traits follow the line (a tweak or a new company)
 const RD_SYSN={engine:'drive',power:'reactor',shield:'shield emitter',weapon:'fire control',armor:'armour',drill:'blast rig',cargo:'cargo hold',payload:'payload bay'};
 {const o=ceApply;ceApply=function(){o.apply(this,arguments);for(const m in MK_LINE)for(const id of MK_LINE[m]){const B=ITEMS[id];if(B.sys)B.trTxt=`${MAKERS[m].name}: ${RD_SYSN[B.sys]}, grade 1.`;
-  for(let g=2;g<=5;g++){const G=ITEMS[rdGid(id,g)];if(!G)continue;G.tr=B.tr;G.trTxt=B.sys?`${MAKERS[m].name}: ${RD_SYSN[B.sys]}, grade ${g}.`:B.trTxt;G.name=`${B.name} G${g}`}}}}
+  for(let g=2;g<=5;g++){const G=ITEMS[rdGid(id,g)];if(!G)continue;G.tr=B.tr;G.trTxt=B.sys?`${MAKERS[m].name}: ${RD_SYSN[B.sys]}, grade ${g}.`:B.trTxt;G.name=`${B.name} G${g}`}}
+  rdShipsRefresh()}}
+// a tweak or a new company changes the traits of parts already fitted: the host's ship and its guests' ships (as the host
+// flies them) take the new stats at once, not at their next dock
+function rdShipsRefresh(){if(NET.cl||!S||!S.player)return;try{const oW=W;W=LW;try{if(W&&W.player&&W.player.alive)refreshPlayerStats()}finally{W=oW}if(NET.host)for(const pid in MP.rp||{}){const e=MP.rp[pid];if(e&&e.alive&&S.pilots[pid])runAs(pid,()=>refreshPlayerStats())}}catch(e){console.error(e)}}
 // ---- no upgrades in place
 {const o=pupQuote;pupQuote=function(){return rdOn()?null:o.apply(this,arguments)}}
 {const o=dockAction;dockAction=function(act,arg){if(rdOn()&&(act==='upg'||act==='bupg'||act==='pup'||act==='pupr')){dockErr='Upgrades in place are gone: a better part or system is a higher grade bought from the maker that invented it (Market), then fitted or installed (Loadout).';return}
@@ -125,7 +129,8 @@ function rdSysHtml(c,P,sl){const t=P.tiers[sl]||1,m=(P.sysm||{})[sl],cur=ITEMS[r
 {const o=renderDock;renderDock=function(){const r=o.apply(this,arguments);try{if(!rdOn()||S.unb)return r;const B=$('dBody');if(!B)return r;
   for(const b of B.querySelectorAll('.ldplus'))b.remove();for(const b of B.querySelectorAll('[data-act="bupg"]'))b.remove();
   if(dockTab==='upg'&&typeof ldSel==='string'&&ldSel.startsWith('sys:')){const H=B.querySelector('#ldSysHost'),sl=ldSel.slice(4);if(H&&SLOT[sl]){H.innerHTML=rdSysHtml(dockCtx(),S.player,sl);const n=H.parentElement&&H.parentElement.querySelector('.note');if(n&&/upgraded in place/.test(n.textContent))n.textContent='A system part, installed in the hull. Swap it for a better one from a maker.'}}}catch(e){console.error(e)}return r}}
-{const o=dockClick;dockClick=function(act,arg){if(act==='sysfit'){dockAction('sysfit',arg);renderDock();return}return o.apply(this,arguments)}}
+// (the Install button needs no dockClick of its own: the base one runs it here on the host and sends it to the host as
+// {t:'act'} from a guest, where it runs inside runAs)
 // ---- the Corporations view shows each line's grade and the R&D project
 {const o=ceHtml;ceHtml=function(P){let h=o.apply(this,arguments);try{const m=String(coPk.economy||'').slice(5),c=ceOf(m);if(!c)return h;
   for(const id of MK_LINE[m]||[]){const g=rdLineG(m,id);if(g>1)h=h.replace(`${esc(ITEMS[id].name)} <span class="mass">`,`${esc(ITEMS[rdGid(id,g)].name)} <span class="mass">`)}

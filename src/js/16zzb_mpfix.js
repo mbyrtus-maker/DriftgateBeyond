@@ -42,3 +42,22 @@ function cvLoad(t){const L=t&&t.load;if(L&&Object.keys(L).some(k=>L[k]>0))return
 {const o=hostRecv;hostRecv=function(L,m){let c=null,P=null,d0;try{c=MP.cl[L.peer];P=c&&c.ready&&S&&S.pilots&&S.pilots[c.pid];if(P&&m&&m.t==='act')d0=P.docked}catch(x){}
   const r=o.apply(this,arguments);try{if(P&&m&&m.t==='act'&&P.docked!==d0&&P.docked)send(L,{t:'dkset',d:P.docked})}catch(x){}return r}}
 {const o=clientRecv;clientRecv=function(m){if(m&&m.t==='dkset'){try{if(S&&S.player&&S.player.docked){S.player.docked=String(m.d);if(m.d!=='lair')S.player.lairId=null;if(!$('dock').hidden)renderDock()}}catch(x){}return}return o.apply(this,arguments)}}
+// ---- (7 Nov 2026, the corporations bug pass) a warning about one system reaches every pilot who covers it or is in it, the
+// host's guests too (Bloom growth, a Leviathan swelling); a pilot's coverage is worked out as that pilot
+function pilotCovered(pid,sid){const R=S.pilots&&S.pilots[pid];if(!R)return false;const oP=S.player,oC=CTX;S.player=R;CTX=pid;try{return covered(sid)}catch(e){return false}finally{S.player=oP;CTX=oC}}
+function sidFeed(sid,msg,kind){if(NET.cl||!S)return;if(S.player&&(covered(sid)||S.player.sector===sid))feed(msg,kind);
+  if(NET.host)for(const pid in S.pilots||{}){const R=S.pilots[pid];if(pid===NET.me||!R||R===S.player)continue;if(R.sector===sid||pilotCovered(pid,sid))feedTo(pid,msg,kind)}}
+// ---- the guest's copy of the makers: names, traits and grades live in S.corp, but a guest's ITEMS and MAKERS are only set
+// from it by ceApply, which only the host ran. The guest applies them when it joins and when a sync brings a change to them
+// (a tweak, a launch, a new company), then refreshes its own ship's stats, which its own physics use.
+// A ship's stats find its fit through FIT_T (keyed by the pilot's tune object, filled by fitOf); every 'pr' and sync hands a
+// guest a fresh tune object and refreshes its stats at once, before anything had called fitOf, so a guest flew without its
+// fitted parts (cargo modules, makers' speed traits, part grades). Look the fit up first.
+{const o=refreshPlayerStats;refreshPlayerStats=function(){try{if(S&&S.player&&typeof fitOf==='function')fitOf(S.player)}catch(e){}return o.apply(this,arguments)}}
+let MP_CESIG=null;
+function mpCeSig(){if(!S||!S.corp)return'';let s='';for(const m in S.corp){const c=S.corp[m]||{};s+=m+'|'+(c.name||'')+'|'+(c.short||'')+'|'+(c.dead?1:0)+'|'+JSON.stringify(c.tr||{})+'|'+JSON.stringify(c.g||{})+'|';
+  for(const id in c.ln||{})s+=id+':'+((c.ln[id]&&c.ln[id].tw)||0)+',';s+=';'}return s}
+function mpCeApply(force){if(!NET.cl||!S||typeof ceApply!=='function')return;const k=mpCeSig();if(!force&&k===MP_CESIG)return;MP_CESIG=k;
+  try{ceApply();if(W&&W.player&&S.player)refreshPlayerStats()}catch(e){console.error(e)}}
+{const o=mpClientStart;mpClientStart=function(){const r=o.apply(this,arguments);mpCeApply(true);return r}}
+{const o=applySync;applySync=function(){const r=o.apply(this,arguments);mpCeApply(false);return r}}

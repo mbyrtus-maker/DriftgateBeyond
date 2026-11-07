@@ -201,7 +201,7 @@ function covOf(side,sensorsOnly){const C=new Set(),add=(sid,nb)=>{C.add(sid);if(
   if(!sensorsOnly)for(const id in S.outposts){const o=S.outposts[id];if(o.owner===side)add(o.sector,o.type==='relay')}
   for(const sc of S.scouts||[])if(sc.side===side)add(sc.sector,true);for(const x of S.frigates||[])if(x.side===side)add(x.sector,true);for(const sid in S.beacons||{})if(S.beacons[sid].owner===side)C.add(sid);return C}
 let covC=null,covK='';
-function playerCov(){const k=Math.floor(S.T)+'|'+S.player.sector+'|'+S.player.cls+(refitsOf(S.player).scan?'s':'')+'|'+(S.scouts||[]).length+'|'+Object.keys(S.stations).length+'|'+(S.frigates||[]).map(x=>x.sector).join('')+'|'+(S.bcnV||0);if(covC&&covK===k)return covC;
+function playerCov(){const k=Math.floor(S.T)+'|'+(CTX||'')+'|'+(S.player.sworn||'')+'|'+S.player.sector+'|'+S.player.cls+(refitsOf(S.player).scan?'s':'')+'|'+(S.scouts||[]).length+'|'+Object.keys(S.stations).length+'|'+(S.frigates||[]).map(x=>x.sector).join('')+'|'+(S.bcnV||0);if(covC&&covK===k)return covC;
   const sw=S.player.sworn,C=sw?covOf(sw):new Set();if(!sw)for(const f of FAC_IDS)for(const x of covOf(f))C.add(x);for(const x of covOf('player'))C.add(x);C.add(S.player.sector);if(CLASSES[S.player.cls].radar||refitsOf(S.player).scan)for(const n of NEIGH[S.player.sector])C.add(n);
   if(hasIntel())for(const d of SECTOR_DEFS)C.add(d.id);covC=C;covK=k;return C}
 function covered(sid){return playerCov().has(sid)}

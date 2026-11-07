@@ -61,7 +61,7 @@ function bloomPay(R,M,step){const want={};let left=M;const ds=R?dStore(R):null,t
 function bloomGrowTick(){if(NET.cl||!S||S.training)return;const A=S.ai.brood=S.ai.brood||{};if(A.grow===undefined)A.grow=S.T+rnd(...BLOOM.every);if(S.T<A.grow)return;A.grow=S.T+rnd(...BLOOM.every);
   const u=bloomNextUp();if(!u)return;const{R,k}=u,cost=bloomPay(R,u.m,'up');if(!cost)return;
   inv.addAll(R.fort,cost);devOf(R)[k]++;if(R.wk&&R.wk[k]!==undefined)R.wk[k]+=WK_HP[k];applyDev(R);
-  if(covered(R.sid)||W&&W.sid===R.sid)feed(`⚠ ${R.name} in ${DEF[R.sid].name} has grown ${k==='def'?'more spore batteries':'a thicker carapace'} (level ${depotLevel(R)}).`,'warn')}
+  sidFeed(R.sid,`⚠ ${R.name} in ${DEF[R.sid].name} has grown ${k==='def'?'more spore batteries':'a thicker carapace'} (level ${depotLevel(R)}).`,'warn')}
 {const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{bloomGrowTick()}catch(e){console.error(e)}return r}}
 CAP_BROOD_OWN=true;
 // capitals, once defence and the next node upgrade are covered
@@ -69,5 +69,5 @@ function bloomCapTick(){if(NET.cl||!S||S.training)return;const T=S.T,f='brood',A
   const c=bloomNextCap();if(!c)return;const L=bloomNodes();
   const fr=L.filter(bloomFront),P=(fr.length?fr:L).slice().sort((a,b)=>invMass(dStore(b))-invMass(dStore(a)));for(const R of P){const kit=bloomPay(R,c.m,'cap');if(!kit)continue;
     S.events.push({id:S.nextId++,type:c.type,t0:T,yard:f,att:f,sector:R.sid,force:kit,until:T+(c.type==='escbuild'?ESCORT_TIME:FRIGATE_TIME),stage:'building',bloom:1});
-    if(covered(R.sid))feed(`⚠ ${R.name} in ${DEF[R.sid].name} is swelling: the Brood is growing a ${c.type==='escbuild'?'Prowler':'Leviathan'} there.`,'warn');return}}
+    sidFeed(R.sid,`⚠ ${R.name} in ${DEF[R.sid].name} is swelling: the Brood is growing a ${c.type==='escbuild'?'Prowler':'Leviathan'} there.`,'warn');return}}
 {const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{bloomCapTick()}catch(e){console.error(e)}return r}}

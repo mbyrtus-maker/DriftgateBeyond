@@ -74,9 +74,12 @@ function audAsk(P,f,k,x){const A=audOf(P,f),R=AUD_REQ[k];if(!R)return'';if(!A||A
 {const o=covered;covered=function(sid){if(o.apply(this,arguments))return true;try{for(const d of audDeals(S.player,'intel'))if(covOf(d.f,true).has(sid))return true}catch(e){}return false}}
 {const o=hullRatingOK;hullRatingOK=function(P,k){if(o.apply(this,arguments))return true;try{const R=S.stations[P.sector];if(R&&FAC_IDS.includes(R.owner)&&audDeal(P,R.owner,'yard'))return ratingOf(P)+1>=(HULL_RATING[k]||1)}catch(e){}return false}}
 // joint defence: a wing of theirs patrols your Station's system while it's live
-{const o=worldUpdate;worldUpdate=function(dt){const r=o.apply(this,arguments);try{if(NET.cl||!S||!W)return r;const P=S.player;for(const d of audDeals(P,'def')){const R=myStations(P)[0];if(!R||W.sid!==R.sid)continue;d.sp=d.sp||{};if(d.sp[W.sid]&&W.ents.some(e=>e.jdef===d.f&&e.alive))continue;d.sp[W.sid]=1;
+// (every pilot with a Station of their own, the host's guests too: the world being updated is the Station's system, and the
+// pilot hears of the wing wherever they are; the host's own line isn't muted by the system being off its screen)
+{const o=worldUpdate;worldUpdate=function(dt){const r=o.apply(this,arguments);try{if(NET.cl||!S||!W)return r;const all=new Set([S.player,...Object.values(S.pilots||{})]);
+  for(const P of all){if(!P||!(P.deals||[]).length)continue;for(const d of audDeals(P,'def')){const R=myStations(P)[0];if(!R||W.sid!==R.sid)continue;d.sp=d.sp||{};if(d.sp[W.sid]&&W.ents.some(e=>e.jdef===d.f&&e.alive))continue;d.sp[W.sid]=1;
     for(let i=0;i<3;i++){const e=makeNPC('patrol',d.f,i?'striker':'heavy',3,{},R.sid);e.jdef=d.f;const a=i/3*TAU;e.x=(W.stationEnt?W.stationEnt.x:0)+Math.cos(a)*600;e.y=(W.stationEnt?W.stationEnt.y:0)+80;e.z=(W.stationEnt?W.stationEnt.z:0)+Math.sin(a)*600;W.ents.push(e)}
-    feed(`♛ A ${FACTIONS[d.f].short} wing is guarding ${R.name}.`,'good')}}catch(e){}return r}}
+    const om=MUTE;if(P===S.player)MUTE=false;try{audTell(P,`♛ A ${FACTIONS[d.f].short} wing is guarding ${R.name}.`,'good')}finally{MUTE=om}}}}catch(e){}return r}}
 // ---- the panel: the Allegiance tab, docked at a power's station
 function audHtml(c,P){const R=S.stations[P.sector];if(!P.docked||P.docked!=='station'||!R||!FAC_IDS.includes(R.owner))return'';const f=R.owner,L=leaderOf(f),col=FACTIONS[f].col;
   let h=`<div class="ldbox" style="margin:0 0 18px;border-left:3px solid ${col}"><div class="lab">Audience</div><div class="ldname"><b style="color:${col}">${esc(L?`${L.title} ${L.name}`:FACTIONS[f].short)}</b></div>`;
