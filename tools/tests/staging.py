@@ -15,7 +15,7 @@ async def main():
     await pg.goto(GAME+'?name=Tester',wait_until='domcontentloaded');await pg.wait_for_function('window.__dg&&__dg.ev("MDL.ready")',timeout=60000)
     await pg.evaluate("document.getElementById('mpName').value='Tester'");await pg.evaluate("document.getElementById('bLaunch').click()");await pg.wait_for_timeout(1500)
     ev=lambda c:pg.evaluate('c=>__dg.ev(c)',c)
-    await ev("window.RUN="+RUN+";(()=>{exitSector();W=null;running=false;return 1})()")
+    await ev("window.RUN="+RUN+";VF.on=true;STG.on=true;(()=>{exitSector();W=null;running=false;return 1})()")
     print('Varkesh smelts deeper',await ev("""(()=>{const st=S.econ.stock.varkesh,h=S.econ.stock.halcyon;let a,b;devLedger(()=>{st.fe=100;h.fe=100});const p0=st.plate||0,q0=h.plate||0;craftDown(st,'plate',{fe:80},400);craftDown(h,'plate',{fe:80},400);return JSON.stringify({varkeshPlate:(st.plate||0)-p0,varkeshFe:st.fe,halcyonPlate:(h.plate||0)-q0,halcyonFe:h.fe})})()"""))
     print('ledger',await ev(LED))
     print('a Varkesh depot smelts',await ev("""(()=>{const R=S.stations.vm,ds=dStore(R);devLedger(()=>{inv.add(ds,'fe',60);inv.add(ds,'cu',60)});const p0=ds.plate||0,w0=ds.wire||0;vfTick();return JSON.stringify({prod:devOf(R).prod||0,plate:(ds.plate||0)-p0,wire:(ds.wire||0)-w0})})()"""))

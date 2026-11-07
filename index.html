@@ -13885,18 +13885,19 @@ const CAP={core:40,hub:40,deep:24,void:12,other:32};
 // at its forward depot, the one nearest a hostile system, shipped out from home by convoy (raidable). An offensive whose force
 // the staging stock can supply launches from there instead of from home: its force is taken from the staging stock (and what
 // home had set aside for it goes back into the warehouse), so the strike group flies a short way to its target.
-const VF={keep:40,depot:12};
-const STG={kit:{plate:36,wire:24,coil:14,missile:10,torpedo:10},every:180,min:1};
+// Both switched off after the balance checks (6 Nov 2026, see BEYOND_DESIGN.md): on: true turns each back on.
+const VF={on:false,keep:40,depot:12};
+const STG={on:false,kit:{plate:36,wire:24,coil:14,missile:10,torpedo:10},every:180,min:1};
 // ---- the Varkesh foundries
-{const o=craftDown;craftDown=function(st,item,keep,max){if(S&&S.econ&&st===S.econ.stock.varkesh&&(item==='plate'||item==='wire')&&keep){const k={};for(const x in keep)k[x]=Math.min(keep[x],VF.keep);return o.call(this,st,item,k,max)}return o.apply(this,arguments)}}
-function vfTick(){for(const id in S.stations){const R=S.stations[id];if(!R||R.owner!=='varkesh'||R.kind!=='depot'||(devOf(R).prod||0)>=1||starving(R))continue;const ds=dStore(R);craftDown(ds,'plate',{fe:20},VF.depot);craftDown(ds,'wire',{cu:20},VF.depot)}}
+{const o=craftDown;craftDown=function(st,item,keep,max){if(VF.on&&S&&S.econ&&st===S.econ.stock.varkesh&&(item==='plate'||item==='wire')&&keep){const k={};for(const x in keep)k[x]=Math.min(keep[x],VF.keep);return o.call(this,st,item,k,max)}return o.apply(this,arguments)}}
+function vfTick(){if(!VF.on)return;for(const id in S.stations){const R=S.stations[id];if(!R||R.owner!=='varkesh'||R.kind!=='depot'||(devOf(R).prod||0)>=1||starving(R))continue;const ds=dStore(R);craftDown(ds,'plate',{fe:20},VF.depot);craftDown(ds,'wire',{cu:20},VF.depot)}}
 // ---- forward staging
 function stgHome(f){return f==='brood'?'bl':FAC_IDS.includes(f)?FAC_HOME(f):null}
 function stgDepots(f){return Object.values(S.stations).filter(R=>R&&R.owner===f&&R.kind==='depot'&&(f==='brood'||isDepotF(R)))}
 // the forward depot: the one fewest jumps from a system held by a power it fights (or the Brood, for the powers)
 function stgFront(f){let best=null,bh=99;const foes=SECTOR_DEFS.map(d=>d.id).filter(id=>{const o=sectorOwner(id);return o&&o!==f&&o!=='neutral'&&o!=='pirate'&&hostile(f,o)});if(!foes.length)return null;
   for(const R of stgDepots(f)){let h=99;for(const id of foes){const x=HOP[R.sid][id];if(x!=null&&x<h)h=x}if(h<bh){bh=h;best=R}}return best}
-function stgTick(){S.stg=S.stg||{};for(const f of[...FAC_IDS,'brood']){const g=S.stg[f]=S.stg[f]||{t:0};if(S.T<g.t)continue;g.t=S.T+STG.every;const R=stgFront(f);g.sid=R?R.sid:null;if(!R)continue;
+function stgTick(){if(!STG.on)return;S.stg=S.stg||{};for(const f of[...FAC_IDS,'brood']){const g=S.stg[f]=S.stg[f]||{t:0};if(S.T<g.t)continue;g.t=S.T+STG.every;const R=stgFront(f);g.sid=R?R.sid:null;if(!R)continue;
   const key='stg:'+R.sid;if(haulBusy(key))continue;const home=S.econ.stock[f],ds=dStore(R),load={};if(!home)continue;
   for(const k in STG.kit){const lack=STG.kit[k]-(ds[k]||0);if(lack<=0)continue;const spare=Math.max(0,(home[k]||0)-STG.kit[k]);const n=Math.min(lack,spare);if(n>0)load[k]=inv.take(home,k,n)}
   if(Object.keys(load).length)haulSend(f,stgHome(f),R.sid,load,key,'staging')}}
