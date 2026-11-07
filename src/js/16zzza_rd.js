@@ -104,7 +104,8 @@ function rdReview(){if(!rdOn())return;const T=S.T,sold={},grade={},byKind={};for
 {const o=ceFail;ceFail=function(m){const c=ceOf(m);try{if(c&&c.rd){const R=mkAtHome(m),st=R?mkStock(R):S.econ.stock.neutral;inv.addAll(st,c.rd.proto||{});c.rd=null}}catch(e){console.error(e)}return o.apply(this,arguments)}}
 // a new company starts its lines at grade 1 again (the old lab's grades went with the old company)
 {const o=ceReborn;ceReborn=function(m){const r=o.apply(this,arguments);const c=ceOf(m);if(c&&!c.dead){c.g={};c.labs={};c.rd=null}return r}}
-// ---- the powers' refits take systems too, and graded parts up to a grade above their tech
+// ---- the powers' refits take systems too, and graded parts up to a grade above their tech; they buy at their own stations
+// first (from their home makers), a freeport's parts weighted CE.refit.away (a third)
 {const o=ceRefit;ceRefit=function(){if(!rdOn())return o.apply(this,arguments);for(const f of FAC_IDS){const st=S.econ.stock[f];if(!st)continue;const pool=(S.corpFit=S.corpFit||{})[f]=S.corpFit[f]||{};
     const tot=Object.values(pool).reduce((a,b)=>a+b,0);let lose=Math.floor(tot*CE.wear*CE.refit.every/3600+Math.random());const terr=[...territory(f)].filter(id=>S.sectors[id]);
     while(lose-->0&&terr.length){const ks=Object.keys(pool).filter(k=>pool[k]>0);if(!ks.length)break;const k=pick(ks);inv.take(pool,k,1);toDebris(S.sectors[pick(terr)],{[k]:1})}
@@ -112,7 +113,7 @@ function rdReview(){if(!rdOn())return;const T=S.T,sold={},grade={},byKind={};for
     while(n-->0){if((S.econ.treasury[f]||0)<CE.refit.keep)break;const c=[];
       for(const R of where){let ms;try{ms=mkStock(R)}catch(e){continue}for(const id in ms){const I=ITEMS[id];if(!I||!I.maker||!(ms[id]>0)||(I.grade||1)>gmax)continue;const pr=stPrice(R,id),bv=Math.max(1,baseValue(id));
         const tw=I.sys?((SYS_TASTE[f]||{})[I.sys]||1)*.8:((CE_TASTE[f]||{})[I.part]||1)*(CORP_W.has(I.part)?1:.6);
-        const w=tw*(1+2*ceGood(I.tr||{}))*(1+.35*((I.grade||1)-1))/Math.pow(pr/bv,.5)*(R.owner===f?1.3:1);if(w>0)c.push([[R,id,pr],w])}}
+        const w=tw*(1+2*ceGood(I.tr||{}))*(1+.35*((I.grade||1)-1))/Math.pow(pr/bv,.5)*(R.owner===f?1:CE.refit.away);if(w>0)c.push([[R,id,pr],w])}}
       if(!c.length)break;const[R,id,pr]=wpickArr(c),ms=mkStock(R),wl=R.owner==='neutral'?'neutral':R.owner,p=Math.ceil(pr);if((S.econ.treasury[f]||0)<p)break;
       transfer(f,wl,p);inv.take(ms,id,1);inv.add(pool,id,1);if(R.mk)R.mk[id]=(R.mk[id]||0)-1;ceSale(ITEMS[id].maker,id,1,p,wl,R.sid)}}}}
 // ---- the Loadout: systems are installed, not upgraded

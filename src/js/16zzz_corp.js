@@ -33,7 +33,7 @@
 //     sale. 30 to 60 minutes later a new company opens at the same home, capitalised by the home, making the same kinds of
 //     part under a new name, with a new CEO and small fresh traits.
 const CE={markup:1.5,shut:7200,start:4000,dues:.15,floor:1.15,base:60,lineF:.5,lineMin:10,shelf:1,cap:4,struggleH:2,reborn:[1800,3600],review:900,window:2700,twCool:1800,twMax:3,twStep:[.02,.04],trCap:.25,magCap:2,
-  refit:{peace:12,tension:16,war:24,every:300,keep:3000},wear:.5,div:.4,divHome:.6,grace:7200,
+  refit:{peace:12,tension:16,war:24,every:300,keep:3000,away:.35},wear:.5,div:.4,divHome:.6,grace:7200,
   ceos:['Penny-pincher','Premium','Innovator','Expansionist','Cautious','Generous','Discounter','Restless']};
 const CE_KSTAT={gun:['dmg','ammo'],laser:['dmg','e'],missile:['mag','lock'],torpedo:['mag','lock'],charge:['mag'],mlaser:['ml','e'],cargo:['cargo'],scanner:['scan'],dronec:['dh','dd']};
 const CE_BAD={e:1,lock:1};   // stats where a rise is a weakness
