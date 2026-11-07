@@ -118,7 +118,7 @@ function ceReview(){const T=S.T,sold={},byKind={};for(const m in MAKERS){const c
       else if(fair>=1&&mine<fair*.5)ceTweak(m,id,'buyers passing it by')}}}
 // ---- the hour: profit, shares, dividends, the board
 function ceHour(){for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;const p=c.inc-c.cost;c.inc=0;c.cost=0;c.E=c.E?c.E*.6+p*.4:p;c.hist.push([S.T,p,ceT(m)]);if(c.hist.length>48)c.hist.shift();
-    let sv=0;for(const sid in S.stations){const R=S.stations[sid];if(!R)continue;let st;try{st=mkStock(R)}catch(e){continue}for(const id of MK_LINE[m])if(st[id])sv+=st[id]*ceComp(mkHomeSid(m),id)}
+    let sv=0;for(const sid in S.stations){const R=S.stations[sid];if(!R)continue;let st;try{st=mkStock(R)}catch(e){continue}for(const id of MK_LINE[m])for(let g=1;g<=5;g++){const gid=g>1?`${id}_g${g}`:id;if(st[gid])sv+=st[gid]*ceComp(mkHomeSid(m),gid)}}
     const px=Math.max(1,(ceT(m)+sv+8*c.E)/100);c.px=px;c.pxH.push(Math.round(px*10)/10);if(c.pxH.length>48)c.pxH.shift();
     if(p>0&&!c.str){const k=c.ceo==='Generous'?1.5:c.ceo==='Cautious'?.6:1,d=Math.floor(p*CE.div*k);if(d>0){const a=transfer(ceW(m),ceHomeWallet(m),Math.floor(d*CE.divHome)),b=transfer(ceW(m),'neutral',d-Math.floor(d*CE.divHome));c.div+=a+b}}
     const H=c.pxH,n=H.length;if(n>=3&&S.T-c.ceoT>=CE.grace&&H[n-1]<H[n-2]&&H[n-2]<H[n-3]){const old=c.ceo;c.ceo=pick(CE.ceos.filter(x=>x!==old));c.ceoT=S.T;ceNews(m,`'s board has replaced its CEO after two hours of falling shares: out goes a ${old}, in comes a ${c.ceo}.`)}}}

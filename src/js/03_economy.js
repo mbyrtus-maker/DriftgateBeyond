@@ -65,7 +65,7 @@ function fpNear(sid,ok){let A=null,bd=1e9;for(const F of FREEPORTS){const R=S.st
 // a goods pile split as evenly as it goes across the live freeports (setup, and moving old saves off the shared Compact pool)
 function fpSplit(o){const L=fpStores();if(!L.length)return false;for(const k in o){const n=o[k]||0;if(n<=0)continue;const q=Math.floor(n/L.length);let r=n-q*L.length;for(const st of L){const m=q+(r>0?1:0);if(r>0)r--;if(m>0)inv.add(st,k,m)}}return true}
 // how far a station's local level settles from neutral (eq, in units of locT) and how fast it drifts back each tick (rate)
-const MK_DEM={eq:1,rate:.07};
+const MK_DEM={eq:1,rate:.07};const MK_TRADE=new Set(TRADE_ITEMS);
 // what a station makes (+) and uses up (-)
 function mkProfile(R){const p={},d=DEF[R.sid],ores=Object.keys(d.ores||{});
   if(R.kind==='core'){for(const k of['plate','wire','coil','missile'])p[k]=1;for(const k of['fe','cu','ir','xc','au','nu'])p[k]=-1;p.lattice=-.5}
@@ -84,20 +84,26 @@ function mR(c){return c&&c.kind==='station'?S.stations[S.player.sector]:null}
 // itself; the bigger haulers pay a thinner fee and move the local price less per unit (HAUL_MK), so trade runs come to about
 // 15k an hour in a Light Hauler, 20k in a Medium and 25k in a Heavy, grade 1.
 const HAUL_FEE={courier:.035,freighter:.02,bulker:.01};const mFee=cls=>HAUL_FEE[cls]!=null?HAUL_FEE[cls]:.06;const HAUL_MK={freighter:.6,bulker:.26};const pMk=()=>HAUL_MK[S.player.cls]||1;
-function mBuy(c,id){const R=mR(c);return Math.ceil(price(c.market,id,mkSc(R))*locF(R,id)*mkK(R,id)*(1+mFee(S.player.cls)))}
-function mSell(c,id){const R=mR(c);return Math.max(1,Math.floor(price(c.market,id,mkSc(R))*locF(R,id)*mkK(R,id)*(1-mFee(S.player.cls))))}
+// a maker's part on a station's own market is priced as the station prices it (stPrice: the corporate list price, the profit
+// floor and the CEO's pricing), so what a pilot pays is what the Market and intel screens quote and the maker earns its margin
+function mStP(c,id){const R=mR(c);return!!(R&&ITEMS[id]&&ITEMS[id].maker&&c.market&&c.market===mkStock(R))}
+function mBase(c,id){const R=mR(c);return mStP(c,id)?stPrice(R,id):price(c.market,id,mkSc(R))*locF(R,id)*mkK(R,id)}
+function mBuy(c,id){return Math.ceil(mBase(c,id)*(1+mFee(S.player.cls)))}
+function mSell(c,id){return Math.max(1,Math.floor(mBase(c,id)*(1-mFee(S.player.cls))))}
 // how many units a market takes (dir +1, a sale) or gives (dir -1, a purchase) at the quoted price: as many as it can absorb before
 // its price would move past the buy/sell spread, so a big dump sells in lots and buying it straight back never pays
 // a lot: as many units as trade before the price would move past LOT_TOL (selling down to x.sell, buying up to x.buy);
 // the whole lot goes at the quoted price
 let LOT_TOL={sell:.82,buy:1.2};
-function lotCap(c,k,dir,maxN){if(maxN<=1)return maxN;const R=mR(c);if(R)mkOf(R);const st=c.market,sc=mkSc(R),s0=st[k],m0=R?R.mk[k]||0:0,p0=price(st,k,sc)*locF(R,k);
-  const at=n=>{st[k]=(s0||0)+dir*n;if(R)R.mk[k]=m0+dir*n*pMk();const p=price(st,k,sc)*locF(R,k);if(s0===undefined)delete st[k];else st[k]=s0;if(R)R.mk[k]=m0;return p};
+function lotCap(c,k,dir,maxN){if(maxN<=1)return maxN;const R=mR(c);if(R)mkOf(R);const st=c.market,sc=mkSc(R),s0=st[k],m0=R?R.mk[k]||0:0,useSt=mStP(c,k),pf=()=>useSt?stPrice(R,k):price(st,k,sc)*locF(R,k),p0=pf();
+  const at=n=>{st[k]=(s0||0)+dir*n;if(R)R.mk[k]=m0+dir*n*pMk();const p=pf();if(s0===undefined)delete st[k];else st[k]=s0;if(R)R.mk[k]=m0;return p};
   const ok=n=>dir>0?at(n)>=p0*LOT_TOL.sell:at(n)<=p0*LOT_TOL.buy;let lo=1,hi=maxN;if(ok(hi))return hi;while(hi-lo>1){const m=(lo+hi)>>1;if(ok(m))lo=m;else hi=m}return lo}
 function demandOf(R,id){const f=locF(R,id);return f>=1.22?'high':f<=.82?'low':''}
 // every strategic tick: stations drift back toward their own surplus or shortage, and AI merchants buy low and sell high
 function mkTick(){if(NET.cl)return;const L=mkStations();if(L.length<2)return;
-  for(const R of L){const m=mkOf(R),p=mkProfile(R);for(const k of TRADE_ITEMS){const t=locT(k),eq=(p[k]||0)*MK_DEM.eq*t;m[k]+=(eq-m[k])*MK_DEM.rate+(Math.random()-.5)*t*.05}}
+  for(const R of L){const m=mkOf(R),p=mkProfile(R);for(const k of TRADE_ITEMS){const t=locT(k),eq=(p[k]||0)*MK_DEM.eq*t;m[k]+=(eq-m[k])*MK_DEM.rate+(Math.random()-.5)*t*.05}
+    // every other good a market has a level for (the makers' parts: refits and pilots' buys move it) drifts back to neutral at the same rate
+    for(const k in m){if(MK_TRADE.has(k))continue;m[k]-=m[k]*MK_DEM.rate;if(Math.abs(m[k])<.01)delete m[k]}}
   tradersTick();
   for(const P of allPilots())intelTick(P)}
 // price intel: live where you are, where your faction holds the beacon, where a friendly scout is (and next door when you fly a scout)
@@ -194,8 +200,11 @@ function tradersTick(){if(NET.cl)return;S.traders=S.traders||[];for(const f of F
 function traderArrive(t){if(t.kind==='haul'){haulArrive(t);return}const B=S.stations[t.to],k=t.item,n=t.load[k]||0;
   if(!n){return}
   if(!trCanUse(t.side,B)){frShip(t.side,t.to,t.load,'back','return');t.load={};return}   // market gone or turned: the goods go home (Beyond: by convoy)
-  const pr=Math.max(1,Math.floor(stPrice(B,k)*.94));inv.add(mkStock(B),k,n);if(B.owner==='neutral')transfer('neutral',t.side,pr*n);mkOf(B)[k]+=n;t.load={};
-  if(t.side===S.player.sworn&&covered(t.to))feed(`${FACTIONS[t.side].short} trader delivered ${n} ${ITEMS[k].name} to ${B.name}.`,'news')}
+  // the Compact pays for what it can afford and takes only that; the rest goes home (Beyond: by convoy)
+  const pr=Math.max(1,Math.floor(stPrice(B,k)*.94)),d=B.owner==='neutral'?Math.min(n,Math.floor((S.econ.treasury.neutral||0)/pr)):n;
+  if(d>0){inv.add(mkStock(B),k,d);inv.take(t.load,k,d);if(B.owner==='neutral')transfer('neutral',t.side,pr*d);mkOf(B)[k]+=d}
+  if(Object.keys(t.load).some(x=>t.load[x]>0))frShip(t.side,t.to,t.load,'back','return');t.load={};
+  if(d>0&&t.side===S.player.sworn&&covered(t.to))feed(`${FACTIONS[t.side].short} trader delivered ${d} ${ITEMS[k].name} to ${B.name}.`,'news')}
 // ---- shipping your own goods: from a dock with your vault, pay your faction to send a freighter for the goods in one of your
 // vaults elsewhere. It flies like any supply convoy (raidable, escortable from Jobs; a lost one spills half as salvage) and
 // unloads into the vault where you ordered it. The fee goes to the faction treasury.
