@@ -39,10 +39,10 @@ function propAnswer(P,id,yes){const x=(P.props||[]).find(y=>String(y.id)===Strin
 // brOff and brBuild are intervals (time between offensives, between Seeder builds) and hiveRegrow a regrowth time, so they
 // are divided by the scale (it starts slow, then attacks bigger and more often); brGraze is bites a tick, so it is multiplied.
 // A tune file sets BR0.*, not BAL.*: broodRamp resets BAL's Brood dials from BR0 every tick.
-// base intervals retuned 7 Nov 2026 when the ramp was turned the right way round (quick looks: .55/1.15 gave the Brood 6%,
-// .2/.4 14%, .15/.3 18%): at the Bloom alone an offensive every 40 to 63 s and a Seeder every 3.5 to 5.5 minutes, at twelve
-// systems every 11 to 17 s and 1 to 1.5 minutes
-const BR0={brBuild:.3,brOff:.13,brGraze:BAL.brGraze,hiveRegrow:BAL.hiveRegrow,brLevT:BAL.brLevT};
+// base intervals retuned 7 Nov 2026 when the ramp was turned the right way round, with grazing at 3.2 (quick looks, 120
+// galaxies: .13/.3 gave the Brood 23%, .15/.35 22%, .16/.38 20%): at the Bloom alone an offensive every 49 to 77 s and a
+// Seeder every 4.5 to 7 minutes, at twelve systems every 13 to 21 s and 1.2 to 1.9 minutes
+const BR0={brBuild:.38,brOff:.16,brGraze:BAL.brGraze,hiveRegrow:BAL.hiveRegrow,brLevT:BAL.brLevT};
 function broodK(n){const T=DECL.brood;if(n<=T[0][0])return T[0][1];for(let i=1;i<T.length;i++)if(n<=T[i][0]){const[a,ka]=T[i-1],[b,kb]=T[i];return ka+(kb-ka)*(n-a)/(b-a)}return T[T.length-1][1]}
 function broodRamp(){const n=controlCounts().brood||0,k=broodK(n);S.broodK=k;BAL.brBuild=BR0.brBuild/k;BAL.brOff=BR0.brOff/k;BAL.brGraze=BR0.brGraze*k;BAL.hiveRegrow=BR0.hiveRegrow/k;BAL.brLevT=n>=DECL.hiveAt?Math.min(BR0.brLevT,S.T):1e12}
 {const o=strategicTick;strategicTick=function(){try{if(!S.training&&!S.unb)broodRamp()}catch(err){}const r=o.apply(this,arguments);try{if(!NET.cl&&!S.training)declTick()}catch(err){console.error(err)}return r}}
