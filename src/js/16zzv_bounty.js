@@ -8,9 +8,11 @@
 //     systems whose fields are most worked out, of the ores those systems carry. It is new matter, counted into the ledger's
 //     starting totals as it arrives (as charting new space was), so the ledger stays exact.
 const RICH={field:1.5,store:1.5,every:3600,rep:.08,rock:[40,90],cap:70};
+// the Brood starts stronger (user, 6 Nov 2026): its stores and muster start this many times fuller again, on top of the richer start
+const BRST={store:1};
 function richStart(){for(const id in S.sectors)for(const a of S.sectors[id].ast)for(const k in a.ore)a.ore[k]=Math.round(a.ore[k]*RICH.field);
   const mul=o=>{if(!o)return;for(const k in o)if(typeof o[k]==='number')o[k]=Math.round(o[k]*RICH.store)};
-  for(const f in S.econ.stock)mul(S.econ.stock[f]);for(const f in S.econ.fleet)mul(S.econ.fleet[f]);for(const id in S.stations){const R=S.stations[id];if(R&&R.kind==='free'&&R.store)mul(R.store)}
+  for(const f in S.econ.stock)mul(S.econ.stock[f]);if(BRST.store!==1){const m2=o=>{if(!o)return;for(const k in o)if(typeof o[k]==='number')o[k]=Math.round(o[k]*BRST.store)};m2(S.econ.stock.brood);m2(S.econ.fleet.brood)}for(const f in S.econ.fleet)mul(S.econ.fleet[f]);for(const id in S.stations){const R=S.stations[id];if(R&&R.kind==='free'&&R.store)mul(R.store)}
   let m=0;for(const id in S.sectors)for(const a of S.sectors[id].ast)if(!a.comet)m+=oreTotal(a);S.ore0=m;S.repT=RICH.every;S.rich=1}
 {const o=newGame;newGame=function(){const r=o.apply(this,arguments);try{if(S&&!S.training){richStart();const l=ledger();S.ledger0={tot:l.tot,credits:l.credits}}}catch(e){console.error(e)}return r}}
 // the hourly drift: fresh rock where the fields are most worked out
