@@ -1593,6 +1593,7 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
   Play with friends and the controls line follow.
 - **Right column:** a picture of the freeport and the ship you picked, drawn by the start screen's small renderer from their real models, with their names underneath. The freeports share one station model, so the station looks the same for each; the ship changes with the design line.
 - On narrow screens the picture is hidden.
+- **The picture moves (user, 7 Nov 2026):** the station turns slowly (its ring a little faster) and the ship sways and bobs, about 30 frames a second while the title screen is up, fewer on a slow machine (a frame never takes more than a third of the time), and still for anyone who asks their system for reduced motion.
 - **Ship offers only the hulls you can start in** (user, 3 Nov). You never start with credits, so the hulls you'd have to buy (with their prices) are no longer listed: each role shows its starter hull, and the Unbound their two. The Legend medium-hull perk still swaps in its hull at launch.
 
 ### The developer panel without a faction (Ctrl+Alt+D, 3 Nov 2026)
