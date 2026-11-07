@@ -43,7 +43,9 @@ async def main():
     check('defends the Station: crews called home',a['crew']==['guard'] and any('under attack' in l for l in a['log']),a['crew'])
     check('Industrious: a building added when the stores allow',len(a['bld'])>=1 and any('built' in l for l in a['log']),a['bld'])
     # calm again: the crew goes back to work; a Patient stand-in sends an envoy
-    await ev("(()=>{for(let i=0;i<40;i++){S.T+=10;strategicTick();updateEvents()}return 1})()")
+    # (the live galaxy can send a real raid at the Station during these 400 s, which rightly keeps the crew on guard; the test
+    # wants calm, so it clears the Station's distress calls as it goes)
+    await ev("(()=>{for(let i=0;i<40;i++){S.distress=(S.distress||[]).filter(d=>d.sid!==_R.sid);S.T+=10;strategicTick();updateEvents()}return 1})()")
     a=json.loads(await ev("""(()=>{const P=S.player,R=_R;return JSON.stringify({crew:R.crew.map(c=>c.job),log:P.asleep.log.map(x=>x.msg)})})()"""))
     print('  hits',await ev("JSON.stringify({hit:S.player.asleep.hit,hp:S.player.asleep.hp,hull:_R.hull,T:S.T,dist:(S.distress||[]).map(d=>d.sid+':'+Math.round(d.T2))})"))
     check('the attack over, crews back to work',a['crew']==['mine'] and any('holds: the attack is over' in l for l in a['log']),a['crew'])
