@@ -131,3 +131,13 @@ function rdSysHtml(c,P,sl){const t=P.tiers[sl]||1,m=(P.sysm||{})[sl],cur=ITEMS[r
   const P2=c.rd;const stx=P2?`${esc(ITEMS[rdGid(P2.id,P2.g)].name)}: ${P2.stage==='design'?'design':P2.stage==='materials'?'materials':'trials'}, ${fmtT(Math.max(0,P2.until-S.T))} left in this stage`:'none running';
   const labs=Object.entries(c.labs||{}).map(([id,g])=>`${esc(ITEMS[id].name.replace(MAKERS[m].short+' ',''))} G${g}`).join(', ');
   h=h.replace('<div class="lab" style="margin-top:12px">Its lines</div>',`<div class="lab" style="margin-top:12px">R&D</div><div class="note" style="margin:2px 0 8px">${stx}${labs?` · labs: ${labs}`:''}</div><div class="lab" style="margin-top:12px">Its lines</div>`)}catch(e){}return h}}
+// ---- a new galaxy's markets carry systems too (user, 7 Nov 2026), seeded like the parts: each lot three times as likely to be
+// one of the station's own makers' systems (and bigger: 1 to 2 against 1); freeports 3 to 5 lots, the powers' core stations
+// 3 to 4, their other stations 1 to 2. All grade 1, made with the galaxy before its baseline is taken.
+const RD_SEED={free:[3,5],core:[3,4],depot:[1,2]};
+function rdSeedSystems(){const all=Object.keys(MAKERS),sys=m=>(MK_LINE[m]||[]).filter(id=>ITEMS[id]&&ITEMS[id].sys&&Object.keys(ITEMS[id].recipe).length);
+  for(const sid in S.stations||{}){const R=S.stations[sid];if(!R||sid===WRACK.sid)continue;const L=corpLocal(R);if(!L)continue;let st;try{st=mkStock(R)}catch(e){continue}if(!st)continue;
+    const local=L.flatMap(sys),foreign=all.filter(m=>!L.includes(m)).flatMap(sys);if(!local.length&&!foreign.length)continue;
+    const type=R.owner==='neutral'?'free':R.kind==='core'?'core':'depot',[a,b]=RD_SEED[type],n=ri(a,b);
+    for(let i=0;i<n;i++){const loc=local.length&&(Math.random()<CORP_SEED.local||!foreign.length),id=pick(loc?local:foreign);inv.add(st,id,loc?ri(1,2):1)}}}
+{const o=partsSeed;partsSeed=function(){o.apply(this,arguments);try{if(S&&!S.training)rdSeedSystems()}catch(e){console.error(e)}}}
