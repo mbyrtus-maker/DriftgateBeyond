@@ -395,7 +395,7 @@ function fight(e,t,dt){
   if(e.flares&&(ai.flareAt||0)<=W.t&&e.energy>=30&&W.missiles.some(m=>m.tgt===e&&m.kind!=='swarm'&&d3(m,e)<700)){e.energy-=30;deployFlares(e);ai.flareAt=W.t+5}const dx=t.x-e.x,dy=t.y-e.y,dz=t.z-e.z,d=hyp(dx,dy,dz)||1,lp0=e.wpn==='laser'?t:leadPoint(e,t,e.st.shotSpd||SHOT_SPD),lp={x:t.x+(lp0.x-t.x)*ai.lead,y:t.y+(lp0.y-t.y)*ai.lead,z:t.z+(lp0.z-t.z)*ai.lead};
   const amp=.03-.006*((e.aimT||e.tier||1)-1);ai.jx=(ai.jx||0)*.97+rnd(-amp,amp);ai.jy=(ai.jy||0)*.97+rnd(-amp,amp);if(!ai.bT||W.t>ai.bT){ai.bOn=!ai.bOn;ai.bT=W.t+(ai.bOn?rnd(.7,1.4):rnd(.8,1.6))}
   const err=faceDir(e,lp.x-e.x+ai.jx*d,lp.y-e.y+ai.jy*d,lp.z-e.z,dt);
-  const want=t.type==='outpost'||t.type==='station'?560:400;
+  const want=t.type==='outpost'||t.type==='station'?560:(e.ptWant||400);
   const ax=ai.ax;let px=dy/d*ax.z-dz/d*ax.y,py=dz/d*ax.x-dx/d*ax.z,pz=dx/d*ax.y-dy/d*ax.x;const pl=hyp(px,py,pz)||1;px/=pl;py/=pl;pz/=pl;
   steer(e,t.x-dx/d*want+px*260,t.y-dy/d*want+py*260,t.z-dz/d*want+pz*260,dt,false,.85);
   if(ai.bOn||e.jamMode||t.type==='outpost'||t.type==='station'||t.kind==='torpedo'){if(e.wpn==='laser'){if(err<(ai.fErr||.07)&&d<LASER_RANGE&&e.energy>e.st.eCap*.2)fireLaser(e)}else if(err<(ai.fErr||.09)&&d<SHOT_RANGE)fire(e)}

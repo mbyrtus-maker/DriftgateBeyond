@@ -95,5 +95,7 @@ js/16zzz_corp.js
 js/16zzz_logos.js
 js/16zzza_rd.js
 js/16zzzb_aipilots.js
+js/16zzzc_indep.js
+js/16zzzd_ptraits.js
 js/17_main.js
 end.html
