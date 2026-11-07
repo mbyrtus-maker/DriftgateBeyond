@@ -27,7 +27,7 @@
 - Don't `pkill -f` with a pattern that matches your own command line (it kills the shell).
 
 ## Sub-bots
-Five agents in `.claude/agents/` take whole jobs off the main session: `war-sim` (war check and duels), `economy` (ledger, prices, pay rates, corporations), `mp-test` (host/guest tests), `training-mission` (training courses), `visuals` (models, preview sheets, art). They report back and leave any changes uncommitted; the main session agrees design with the user, commits and publishes.
+Six agents in `.claude/agents/` take whole jobs off the main session: `war-sim` (war check and duels), `economy` (ledger, prices, pay rates, corporations), `mp-test` (host/guest tests), `training-mission` (training courses), `visuals` (models, preview sheets, art), `trait-check` (leader and pilot traits on every AI entity, `tools/tests/traits.py`). They report back and leave any changes uncommitted; the main session agrees design with the user, commits and publishes.
 
 ## Working in parallel
 Several chats (each with its own machine and clone) and several sub-bots may work on Beyond at once. To keep out of each other's way:
