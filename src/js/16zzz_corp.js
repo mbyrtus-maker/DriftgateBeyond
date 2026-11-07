@@ -53,12 +53,24 @@ function ceTrLines(m){return(MK_LINE[m]||[]).filter(id=>id.startsWith('mp_'))}
 function ceGood(tr){let g=0;for(const k in tr){const v=k==='mag'?tr[k]*.1:tr[k];g+=CE_BAD[k]?-v:v}return g}
 function ceNews(m,msg,big){try{if(newsOK()){newsAdd({f:ceHomeWallet(m),who:MAKERS[m].name,msg},big);return}}catch(e){}allFeed(`${MAKERS[m].name}: ${msg}`,'news')}
 // ---- names and traits: applied from S.corp (a loaded galaxy) or reset to the game's own (a new one)
-function ceApply(){for(const m in MAKERS){const d=CE_DEF.mk[m],c=ceOf(m);MAKERS[m].name=c&&c.name||d.name;MAKERS[m].short=c&&c.short||d.short;
+// ---- logos (7 Nov 2026): each maker shows its mark (MK_LOGO, 16zzz_logos.js) in its accent (MK_ACC). A reborn maker keeps the
+// accent (it still belongs to its home) and takes a spare mark no other maker shows, preferring one never used in the galaxy
+// (S.corpLogos keeps the spares used). A galaxy saved before logos gets each maker's own mark.
+function mkLogoOf(m){const c=S&&S.corp&&S.corp[m];return c&&c.logo&&MK_LOGO[c.logo]?c.logo:m}
+function mkAcc(m){return MK_ACC[m]||'#e8c878'}
+// a logo as inline SVG, px square: the glyph alone, or (board) on a dark board with an accent rim like the R&D station's
+function logoSvg(key,col,px,board){const L=MK_LOGO[key];if(!L)return'';const t=board?`<rect x="-1.08" y="-1.08" width="2.16" height="2.16" rx=".12" fill="#0e121e" stroke="${col}" stroke-width=".14"/><path d="${L.d}" fill="${col}" transform="scale(.74)"/>`:`<path d="${L.d}" fill="${col}"/>`;
+  return`<svg class="mklogo" width="${px}" height="${px}" viewBox="-1.16 -1.16 2.32 2.32" role="img" aria-label="${esc(L.n)}" style="vertical-align:middle;flex:none"><title>${esc(L.n)}</title>${t}</svg>`}
+function mkLogoSvg(m,px,board){return logoSvg(mkLogoOf(m),mkAcc(m),px,board)}
+function ceNewLogo(m){const used=new Set(Object.keys(S.corp||{}).filter(x=>x!==m).map(mkLogoOf)),ever=new Set(S.corpLogos||[]);
+  const free=MK_SPARE.filter(k=>!used.has(k)),fresh=free.filter(k=>!ever.has(k)),k=pick(fresh.length?fresh:free.length?free:MK_SPARE);S.corpLogos=[...ever,k];return k}
+function ceApply(){if(S&&S.corp&&!NET.cl)for(const m in S.corp)if(S.corp[m]&&!S.corp[m].logo)S.corp[m].logo=m;
+  for(const m in MAKERS){const d=CE_DEF.mk[m],c=ceOf(m);MAKERS[m].name=c&&c.name||d.name;MAKERS[m].short=c&&c.short||d.short;
     for(const k in d.parts){const id=`mp_${m}_${k}`;MAKERS[m].parts[k]=c&&c.tr&&c.tr[id]?{...c.tr[id]}:{...d.parts[k]}}
     for(const id of MK_LINE[m]||[]){const I=ITEMS[id],D=CE_DEF.it[id];if(!I||!D)continue;const tr=c&&c.tr&&c.tr[id]?c.tr[id]:D.tr;I.tr={...tr};
       I.name=c&&c.short&&c.short!==d.short?D.name.replace(d.short,c.short):D.name;I.trTxt=id.startsWith('mq_')?`${MAKERS[m].name}: standard.`:(trText(I.tr)?`${MAKERS[m].name}: ${trText(I.tr)}.`:`${MAKERS[m].name}: standard.`);
       const tw=c&&c.ln&&c.ln[id]&&c.ln[id].tw;if(tw)I.trTxt+=` Revised ${tw===1?'once':tw===2?'twice':tw+' times'}.`}}}
-function ceInit(){if(S.corp||NET.cl||S.training)return;S.corp={};for(const m in MAKERS){const home=ceHomeWallet(m);S.corp[m]={ceo:pick(CE.ceos),ceoT:0,ln:{},tr:{},sales:[],hist:[],E:0,px:0,pxH:[],div:0,gen:1,inc:0,cost:0};
+function ceInit(){if(S.corp||NET.cl||S.training)return;S.corp={};for(const m in MAKERS){const home=ceHomeWallet(m);S.corp[m]={logo:m,ceo:pick(CE.ceos),ceoT:0,ln:{},tr:{},sales:[],hist:[],E:0,px:0,pxH:[],div:0,gen:1,inc:0,cost:0};
     transfer(home,ceW(m),CE.start)}ceApply()}
 {const o=newGame;newGame=function(){const r=o.apply(this,arguments);try{if(S){S.corp=null;ceApply();if(!S.training)ceInit()}}catch(e){console.error(e)}return r}}
 {const o=startWith;startWith=function(st){const r=o.apply(this,arguments);try{if(S){ceApply();if(!S.corp&&!S.training)ceInit()}}catch(e){console.error(e)}return r}}
@@ -97,9 +109,9 @@ function ceFail(m){const c=ceOf(m);c.dead=1;c.str=0;c.reborn=S.T+rnd(...CE.rebor
   ceNews(m,`has failed. Its works are closed; what it made stays on sale, and its shares are worthless.`,true)}
 function ceReborn(m){const c=ceOf(m),home=ceHomeWallet(m);if((S.econ.treasury[home]||0)<CE.start){c.reborn=S.T+300;return}const old=MAKERS[m].name;
   let nm,sh,i=0;do{sh=pick(CE_NAMES[0]);nm=`${sh} ${pick(CE_NAMES[1])}`;i++}while(i<20&&Object.values(MAKERS).some(x=>x.short===sh));
-  c.name=nm;c.short=sh;c.dead=0;c.gen=(c.gen||1)+1;c.ceo=pick(CE.ceos);c.ceoT=S.T;c.ln={};c.tr={};c.sales=[];c.E=0;c.pxH=[];c.inc=0;c.cost=0;
+  c.name=nm;c.short=sh;c.dead=0;c.gen=(c.gen||1)+1;c.logo=ceNewLogo(m);c.ceo=pick(CE.ceos);c.ceoT=S.T;c.ln={};c.tr={};c.sales=[];c.E=0;c.pxH=[];c.inc=0;c.cost=0;
   for(const id of ceTrLines(m)){const ks=CE_KSTAT[ITEMS[id].part];if(!ks)continue;const s=ks[0],tr={};tr[s]=s==='mag'?1:(CE_BAD[s]?-1:1)*Math.round(rnd(.04,.08)*100)/100;ceBalance(tr,ITEMS[id].part);c.tr[id]=tr}
-  transfer(home,ceW(m),CE.start);ceApply();ceNews(m,`opens at ${DEF[mkHomeSid(m)].name} in the works ${old} left, under CEO trait ${c.ceo}.`,true)}
+  transfer(home,ceW(m),CE.start);ceApply();ceNews(m,`opens at ${DEF[mkHomeSid(m)].name} in the works ${old} left, under CEO trait ${c.ceo}. Its new mark: ${MK_LOGO[c.logo].n}.`,true)}
 // ---- tweaks
 function ceBalance(tr,kind){const ks=CE_KSTAT[kind]||[];let good=0,bad=0;for(const k in tr){const v=(k==='mag'?tr[k]*.1:tr[k])*(CE_BAD[k]?-1:1);if(v>0)good+=v;else bad-=v}
   const need=good*.5-bad;if(need<=.001)return tr;const w=ks.find(k=>k!=='mag'&&!((tr[k]||0)*(CE_BAD[k]?-1:1)>0))||'speed';const sg=CE_BAD[w]?1:-1;tr[w]=Math.round(((tr[w]||0)+sg*need)*100)/100;return tr}
@@ -145,9 +157,9 @@ function ceSpark(H){const L=H.slice(-12);if(!L.length)return'';const lo=Math.min
 function ceHtml(P){let h=coViews('economy',[['hour','Hour'],['3h','3 hours'],['corps','Corporations']]);if(!S.corp)return h+'<div class="empty">The corporations\' books open with a new galaxy.</div>';
   const ms=Object.keys(MAKERS);if(!coPk.economy||!String(coPk.economy).startsWith('corp:'))coPk.economy='corp:'+ms[0];const sel=String(coPk.economy).slice(5);
   h+=`<div class="cowrap"><div class="colist">`;for(const m of ms){const c=ceOf(m),[col,word]=ceState(m),hm=MAKERS[m].home;
-    h+=coRowH({tab:'economy',key:'corp:'+m,on:sel===m,icon:coIco('15,2 27,9 27,21 15,28 3,21 3,9',FAC_IDS.includes(hm)?FACTIONS[hm].col:'#e8c878'),title:esc(MAKERS[m].name),sub:`${esc(FAC_IDS.includes(hm)?FACTIONS[hm].short:DEF[hm].name)} · CEO ${esc(c.ceo)}`,mid:ceSpark(c.pxH),right:`${coStat(col,word)}<b class="mono" style="margin-left:10px">${c.dead||!c.px?'—':fmt(Math.round(c.px))+' cr'}</b>`})}
+    h+=coRowH({tab:'economy',key:'corp:'+m,on:sel===m,icon:mkLogoSvg(m,22,true),title:esc(MAKERS[m].name),sub:`${esc(FAC_IDS.includes(hm)?FACTIONS[hm].short:DEF[hm].name)} · CEO ${esc(c.ceo)}`,mid:ceSpark(c.pxH),right:`${coStat(col,word)}<b class="mono" style="margin-left:10px">${c.dead||!c.px?'—':fmt(Math.round(c.px))+' cr'}</b>`})}
   const m=sel,c=ceOf(m),[col,word]=ceState(m),last=c.hist.slice(-1)[0];
-  let d=`<div class="lab">Corporation · ${esc(word)}</div><div class="ldname"><b>${esc(MAKERS[m].name)}</b></div>`+coKV([['Home',esc(DEF[mkHomeSid(m)].name)],['CEO',esc(c.ceo)],['Treasury',`${fmt(ceT(m))} cr`],['Share price',c.dead?'worthless':c.px?`${fmt(Math.round(c.px))} cr (rough value; shares aren't traded yet)`:'valued after its first hour'],
+  let d=`<div class="lab">Corporation · ${esc(word)}</div><div class="ldname" style="display:flex;gap:10px;align-items:center">${mkLogoSvg(m,40,true)}<span><b>${esc(MAKERS[m].name)}</b><br><span class="note" style="margin:0">Its mark: ${esc(MK_LOGO[mkLogoOf(m)].n)}</span></span></div>`+coKV([['Home',esc(DEF[mkHomeSid(m)].name)],['CEO',esc(c.ceo)],['Treasury',`${fmt(ceT(m))} cr`],['Share price',c.dead?'worthless':c.px?`${fmt(Math.round(c.px))} cr (rough value; shares aren't traded yet)`:'valued after its first hour'],
     ['Last hour',last?`${last[1]>=0?'+':''}${fmt(last[1])} cr`:'not yet'],['Running costs',`${fmt(Math.round(ceUpkeep(m)))} cr an hour`],['Dividends paid',`${fmt(c.div)} cr`]]);
   d+=`<div class="lab" style="margin-top:12px">Its lines</div>`+(MK_LINE[m]||[]).map(id=>{const I=ITEMS[id],L=c.ln[id];return`<div class="coln">${gIcon(id,14)}<span style="flex:1;min-width:0">${esc(I.name)} <span class="mass">${id.startsWith('mq_')?'standard':esc(trText(I.tr)||'standard')}${L&&L.tw?` · revised ${L.tw}×`:''}</span></span><span class="mono note" style="margin:0">${ceSold(m,id,3600)} sold this hour</span></div>`}).join('');
   d+=`<p class="note" style="margin-top:12px">A maker earns from every sale of its parts (the station keeps 15%), pays its host for components and running costs, tweaks lines its buyers pass by, and pays dividends to its home and the Compact. One that can't pay its way fails, and a new company takes over its works.</p>`;

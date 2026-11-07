@@ -57,6 +57,10 @@ async def body(K):
   check('guest maker name follows the new company',g['name']==nb['name'] and g['short']==nb['short'],'%s / %s'%(g['name'],g['short']))
   check('guest part names follow',g['iname']==nb['iname'] and g['g2']==nb['g2'],'%s · %s'%(g['iname'],g['g2']))
   check('guest traits follow the new company',g['tr']==nb['tr'] and g['txt']==nb['txt'],'host %s · guest %s'%(nb['tr'],g['tr']))
+  # (7 Nov 2026) its new mark: the guest shows the host's logo in the same accent, in its Corporations view too
+  hl=json.loads(await Hh("JSON.stringify({k:mkLogoOf(%s),acc:mkAcc(%s)})"%(json.dumps(m),json.dumps(m))))
+  gl=json.loads(await G("(()=>{coV.economy='corps';coPk.economy='corp:'+%s;const h=ecHtml(S.player);return JSON.stringify({k:mkLogoOf(%s),acc:mkAcc(%s),drawn:h.includes(MK_LOGO[mkLogoOf(%s)].d)})})()"%(json.dumps(m),json.dumps(m),json.dumps(m),json.dumps(m))))
+  check('guest shows the new company\'s new mark',gl['k']==hl['k'] and gl['k']!=m and gl['acc']==hl['acc'] and gl['drawn'],'host %s · guest %s'%(hl,gl))
   s2g,s2h=await G(GST),await Hh(HST)
   check('guest ship stats match the host after the new company',s2g==s2h,'guest %s · host %s'%(s2g,s2h))
   # a quiet sync doesn't apply the makers again

@@ -18,7 +18,7 @@ function ldPips(n,big){let s='';for(let i=1;i<=5;i++)s+=`<i style="display:inlin
 function ldSlotHtml(c,P,g,i){const F=fitOf(P),kind=(g==='w'?F.w:F.u)[i],gr=((g==='w'?F.g:F.ug)[i])||1,srcs=[P.cargo,c.storage||P.vault];
   let h=`<div class="lab">${g==='w'?'Weapon':'Utility'} ${i+1}</div>`;
   if(kind){const id=((g==='w'?F.wi:F.ui)||[])[i]||PART[kind],I=ITEMS[id],rt=F.rt&&F.rt[g+i];
-    h+=`<div class="ldname">${gIcon(id,24)}<b>${esc(I.name)}</b></div><div class="note" style="margin:4px 0">${esc(I.trTxt||'Standard part.')}${rt?` <span style="color:#ff7ad8">Rift: ${esc(trText(rt.tr))}</span>`:''}</div>
+    h+=`<div class="ldname">${gIcon(id,24)}<b>${esc(I.name)}</b></div><div class="note" style="margin:4px 0">${I.maker&&typeof mkLogoSvg==='function'?mkLogoSvg(I.maker,16,true)+' ':''}${esc(I.trTxt||'Standard part.')}${rt?` <span style="color:#ff7ad8">Rift: ${esc(trText(rt.tr))}</span>`:''}</div>
       <div style="margin:6px 0 12px">${ldPips(gr,1)} <span class="note">grade ${gr} · ${esc((WPN[kind]||UTIL[kind]||{}).desc||'')}</span></div>`;
     const q=pupQuote(c,P,`${g}:${i}`);if(q){const ok=haveIn(q.r,srcs)&&P.credits>=q.fee,short=Object.keys(q.r).filter(k=>countIn(k,srcs)<q.r[k]);
       h+=`<div class="ldbox"><div class="lab">To grade ${q.t}</div><div class="note" style="margin:2px 0 6px">${esc(LD_EFF[kind]||'')}</div><div>${Object.keys(q.r).map(k=>chip(k,q.r[k],countIn(k,srcs))).join('')}</div>

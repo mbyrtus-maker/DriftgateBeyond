@@ -55,7 +55,7 @@ function sidFeed(sid,msg,kind){if(NET.cl||!S)return;if(S.player&&(covered(sid)||
 // fitted parts (cargo modules, makers' speed traits, part grades). Look the fit up first.
 {const o=refreshPlayerStats;refreshPlayerStats=function(){try{if(S&&S.player&&typeof fitOf==='function')fitOf(S.player)}catch(e){}return o.apply(this,arguments)}}
 let MP_CESIG=null;
-function mpCeSig(){if(!S||!S.corp)return'';let s='';for(const m in S.corp){const c=S.corp[m]||{};s+=m+'|'+(c.name||'')+'|'+(c.short||'')+'|'+(c.dead?1:0)+'|'+JSON.stringify(c.tr||{})+'|'+JSON.stringify(c.g||{})+'|';
+function mpCeSig(){if(!S||!S.corp)return'';let s='';for(const m in S.corp){const c=S.corp[m]||{};s+=m+'|'+(c.name||'')+'|'+(c.short||'')+'|'+(c.logo||'')+'|'+(c.dead?1:0)+'|'+JSON.stringify(c.tr||{})+'|'+JSON.stringify(c.g||{})+'|';
   for(const id in c.ln||{})s+=id+':'+((c.ln[id]&&c.ln[id].tw)||0)+',';s+=';'}return s}
 function mpCeApply(force){if(!NET.cl||!S||typeof ceApply!=='function')return;const k=mpCeSig();if(!force&&k===MP_CESIG)return;MP_CESIG=k;
   try{ceApply();if(W&&W.player&&S.player)refreshPlayerStats()}catch(e){console.error(e)}}

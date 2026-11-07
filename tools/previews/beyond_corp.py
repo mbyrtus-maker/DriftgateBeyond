@@ -141,6 +141,39 @@ LOGOS={
  'cp':[[(0,.95),(.5,.4),(.5,-.15),(0,-.6),(-.5,-.15),(-.5,.4)],_bar(-.65,-.82,.65,-.82,.12)],               # Coldwater Prospecting: a cut gem on a seam
  'ewd':[[(-.5,-.55),(-.2,-.55),(-.36,.4)],[(-.16,-.55),(.16,-.55),(0,.95)],[(.2,-.55),(.5,-.55),(.36,.4)],_bar(-.7,-.72,.7,-.72,.14)],   # Ember Wake: three flames
  'wf':[[(0,1),(.28,.55),(-.28,.55)],_bar(0,.55,0,-.45,.24),_bar(-.2,-.5,-.55,-.95,.1),_bar(.2,-.5,.55,-.95,.1),_bar(0,-.55,0,-.98,.1)]}   # Wakefire: a missile and its wake
+# Spare logos (7 Nov 2026): a maker that fails and reopens under a new name keeps its accent (it still belongs to its home
+# power) and takes one of these as its new mark, one no other maker shows (preferring one never used in the galaxy). Same
+# style as above: a flat glyph of a few convex pieces, readable on a 20 px icon. tools/corp_logos_js.py writes them (and the
+# makers' accents) into the game as src/js/16zzz_logos.js.
+def _arc(cx,cy,r,t,a0,a1,n=8,sy=1.0):
+    # a thick arc from angle a0 to a1 (degrees) as n quads; sy squashes it into an ellipse
+    A=np.radians(np.linspace(a0,a1,n+1));o=[]
+    for i in range(n):
+        p=[(cx+math.cos(a)*rr,cy+math.sin(a)*rr*sy) for a,rr in ((A[i],r),(A[i+1],r),(A[i+1],r-t),(A[i],r-t))];o.append(p)
+    return o
+def _rot(P,deg,cx=0,cy=0):
+    c,s=math.cos(math.radians(deg)),math.sin(math.radians(deg));return [(cx+(x-cx)*c-(y-cy)*s,cy+(x-cx)*s+(y-cy)*c) for x,y in P]
+SPARE_LOGOS={
+ 'n1':[[(-1,.5),(.75,.5),(.75,.18),(-.35,.18)],[(-.18,.18),(.4,.18),(.28,-.36),(-.06,-.36)],[(-.5,-.36),(.72,-.36),(.84,-.66),(-.62,-.66)]],   # an anvil
+ 'n2':_arc(0,0,.62,.24,0,360,10)+[_rot([(-.13,.56),(.13,.56),(.1,.92),(-.1,.92)],a) for a in range(0,360,45)],                       # a gear wheel
+ 'n3':[_circ(.42,.42,.3,14),[(.2,.62),(.62,.2),(-.9,-.9)],[(.05,.42),(.22,.25),(-.95,-.3)],[(.42,.05),(.25,.22),(-.3,-.95)]],             # a comet and its tails
+ 'n4':_arc(-.55,.15,.38,.15,0,360,8)+[_bar(-.18,.15,.95,.15,.17),_bar(.55,.15,.55,-.3,.15),_bar(.85,.15,.85,-.22,.15)],                 # a key
+ 'n5':[_bar(-.9,-.3,-.3,-.9,.14),_bar(-.9,.3,.3,-.9,.14),_bar(-.6,.6,.6,-.6,.14),_bar(-.3,.9,.9,-.3,.14),_bar(.3,.9,.9,.3,.14),
+       _bar(-.9,.3,-.3,.9,.14),_bar(-.9,-.3,.3,.9,.14),_bar(-.6,-.6,.6,.6,.14),_bar(-.3,-.9,.9,.3,.14),_bar(.3,-.9,.9,-.3,.14)],        # a lattice
+ 'n6':_arc(.3,.84,.16,.08,0,360,8)+[_bar(.3,.68,.3,.05,.18)]+_arc(-.08,.05,.56,.2,0,-200,9)+[[(-.72,.0),(-.42,.0),(-.62,.42)]],             # a crane hook
+ 'n7':_arc(0,-.75,1.45,.14,62,118,6)+[_bar(0,-.75,-.68,.53,.12),_bar(0,-.75,.68,.53,.12),_bar(0,-.75,.25,.66,.1),_circ(0,-.75,.14,10)],  # a sextant
+ 'n8':[[(-.95,-.6),(.85,.85),(.6,.5),(-.75,-.75)],[(-.6,-.72),(.85,.4),(.62,.1),(-.42,-.85)],[(-.25,-.85),(.82,-.05),(.6,-.32),(-.08,-.95)]],   # a swept wing of three feathers
+ 'n9':[[(.28,1),(-.5,-.02),(.02,-.02),(.18,.42)],[(-.02,.18),(.5,.18),(-.3,-1),(-.18,-.42)]],                                         # a lightning bolt
+ 'n10':[_circ(0,0,.5,16)]+[_rot(P,18) for P in _arc(0,0,1.0,.16,180,360,10,sy=.34)+_arc(0,0,1.0,.16,0,28,2,sy=.34)+_arc(0,0,1.0,.16,152,180,2,sy=.34)],   # a ringed planet
+ 'n11':[_circ(0,0,.24,12)]+[_rot([(-.1,.18),(.14,.18),(.56,.92),(.1,.95)],a) for a in (0,120,240)],                                   # a turbine of three blades
+ 'n12':_arc(0,-.3,.9,.18,0,180,12)+[_bar(-1,-.3,1,-.3,.16),_bar(-.7,-.38,-.7,-.95,.16),_bar(.7,-.38,.7,-.95,.16)]}                    # a bridge span
+LOGOS.update(SPARE_LOGOS)
+def logo_names():
+    # each logo's one-line name, from the comment that ends its entry above ("Maker: a thing" or "a thing")
+    import re;src=open(os.path.abspath(__file__)).read();out={}
+    for k in LOGOS:
+        i=src.index("\n '%s':"%k);j=src.index('#',i);out[k]=src[j+1:src.index('\n',j)].strip().split(':')[-1].strip()
+    return out
 MAKERS=[('tcy','Teal & Corvane Yards','halcyon','#3fb8e6'),('bl','Brightline Emitters','halcyon','#72efbe'),
         ('hf','Hold Foundry','varkesh','#e8583a'),('mg','Marchgun Ordnance','varkesh','#ffa040'),
         ('sw','Spirewright','ostrova','#9b7bff'),('ad','Archive Dynamics','ostrova','#d6a4ff'),
