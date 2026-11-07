@@ -171,8 +171,8 @@ function hireHtml(c,P){const f=P.sworn,L=hireLive(P),HN=k=>esc(FAC(f).hulls[k]);
 function factionIndustry(f){
   const st=S.econ.stock[f],fl=S.econ.fleet[f],war=S.ai[f]&&S.ai[f].war>S.T,need=S.T>150?capNeed(f):null;
   // the Brood grazes: its swarms strip rock from the systems it holds and the ones next door (ore out of real fields, nothing created)
-  if(f==='brood'&&BAL.brGraze>0&&((st.fe||0)<300||(st.cu||0)<300)){const t=territory('brood'),z=new Set(t);for(const id of t)for(const n of NEIGH[id])if(!(DEF[n].home&&DEF[n].kind==='core'))z.add(n);
-    const L=[...z].filter(id=>S.sectors[id]&&S.sectors[id].ast.length&&!WORLDS[id]);const gz=Math.floor(BAL.brGraze)+(Math.random()<BAL.brGraze%1?1:0);for(let i=0;i<gz&&L.length;i++){const gs=pick(L);brGut(st,gs,extract(S.sectors[gs],6,false,{au:1,nu:(st.nu||0)>200,cu:(st.cu||0)>=300,fe:(st.fe||0)>=300,ir:(st.ir||0)>300,xc:(st.xc||0)>150}))}}
+  if(f==='brood'&&BAL.brGraze>0&&((st.fe||0)<(BAL.brGrazeCap||300)||(st.cu||0)<(BAL.brGrazeCap||300))){const t=territory('brood'),z=new Set(t);for(const id of t)for(const n of NEIGH[id])if(!(DEF[n].home&&DEF[n].kind==='core'))z.add(n);
+    const L=[...z].filter(id=>S.sectors[id]&&S.sectors[id].ast.length&&!WORLDS[id]);const gz=Math.floor(BAL.brGraze)+(Math.random()<BAL.brGraze%1?1:0);for(let i=0;i<gz&&L.length;i++){const gs=pick(L);brGut(st,gs,extract(S.sectors[gs],BAL.brGrazeN||6,false,{au:1,nu:(st.nu||0)>200,cu:(st.cu||0)>=(BAL.brGrazeCap||300),fe:(st.fe||0)>=(BAL.brGrazeCap||300),ir:(st.ir||0)>300,xc:(st.xc||0)>150}))}}
   // imports: short of construction stock, a faction buys from the Freeport Compact with treasury credits (zero-sum: credits to the
   // Compact, goods out of its stores). Halcyon's Trade Charter buys twice the volume at a discount.
   // Trade Charter: Halcyon hires Freeport prospectors to work the rocks in its own systems when its ore runs short.
