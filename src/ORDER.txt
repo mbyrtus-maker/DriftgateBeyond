@@ -93,5 +93,6 @@ js/16zzx_surge.js
 js/16zzy_bloom.js
 js/16zzz_corp.js
 js/16zzza_rd.js
+js/16zzzb_aipilots.js
 js/17_main.js
 end.html
