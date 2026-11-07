@@ -52,3 +52,19 @@ function surgeFell(ev){if(!ev.st&&!ev.target)return false;if(ev.st){const R=S.st
 {const o=strategicTick;strategicTick=function(){const x=o.apply(this,arguments);try{surgeTick()}catch(e){console.error(e)}return x}}
 // the gauge on the galaxy map
 {const o=mapSectorNow;mapSectorNow=function(sid){let h=o.apply(this,arguments);try{if(DEF[sid].kind==='hive'||broodHeld(sid)){const g=surgeOf(),p=Math.min(100,Math.round(g.m/surgeBar()*100));h+=`<span>The Bloom stirs</span><b style="color:${FACTIONS.brood.col}">${g.live?'surging now':p+'% to the next surge'}</b>`}}catch(e){}return h}}
+// ---- a surge that breaks through digs in (user, 6 Nov 2026): the Brood keeps what a surge wins
+// An outpost it takes is garrisoned by the wave's survivors (up to SURGE.dig ships, over the usual garrison). A station it
+// razes is seeded at once with a Bloom Node, grown from the surge mass (two frames' worth), with the survivors standing guard;
+// once the node takes root they become its garrison. Whatever kit is left over flies home as usual.
+SURGE.dig=12;
+function surgeGarrison(key,sid,force,tier){const ro=(S.gar=S.gar||{})[key]||(S.gar[key]={f:'brood',sid,m:[],t:S.T,nid:1});let n=0;
+  while(n<SURGE.dig){let c=pickFighter('patrol'),t=tier,ld=loadout('patrol',t,c);if(!haveIn(ld,[force])){c='striker';ld=loadout('patrol',t,c)}if(!haveIn(ld,[force])){c='interceptor';t=1;ld=loadout('patrol',t,c)}if(!takeFrom(ld,[force]))break;ro.m.push({id:ro.nid++,c,t,load:ld,live:false,next:0});n++}
+  return n}
+function surgeSeed(ev){const g=surgeOf(),f='brood',sid=ev.sector;if(!canBuildIn(sid,f))return false;const st=S.econ.stock[f],need={...DEPOT_COST,...BROOD_SEED};
+  if(!surgeFit(need,[g.store,st],g.store))return false;const force={};takeFrom(need,[g.store,st]);inv.addAll(force,need);inv.addAll(force,ev.force);for(const k in ev.force)delete ev.force[k];
+  const b={id:S.nextId++,type:'build',att:f,sector:sid,eta:S.T+5,stage:'inbound',force,n:ev.n||0,tier:ev.tier,cls:(ev.cls||[]).slice(0,SURGE.dig),site:stationSite(sid),prog:0,surgeDig:1};S.events.push(b);
+  allFeed(`☣ The Bloom is taking root in ${DEF[sid].name}: the surge's survivors stand guard over a growing Bloom Node.`,'bad');return true}
+{const o=finishOffensive;finishOffensive=function(ev){try{if(ev&&ev.surge&&ev.att==='brood'&&Object.keys(ev.force||{}).length){
+    if(ev.target){const O=S.outposts[ev.target];if(O&&O.owner==='brood'){const n=surgeGarrison('O.'+ev.target,O.sector,ev.force,ev.tier||1);if(n)allFeed(`☣ The Brood has dug in at ${O.name}: ${n} surge ships hold it.`,'bad')}}
+    else if(ev.st&&!S.stations[ev.st])surgeSeed(ev)}}catch(e){console.error(e)}return o.apply(this,arguments)}}
+{const o=finishBuild;finishBuild=function(ev){try{if(ev&&ev.surgeDig&&ev.stage!=='done'){const R=S.stations[ev.sector];if(R&&R.owner==='brood')surgeGarrison('S.'+ev.sector,ev.sector,ev.force,ev.tier||1)}}catch(e){console.error(e)}return o.apply(this,arguments)}}

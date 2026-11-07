@@ -30,6 +30,15 @@ async def main():
     print('ledger',await ev(LED))
     print('resolve',await ev("""(()=>{const g=surgeOf(),k0=g.k;let i=0;while(g.live&&i<200){S.T+=10;strategicTick();updateEvents();i++}return JSON.stringify({done:!g.live,k0,k:g.k,mins:i/6})})()"""))
     print('ledger',await ev(LED))
+    # a surge that breaks through digs in (the test builds a power's depot on the border if there isn't one, and books it): a razed station is seeded with a Bloom Node guarded by the survivors, who garrison it
+    print('dig in (station)',await ev("""(()=>{const g=surgeOf();for(const e in SURGE.cap){const id=[...surgeZone()][0];S.sectors[id].debris[e]+=SURGE.cap[e]*3;S.ledger0.tot[e]+=SURGE.cap[e]*3}for(let i=0;i<300;i++)surgeHarvest();
+      let T=null;for(const d of SECTOR_DEFS){const sid=d.id;if(broodHeld(sid)||!NEIGH[sid].some(n=>broodHeld(n)))continue;const R=S.stations[sid];if(R&&R.kind==='depot'&&R.owner!=='brood'&&fightsAt('brood',R.owner)){T=sid;break}}
+      if(!T){const sid=SECTOR_DEFS.map(d=>d.id).find(id=>!broodHeld(id)&&NEIGH[id].some(n=>broodHeld(n))&&canBuildIn(id,'halcyon'));if(!sid)return 'no site';completeBuild({att:'halcyon',sector:sid,site:stationSite(sid),force:{}},{...FWD_COST});const v=invVec(FWD_COST);for(const e of RAWS)S.ledger0.tot[e]+=v[e];T=sid}
+      g.last=-1e9;g.retry=0;g.live=null;const ot=surgeTarget;surgeTarget=()=>({sid:T,tgt:{st:T}});const ok=surgeLaunch();surgeTarget=ot;const ev=S.events.find(e=>e.id===g.live);if(!ok||!ev)return 'no launch';
+      razeStation(T,'brood');ev.stage='done';finishOffensive(ev);const b=S.events.find(e=>e.type==='build'&&e.surgeDig&&e.sector===T);if(!b)return 'no seed';
+      let i=0;while(b.stage!=='done'&&i<60){S.T+=10;updateEvents();i++}const R=S.stations[T],ro=S.gar&&S.gar['S.'+T];g.live=null;
+      return JSON.stringify({seeded:!!b,node:R&&R.owner,garrison:ro&&ro.m.length,usual:R&&grTarget(grSite('S.'+T))})})()"""))
+    print('ledger',await ev(LED))
     print('gauge',await ev("(()=>{const h=mapSectorNow('bl');return /The Bloom stirs/.test(h)?'shown':'missing'})()"))
     print('errors',errs[:5] or 'none')
     await b.close()
