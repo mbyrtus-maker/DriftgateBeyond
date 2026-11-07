@@ -2837,3 +2837,44 @@ Build: stages 1 to 4 as listed, then the soak (target: AI-only galaxy at 4 h, mo
 - **The Archive fleet stays** (third escort, carriers 8% cheaper, safer scouts) unless the war check says the pair is too strong, in which case its parts are trimmed before Deep Drive is.
 - **Shown in the game:** Ostrova's trait text and the Allegiance tab's "The powers" table: "Deep Drive: jumps and travel a quarter faster" (the figure follows the dial).
 - **Checks:** war check (600 galaxies, 16 h, neutral leaders): target Ostrova about 25% without pushing the others off target; watch the unfinished share (11% before). Mining rates stay equal.
+
+### Pilot traits: every AI pilot has a personality, and the ones who come back learn from how they died (agreed, user 7 Nov 2026)
+**The idea (the user):** every AI pilot carries one trait that guides how it flies and fights while alive. A pilot who dies and comes back takes a new trait chosen by how it died, which replaces the old one ("Just single traits"). This sits under **AI pilots fly like their leader** (section 11c): the leader's two traits still set the power's style, and a pilot's own trait leans it one way or another inside that style.
+
+**Who (the user's answers, 7 Nov 2026):**
+- **Every AI ship rolls a trait** when it launches: fighters, scouts, bombers, miners, haulers and capital captains, of the powers, the Unbound, the Compact, your crews and the independents. The Brood are a swarm and have none.
+- **Pilots who come back learn from their death:** aces (who return after a while) and independent pilots (who rebuy a hull). **Losses stay final** for everyone else: a faction's ordinary ships, your depot's crews and capital ships keep the trait they launched with until they are lost.
+- Persistent pilots keep their trait across live and off-screen: aces, independents, your crews, the powers' convoys, scouts and capital ships carry it on their record.
+- **No friendly fire and no collision damage** in the game, so neither is a cause of death.
+
+**How a trait is rolled:** from the role's own pool most of the time (about 4 in 5) and the universal pool otherwise, weighted so **Steady** and the milder traits are common and the extreme ones (Coward-like Skittish, Duelist, Lone Wolf, Kamikaze-ish, Glory Seeker) are rare. A squadron should feel mostly competent with a few standout personalities.
+
+**Starting traits (agreed lists)**
+
+| Role | Traits |
+|---|---|
+| Universal (any role) | **Steady** (baseline, the common roll), **Skittish** (flees at the first sign of hostiles, even weak ones), **Unpredictable** (changes routes or tactics at random now and then), **Loyal** (stays near friendly ships and turns back to help an ally attacked nearby), **Greedy** (takes extra risks for profit, kills or loot) |
+| Fighters | **Hotshot** (closes fast, takes risks, slow to disengage), **Sniper** (engages at max range, avoids knife fights), **Opportunist** (damaged or distracted enemies first), **Duelist** (locks onto one enemy until one of them dies), **Guardian** (enemies attacking miners, haulers or capitals first), **Lone Wolf** (ignores formation, roams to hunt), **Rock Hopper** (fights near asteroids and debris for cover) |
+| Scouts | **Ghost** (edge of sensor range, never engages), **Thrill Seeker** (pushes deep into dangerous or unexplored space), **Bait** (draws enemies toward friendly fighters), **Shadow** (picks a capital ship, ace or named pilot and tails it at a distance, reporting its movements), **Tripwire** (parks at chokepoints such as gates and watches the traffic instead of roaming) |
+| Bombers | **Big Game Hunter** (only capitals and stations), **Patient** (waits for escorts or an opening before committing), **Kamikaze-ish** (presses the run whatever the damage), **Precision** (subsystems over raw hull), **Hit and Run** (drops the payload and bugs out) |
+| Miners | **Prospector** (wanders farther for richer deposits), **Homebody** (mines close to base or protection), **Hoarder** (fills the hold before returning, even under threat), **Efficient** (the nearest decent rock, worked fast), **Rock Diver** (goes into dangerous space to mine rare materials) |
+| Haulers | **Speed Demon** (the fastest route, even through dangerous space), **Safe Routes** (longer routes round known hostile space), **Convoy Lover** (waits for escorts or other haulers before departing), **Overloader** (max cargo, slower), **Smuggler** (avoids patrols and stations, even friendly ones) |
+| Capital captains | **Admiral** (holds formation, coordinates, conservative), **Brawler Captain** (charges in to bring every gun to bear), **Bastion** (parks defensively by its assets, rarely advances), **Carrier Minded** (hangs back behind its launched craft), **Glory Seeker** (straight for the enemy flagship), **Cautious Commander** (retreats early to save the ship) |
+
+**Death traits (agreed lists): the cause of death decides the new trait**
+
+| Role | Died to → new trait |
+|---|---|
+| Universal | an ace or named pilot → **Vengeful** (combat roles: hunts that pilot) or **Haunted** (non-combat: flees whenever that pilot appears); unknown or unclassified → **Shaken** (more cautious, retreats a little earlier) |
+| Fighters | an enemy fighter in a dogfight → **Cautious** (more distance, disengages sooner); a missile or torpedo → **Missile-Wary** (countermeasures early, no long straight runs); a capital ship's point defence → **Flak-Shy** (keeps away from capitals); outnumbered → **Pack Fighter** (engages only alongside wingmen) |
+| Scouts | ambushed while scouting → **Jumpy** (retreats at the first contact); killed by its Shadow target → **Long Leash** (tails from much farther); killed deep in hostile space → **Edge Walker** (stays near friendly space) |
+| Bombers | point defence during a run → **Long Launch** (releases from farther out, less accurate); intercepted by fighters before the run → **Escort Only** (no run without fighter cover); killed escaping after the run → **Quick Exit** (commits fully to the escape); caught in the target's explosion → **Blast-Aware** (breaks away the moment the payload lands) |
+| Miners | pirates or raiders → **Watchful** (stops mining and flees as soon as hostiles show on sensors); killed with a full hold → **Light Load** (returns at half a hold); killed far from base → **Homebody** |
+| Haulers | ambushed on a route → **Route Changer** (never the same route twice running); killed in hostile space → **Safe Routes**; killed travelling alone → **Convoy Only** (waits for escorts or other haulers before departing) |
+| Capital captains | bombers or torpedoes → **Screen First** (fighters close as a bomber screen, bombers shot first); an enemy capital → **Outranged** (no capital duels without support); swarmed by fighters → **Point Defense Doctrine** (point defence first, stays near friendly fighters); killed advancing alone → **Fleet Anchor** (never ahead of the main fleet) |
+
+Some death traits share a name with a starting trait (Homebody, Safe Routes): a pilot can learn its way into a personality another rolled at launch. With losses final, the capital, scout and bomber death traits only come into play for a pilot of those roles who comes back.
+
+**Where it shows:** a ship's label in live space carries its trait (for example "Independent · Mara Venn · Hauling · Safe Routes"); the News carries a notable lesson ("Ace Kestrel came back Missile-Wary").
+
+**Build:** with the independent pilots (agreed above), in this chat, 7 Nov 2026. **Publish first, war check after** (the user): traits change how ships fight, so faction strength moves; the 600-galaxy check follows the publish and any retune comes after it.
