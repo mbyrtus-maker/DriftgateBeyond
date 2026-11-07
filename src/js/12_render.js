@@ -135,8 +135,10 @@ function buildScout(fk,g,L,eng,fc){const H=fk==='pirate'?[.6,.56,.46]:mixC([.78,
   g.set().loft([[-1,.05,.05],[-.7,.12,.1],[0,.15,.12,.02],[.7,.1,.08],[1.3,.015,.015]],8,H,0,2.2,{colFn:(k,i,p)=>p[1]<-.02?D:H});canopy(g,.2,.7,.1,.1,.08,[.55,.9,1]);
   g.set(0,.2,-.25).cyl(.02,.02,.3,5,D);g.set(0,.36,-.25).torus(.24,.03,18,3,fc,.8);g.set(0,.36,-.25).sphere(.05,3,5,fc,1);g.set(0,.08,.9).box(.02,.02,.7,D);
   S2(s=>{g.set().wing([.08*s,0,0,-.5,.03],[.62*s,-.04,-.48,-.68,.01],H,0,L,fc);nacelle(g,.13*s,-.04,-1.05,-.45,.07,D,fc,eng)})}
+// (7 Nov 2026) the hull's accent colour is its side's (sideCol): 'neutral' and 'player' (the Compact's, your company's)
+// drew nothing for a frigate, drone or mite before, with no faction colour to read
 function buildShip(fk,cls,g,L,eng){
-  const fc=hexRGB(fk==='pirate'?PIRATE.col:FACTIONS[fk].col),S2=f=>{f(1);f(-1)};
+  const fc=hexRGB(sideCol(fk)),S2=f=>{f(1);f(-1)};
   if(fk==='brood'){buildBrood(cls,g,L,eng,fc);return}if(cls==='frigate'){buildFrigate(fk,g,L,eng,fc);return}if(cls==='gunboat'){buildGunboat(fk,g,L,eng,fc);return}if(cls==='constructor'){buildConstructor(fk,g,L,eng,fc);return}if(cls==='scout'){buildScout(fk,g,L,eng,fc);return}
   if(cls==='limpet'){const D=[.2,.21,.24],M=[.55,.57,.6];g.set(0,.06,0).cyl(.6,.66,.12,12,D,0,true);g.set(0,.13,0).cyl(.62,.62,.04,12,fc,.7);
     g.set(0,.14,0,null,1,.55,1).sphere(.46,4,10,M,0);for(let i=0;i<4;i++){const a=i/4*TAU+TAU/8;g.set(Math.cos(a)*.66,.04,Math.sin(a)*.66).box(.2,.1,.2,D)}
@@ -215,7 +217,7 @@ function buildShip(fk,cls,g,L,eng){
 // light, heavy and bomber hulls for every side
 function buildShipX(fk,cls,g,L,eng){
   if(fk==='brood'||!['interceptor','heavy','bomber'].includes(cls))return false;
-  const fc=hexRGB(fk==='pirate'?PIRATE.col:FACTIONS[fk].col),S2=f=>{f(1);f(-1)};
+  const fc=hexRGB(sideCol(fk)),S2=f=>{f(1);f(-1)};
   if(fk==='halcyon'){const H=[.8,.84,.86],D=[.24,.3,.34],G=[.55,.9,1],under=(k,i,p)=>p[1]<-.03?D:H;
     if(cls==='interceptor'){ // Swift: small dart, deep delta wings, canards, single engine
       g.set().loft([[-.9,.08,.07],[-.7,.13,.1],[-.1,.15,.11,.01],[.5,.1,.08,.01],[1.25,0,0]],10,H,0,2.4,{colFn:under});canopy(g,.05,.6,.09,.07,.07,G);
@@ -568,8 +570,15 @@ function drawOverlay(){
   for(const e of W.ents)if(e.pname&&e.alive&&e!==p&&e.type==='ship'&&!(hostile('player',e.side)&&mHid(e,p)))marks.push({o:e,l:e.pname,c:/\(Legendary Ace\)/.test(e.pname)?'#ffd27a':sideCol(e.side),r:e.st.radius*1.25,sub:(e.aceId?(e.side==='pirate'?'UNBOUND CAPTAIN · ':'ACE · '):hostile('player',e.side)?'HOSTILE PILOT · ':'PILOT · ')+hullName(e.fac,e.cls).toUpperCase()});
   for(const a of sec.ast)if(a.comet)marks.push({o:a,l:'Comet',c:'#c99cff',r:astR(a)});
   for(const cr of sec.crates)if(cr.derelict)marks.push({o:cr,l:'Derelict cargo',c:'#f0b24a',r:16});
+  // (7 Nov 2026) labels don't overlap: each takes a box (OVL); one that would land on a box already drawn moves down a
+  // label's height, up to three times, and is left out after that (the marks are in priority order); edge markers also keep
+  // off the HUD panels (the ship stats and radar, the Command panel, contacts, the sector name and recent messages, the buttons)
+  OVL.length=0;
   for(const m of marks){const P=proj(m.o.x,m.o.y,m.o.z),d=Math.round(d3(m.o,p)/10)*10,on=!P.behind&&P.x>20&&P.y>20&&P.x<VW-20&&P.y<VH-20;
-    if(on){const r=projR(P.d,m.r);c.textAlign='center';c.fillStyle=hexA(m.c,.9);c.fillText(m.l.toUpperCase(),P.x,P.y+r+16);c.fillStyle='rgba(140,145,165,.9)';c.fillText((m.sub?m.sub+' · ':'')+fmt(d)+' m',P.x,P.y+r+30)}
+    if(on){const r=projR(P.d,m.r),l1=m.l.toUpperCase(),l2=(m.sub?m.sub+' · ':'')+fmt(d)+' m',w=Math.max(c.measureText(l1).width,c.measureText(l2).width)+8;
+      let y=P.y+r+16,k=0;while(k<4&&ovlHit(OVL,P.x-w/2,y-12,w,30)){y+=30;k++}
+      if(k>=4)continue;
+      OVL.push([P.x-w/2,y-12,w,30]);c.textAlign='center';c.fillStyle=hexA(m.c,.9);c.fillText(l1,P.x,y);c.fillStyle='rgba(140,145,165,.9)';c.fillText(l2,P.x,y+14)}
     else edgeMark(P,m.l+'  '+fmt(d)+' m',m.c)}
   if(W.ftgt&&(!W.ftgt.alive||!W.ents.includes(W.ftgt)&&W.ftgt!==W.player)){W.ftgt=null;closeComms()}
   if(commsOpen()&&(W.t-(W.commsT||0)>12||mouse.l||keys.Space))closeComms();
@@ -812,7 +821,15 @@ function drawHorizon(c,p){qRot(p.q,0,0,1,_f);let hx=_f.x,hz=_f.z;const hl=hyp(hx
     const g=deg?.35:.4,mx=Ax+(B.x-Ax)*g,my=Ay+(B.y-Ay)*g,nx=Ax+(B.x-Ax)*(1-g),ny=Ay+(B.y-Ay)*(1-g);
     c.strokeStyle=deg?'rgba(160,190,230,.2)':'rgba(160,190,230,.32)';c.lineWidth=deg?1:1.4;c.setLineDash(deg<0?[5,5]:[]);c.beginPath();c.moveTo(Ax,Ay);c.lineTo(mx,my);c.moveTo(nx,ny);c.lineTo(B.x,B.y);c.stroke();c.setLineDash([]);
     if(deg){c.fillStyle='rgba(160,190,230,.35)';c.fillText((deg>0?'+':'')+deg,B.x+6,B.y+3)}}}
-function edgeMark(P,label,col){const c=octx,cx=VW/2,cy=VH/2;let dx=P.x-cx,dy=P.y-cy;if(Math.abs(dx)<1&&Math.abs(dy)<1)dy=1;const mx=cx-70,my=cy-90,k=Math.min(mx/Math.abs(dx||1e-6),my/Math.abs(dy||1e-6));const ex=cx+dx*k,ey=cy+dy*k,a=Math.atan2(dy,dx);
+// label boxes drawn this frame [x,y,w,h], and the HUD panels' boxes (read from the page twice a second)
+const OVL=[];let ovlHudT=-1,ovlHudB=[];
+function ovlHit(L,x,y,w,h){for(const b of L)if(x<b[0]+b[2]&&x+w>b[0]&&y<b[1]+b[3]&&y+h>b[1])return true;return false}
+function ovlHud(){const n=performance.now();if(n-ovlHudT>500){ovlHudT=n;ovlHudB=[];for(const id of['hBL','hBR','contacts','feed','hTR','hTL','hML']){const el=$(id);if(!el||el.hidden)continue;const R=el.getBoundingClientRect();if(R.width>0&&R.height>0)ovlHudB.push([R.left-4,R.top-4,R.width+8,R.height+8])}}return ovlHudB}
+function edgeMark(P,label,col){const c=octx,cx=VW/2,cy=VH/2;let dx=P.x-cx,dy=P.y-cy;if(Math.abs(dx)<1&&Math.abs(dy)<1)dy=1;const mx=cx-70,my=cy-90,k=Math.min(mx/Math.abs(dx||1e-6),my/Math.abs(dy||1e-6));const ex=cx+dx*k,a=Math.atan2(dy,dx);let ey=cy+dy*k;
+  // slide along the screen edge (up or down, nearest first) until its label is clear of other labels and the HUD panels
+  {const w=c.measureText(label.toUpperCase()).width+26,bx=ex<cx?ex-10:ex-w+10,B=OVL.concat(ovlHud());let best=null;
+    for(let i=0;i<40&&best==null;i++){const o=(i%2?1:-1)*Math.ceil(i/2)*14,y=ey+o;if(y<30||y>VH-14)continue;if(!ovlHit(B,bx,y-9,w,16))best=y}
+    if(best!=null)ey=best;OVL.push([bx,ey-9,w,16])}
   c.save();c.translate(ex,ey);c.rotate(a);c.fillStyle=col;c.beginPath();c.moveTo(9,0);c.lineTo(-4,-6);c.lineTo(-4,6);c.fill();c.restore();c.textAlign=ex<cx?'left':'right';c.fillStyle=hexA(col,.85);c.fillText(label.toUpperCase(),ex+(ex<cx?14:-14),ey+4)}
 const rcv=$('radar'),rctx=rcv.getContext('2d');
 function drawRadar(){

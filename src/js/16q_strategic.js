@@ -11,12 +11,12 @@ function sxDraw(cv,sid){const c=cv.getContext('2d'),W0=cv.width,H0=cv.height,s=S
   for(const a of s.ast){c.fillStyle=a.rift?'#ff4fc8':'rgba(170,165,150,.55)';const r=Math.max(1,astR(a)*k*1.2);c.fillRect(X(a.x)-r/2,Y(a.z)-r/2,r,r)}
   for(const g of GATES[sid]||[]){c.strokeStyle='#6fb7ff';c.strokeRect(X(g.x)-4,Y(g.z)-4,8,8);c.fillStyle='#6fb7ff';c.font='9px sans-serif';c.fillText(DEF[g.to]?DEF[g.to].name.split(' ')[0]:'',X(g.x)+6,Y(g.z)+3)}
   const R0=S.stations[sid];if(R0){c.fillStyle=sideCol(R0.owner==='player'?'player':R0.owner);c.beginPath();c.arc(X(R0.x),Y(R0.z),7,0,TAU);c.fill()}
-  for(const L of S.lairs||[])if(L.sid===sid&&L.hull>0&&(L.pid===(curPid()||'me'))){c.strokeStyle='#f0b24a';c.beginPath();c.arc(X(L.x),Y(L.z),5,0,TAU);c.stroke()}
+  for(const L of S.lairs||[])if(L.sid===sid&&L.hull>0&&(L.pid===(curPid()||'me'))){c.strokeStyle=PLAYER_COL;c.beginPath();c.arc(X(L.x),Y(L.z),5,0,TAU);c.stroke()}
   let threats=0,ships=0;const dot=(x,z,col,big)=>{c.fillStyle=col;c.beginPath();c.arc(X(x),Y(z),big?4:2,0,TAU);c.fill()};
   if(w){for(const e of w.ents){if(e.type!=='ship'||!e.alive||e.role==='limpet')continue;ships++;if(sxThreat(e))threats++;dot(e.x,e.z,e.isPlayer||e.rp?'#ffffff':sideCol(e.side),e.role==='frigate')}}
-  else{for(const t of S.frigates||[])if(t.sector===sid&&(fMine(t)||covered(sid))){ships++;if(sxThreat(t))threats++;const o=rdir(.2);dot(o.x*900,o.z*900,fMine(t)?'#f0b24a':sideCol(t.side),true)}
+  else{for(const t of S.frigates||[])if(t.sector===sid&&(fMine(t)||covered(sid))){ships++;if(sxThreat(t))threats++;const o=rdir(.2);dot(o.x*900,o.z*900,fMine(t)?PLAYER_COL:sideCol(t.side),true)}
     for(const t of S.traders||[])if(t.sector===sid&&covered(sid)){ships++;const o=rdir(.2);dot(o.x*1400,o.z*1400,sideCol(t.side))}}
-  c.fillStyle='#cfd6e4';c.font='10px sans-serif';c.fillText(`${w?'live':'from intel'} · ${ships} ship${ships===1?'':'s'} · ${threats} threat${threats===1?'':'s'}`,8,H0-8);return{ships,threats}}
+  if(!cv.noCap){c.fillStyle='#cfd6e4';c.font='10px sans-serif';c.fillText(`${w?'live':'from intel'} · ${ships} ship${ships===1?'':'s'} · ${threats} threat${threats===1?'':'s'}`,8,H0-8)}return{ships,threats,live:!!w}}
 function sxHtml(sid){const P=S.player,mine=(S.frigates||[]).filter(t=>fMine(t)),here=mine.filter(t=>t.sector===sid),D=myDepots(P).filter(R=>R.sid===sid);
   let h=`<div><div class="h3">Sector view</div><canvas id="sxCv" width="300" height="300" style="width:100%;max-width:300px;aspect-ratio:1;display:block;border:1px solid var(--line)"></canvas>`;
   if(mine.length||D.length){h+=`<div class="h3" style="margin-top:8px">Your forces · orders</div>`;

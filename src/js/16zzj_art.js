@@ -11,7 +11,10 @@
 //    Guests in that system see the same flights (the host sends them).
 const hasOwnK=(o,k)=>!!o&&Object.prototype.hasOwnProperty.call(o,k);
 fmdl=function(fac,cls){if(hasOwnK(BRAND_MDL,cls))return BRAND_MDL[cls];const m=hasOwnK(FAC_MDL[fac],cls)?FAC_MDL[fac][cls]:null;return m&&mdlHas(m)?m:null};
-Object.assign(FAC_MDL.pirate,{bomber:'dz_wrecker',gunboat:'dz_wrecker',constructor:'dz_wrecker',scout2:'dz_skiff',courier:'dz_skiff',skiff:'dz_skiff',prospector:'dz_skiff',dredger:'dz_plunderer',freighter:'dz_plunderer',bulker:'dz_plunderer'});
+Object.assign(FAC_MDL.pirate,{bomber:'dz_wrecker',gunboat:'dz_wrecker',constructor:'dz_wrecker',scout2:'dz_skiff',courier:'dz_skiff',skiff:'dz_skiff',prospector:'dz_skiff',dredger:'dz_plunderer',freighter:'dz_plunderer',bulker:'dz_plunderer',
+  drone:'dz_raider',frigate:'dz_ravager'});
+// (7 Nov 2026) and their Junk Drone (a Raider, small) and their Destroyer (the Ravager, their capital hull): both drew as
+// Driftgate 1's hulls
 // ---- assault ships in flight
 const ASF={r:17,spd:170,hold:4,stag:.7,max:12};
 function asMesh(fac){const f=fmFac(fac),k='asl'+f;return MESH[k]||(MESH[k]=mdlMesh('dz_assault',FACTIONS[f]||f==='pirate'?f:'neutral',1))}

@@ -75,7 +75,18 @@ def shrike():    # escort: a long layered lens hull: a broad torpedo prow, a rai
     M=Mesh(111)
     loft(M,[(-2.3,LENS(.42,.3)),(-1.9,LENS(.5,.34)),(.9,LENS(.5,.34)),(1.6,LENS(.42,.28,-.02)),(2.05,LENS(.3,.18,-.04)),(2.25,LENS(.16,.1,-.05))],lens_role)   # main hull
     loft(M,[(-1.8,LENS(.12,.06,.3)),(-1.5,LENS(.22,.12,.34)),(.8,LENS(.2,.11,.33)),(1.4,LENS(.08,.04,.3))],lens_role)   # dorsal superstructure spine
-    for z in (-1.0,-.2,.6):plate(M,[(-.16,.47,z+.18),(.16,.47,z+.18),(.16,.47,z-.18),(-.16,.47,z-.18)],.006,ACC,.9)
+    # three accent plates laid on the spine (7 Nov 2026: they used to float flat above it): each bends over the spine's top
+    # facets, two panels a side, sitting on the surface
+    def spine_pt(z,a,f=0.0):
+        t=(z+1.5)/2.3;w,h,dy=.22-.02*t,.12-.01*t,.34-.01*t
+        def v(deg):r=math.radians(deg);return (math.cos(r)*w,math.sin(r)*h+dy)
+        p,q=v(a),v(a-30);return (p[0]+(q[0]-p[0])*f,p[1]+(q[1]-p[1])*f,z)
+    for z in (-1.0,-.2,.6):
+        for sx in (1,-1):
+            for a,f in ((90,1.0),(60,.6)):
+                P=[spine_pt(z-.18,a),spine_pt(z-.18,a,f),spine_pt(z+.18,a,f),spine_pt(z+.18,a)]
+                c=np.mean(P,0);d=np.cross(np.subtract(P[1],P[0]),np.subtract(P[3],P[0]));d=d/np.linalg.norm(d)*(1 if d[1]>0 else -1)
+                plate(M,[(sx*(p[0]+d[0]*.004),p[1]+d[1]*.004,p[2]) for p in P],.006,ACC,.9)
     for sx in (1,-1):
         for dy in (.04,-.1):tube(M,[(sx*.18,dy-.05,2.0),(sx*.18,dy-.05,2.3)],[.06,.06],DARK,.85,8,cap1=False);M.blob((sx*.18,dy-.05,2.27),.045,ACC,sub=1,noise=0)   # torpedo tubes
         loft(M,[(-1.5,[(a+sx*.5,b-.04) for a,b in LENS(.05,.05)]),(-1.2,[(a+sx*.5,b-.04) for a,b in LENS(.15,.14)]),(.9,[(a+sx*.5,b-.04) for a,b in LENS(.15,.14)]),(1.3,[(a+sx*.5,b-.04) for a,b in LENS(.05,.05)])],lens_role)   # turret sponson
@@ -83,8 +94,8 @@ def shrike():    # escort: a long layered lens hull: a broad torpedo prow, a rai
         tube(M,[(sx*.5,.05,-1.65),(sx*.78,.12,-1.75)],[.025,.02],LIGHT,.9,5);M.blob((sx*.8,.13,-1.76),.06,WIN,sub=1,noise=0)   # emitter nodes on pylons
         sidewin(M,sx*.505,.12,-.5,.5)
     bridge_halcyon(M,(0,.42,-1.0),1.0)
-    shieldgen(M,(0,-.33,.75),.12,up=False)
-    abox(M,(0,-.36,-.4),(.34,.12,.6),DARK,(.9,.9))                                                                   # ventral assault bay
+    shieldgen(M,(0,-.25,.75),.12,up=False)                                                                           # (7 Nov 2026) sunk into the hull's belly
+    abox(M,(0,-.28,-.4),(.34,.12,.6),DARK,(.9,.9))                                                                   # ventral assault bay, its top inside the hull
     loft(M,[(-2.6,LENS(.36,.26)),(-2.3,LENS(.44,.31))],(MID,.95))                                                    # engine block
     M.vent((0,0,-2.62),.2)
     for sx in (1,-1):M.vent((sx*.28,.0,-2.6),.11)

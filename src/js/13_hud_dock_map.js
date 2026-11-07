@@ -450,6 +450,12 @@ $('bFull').addEventListener('click',e=>{e.currentTarget.blur();toggleFull()});$(
 $('hComms').addEventListener('pointerdown',e=>{const ob=e.target.closest('[data-op]');if(ob&&W){e.preventDefault();e.stopPropagation();joinOp(friendlyOps()[+ob.dataset.op]);return}
   const od=e.target.closest('[data-ord]');if(od&&W&&od.dataset.ord){e.preventDefault();e.stopPropagation();ordPick=od.dataset.ord;planKey(false)}});
 $('cmHead').addEventListener('click',e=>{e.stopPropagation();const c=$('hComms'),mn=!c.classList.contains('min');c.classList.toggle('min',mn);$('cmTog').textContent=mn?'show':'hide';$('cmHead').setAttribute('aria-expanded',String(!mn));try{localStorage.setItem('dg_comms_min',mn?'1':'0')}catch(er){}$('cmHead').blur()});
+// (7 Nov 2026) a narrow or short window (under 900 px wide or 600 px tall) folds the Command panel to its header so it doesn't
+// cover the ship stats; the header still opens it, and a wider window brings back the player's own choice
+let cmNarrow=null;
+function cmFit(){const n=innerWidth<900||innerHeight<600;if(n===cmNarrow)return;cmNarrow=n;const c=$('hComms');if(!c)return;let own=false;try{own=localStorage.getItem('dg_comms_min')==='1'}catch(e){}
+  const mn=n||own;c.classList.toggle('min',mn);$('cmTog').textContent=mn?'show':'hide';$('cmHead').setAttribute('aria-expanded',String(!mn))}
+addEventListener('resize',cmFit);setTimeout(cmFit,0);
 const mcv=$('mapCv'),mctx=mcv.getContext('2d');
 function mapXY0(d,w,h){const pad=46,sz=Math.min(w,h)-pad*2,ox=(w-sz)/2,oy=(h-sz)/2;return[ox+d.x*sz,oy+d.y*sz]}
 // Beyond (3 Nov 2026): systems that sit too close on the galaxy map are eased apart (kept near their places, gates unchanged), so
@@ -516,7 +522,7 @@ function drawMap(){
   c.font='500 11px "Saira Semi Condensed",sans-serif';c.textAlign='right';let ly=h-14;const lx=w-14;
   mapKeyBox={x:w-70,y:h-30,w:60,h:22};if(!mapKey){c.strokeStyle='rgba(236,228,207,.35)';c.lineWidth=1;c.strokeRect(w-70,h-30,60,22);c.fillStyle='#b8bfcf';c.textAlign='center';c.fillText('KEY ▸',w-40,h-15);return}
   c.fillStyle='rgba(11,16,32,.88)';c.fillRect(w-380,h-196,374,190);c.fillStyle='#b8bfcf';c.textAlign='right';c.fillText('KEY ▾',lx,ly);ly-=18;
-  for(const[l,col]of[['Brood',FACTIONS.brood.col],['Unbound','#d8cd98'],['You','#f0b24a'],...FAC_IDS.map(f=>[FACTIONS[f].short,FACTIONS[f].col]).reverse()]){c.fillStyle=col;c.fillRect(lx-8,ly-8,8,8);c.fillStyle='#8c91a5';c.fillText(l,lx-14,ly);ly-=16}
+  for(const[l,col]of[['Brood',FACTIONS.brood.col],['Unbound','#d8cd98'],['You',PLAYER_COL],...FAC_IDS.map(f=>[FACTIONS[f].short,FACTIONS[f].col]).reverse()]){c.fillStyle=col;c.fillRect(lx-8,ly-8,8,8);c.fillStyle='#8c91a5';c.fillText(l,lx-14,ly);ly-=16}
   c.fillStyle='#5a647c';c.fillText('◆ Beacon: team colour · hollow unclaimed · amber ring yours',lx,ly);ly-=16;c.fillText('F Forge · Y Salvage Yard · ■ built depot · ▣ your vault',lx,ly);ly-=16;c.fillText('Dashed ring: sensors cover it · dimmed: no coverage',lx,ly);
 }
 let mapKey=false,mapKeyBox=null;

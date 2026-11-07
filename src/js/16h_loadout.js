@@ -189,7 +189,14 @@ function loadoutHtml(c,P){if(!loadOn())return'';const F=fitOf(P),q=rearmQuote(P)
 {const o=insHtml;insHtml=function(c,P){return loadoutHtml(c,P)+o.apply(this,arguments)}}
 // HUD: the gun readout shows the rounds left, or the mining tool on a mining hull
 {const o=hudUpdate;hudUpdate=function(){const r=o.apply(this,arguments);try{if(loadOn()&&W&&W.player&&!S.player.docked){const P=S.player,el=$('hWpn');
-  const g=P.wpn==='laser'?(fitN(P,'laser')?'LASER':'—'):(fitN(P,'gun')?`GUN ${P.ammo||0}`:'—'),m=blHull(P.cls)&&mtoolOf(P)?` · ${P.mtool==='mlaser'?'M-LASER':'CHARGES '+(P.blN||0)}`:'';el.textContent=g+m;if(P.wpn!=='laser'&&fitN(P,'gun')&&(P.ammo||0)<60)el.style.color='var(--danger)'}}catch(err){}return r}}
+  const g=P.wpn==='laser'?(fitN(P,'laser')?'LASER':'—'):(fitN(P,'gun')?`${P.ammo||0} ROUNDS`:'—'),m=blHull(P.cls)&&mtoolOf(P)?` · ${P.mtool==='mlaser'?'M-LASER':'CHARGES '+(P.blN||0)}`:'';el.textContent=g+m;if(P.wpn!=='laser'&&fitN(P,'gun')&&(P.ammo||0)<60)el.style.color='var(--danger)'}}catch(err){}return r}}
+// (7 Nov 2026) the flight row's missile count repeated the cooldown row's (MISSILES 3/3 twice): it shows only what the
+// cooldown row doesn't (a drone hull's drones; the special hulls' cells, charges and rail), and hides otherwise
+{const o=hudUpdate;hudUpdate=function(){const r=o.apply(this,arguments);try{const P=S&&S.player,p=W&&W.player,el=$('hMsl');if(P&&p&&el&&!P.docked){
+  const box=el.parentElement,nd=CLASSES[P.cls]&&CLASSES[P.cls].drones;
+  if(isSigCls(P.cls))box.style.display='';
+  else if(nd){$('hMslL').textContent='Drones';el.textContent=`${(p.drones||[]).filter(d=>d.alive).length}/${nd}`;box.style.display=''}
+  else box.style.display='none'}}catch(err){}return r}}
 // a guest keeps its own pick of mining tool; the host's record wins for everything else
 OWN.push('mtool');
 

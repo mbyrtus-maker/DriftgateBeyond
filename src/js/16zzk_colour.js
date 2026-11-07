@@ -5,10 +5,13 @@
 // and Stations (their lights, and their systems on the galaxy map), your AI pilots on radar, your declared faction. Free to
 // change until you declare a faction; fixed after. Each pilot of a multiplayer galaxy has their own; your own screen draws
 // "you" (PLAYER_COL) in yours. Nothing here touches the ledger.
-const CO_PAL=[{n:'Gold',c:'#f0b24a'},{n:'Crimson',c:'#e0485e'},{n:'Rose',c:'#ff86b6'},{n:'Cobalt',c:'#4f7cff'},{n:'Sky',c:'#7cc0ff'},
-  {n:'Magenta',c:'#e34fd6'},{n:'Lemon',c:'#f2ea55'},{n:'Pearl',c:'#e6ebf2'}];
-const CO_DEF=CO_PAL[0].c;
-function coCol(key){const N=S&&S.brandOf&&S.brandOf[key],B=N!=null&&S.brands&&S.brands[N];return(B&&B.col)||CO_DEF}
+// (7 Nov 2026) Forest and Bronze replace Crimson (too near the hostile red) and Magenta (too near the target highlight and
+// Riftstone pink): each is at least 32 (CIE76 ΔE) from every game signal, faction colour and other palette entry. A save that
+// holds an old colour reads as the one now in its place (CO_OLD).
+const CO_PAL=[{n:'Gold',c:'#f0b24a'},{n:'Forest',c:'#078c19'},{n:'Rose',c:'#ff86b6'},{n:'Cobalt',c:'#4f7cff'},{n:'Sky',c:'#7cc0ff'},
+  {n:'Bronze',c:'#8c6407'},{n:'Lemon',c:'#f2ea55'},{n:'Pearl',c:'#e6ebf2'}];
+const CO_DEF=CO_PAL[0].c,CO_OLD={'#e0485e':CO_PAL[1].c,'#e34fd6':CO_PAL[5].c};
+function coCol(key){const N=S&&S.brandOf&&S.brandOf[key],B=N!=null&&S.brands&&S.brands[N],c=B&&B.col;return c?CO_OLD[c]||c:CO_DEF}
 function coMine(){return coCol(pkeyOf(S.player))}
 // the colour of whoever holds a system for 'player' (a pilot's Station there)
 function coColAt(sid){const R=S.stations&&S.stations[sid];if(R&&R.owner==='player')return coCol(R.pid||'me');return PLAYER_COL}

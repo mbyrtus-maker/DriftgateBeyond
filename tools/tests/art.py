@@ -20,13 +20,17 @@ async def main():
     used=json.loads(await ev("""(()=>{let last=null;const o=mdlMesh;mdlMesh=function(n){last=n;return o.apply(this,arguments)};const out={};
       const one=(f,c)=>{for(const k in MESH)delete MESH[k];last=null;try{shipMesh(f,c)}catch(e){last='ERR '+e.message}return last};
       for(const f of FAC_IDS)out[f+':constructor']=one(f,'constructor');
-      for(const c of ['raider','corsair','plunderer','uskiff','interceptor','striker','heavy','bomber','gunboat','scout','scout2','courier','freighter','bulker','skiff','prospector','dredger','constructor'])out['pirate:'+c]=one('pirate',c);
+      for(const c of ['raider','corsair','plunderer','uskiff','interceptor','striker','heavy','bomber','gunboat','scout','scout2','courier','freighter','bulker','skiff','prospector','dredger','constructor','drone','frigate'])out['pirate:'+c]=one('pirate',c);
+      for(const f of ['neutral','player'])for(const c of ['frigate','drone','mite'])out[f+':'+c]=one(f,c);
       mdlMesh=o;return JSON.stringify(out)})()"""))
     check('every power\'s constructor draws as its approved model',[used[f+':constructor'] for f in ('halcyon','varkesh','ostrova')]==['dz_architect','dz_foundry','dz_loom'],{k:v for k,v in used.items() if 'constructor' in k})
-    six={'dz_raider','dz_skiff','dz_corsair','dz_plunderer','dz_wrecker'}
+    six={'dz_raider','dz_skiff','dz_corsair','dz_plunderer','dz_wrecker','dz_ravager'}
     bad={k:v for k,v in used.items() if k.startswith('pirate:') and v not in six}
     check('every Unbound class draws as one of their designs',not bad,bad)
     check('the Unbound bomber is their Wrecker',used['pirate:bomber']=='dz_wrecker')
+    check('the Unbound drone and destroyer are a Raider and the Ravager (7 Nov 2026)',[used['pirate:drone'],used['pirate:frigate']]==['dz_raider','dz_ravager'],[used['pirate:drone'],used['pirate:frigate']])
+    errh={k:v for k,v in used.items() if str(v).startswith('ERR')}
+    check('neutral and player frigates, drones and mites build without errors',not errh,errh)
     # the assault ship: three fly in from a capital's side, one is shot down on the way, two fly back
     r=json.loads(await ev("""(()=>{undock();const E=W.stationEnt,p=W.player;p.x=E.x+900;p.y=E.y+250;p.z=E.z+900;p.vx=p.vy=p.vz=0;faceInstant(p,E.x-p.x,E.y-p.y,E.z-p.z);
       const t={side:'varkesh',sector:W.sid};let calls=0;const o=drawMesh;window.__asd=0;

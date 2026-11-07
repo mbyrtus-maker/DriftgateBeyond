@@ -10,12 +10,14 @@ let mapZoom=null;
 const ZM={stay:120};
 {const o=drawMap;drawMap=function(){if(!mapZoom||!S||S.unb||S.training)return o.apply(this,arguments);try{capSightTick&&capSightTick()}catch(e){}
   const w=mcv.clientWidth,h=mcv.clientHeight;if(!w||!h)return;mcv.width=w*DPR;mcv.height=h*DPR;const c=mctx;c.setTransform(DPR,0,0,DPR,0,0);const sz=Math.min(w,h);
-  c.fillStyle='#05080f';c.fillRect(0,0,w,h);c.save();c.translate((w-sz)/2,(h-sz)/2);const r=sxDraw({width:sz,height:sz,getContext:()=>c},mapZoom);zmLabels(c,sz,mapZoom);c.restore();
+  c.fillStyle='#05080f';c.fillRect(0,0,w,h);c.save();c.translate((w-sz)/2,(h-sz)/2);const r=sxDraw({width:sz,height:sz,getContext:()=>c,noCap:true},mapZoom);zmLabels(c,sz,mapZoom);c.restore();
   c.fillStyle='rgba(16,22,36,.9)';c.fillRect(10,10,96,26);c.strokeStyle='#6fb7ff';c.strokeRect(10.5,10.5,95,25);c.fillStyle='#cfe3ff';c.font='12px sans-serif';c.fillText('◀ Galaxy',24,28);
-  c.font='bold 15px sans-serif';c.fillStyle='#ece4cf';c.fillText(DEF[mapZoom].name.toUpperCase(),120,28);c.font='11px sans-serif';c.fillStyle='#9aa6bd';c.fillText(`${DEF[mapZoom].kind||''} · ${r.ships} ship${r.ships===1?'':'s'} · ${r.threats} threat${r.threats===1?'':'s'}`,120,44)}}
+  c.font='bold 15px sans-serif';c.fillStyle='#ece4cf';c.fillText(DEF[mapZoom].name.toUpperCase(),120,28);c.font='11px sans-serif';c.fillStyle='#9aa6bd';c.fillText(`${r.live?'live':'from intel'} · ${DEF[mapZoom].kind||''} · ${r.ships} ship${r.ships===1?'':'s'} · ${r.threats} threat${r.threats===1?'':'s'}`,120,44)}}
+// (7 Nov 2026) the sector view's own caption (live or from intel, ships, threats) joins the one under the system's name at the
+// top: at the foot of the square it was cut off in a short window
 // names for your capitals and crews in the zoomed view
 function zmLabels(c,sz,sid){const w=WORLDS[sid];if(!w)return;let R=2600;for(const g of GATES[sid]||[])R=Math.max(R,hyp(g.x,g.z)+400);const k=(sz/2-10)/R,X=x=>sz/2+x*k,Y=z=>sz/2+z*k;c.font='10px sans-serif';
-  for(const e of w.ents){if(e.type!=='ship'||!e.alive)continue;let lab=null;if(e.tok&&fMine(e.tok))lab=e.tok.name;else if(e.crewId)lab=e.pname||'crew';else if(e.isPlayer)lab='you';else if(e.pname&&(e.leaderOf||e.dreadOf))lab=e.pname;if(!lab)continue;c.fillStyle=e.tok&&fMine(e.tok)?'#f0b24a':'#ece4cf';c.fillText(lab,X(e.x)+6,Y(e.z)-5)}
+  for(const e of w.ents){if(e.type!=='ship'||!e.alive)continue;let lab=null;if(e.tok&&fMine(e.tok))lab=e.tok.name;else if(e.crewId)lab=e.pname||'crew';else if(e.isPlayer)lab='you';else if(e.pname&&(e.leaderOf||e.dreadOf))lab=e.pname;if(!lab)continue;c.fillStyle=e.tok&&fMine(e.tok)?PLAYER_COL:'#ece4cf';c.fillText(lab,X(e.x)+6,Y(e.z)-5)}
   const R0=S.stations[sid];if(R0){c.fillStyle='#ece4cf';c.fillText(R0.name,X(R0.x)+10,Y(R0.z)+4)}}
 function zmSet(sid){mapZoom=sid||null;if(sid)mapSel=sid;try{drawMap();renderMapSide()}catch(e){}}
 // zooming: double click, the wheel, the "◀ Galaxy" box (a click in the zoomed view does nothing else)

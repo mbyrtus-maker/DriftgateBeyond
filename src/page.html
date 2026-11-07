@@ -81,6 +81,11 @@ kbd{font-family:var(--f-mono);font-size:10px;padding:1px 4px;border:1px solid va
 #radar{width:340px;height:300px;display:block}
 #hBL>div{zoom:2;max-width:300px}
 @media (max-width:1499px),(max-height:820px){#hBL>div{zoom:1.5;max-width:330px}#radar{width:270px;height:238px}}#hBL .flight{gap:4px 12px}#hBL .cds{gap:4px 10px}
+/* (7 Nov 2026) small windows: the ship stats shrink so they end left of the Command panel (folded to its header under 900 px
+   wide, see cmFit) and stay below the crosshair; the hint row above them follows */
+@media (max-width:1099px),(max-height:640px){#hBL>div{zoom:1.15;max-width:260px}#radar{width:220px;height:194px}}
+@media (max-width:899px){#radar{width:180px;height:159px}}
+@media (max-height:640px){#hud #hKeysNow{bottom:calc(200px + env(safe-area-inset-bottom,0px))}}
 .bars{width:230px;display:grid;gap:6px}
 .bar{display:grid;grid-template-columns:52px 1fr 44px;align-items:center;gap:8px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
 .bar .tr{height:7px;background:rgba(255,255,255,.06);position:relative;overflow:hidden}
