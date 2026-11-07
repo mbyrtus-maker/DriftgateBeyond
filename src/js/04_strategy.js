@@ -24,7 +24,7 @@ function strategicTick(){
   for(const f of FAC_IDS)factionIndustry(f);try{patTick()}catch(e){frameErr('patronage',e)}factionIndustry('brood');neutralIndustry();lifeTick();devTick();hgTick();logiTick();weTick();carTick();sortieTick();wkRepair();fpContracts();blkContracts();contContracts();
   pirateIndustry();
   const h=S.outposts.hollow;
-  if(h.owner){let got=0;for(const f of FAC_IDS){if(f===h.owner)continue;got+=transfer(f,h.owner,22)}if(h.owner==='player'){S.tollAcc+=got;if(S.tollAcc>=300){feed(`Hollow Relay tolls: +${fmt(S.tollAcc)} cr`,'good');S.tollAcc=0}}}
+  if(h.owner){let got=0;for(const f of FAC_IDS){if(f===h.owner)continue;got+=transfer(f,h.owner,BAL.hollowToll)}if(h.owner==='player'){S.tollAcc+=got;if(S.tollAcc>=300){feed(`Hollow Relay tolls: +${fmt(S.tollAcc)} cr`,'good');S.tollAcc=0}}}
   for(const f of[...FAC_IDS,'pirate','brood'])if(T>=S.ai[f].next){S.ai[f].next=T+(f==='pirate'?rnd(110,170):f==='brood'?rnd(95,150)*BAL.brOff:rnd(75,135));planOffensive(f)}
   for(const f of[...FAC_IDS,'brood'])if(T>=(S.ai[f].build||0)){S.ai[f].build=T+(f==='brood'?rnd(220,340)*BAL.brBuild:rnd(150,260));planBuild(f)}
 }
