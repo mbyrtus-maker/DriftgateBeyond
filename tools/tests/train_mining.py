@@ -33,7 +33,9 @@ async def main():
       p.x=a.x+d.x*R;p.y=a.y+d.y*R;p.z=a.z+d.z*R;p.vx=p.vy=p.vz=0;faceInstant(p,-d.x,-d.y,-d.z);W.tgt={kind:'ast',ref:a};keys.KeyF=true;p.energy=p.st.eCap;return 1})()"""%pickrock
     fire="""(()=>{keys.KeyF=false;const a=%s,p=W.player,P=S.player;if(bt4Charges())return 1;const pts=blPts(a),q=pts[0];const dx=q.x-a.x,dy=q.y-a.y,dz=q.z-a.z,l=Math.hypot(dx,dy,dz);p.x=a.x+dx/l*(l+150);p.y=a.y+dy/l*(l+150);p.z=a.z+dz/l*(l+150);p.vx=p.vy=p.vz=0;faceInstant(p,-dx,-dy,-dz);W.tgt={kind:'ast',ref:a};p.blCd=0;blFire(p,P);return 1})()"""%pickrock
     det="""(()=>{const a=%s,p=W.player;const dx=p.x-a.x,dy=p.y-a.y,dz=p.z-a.z,l=Math.hypot(dx,dy,dz)||1,R=astR(a)+260;p.x=a.x+dx/l*R;p.y=a.y+dy/l*R;p.z=a.z+dz/l*R;blDetonate(S.player,p);return 1})()"""%pickrock
-    scoop="""(()=>{const s=S.sectors[W.sid],p=W.player,c=(s.clouds||[]).filter(x=>oreTotal(x)>0).sort((x,y)=>d3(x,p)-d3(y,p))[0];if(c){p.x=c.x;p.y=c.y;p.z=c.z;p.vx=c.vx||0;p.vy=c.vy||0;p.vz=c.vz||0;keys.KeyF=true}return 1})()"""
+    # a small blast can leave under 3 t: then, as the prompt says, set another charge and detonate it
+    scoop="""(()=>{const s=S.sectors[W.sid],p=W.player,c=(s.clouds||[]).filter(x=>oreTotal(x)>0).sort((x,y)=>d3(x,p)-d3(y,p))[0];if(c){p.x=c.x;p.y=c.y;p.z=c.z;p.vx=c.vx||0;p.vy=c.vy||0;p.vz=c.vz||0;keys.KeyF=true}
+      else{window._rb=(window._rb||0)+1;if(bt4Charges())%s;else %s}return 1})()"""%(det,fire)
     acts=["(()=>{undock();return 1})()","(()=>{targetNearest('ast');return 1})()",ack,laser,
       "(()=>{keys.KeyF=false;S.player.mtool='charge';return 1})()",fire,det,scoop,
       "(()=>{keys.KeyF=false;return 1})()".replace("return 1","S.training.ack=1;return 1"),

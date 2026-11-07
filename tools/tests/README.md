@@ -30,8 +30,8 @@ Set `DG_GAME` to test another file, and `DG_OUT` for where screenshots go (defau
 | legend.py | Beyond stage 14: Legend points once per galaxy, the start package picker, a level 10 package applied (ledger exact), a win banking Conqueror's spoils carried into the next galaxy |
 | piracy.py | Beyond: pirate gear: Scrapheart stock, jammer and hook fitted, a hauler jammed dark and hooked (stolen tags, heat, standing, ledger exact), customs heat for gear |
 | train_flight.py | Beyond training section 1: the picker, the contractor start, all 21 steps of Flight and your first job |
-| train_contracts.py | Beyond training section 2: Contracts and standing, all 13 steps, a freeport request bought, flown and delivered, ledger exact |
-| train_combat.py | Beyond training section 3: Combat, all 14 steps: drones, laser, missile, flares, salvage, two live raiders, distress, ledger exact |
+| train_contracts.py | Beyond training section 2: Contracts and standing, all 13 steps (Allegiance opened with the key its prompt names), a freeport request bought, flown and delivered, ledger exact |
+| train_combat.py | Beyond training section 3: Combat, all 14 steps: drones (still there after idling 30 s at step 2), laser, missile, flares, salvage, two live raiders, distress, ledger exact |
 | train_mining.py | Beyond training section 4: Mining, all 13 steps: laser on the ring, a charge fired and detonated, chunks scooped, ore delivered and sold, ledger exact |
 | crews.py | Beyond: AI crews as ships: miner, hauler and guard flying their jobs, a job change, laid up, a crew ship lost, none elsewhere, ledger exact |
 | destroyers.py | Beyond: destroyers and the Ravager: laid down and launched, assault ships, model and mounts, the charged gun (shields down), the Gullet beam, your level 4 Station, no sloops, ledger exact |

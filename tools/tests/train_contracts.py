@@ -1,5 +1,5 @@
 # Beyond training, section 2 (Contracts and standing): the section starts a contractor at the freeport with a freeport
-# request set up to the next freeport; every step completes from the game's own actions: the Allegiance and Jobs tabs,
+# request set up to the next freeport; every step completes from the game's own actions: the Allegiance tab (opened with the key its prompt names) and the Jobs tab,
 # selecting and dropping a job, selecting the request, buying the goods, the trip, docking and delivering; paid by the
 # Compact, standing up, ledger exact
 import asyncio,json,sys
@@ -36,6 +36,13 @@ async def main():
       "(()=>{const SE=W.stationEnt,p=W.player;apOn=false;p.x=SE.x+200;p.y=SE.y;p.z=SE.z;p.vx=p.vy=p.vz=0;p.boot=0;if(!W.docking&&!S.player.docked)actPress();return 1})()",
       "(()=>{if(S.player.docked){$('dock').hidden=false;dockTab='jobs';renderDock();window._c0=window._c0||S.player.credits;dockClick('deliver',String(S.training.v.kid))}return 1})()",
       ack,ack]
+    # step 1 with the real key: the dock open on Overview, press the digit the prompt names, as a pilot would
+    await ev("(()=>{$('dock').hidden=false;dockTab='home';renderDock();return 1})()")
+    kk=await ev(r"(()=>{const m=String(trCur().s.x()).match(/<kbd>(\d)<\/kbd>/);return m?m[1]:''})()")
+    await pg.evaluate("c=>{dispatchEvent(new KeyboardEvent('keydown',{code:c,bubbles:true}));dispatchEvent(new KeyboardEvent('keyup',{code:c,bubbles:true}))}",'Digit'+kk)
+    await pg.wait_for_timeout(1000)
+    tab=await ev("dockTab");print('allegiance key',kk,'opens',tab,'step',await ev("S.training.j"))
+    if tab!='allegiance':print('STUCK the prompt names key',kk,'for Allegiance, which opens',tab)
     for n,a in enumerate(acts):
       ok=await wait_step(n,a,120 if n==9 else 40)
       print(n+1,'ok' if ok else 'STUCK',await ev("(()=>{const c=trCur();return c?String(typeof c.s.x==='function'?c.s.x():c.s.x).replace(/<[^>]+>/g,'').slice(0,90):'done'})()"),await ev("dockErr||''"))

@@ -1,6 +1,6 @@
 # Beyond training, section 3 (Combat): the section starts a contractor in a Light Fighter at the freeport; every step
 # completes from the game's own actions: targeting and cycling practice drones, the laser, a kill, a missile, flares, the
-# rest of the drones, scooping a salvage crate, two live Unbound raiders, a distress call; ledger exact
+# rest of the drones (after idling 30 s at step 2: the drones must survive it), scooping a salvage crate, two live Unbound raiders, a distress call; ledger exact
 import asyncio,json,sys
 from playwright.async_api import async_playwright
 import os
@@ -39,6 +39,11 @@ async def main():
       "(()=>{window._hp=W.player.hull;for(const e of bt3WingLive())damageShip(e,99999,'player',{x:e.x,y:e.y,z:e.z,src:W.player},'laser');return 1})()",
       "(()=>{pilotDistress();return 1})()",ack,ack]
     for n,a in enumerate(acts):
+      if n==1:
+        # idle at step 2 for 30 s before targeting: the practice drones must still be there (nothing else may shoot them)
+        t0=await ev("W.t");await pg.wait_for_timeout(30000)
+        print('idle at step 2',await ev("JSON.stringify({j:S.training.j,drones:trDroneEnts().length})"),'sim s',round(await ev("W.t")-t0))
+        if await ev("trDroneEnts().length")<3:print('STUCK drones lost while idle');break
       ok=await wait_step(n,a,60)
       print(n+1,'ok' if ok else 'STUCK',await ev("(()=>{const c=trCur();return c?String(typeof c.s.x==='function'?c.s.x():c.s.x).replace(/<[^>]+>/g,'').slice(0,80):'done'})()"))
       if not ok:break
