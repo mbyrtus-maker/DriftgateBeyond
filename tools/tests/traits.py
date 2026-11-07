@@ -186,7 +186,7 @@ async def main():
 
     # ---- live: targeting and break-off for every side
     s=await j("""(()=>{if(S.player.docked)undock();for(let i=0;i<FAC_IDS.length;i++)for(let k=i+1;k<FAC_IDS.length;k++){const a=FAC_IDS[i],c=FAC_IDS[k];S.rel[a][c]=S.rel[c][a]=-90;const P=pairOf(a,c);P.war=1;P.warT=S.T;P.ally=0}
-      Object.assign(window.__tr,{clear(){W.ents=W.ents.filter(x=>!x.__tr)},sp(role,side,cls,x){const e=makeNPC(role,side,cls,1,{},W.sid);e.__tr=1;e.x=90000+x;e.y=7000;e.z=-90000;W.ents.push(e);return e}});
+      Object.assign(window.__tr,{clear(){W.ents=W.ents.filter(x=>!x.__tr)},sp(role,side,cls,x){const e=makeNPC(role,side,cls,1,{},W.sid);e.__tr=1;e.pt=null;e.ptk=null;e.ptWant=undefined;e.x=90000+x;e.y=7000;e.z=-90000;W.ents.push(e);return e}});
       return JSON.stringify({live:!!W,hv:hostile('halcyon','varkesh'),ph:hostile('pirate','halcyon'),hb:hostile('halcyon','brood'),pb:hostile('pirate','brood')})})()""")
     ok(s['live'] and s['hv'] and s['ph'] and s['hb'],'live: a system with the powers at war, the Unbound and the Brood hostile',str(s))
     foe={'halcyon':'varkesh','varkesh':'ostrova','ostrova':'halcyon','pirate':'halcyon'}

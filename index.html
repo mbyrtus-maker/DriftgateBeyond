@@ -5158,7 +5158,7 @@ function fight(e,t,dt){
   if(e.flares&&(ai.flareAt||0)<=W.t&&e.energy>=30&&W.missiles.some(m=>m.tgt===e&&m.kind!=='swarm'&&d3(m,e)<700)){e.energy-=30;deployFlares(e);ai.flareAt=W.t+5}const dx=t.x-e.x,dy=t.y-e.y,dz=t.z-e.z,d=hyp(dx,dy,dz)||1,lp0=e.wpn==='laser'?t:leadPoint(e,t,e.st.shotSpd||SHOT_SPD),lp={x:t.x+(lp0.x-t.x)*ai.lead,y:t.y+(lp0.y-t.y)*ai.lead,z:t.z+(lp0.z-t.z)*ai.lead};
   const amp=.03-.006*((e.aimT||e.tier||1)-1);ai.jx=(ai.jx||0)*.97+rnd(-amp,amp);ai.jy=(ai.jy||0)*.97+rnd(-amp,amp);if(!ai.bT||W.t>ai.bT){ai.bOn=!ai.bOn;ai.bT=W.t+(ai.bOn?rnd(.7,1.4):rnd(.8,1.6))}
   const err=faceDir(e,lp.x-e.x+ai.jx*d,lp.y-e.y+ai.jy*d,lp.z-e.z,dt);
-  const want=t.type==='outpost'||t.type==='station'?560:400;
+  const want=t.type==='outpost'||t.type==='station'?560:(e.ptWant||400);
   const ax=ai.ax;let px=dy/d*ax.z-dz/d*ax.y,py=dz/d*ax.x-dx/d*ax.z,pz=dx/d*ax.y-dy/d*ax.x;const pl=hyp(px,py,pz)||1;px/=pl;py/=pl;pz/=pl;
   steer(e,t.x-dx/d*want+px*260,t.y-dy/d*want+py*260,t.z-dz/d*want+pz*260,dt,false,.85);
   if(ai.bOn||e.jamMode||t.type==='outpost'||t.type==='station'||t.kind==='torpedo'){if(e.wpn==='laser'){if(err<(ai.fErr||.07)&&d<LASER_RANGE&&e.energy>e.st.eCap*.2)fireLaser(e)}else if(err<(ai.fErr||.09)&&d<SHOT_RANGE)fire(e)}
@@ -14660,6 +14660,417 @@ function aipGrades(k){const A=S.aip&&S.aip[k],T={engine:1,power:1,shield:1,weapo
 function aipFly(e,k){const T=e&&aipGrades(k);if(!T)return e;e.st=shipStats(e.fac,e.cls,T);e.hull=e.st.hull;e.shield=e.st.sCap;e.energy=e.st.eCap;return e}
 {const o=crewSpawn;crewSpawn=function(R,id,c){const e=o.apply(this,arguments);try{if(e&&c)aipFly(e,'c'+c.id)}catch(err){console.error(err)}return e}}
 {const o=crSpawn;crSpawn=function(r){const e=o.apply(this,arguments);try{if(e&&r)aipFly(e,'c'+r.crew)}catch(err){console.error(err)}return e}}
+
+//@src 16zzzc_indep.js
+// ============================================================ Beyond: independent pilots (agreed 7 Nov 2026, built 7 Nov 2026)
+// A standing population of independent AI contractors living the player's life on a small scale (BEYOND_DESIGN.md,
+// "Proposal: independent pilots" and "Independent pilots: agreed"). Each is a tracked pilot (S.ind.list) with a name, a home
+// freeport, a hull and its fitted makers' parts (I.kit), a hold (I.hold), a purse (wallet ind_<id> in S.econ.treasury), a
+// Contractor Rating (I.rp) and standing with the powers (I.stand), and a personality (I.pt, 16zzzd_ptraits.js).
+//   Arrival: 4 per freeport at the start; a newcomer every 20 to 40 minutes while a freeport has fewer than 4 (6 at most,
+//            18 a galaxy). A newcomer flies a free light hull (a starter, as yours), has a stake of 1,500 cr moved from the
+//            Compact's treasury (credits zero-sum) and fits its first parts off its freeport's shelf with it.
+//   Work:    posted jobs (Supply, Haul, Mine, Guard) go to the nearest free independent whose hull fits (the one-off Compact
+//            contractor only when none is free), flown by the same tracked run (16zzr_contract.js) and paid into its purse;
+//            the boards' jobs (freeport requests, blockade and containment runs, the powers' ore orders) once a job has gone
+//            untaken for 8 minutes; between jobs a hauler trades (buys at one market, sells at another where the margin beats
+//            the fees) and a miner mines real rock and sells the ore.
+//   Buying:  docked at a market with money above a reserve (400 cr plus a rebuy of its hull) it fits and upgrades one part per
+//            work slot (the crews' rule, 16zzzb_aipilots.js: best value by traits, grade and price, up to its Rating), off the
+//            shelf with the maker paid; at a high enough Rating it buys the next hull of its line at a yard.
+//   Risk:    it flies the lanes and can be shot down like any ship, live or (in Brood-held systems and pirate dens) out of
+//            sight. Shot down, it loses its hull, kit and hold (salvage where it fell); after 5 minutes it rebuys a hull at
+//            home if it has the money (its lost hull, else a free light hull), with a new trait learned from how it died,
+//            or retires and its purse goes to the Compact. Shooting one costs no standing with anyone (the user: a
+//            free-for-all for now).
+// Everything moves exactly: goods only between stores, holds, kits, rocks and debris; credits only between wallets.
+const IND={start:4,cap:6,max:18,arrive:[1200,2400],stake:1500,reserve:400,hop:45,pass:60,back:300,boardAge:480,minProfit:60,minPurse:300,
+  mineT:{skiff:3,prospector:5,dredger:7},fill:.9,
+  line:{fighter:['interceptor','striker','heavy'],miner:['skiff','prospector','dredger'],hauler:['courier','freighter','bulker']},
+  slots:{hauler:[['cargo']],miner:[['mlaser']],fighter:[['laser','gun']]},risk:{brood:.06,den:.05,near:.015}};
+const IND_GOODS=['fe','cu','ir','xc','au','nu','plate','wire','coil','lattice','core','missile','drone'];
+const IND_FIRST=['Mara','Tobin','Ilse','Corvin','Neve','Bastian','Yara','Dorran','Petra','Halvard','Isolde','Rhett','Sunniva','Cato','Liesel','Emeric','Ondine','Ferris','Greta','Joss','Anouk','Silas','Thea','Wolf'];
+const IND_LAST=['Venn','Okafor','Brask','Lindqvist','Moreau','Kade','Szabo','Ferreira','Thorne','Abara','Kowal','Hesketh','Duval','Rourke','Vasquez','Ingram','Nakai','Sorel','Petrakis','Wyle'];
+let IND_HOLD=null;
+function indOn(){return!!(S&&!S.training&&!S.unb&&!NET.cl)}
+function indAll(){S.ind=S.ind||{list:[],arr:{}};return S.ind.list}
+function indById(id){return indAll().find(I=>String(I.id)===String(id))||null}
+function indW(I){return'ind_'+I.id}
+function indStore(I){const R=S.stations[I.port];return R&&R.owner==='neutral'?dStore(R):S.econ.stock.pirate}
+function indPurse(I){return S.econ.treasury[indW(I)]||0}
+function indPorts(){return FREEPORTS.map(f=>f.sid).filter(sid=>S.stations[sid]&&S.stations[sid].owner==='neutral')}
+function indRoleOfJob(kind){return kind==='guard'?'fighter':kind==='mine'?'miner':'hauler'}
+function indAlive(I){return I.st!=='down'}
+function indDoing(I){const r=I.run;if(I.st==='pj')return'On a job';if(I.st==='down')return'Shot down';if(I.st==='work')return'Mining';if(I.st==='dock')return'Docked';
+  return r&&r.k==='trade'?'Trading':r&&r.k==='board'?'Delivering':r&&r.k==='mine'?'Off to mine':'Heading home'}
+function indLabel(I){return`Independent · ${I.name} · ${indDoing(I)}${I.pt?' · '+ptName(I.pt):''}`}
+function indName(){const used=new Set(indAll().map(I=>I.name));for(let i=0;i<40;i++){const n=pick(IND_FIRST)+' '+pick(IND_LAST);if(!used.has(n))return n}return pick(IND_FIRST)+' '+pick(IND_LAST)+' '+ri(2,9)}
+function indCargo(I){return shipStats(null,I.cls,indGrades(I)||baseTiers()).cargo}
+function indGrades(I){const T={engine:1,power:1,shield:1,weapon:1,armor:1,drill:1,cargo:1,payload:1};let any=false;
+  for(const id in I.kit||{}){const It=ITEMS[id];if(!It||!(I.kit[id]>0))continue;const g=It.grade||1,sl=It.part==='cargo'?'cargo':It.part==='mlaser'?'drill':It.part==='gun'||It.part==='laser'?'weapon':null;if(sl&&g>T[sl]){T[sl]=g;any=true}}return any?T:null}
+function indFly(e,I){const T=indGrades(I);if(T){e.st=shipStats(e.fac,e.cls,T);e.hull=e.st.hull;e.shield=e.st.sCap;e.energy=e.st.eCap}return e}
+// a market an independent may use: the freeports always; a power's station unless the power counts it hostile
+function indMarketOK(I,R){if(!R)return false;if(R.owner==='neutral')return R.kind==='free';if(!FAC_IDS.includes(R.owner))return false;if(ptHas(I,'Smuggler'))return false;return(I.stand[R.owner]||0)>STAND.dock}
+// how dangerous a system is to fly through out of sight (Brood space, pirate dens, and next to them)
+function indDanger(sid){if(broodHeld(sid))return IND.risk.brood;if(DEF[sid]&&DEF[sid].kind==='den')return IND.risk.den;if((NEIGH[sid]||[]).some(n=>broodHeld(n)||(DEF[n]&&DEF[n].kind==='den')))return IND.risk.near;return 0}
+// a path: the shortest, or one that keeps out of danger (Safe Routes, Convoy Only), or a different one from last time (Route Changer)
+function indPath(I,a,b){if(a===b)return[a];const avoid=ptHas(I,'Safe Routes')||ptHas(I,'Convoy Only')||ptHas(I,'Edge Walker'),alt=ptHas(I,'Route Changer');
+  if(avoid||alt){const cost=s=>1+(avoid?indDanger(s)*60:0)+(alt&&I.lastPath&&I.lastPath.includes(s)&&s!==a&&s!==b?2:0);const dist={[a]:0},prev={},open=[a];
+    while(open.length){open.sort((x,y)=>dist[x]-dist[y]);const u=open.shift();if(u===b)break;for(const v of NEIGH[u]||[]){const d=dist[u]+cost(v);if(dist[v]==null||d<dist[v]){dist[v]=d;prev[v]=u;if(!open.includes(v))open.push(v)}}}
+    if(dist[b]!=null){const p=[b];let c=b;while(c!==a){c=prev[c];p.unshift(c)}I.lastPath=p;return p}}
+  const p=trPath(a,b)||[a];I.lastPath=p;return p}
+function indHops(a,b){return a===b?0:(HOP[a]&&HOP[a][b]!=null?HOP[a][b]:99)}
+// ---- arrival
+function indNew(sid){if(indAll().filter(indAlive).length>=IND.max)return null;if((S.econ.treasury.neutral||0)<IND.stake)return null;
+  const role=wpick({hauler:4,miner:3.5,fighter:2.5}),I={id:S.nextId++,name:indName(),port:sid,role,cls:IND.line[role][0],kit:{},hold:{},rp:0,stand:{halcyon:0,varkesh:0,ostrova:0},sector:sid,st:'dock',run:null,pt:null,deaths:0,born:S.T,jobs:0,earned:0,idleT:S.T};
+  I.pt=ptRoll(role);indAll().push(I);transfer('neutral',indW(I),IND.stake);try{indShop(I,S.stations[sid])}catch(e){console.error(e)}return I}
+function indArrivals(){const A=S.ind.arr;for(const sid of indPorts()){const n=indAll().filter(I=>indAlive(I)&&I.port===sid).length;
+  if(A[sid]==null){for(let i=n;i<IND.start;i++)indNew(sid);A[sid]=S.T+rnd(IND.arrive[0],IND.arrive[1]);continue}
+  if(S.T>=A[sid]){if(n<IND.start&&n<IND.cap)indNew(sid);A[sid]=S.T+rnd(IND.arrive[0],IND.arrive[1])}}}
+// ---- buying parts and hulls, as a pilot does
+function indShop(I,R){if(!R||!S.corp||!(R.owner==='neutral'||FAC_IDS.includes(R.owner))||!indMarketOK(I,R))return 0;const w=indW(I),cls=I.cls,gcap=gradeCap(I);let n=0;
+  const keep=IND.reserve+(START_HULLS.includes(cls)?0:hullPrice(cls));
+  for(const kinds of IND.slots[I.role]||[]){const budget=indPurse(I)-keep;if(budget<=0)break;let have=null;for(const id in I.kit)if(I.kit[id]>0&&ITEMS[id]&&kinds.includes(ITEMS[id].part)){have=id;break}
+    if(!have){const id=aipBest(R,kinds,gcap,budget,cls,0);if(id&&mkBuyOne(R,id,w,cls,I.kit))n++;continue}
+    const g=ITEMS[have].grade||1,id=aipBest(R,kinds,gcap,budget+mkPartSell(R,have,cls),cls,g);if(!id)continue;if(mkSellOne(R,have,w,cls,I.kit)&&mkBuyOne(R,id,w,cls,I.kit))n++}
+  return n}
+function indYardOK(R){return!!R&&((R.owner==='neutral'&&R.kind==='free')||(FAC_IDS.includes(R.owner)&&R.kind==='core'))}
+function indUpgrade(I,R){if(!indYardOK(R)||!indMarketOK(I,R))return false;const L=IND.line[I.role],i=L.indexOf(I.cls),nx=L[i+1];if(!nx||ratingOf(I)<(HULL_RATING[nx]||1))return false;
+  const pr=hullPrice(nx),old=I.cls,wl=R.owner==='neutral'?'neutral':R.owner;if(indPurse(I)<pr+IND.reserve+300)return false;if(transfer(indW(I),wl,pr)<pr)return false;
+  const ti=START_HULLS.includes(old)?0:Math.floor(Math.min(hullPrice(old),I.paid==null?hullPrice(old):I.paid)*TRADE_IN);if(ti)transfer(wl,indW(I),ti);
+  I.cls=nx;I.paid=pr;return true}
+// ---- selling: the station's owner pays the Market's sell price for what it can afford; the rest stays aboard
+function indSell(I,R,only){if(!R||!indMarketOK(I,R))return 0;const wl=R.owner==='neutral'?'neutral':R.owner,mk=mkStock(R);let got=0;
+  for(const k of Object.keys(I.hold)){if(only&&k!==only)continue;if(I.res&&I.res[k])continue;const have=I.hold[k]||0;if(!have||!ITEMS[k])continue;const pr=mkPartSell(R,k,I.cls),n=Math.min(have,Math.floor((S.econ.treasury[wl]||0)/pr));if(n<=0)continue;
+    inv.take(I.hold,k,n);inv.add(mk,k,n);got+=transfer(wl,indW(I),n*pr)}
+  I.earned+=got;return got}
+function indBuy(I,R,k,n){const wl=R.owner==='neutral'?'neutral':R.owner,mk=mkStock(R),pr=mkPartPrice(R,k,I.cls);n=Math.min(n,mk[k]||0,Math.floor(indPurse(I)/pr),Math.floor((indCargo(I)-invMass(I.hold))/mass(k)));if(n<=0)return 0;
+  const paid=transfer(indW(I),wl,n*pr);if(paid<n*pr){transfer(wl,indW(I),paid);return 0}inv.take(mk,k,n);inv.add(I.hold,k,n);if(ITEMS[k].maker&&typeof ceSale==='function')ceSale(ITEMS[k].maker,k,n,paid,wl,R.sid);return n}
+// ---- deciding what to do next, docked
+function indGo(I,k,to,extra){const p=indPath(I,I.sector,to);I.run=Object.assign({k,to,path:p,leg:0,next:S.T+IND.hop*.5*ptHopK(I),T0:S.T},extra||{});I.st='go';I.idleT=S.T;
+  if(WORLDS[I.sector])inW(WORLDS[I.sector],()=>indSpawn(I,false))}
+function indMarkets(I,from,maxH){const L=[];for(const id in S.stations){const D=S.stations[id];if(!D||!indMarketOK(I,D))continue;const h=indHops(from,id);if(h<=maxH)L.push({D,h})}return L}
+// a hauler's trade: the best margin from here, per hop
+function indTradePlan(I,R){if(!indMarketOK(I,R))return null;const mk=mkStock(R),cap=indCargo(I)*(ptHas(I,'Overloader')?1:.8),budget=indPurse(I)-IND.reserve;if(budget<200)return null;let best=null;
+  for(const{D,h}of indMarkets(I,R.sid,ptHas(I,'Speed Demon')?3:4)){if(D===R)continue;const wl=D.owner==='neutral'?'neutral':D.owner,tr=S.econ.treasury[wl]||0;
+    const risk=indPath(I,R.sid,D.sid).reduce((a,s)=>a+indDanger(s),0);if(risk>.12&&!ptHas(I,'Greedy')&&!ptHas(I,'Speed Demon'))continue;
+    for(const k of IND_GOODS){if(!(mk[k]>0)||ITEMS[k].maker)continue;const b=mkPartPrice(R,k,I.cls),s=mkPartSell(D,k,I.cls),m=s-b;if(m<=0)continue;const n=Math.min(mk[k],Math.floor(cap/mass(k)),Math.floor(budget/b),Math.floor(tr/s));if(n<=0)continue;
+      const pr=m*n,sc=pr/(h+(ptHas(I,'Speed Demon')?.3:1))*(ptHas(I,'Greedy')?1:1-risk*3);if(pr>=IND.minProfit&&(!best||sc>best.sc))best={k,n,to:D.sid,sc,pr}}}
+  return best}
+// a freeport request (or a blockade or containment run) left 8 minutes: buy it here and carry it in
+function indBoardHaul(I,R){if(!indMarketOK(I,R))return null;const mk=mkStock(R);let best=null;
+  for(const c of S.contracts||[]){if(!c.st||c.ind||!(c.n>0)||!ITEMS[c.item]||c.st===R.sid)continue;c.seen=c.seen||S.T;if(S.T-c.seen<IND.boardAge)continue;const D=S.stations[c.st];if(!D)continue;
+    if(c.fac!=='neutral'&&(!FAC_IDS.includes(c.fac)||(I.stand[c.fac]||0)<=STAND.dock))continue;const h=indHops(R.sid,c.st);if(h>5||(c.until&&c.until<S.T+IND.hop*(h+1)))continue;
+    const pr=mkPartPrice(R,c.item,I.cls),n=Math.min(c.n,mk[c.item]||0,Math.floor(indCargo(I)/mass(c.item)),Math.floor((indPurse(I)-100)/pr));if(n<Math.min(c.n,jobMin(c)))continue;
+    const gain=Math.round(c.reward*n/c.n)-pr*n;if(gain<IND.minProfit*.5)continue;if(!best||gain/(h+1)>best.sc)best={c,n,sc:gain/(h+1)}}
+  return best}
+// a power's ore order left 8 minutes: a miner cuts that ore and carries it to the power's nearest station
+function indBoardOre(I){let best=null;for(const c of S.contracts||[]){if(c.st||c.ind||!(c.n>0)||!RAWS.includes(c.item)||!FAC_IDS.includes(c.fac))continue;c.seen=c.seen||S.T;if(S.T-c.seen<IND.boardAge)continue;if((I.stand[c.fac]||0)<=STAND.dock)continue;
+    const at=indMineSys(I,c.item);if(!at)continue;const h=indHops(I.sector,at);if(c.until&&c.until<S.T+IND.hop*(h*2+3)+600)continue;if(!best||c.reward>best.c.reward)best={c,at}}return best}
+function indOreIn(sid,k){const s=S.sectors[sid];if(!s)return 0;let n=0;for(const a of s.ast){if(a.comet)continue;n+=k?(a.ore[k]||0):oreTotal(a)}return n}
+// where a miner goes: home (Homebody), farther for richer rock (Prospector), dangerous space for rare ore (Rock Diver), else the
+// nearest system with ore worth cutting
+function indMineSys(I,want){const near=[];for(const id in S.sectors){const h=indHops(I.port,id);if(h>3||broodHeld(id))continue;const o=indOreIn(id,want);if(o<(want?10:60))continue;near.push({id,h,o,d:indDanger(id),rare:indOreIn(id,'au')+indOreIn(id,'xc')+indOreIn(id,'nu')})}
+  if(!near.length)return null;if(want)return near.sort((a,b)=>a.h-b.h||b.o-a.o)[0].id;
+  if(ptHas(I,'Homebody')){const x=near.find(n=>n.id===I.port)||near.sort((a,b)=>a.h-b.h)[0];return x.id}
+  if(ptHas(I,'Rock Diver')){const x=near.filter(n=>n.d>0||n.rare>40).sort((a,b)=>b.rare-a.rare)[0];if(x)return x.id}
+  if(ptHas(I,'Prospector')){const x=near.filter(n=>n.h>=1).sort((a,b)=>b.o-a.o)[0];if(x)return x.id}
+  return near.sort((a,b)=>a.h-b.h||b.o-a.o)[0].id}
+function indPlan(I){const R=S.stations[I.sector];if(I.st!=='dock')return;
+  if(R){indSell(I,R);indShop(I,R);indUpgrade(I,R)}
+  // haulers waiting for company (Convoy Lover, Convoy Only) set off when another independent leaves with them, or after a while
+  if(I.role==='hauler'&&(ptHas(I,'Convoy Lover')||ptHas(I,'Convoy Only'))){const pal=indAll().some(o=>o!==I&&o.st==='go'&&o.run&&o.run.T0>S.T-120&&o.run.path[0]===I.sector);if(!pal&&S.T-I.idleT<(ptHas(I,'Convoy Only')?900:300))return}
+  if(I.role==='hauler'&&R){const b=indBoardHaul(I,R);if(b){const n=indBuy(I,R,b.c.item,b.n);if(n>0){b.c.ind=I.id;I.res={[b.c.item]:n};indGo(I,'board',b.c.st,{c:b.c.id,item:b.c.item});return}}
+    const t=indTradePlan(I,R);if(t){const n=indBuy(I,R,t.k,t.n);if(n>0){indGo(I,'trade',t.to,{item:t.k});return}}}
+  if(I.role==='miner'){const o=indBoardOre(I);if(o){o.c.ind=I.id;indGo(I,'mine',o.at,{c:o.c.id,want:o.c.item});return}
+    const at=indMineSys(I);if(at){indGo(I,'mine',at,{});return}}
+  // nothing here: home to the freeport after a while
+  if(I.sector!==I.port&&S.T-I.idleT>240)indGo(I,'home',I.port,{})}
+// ---- the clock: hops out of sight, mining out of sight
+function indMineOff(I){const s=S.sectors[I.sector];if(!s)return;const r=I.run,cap=indCargo(I),fill=ptHas(I,'Light Load')?.5:ptHas(I,'Hoarder')?1:IND.fill;
+  let n=Math.round((IND.mineT[I.cls]||3)*(IND.pass/60)*(1+.15*(((indGrades(I)||{}).drill||1)-1)));n=Math.min(n,Math.floor(cap-invMass(I.hold)));let got={};
+  if(n>0){const skip=r.want?Object.fromEntries(RAWS.filter(k=>k!==r.want).map(k=>[k,1])):null;got=extract(s,n,false,skip);inv.addAll(I.hold,got)}
+  if(invMass(I.hold)>=cap*fill-1e-9||!invMass(got)){indMineDone(I)}}
+function indMineDone(I){const r=I.run;let to=I.port;if(r&&r.c){const c=(S.contracts||[]).find(x=>x.id===r.c);if(c&&(I.hold[c.item]||0)>0){let bh=99;for(const id in S.stations){const D=S.stations[id];if(D&&D.owner===c.fac&&D.kind!=='depot'){const h=indHops(I.sector,id);if(h<bh){bh=h;to=id}}}I.res={[c.item]:I.hold[c.item]};indGo(I,'board',to,{c:c.id,item:c.item,ore:1});return}}
+  indGo(I,'home',to,{})}
+function indTick(){if(!indOn()||!S.econ)return;indAll();const pass=S.T>=(S.ind.passT||0);if(pass){S.ind.passT=S.T+IND.pass;indArrivals()}
+  for(const I of indAll().slice()){
+    if(I.st==='down'){if(S.T>=I.back)indBack(I);continue}
+    if(I.st==='pj'){const r=pjRunOf(I.pj);if(!r){I.st='dock';I.pj=null;if(!S.stations[I.sector])indGo(I,'home',I.port,{})}else I.sector=r.sector;continue}
+    if(I.st==='dock'){if(pass)indPlan(I);continue}
+    const r=I.run;if(!r){I.st='dock';continue}if(I.live)continue;
+    if(I.st==='work'){if(pass)indMineOff(I);continue}
+    if(S.T<r.next)continue;if(r.leg>=r.path.length-1){indArrive(I);continue}
+    r.leg++;I.sector=r.path[r.leg];r.next=S.T+IND.hop*ptHopK(I);
+    if(WORLDS[I.sector]){inW(WORLDS[I.sector],()=>indSpawn(I,true));continue}
+    const d=indDanger(I.sector)*ptRiskK(I);if(d>0&&Math.random()<d)indDownOff(I)}}
+// at the end of a route
+function indArrive(I){const r=I.run;if(!r){I.st='dock';return}
+  if(r.k==='mine'){I.st='work';r.cut=0;return}
+  const R=S.stations[I.sector];I.st='dock';I.idleT=S.T;I.run=null;
+  if(r.k==='board'){const c=(S.contracts||[]).find(x=>x.id===r.c);I.res=null;if(c&&R&&(c.st?c.st===R.sid:R.owner===c.fac)){const d=Math.min(c.n,I.hold[c.item]||0);if(d>0){const share=Math.round(c.reward*d/c.n);c.reward-=share;c.n-=d;inv.take(I.hold,c.item,d);inv.add((S.stations[c.st]&&storeOf(S.stations[c.st]))||S.econ.stock[c.fac]||storeOf(R),c.item,d);
+      if(c.blk&&c.st){const R2=S.stations[c.st];if(R2&&R2.hMax)R2.hull=Math.min(R2.hMax,(R2.hull||0)+R2.hMax*.1*d/(c.n0||d))}
+      const got=transfer(c.fac,indW(I),share);I.earned+=got;I.jobs++;indWork(I,c.fac,STAND.contract+share/1500);if(c.n<=0)S.contracts.splice(S.contracts.indexOf(c),1)}}
+    if(c)c.ind=null}
+  if(!R){indGo(I,'home',I.port,{});return}
+  indSell(I,R);if(r.k==='trade')I.jobs++}
+// Rating and standing from work done for a power
+function indWork(I,f,n){if(!(n>0))return;const r0=ratingOf(I);I.rp=(I.rp||0)+n*RATING.k;if(FAC_IDS.includes(f))I.stand[f]=clamp((I.stand[f]||0)+n,-100,100);const r1=ratingOf(I);
+  if(r1>r0&&r1===6)allFeed(`★ ${I.name}, an independent out of ${DEF[I.port].name}, has reached Contractor Rating 6.`,'info')}
+// ---- shot down, and coming back
+function indDown(I,cause,sid){const s=S.sectors[sid]||S.sectors[I.sector];if(s){toDebris(s,I.kit);toDebris(s,I.hold)}else{inv.addAll(indStore(I),I.kit);inv.addAll(indStore(I),I.hold)}
+  I.kit={};I.hold={};I.res=null;if(I.run&&I.run.c){const c=(S.contracts||[]).find(x=>x.id===I.run.c);if(c)c.ind=null}
+  I.lost=I.cls;I.st='down';I.live=false;I.run=null;I.pj=null;I.deaths++;I.back=S.T+IND.back;I.cause=cause||'unknown';I.sector=sid||I.sector;
+  if(cause==='pirate'||cause==='raided'||cause==='ambush')allFeed(`${I.name}, an independent out of ${DEF[I.port].name}, was lost to raiders in ${DEF[I.sector].name}.`,'info')}
+function indDownOff(I){const r=I.run||{},by=broodHeld(I.sector)?'brood':'pirate';let cause='unknown';
+  if(I.role==='hauler')cause=broodHeld(I.sector)||DEF[I.sector].kind==='den'?'hostile':indAll().some(o=>o!==I&&o.sector===I.sector&&o.st==='go')?'ambush':'alone';
+  else if(I.role==='miner')cause=invMass(I.hold)>=indCargo(I)*.85?'full':indHops(I.sector,I.port)>=2?'far':'raided';
+  else cause='outnumbered';I.killer=by;indDown(I,cause,I.sector)}
+function indBack(I){const port=I.port,R=S.stations[port];if(!R){indRetire(I);return}
+  const lost=I.lost||I.cls,pr=START_HULLS.includes(lost)?0:hullPrice(lost);let cls=null;
+  if(indPurse(I)>=pr+IND.reserve&&(!pr||transfer(indW(I),'neutral',pr)>=pr))cls=lost;else if(indPurse(I)>=IND.minPurse)cls=IND.line[I.role][0];
+  if(!cls){indRetire(I);return}
+  const old=I.pt;I.pt=ptDeath(I.role,I.cause,I);I.cls=cls;I.paid=pr||null;I.st='dock';I.sector=port;I.run=null;I.idleT=S.T;
+  if(old!==I.pt)allFeed(`${I.name} is flying again out of ${DEF[port].name}, ${ptName(I.pt)} now${I.cause&&I.cause!=='unknown'?'':' after a bad loss'}.`,'info');
+  try{indShop(I,R)}catch(e){console.error(e)}}
+function indRetire(I){transfer(indW(I),'neutral',indPurse(I));delete S.econ.treasury[indW(I)];inv.addAll(indStore(I),I.hold);inv.addAll(indStore(I),I.kit);I.hold={};I.kit={};
+  const L=indAll(),i=L.indexOf(I);if(i>=0)L.splice(i,1);allFeed(`${I.name} has hung up their flight suit: an independent retires from ${DEF[I.port].name}.`,'info')}
+// ---- posted jobs: an independent signs on when one is free and its hull fits
+function indTake(j){const R=S.stations[j.sid];if(!R)return null;const role=indRoleOfJob(j.kind);let best=null,bh=99;
+  for(const I of indAll()){if(I.st!=='dock'||I.role!==role)continue;const h=indHops(I.sector,R.sid);if(h<bh){bh=h;best=I}}return bh<=8?best:null}
+{const o=pjTick;pjTick=function(){try{if(indOn()&&!S.unb)for(const j of pjList()){if(j.state!=='open'||S.T<j.claimAt)continue;const R=S.stations[j.sid],P=xPilotOfKey(j.pid);if(!R||R.owner!=='player'||!P)continue;
+      const I=indTake(j);if(!I)continue;I.st='pj';I.pj=null;j.by='neutral';j.who=`${I.name}, an independent`;j.indPick=I.id;j.state='taken';j.due=1e12;keyFeed(j.pid,`📋 ${j.who} took your job: ${pjTitle(j)}.`,'info')}}catch(e){console.error(e)}
+  return o.apply(this,arguments)}}
+{const o=pjRunStart;pjRunStart=function(j){const I=j&&j.indPick!=null?indById(j.indPick):null;if(!I)return o.apply(this,arguments);
+  const n0=pjRuns().length;IND_HOLD=I;let x;try{x=o.apply(this,arguments)}finally{IND_HOLD=null}const r=pjRuns().length>n0?pjRuns()[pjRuns().length-1]:null;
+  if(!r||r.job!==j.id){I.st='dock';I.pj=null;return x}
+  r.ind=I.id;r.cls=I.cls;const pre=indPath(I,I.sector,r.path[0]);if(pre.length>1){r.path=pre.concat(r.path.slice(1));r.leg=0;r.sector=I.sector;r.next=S.T+PJR.hop*.5}
+  I.pj=r.id;I.sector=r.sector;if(WORLDS[r.sector])inW(WORLDS[r.sector],()=>pjSpawn(r,false));return x}}
+{const o=pjSpawn;pjSpawn=function(r){if(IND_HOLD&&r&&!r.ind)return null;const e=o.apply(this,arguments);try{const I=e&&r&&r.ind!=null?indById(r.ind):null;if(I){e.indId=I.id;e.pt=I.pt;indFly(e,I);e.pname=indLabel(I)}}catch(err){console.error(err)}return e}}
+{const o=pjRunEnd;pjRunEnd=function(r,ok,why){const I=r&&r.ind!=null?indById(r.ind):null;if(!I)return o.apply(this,arguments);const j=pjJob(r),by=j&&j.by;
+  if(j&&ok)j.by=indW(I);let x;try{x=o.apply(this,arguments)}finally{if(j)j.by=by}
+  if(I.st==='down')return x;if(ok&&j){I.jobs++;I.earned+=j.paid||0;indWork(I,null,STAND.contract+(j.paid||0)/1500)}
+  I.st='dock';I.pj=null;I.sector=r.sector||I.sector;I.idleT=S.T;
+  // its ship, if it's in a live system, flies on as the independent's own
+  let e=null;for(const sid in WORLDS)for(const x2 of WORLDS[sid].ents)if(x2.indId===I.id&&x2.alive)e={x:x2,sid};
+  const R=S.stations[I.sector];if(R&&indMarketOK(I,R)&&!e)return x;
+  const p=indPath(I,I.sector,I.port);I.run={k:'home',to:I.port,path:p,leg:0,next:S.T+IND.hop*.5,T0:S.T};I.st='go';
+  if(e){const E=e.x;E.pjRun=null;E.home='ind:'+I.id;I.live=true;E.pname=indLabel(I)}return x}}
+// ---- live: the independent's own ship
+function indSpawn(I,arrive){if(!W||I.live||I.st==='down'||I.st==='dock'||I.st==='pj')return null;const r=I.run;if(!r)return null;
+  const role=I.st==='work'?'miner':I.role==='fighter'?'patrol':'hauler',e=makeNPC(role,'neutral',I.cls,1,{},'ind:'+I.id);e.cargo=I.hold;I.hold={};e.indId=I.id;e.pt=I.pt;I.live=true;indFly(e,I);e.pname=indLabel(I);
+  const gs=GATES[W.sid]||[],prev=r.path[r.leg-1],gin=gs.find(g=>g.to===prev),SE=W.stationEnt;
+  if(arrive&&gin){e.x=gin.x*.93;e.y=gin.y*.93;e.z=gin.z*.93;fxWarp(e,sideCol('neutral'))}
+  else if(I.st==='work'){const s=S.sectors[W.sid],a=s&&s.ast.find(x=>!x.comet&&oreTotal(x)>0);const o=rdir(1);if(a){e.x=a.x+o.x*300;e.y=a.y+o.y*200;e.z=a.z+o.z*300}else if(SE){e.x=SE.x+o.x*400;e.y=SE.y;e.z=SE.z+o.z*400}}
+  else if(SE&&r.leg===0){const o=rdir(1);e.x=SE.x+o.x*300;e.y=SE.y+o.y*150;e.z=SE.z+o.z*300}else{const at=gin||pick(gs);if(at){e.x=at.x*.9;e.y=at.y*.9;e.z=at.z*.9}}
+  faceInstant(e,-e.x||1,-e.y,-e.z);W.ents.push(e);return e}
+function indRock(e,s,I){const L=s.ast.filter(x=>!x.comet&&oreTotal(x)>0);if(!L.length)return null;const want=I.run&&I.run.want,SE=W.stationEnt;
+  if(want){const w=L.filter(a=>(a.ore[want]||0)>0);if(w.length)return w.sort((a,b)=>d3(a,e)-d3(b,e))[0]}
+  if(typeof ptRock==='function'){const a=ptRock(e,L,SE);if(a)return a}return L.sort((a,b)=>d3(a,e)-d3(b,e))[0]}
+{const o=npcThink;npcThink=function(e,dt){if(!e.indId||e.pjRun||NET.cl)return o.apply(this,arguments);const I=indById(e.indId);
+  if(!I||I.st==='down'||!I.run){e.indId=null;e.role='leave';return o.apply(this,arguments)}
+  const r=I.run,SE=W.stationEnt,ai=e.ai;ai.t-=dt;e.life+=dt;e.mining=null;e.thrusting=false;if(jamDark(e)){e.boosting=false;return}e.pname=indLabel(I);
+  const flee=typeof ptFlee==='function'&&ptFlee(e);
+  if(I.st==='work'){const s=S.sectors[W.sid],cap=e.st.cargo,fill=ptHas(I,'Light Load')?.5:ptHas(I,'Hoarder')?1:IND.fill,hurt=W.t-e.lastHit<4&&e.hull<e.st.hull*(ptHas(I,'Hoarder')?.4:.75);
+    if(flee||hurt||invMass(e.cargo)>=cap*fill-1e-9){inv.addAll(I.hold,e.cargo);e.cargo={};indMineDone(I);inv.addAll(e.cargo,I.hold);I.hold={};I.live=true;return}
+    let a=ai.ast;if(!a||!s.ast.includes(a)||oreTotal(a)<=0){a=indRock(e,s,I);ai.ast=a}if(!a){inv.addAll(I.hold,e.cargo);e.cargo={};indMineDone(I);inv.addAll(e.cargo,I.hold);I.hold={};I.live=true;return}
+    const d=d3(a,e),rr=astR(a);if(d>rr+150){steer(e,a.x,a.y,a.z,dt,true);faceTo(e,a,dt);return}brake(e,dt);
+    if(faceTo(e,a,dt)<.3){e.mining=a;e.mineAcc+=(IND.mineT[I.cls]||3)/60*dt*(1+.15*(((indGrades(I)||{}).drill||1)-1));const want=r.want;
+      while(e.mineAcc>=1){e.mineAcc-=1;const k=want&&(a.ore[want]||0)>0?want:mainOre(a);if(!k)break;a.ore[k]--;if(!a.ore[k])delete a.ore[k];inv.add(e.cargo,k,1);if(oreTotal(a)<=0){removeAst(s,a);ai.ast=null;break}}}return}
+  e.boosting=flee||W.t-e.lastHit<5||ptHas(I,'Speed Demon');
+  if(r.leg<r.path.length-1){const g=W.ents.find(x=>x.type==='gate'&&x.to===r.path[r.leg+1]);if(g){npcGateJump(e,g,dt,e.boosting?1.15:.8);return}}
+  if(r.k==='mine'&&r.to===W.sid){I.st='work';r.cut=0;e.role='miner';return}
+  if(SE){const d=steer(e,SE.x,SE.y,SE.z,dt,true,e.boosting?1.15:.8);faceTo(e,SE,dt);if(d<(SE.r||150)+60){r.arrived=true;despawn(e)}return}
+  e.role='leave';return o.apply(this,arguments)}}
+{const o=returnHome;returnHome=function(e){if(e&&e.indId&&!e.pjRun){const I=indById(e.indId);if(I){inv.addAll(I.hold,e.cargo);inv.addAll(I.hold,e.load);e.cargo={};e.load={};I.live=false;const r=I.run;
+    if(r&&r.arrived){r.arrived=false;r.leg=r.path.length-1;indArrive(I)}
+    else if(r&&I.st==='go'&&r.leg<r.path.length-1&&e.gj){r.leg++;I.sector=r.path[r.leg];r.next=S.T+IND.hop*ptHopK(I);if(WORLDS[I.sector])inW(WORLDS[I.sector],()=>indSpawn(I,true))}}}
+  return o.apply(this,arguments)}}
+{const o=killShip;killShip=function(e,src,at){if(e&&e.indId&&!NET.cl){const I=indById(e.indId),sid=W&&W.sid;if(I&&I.st!=='down'){let cause='unknown';try{cause=ptCause(e,src,at,I.role)}catch(err){}
+    I.killer=typeof ptKillerTag==='function'?ptKillerTag(at&&at.src&&at.src.type==='ship'?at.src:null):null;if(I.role==='miner'&&(src==='pirate'||src==='brood'||FAC_IDS.includes(src))&&cause!=='named')cause=invMass(e.cargo)>=e.st.cargo*.85?'full':indHops(sid,I.port)>=2?'far':'raided';
+    if(I.role==='hauler'&&cause!=='named')cause=broodHeld(sid)||DEF[sid].kind==='den'?'hostile':W.ents.some(x=>x!==e&&x.alive&&x.indId&&x.type==='ship')?'ambush':'alone';
+    I.st='down';const x=o.apply(this,arguments);I.st='go';indDown(I,cause,sid);return x}}return o.apply(this,arguments)}}
+{const o=openWorld;openWorld=function(sid){const w=o.apply(this,arguments);try{if(indOn())inW(w,()=>{for(const I of indAll())if(I.sector===sid&&(I.st==='go'||I.st==='work')&&I.run){I.live=false;indSpawn(I,false)}})}catch(e){console.error(e)}return w}}
+// shooting an independent costs no standing (it's nobody's ship)
+{const o=dmgRec;dmgRec=function(e){if(e&&e.indId){const s=e.side;e.side='_ind';try{return o.apply(this,arguments)}finally{e.side=s}}return o.apply(this,arguments)}}
+{const o=holderIn;holderIn=function(st,path){if(typeof path==='string'&&path.startsWith('ind:')){const I=((st.ind&&st.ind.list)||[]).find(x=>String(x.id)===path.split(':')[1]);return I?(I.hold=I.hold||{}):(st.econ.stock.pirate)}return o.apply(this,arguments)}}
+{const o=ledger;ledger=function(){const r=o.apply(this,arguments);try{const L=r.L['Fleets in muster'];for(const I of(S.ind&&S.ind.list)||[]){for(const x of[I.hold||{},I.kit||{}]){const v=invVec(x);for(const k of RAWS){L[k]+=v[k];r.tot[k]+=v[k]}}}}catch(e){}return r}}
+{const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{indTick()}catch(e){console.error(e)}return r}}
+// ---- where you see them: a freeport's panel on the galaxy map lists its independents
+{const o=mpHtml;mpHtml=function(sid){let h=o.apply(this,arguments);try{if(S&&S.ind&&FREEPORTS.some(f=>f.sid===sid)){const L=indAll().filter(I=>I.port===sid);if(L.length)h+=`<div class="h3" style="margin-top:12px">Independents</div><div class="note" style="margin-bottom:4px">Contractors out of this freeport: they take jobs nobody else does, trade and mine.</div>`+L.map(I=>`<div class="kv"><span>${esc(I.name)} · ${esc(CLASSES[I.cls].name)}</span><b>${esc(ptName(I.pt)||'')} · ${esc(indDoing(I))}${I.sector!==sid&&I.st!=='down'?' in '+esc(DEF[I.sector].name):''}</b></div>`).join('')}}catch(e){console.error(e)}return h}}
+// a saved galaxy: nothing is live on load
+{const o=migrate;migrate=function(st){const r=o.apply(this,arguments);try{for(const I of(S&&S.ind&&S.ind.list)||[])I.live=false}catch(e){}return r}}
+
+//@src 16zzzd_ptraits.js
+// ============================================================ Beyond: pilot traits (agreed with the user 7 Nov 2026)
+// Every AI pilot carries one trait that guides how it flies and fights while alive (BEYOND_DESIGN.md, "Pilot traits"). It sits
+// under the leader's style (16g_leaders.js: a power's pilots fly like its leader) and leans a pilot one way inside it.
+//   Rolled: when a ship launches (makeNPC), from its role's pool (fighter, scout, bomber, miner, hauler, capital) most of the
+//           time and the universal pool otherwise, Steady the common roll and the extreme traits rare. The Brood have none.
+//   Kept:   pilots with a record keep theirs across live and out of sight: aces (A.pt), independents (I.pt), your crews
+//           (c.pt), the powers' convoys and scouts (t.pt) and capital ships (t.pt, the captain's).
+//   Learned: a pilot who dies and comes back (an ace, an independent) takes a new trait from how it died (ptCause, ptDeath),
+//           which replaces the old one. Losses stay final for everyone else (the user, 7 Nov 2026).
+// The behaviour is live-space AI: reach, break-off, preferred range, whom to shoot first, formation, flares, rock choice,
+// when to run, how a scout watches, how a bomber commits, how a captain positions its ship. Out of sight, traits steer the
+// independents' own choices (routes, where to mine, what to trade, how long to wait for company; 16zzzc_indep.js).
+const PT_POOL={
+  universal:{'Skittish':.7,'Unpredictable':1,'Loyal':1.6,'Greedy':1},
+  fighter:{'Hotshot':2,'Sniper':2,'Opportunist':2,'Duelist':.6,'Guardian':2,'Lone Wolf':.6,'Rock Hopper':1.4},
+  scout:{'Ghost':2,'Thrill Seeker':1.2,'Bait':1.2,'Shadow':1.2,'Tripwire':2},
+  bomber:{'Big Game Hunter':1.4,'Patient':2,'Kamikaze-ish':.6,'Precision':2,'Hit and Run':2},
+  miner:{'Prospector':2,'Homebody':2,'Hoarder':1.2,'Efficient':2.5,'Rock Diver':.8},
+  hauler:{'Speed Demon':1.2,'Safe Routes':2,'Convoy Lover':1.5,'Overloader':1.5,'Smuggler':.8},
+  capital:{'Admiral':2,'Brawler Captain':1.5,'Bastion':2,'Carrier Minded':1.5,'Glory Seeker':.6,'Cautious Commander':1.5}};
+const PT_ROLL={steady:.25,role:.6};
+// died to → the new trait, by role (and 'named': killed by an ace or a named pilot, yours included)
+const PT_DEATH={fighter:{dogfight:'Cautious',missile:'Missile-Wary',pd:'Flak-Shy',outnumbered:'Pack Fighter'},
+  scout:{ambush:'Jumpy',shadow:'Long Leash',deep:'Edge Walker'},
+  bomber:{pd:'Long Launch',intercepted:'Escort Only',escape:'Quick Exit',blast:'Blast-Aware'},
+  miner:{raided:'Watchful',full:'Light Load',far:'Homebody'},
+  hauler:{ambush:'Route Changer',hostile:'Safe Routes',alone:'Convoy Only'},
+  capital:{bomber:'Screen First',capital:'Outranged',swarmed:'Point Defense Doctrine',alone:'Fleet Anchor'}};
+const PT_COMBAT=new Set(['fighter','bomber','capital']);
+// what each trait does to a live ship
+const PT_FX={'Steady':{},'Skittish':{flee:1500,brk:.6},'Unpredictable':{erratic:1},'Loyal':{loyal:1},'Greedy':{pref:'civ',rng:1.1},
+  Hotshot:{rng:1.3,brk:0,stay:1,want:260},'Sniper':{rng:1.2,want:800},'Opportunist':{pref:'hurt'},'Duelist':{duel:1,stay:1},'Guardian':{pref:'guard'},'Lone Wolf':{solo:1,rng:1.4},'Rock Hopper':{rocks:1},
+  Ghost:{flee:2200,noFire:1},'Thrill Seeker':{flee:700,roam:4200},'Bait':{bait:1},'Shadow':{shadow:2200},'Tripwire':{gate:1},
+  'Big Game Hunter':{pref:'cap'},'Patient':{wait:20},'Kamikaze-ish':{stay:1,brk:0},'Precision':{prec:1},'Hit and Run':{hitrun:1},
+  Prospector:{rock:'far'},'Homebody':{rock:'home'},'Hoarder':{hoard:1},'Efficient':{rock:'near'},'Rock Diver':{rock:'rare'},
+  'Speed Demon':{boost:1},'Safe Routes':{},'Convoy Lover':{},'Overloader':{slow:.9},'Smuggler':{dodge:1},
+  Admiral:{cap:'fleet'},'Brawler Captain':{cap:'brawl'},'Bastion':{cap:'hold'},'Carrier Minded':{cap:'back'},'Glory Seeker':{cap:'glory'},'Cautious Commander':{cap:'save'},
+  Vengeful:{venge:1,stay:1},'Haunted':{haunt:2600},'Shaken':{brk:.35,rng:.9},
+  Cautious:{brk:.4,want:650,rng:.9},'Missile-Wary':{flares:1},'Flak-Shy':{nocap:1},'Pack Fighter':{pack:1},
+  Jumpy:{flee:2600},'Long Leash':{shadow:4000,flee:1800},'Edge Walker':{flee:2000},
+  'Long Launch':{tStand:2100},'Escort Only':{escortOnly:1},'Quick Exit':{hitrun:1,boostOut:1},'Blast-Aware':{blastAware:1},
+  Watchful:{flee:2500},'Light Load':{half:1},'Route Changer':{},'Convoy Only':{},
+  'Screen First':{cap:'screen'},'Outranged':{cap:'back'},'Point Defense Doctrine':{cap:'screen'},'Fleet Anchor':{cap:'fleet'}};
+function ptName(t){return t||''}
+function ptHas(x,t){return!!x&&x.pt===t}
+function ptP(e){if(!e||!e.pt)return null;if(e.ptk!==e.pt){e.ptk=e.pt;e.ptp=PT_FX[e.pt]||{}}return e.ptp}
+function ptRoll(role){if(!PT_POOL[role])return null;const r=Math.random();if(r<PT_ROLL.steady)return'Steady';return wpick(r<PT_ROLL.steady+PT_ROLL.role?PT_POOL[role]:PT_POOL.universal)}
+function ptDeath(role,cause,who){if(cause==='named'){if(who&&who.killer)who.nem=who.killer;return PT_COMBAT.has(role)?'Vengeful':'Haunted'}const M=PT_DEATH[role]||{};return M[cause]||'Shaken'}
+function ptRoleOf(e){if(!e||e.side==='brood'||e.type!=='ship')return null;const r=e.role,c=e.cls;if(r==='frigate')return'capital';if(r==='drone'||r==='limpet'||r==='og'||r==='builder'||c==='drone')return null;
+  if(r==='crew')return e.job==='mine'?'miner':e.job==='haul'?'hauler':'fighter';if(r==='scout'||c==='scout'||c==='scout2')return'scout';if(isBmb(c))return'bomber';
+  if(r==='miner'||blHull(c))return'miner';if(r==='hauler'||r==='trader'||isHaulCls(c))return'hauler';return'fighter'}
+// ---- how it died
+function ptKillerTag(k){if(!k)return null;if(k.isPlayer)return'me';if(k.rp)return'rp:'+k.rp;if(k.aceId)return'ace:'+k.aceId;if(k.indId)return'ind:'+k.indId;return null}
+function ptCause(e,src,at,role){role=role||ptRoleOf(e);const k=at&&at.src&&at.src.type==='ship'?at.src:null,kind=at&&at.kind;
+  if(ptKillerTag(k))return'named';
+  const hostN=R=>W.ents.filter(x=>x.type==='ship'&&x.alive&&x!==e&&hostE(e.side,x)&&d3(x,e)<R).length;
+  if(role==='fighter'){if(kind==='missile'||kind==='torpedo'||kind==='swarm')return'missile';if(k&&k.role==='frigate'||(at&&at.tur))return'pd';if(hostN(2500)>=3)return'outnumbered';return k?'dogfight':'unknown'}
+  if(role==='bomber'){if(k&&k.role==='frigate'||(at&&at.tur)||(!k&&W.stationEnt&&d3(W.stationEnt,e)<2600))return'pd';if(kind==='blast')return'blast';if(e.ptLaunch&&W.t-e.ptLaunch<30)return'escape';return k?'intercepted':'unknown'}
+  if(role==='scout'){if(e.ai&&e.ai.shadow&&k===e.ai.shadow)return'shadow';const o=sectorOwner(W.sid);if(broodHeld(W.sid)||(o&&o!==e.side&&hostile(e.side,o)))return'deep';return'ambush'}
+  if(role==='miner'){if(invMass(e.cargo||{})>=e.st.cargo*.85)return'full';return'raided'}
+  if(role==='hauler'){const o=sectorOwner(W.sid);if(broodHeld(W.sid)||(o&&hostile(e.side,o)))return'hostile';return W.ents.some(x=>x!==e&&x.alive&&x.type==='ship'&&x.side===e.side&&d3(x,e)<2500)?'ambush':'alone'}
+  if(role==='capital'){if(kind==='torpedo'||(k&&isBmb(k.cls)))return'bomber';if(k&&k.role==='frigate')return'capital';if(W.ents.filter(x=>x.type==='ship'&&x.alive&&hostE(e.side,x)&&x.role!=='frigate'&&d3(x,e)<3000).length>=4)return'swarmed';
+    if(!W.ents.some(x=>x!==e&&x.alive&&x.role==='frigate'&&x.side===e.side&&d3(x,e)<5000))return'alone';return'unknown'}
+  return'unknown'}
+// ---- whom a Vengeful pilot hunts, whom a Haunted one runs from
+function ptNemesis(x){const n=x&&x.nem;if(!n||!W)return null;if(n==='me')return W.player&&!W.dead&&!S.player.docked?W.player:null;
+  const[a,b]=String(n).split(':');return W.ents.find(o=>o.type==='ship'&&o.alive&&(a==='rp'?o.rp===b:a==='ace'?String(o.aceId)===b:a==='ind'?String(o.indId)===b:false))||null}
+function ptRec(e){if(!e)return null;if(e.indId&&typeof indById==='function')return indById(e.indId);if(e.aceId&&typeof aceById==='function')return aceById(e.aceId);return null}
+// ---- the independents' out-of-sight dials
+function ptHopK(I){return ptHas(I,'Speed Demon')?.85:ptHas(I,'Overloader')?1.1:1}
+function ptRiskK(I){return ptHas(I,'Watchful')||ptHas(I,'Skittish')?.6:ptHas(I,'Greedy')||ptHas(I,'Hoarder')?1.25:ptHas(I,'Shaken')?.8:1}
+// a ship that runs when hostiles come close (Skittish, Ghost, Jumpy, Watchful...), or when its nemesis shows (Haunted)
+function ptNear(e,R,pred){for(const o of W.ents)if(o.type==='ship'&&o.alive&&o!==e&&hostE(e.side,o)&&!(o.isPlayer&&(S.player.docked||W.dead))&&!mHid(o,e)&&d3(o,e)<R&&(!pred||pred(o)))return true;return false}
+function ptFlee(e){const P=ptP(e);if(!P)return false;if(P.haunt){const N=ptNemesis(ptRec(e)||e);if(N&&d3(N,e)<P.haunt)return true}return!!P.flee&&ptNear(e,P.flee)}
+// which rock a miner picks
+function ptRock(e,L,SE){const P=ptP(e);if(!P||!P.rock||!L.length)return null;const base=SE||{x:0,y:0,z:0};
+  if(P.rock==='near')return L.slice().sort((a,b)=>d3(a,e)-d3(b,e))[0];if(P.rock==='home')return L.slice().sort((a,b)=>d3(a,base)-d3(b,base))[0];
+  if(P.rock==='far')return L.slice().sort((a,b)=>d3(b,base)-d3(a,base))[Math.floor(Math.random()*Math.min(3,L.length))];
+  if(P.rock==='rare'){const rv=a=>(a.ore.au||0)*70+(a.ore.xc||0)*40+(a.ore.nu||0)*30+(a.ore.ir||0)*16;return L.slice().sort((a,b)=>rv(b)-rv(a))[0]}return null}
+function ptFriendNear(e,R,pred){return W.ents.some(x=>x!==e&&x.type==='ship'&&x.alive&&(x.side===e.side||(x.isPlayer&&friendSide(e.side)))&&d3(x,e)<R&&(!pred||pred(x)))}
+const PT_CBT=new Set(['patrol','raider','pirate','strike','escort','screen','crew','flight']);
+// ---- rolling: every ship as it launches; records keep theirs
+function ptApply(e){const P=ptP(e);if(!e||!e.st)return e;if(e.ptSpd==null)e.ptSpd=e.st.maxSpd;const k=(P&&P.slow)||1;if(e.st.maxSpd!==e.ptSpd*k)e.st=Object.assign({},e.st,{maxSpd:e.ptSpd*k});
+  if(P&&P.flares)e.flares=true;e.ptWant=P&&P.want||undefined;return e}
+{const o=makeNPC;makeNPC=function(){const e=o.apply(this,arguments);try{if(e&&!e.pt){const r=ptRoleOf(e);if(r){e.pt=ptRoll(r);ptApply(e)}}}catch(err){}return e}}
+function ptTok(e,t,role){if(!e||!t)return e;if(t.pt===undefined)t.pt=e.side==='brood'?null:ptRoll(role);e.pt=t.pt;e.ptk=null;return ptApply(e)}
+{const o=spawnFrigate;spawnFrigate=function(t){const e=o.apply(this,arguments);try{if(e)ptTok(e,t,'capital')}catch(err){}return e}}
+{const o=spawnTrader;spawnTrader=function(t){const e=o.apply(this,arguments);try{if(e)ptTok(e,t,'hauler')}catch(err){}return e}}
+{const o=spawnScout;spawnScout=function(t){const e=o.apply(this,arguments);try{if(e)ptTok(e,t,'scout')}catch(err){}return e}}
+{const o=crewSpawn;crewSpawn=function(R,id,c){const e=o.apply(this,arguments);try{if(e&&c){if(c.pt===undefined)c.pt=ptRoll(ptRoleOf(e)||'fighter');e.pt=c.pt;e.ptk=null;ptApply(e)}}catch(err){}return e}}
+{const o=crSpawn;crSpawn=function(r){const e=o.apply(this,arguments);try{const c=e&&r&&typeof crCrew==='function'?crCrew(r):null;if(e&&c){if(c.pt===undefined)c.pt=ptRoll('hauler');e.pt=c.pt;e.ptk=null;ptApply(e)}}catch(err){}return e}}
+{const o=aceWing;aceWing=function(A){const g=o.apply(this,arguments);try{const e=g&&g.members[0];if(e&&A&&!String(A.id).startsWith('L')){if(A.pt===undefined)A.pt=ptRoll('fighter');e.pt=A.pt;e.ptk=null;ptApply(e);
+    if(A.ptNew){A.ptNew=0;if(!NET.cl)allFeed(`★ ${aceLabel(A)} is back in the fight, ${A.pt} now.`,'info')}}}catch(err){}return g}}
+// an ace shot down learns from it when it comes back
+{const o=aceKilled;aceKilled=function(e,src,at){try{const A=aceById(e.aceId);if(A){A.ptCause=ptCause(e,src,at,'fighter');A.killer=ptKillerTag(at&&at.src&&at.src.type==='ship'?at.src:null)}}catch(err){}return o.apply(this,arguments)}}
+{const o=aceDown;aceDown=function(A){const r=o.apply(this,arguments);try{if(A&&!A.ret){const was=A.pt;A.pt=ptDeath('fighter',A.ptCause||'unknown',A);A.ptCause=null;if(A.pt!==was)A.ptNew=1}}catch(err){}return r}}
+// independents keep their trait on their ship (16zzzc_indep.js sets e.pt; this applies its numbers)
+{const o=indFly;indFly=function(e){const r=o.apply(this,arguments);try{ptApply(e)}catch(err){}return r}}
+// ---- whom to shoot: reach and first choice
+{const o=findHostile;findHostile=function(e,range){const P=ptP(e);if(!P)return o.apply(this,arguments);const R=range*(P.rng||1);const ai=e.ai||{};
+  if(P.duel&&ai.duel&&ai.duel.alive&&W.ents.includes(ai.duel)&&!mHid(ai.duel,e)&&d3(ai.duel,e)<R*2)return ai.duel;
+  if(P.venge){const N=ptNemesis(ptRec(e)||e);if(N&&hostE(e.side,N)&&d3(N,e)<R*1.6)return N}
+  let t=o.call(this,e,R);const hit=W.t-(e.lastHit||-99)<2.5;
+  const scan=f=>{let best=null,bd=1e12;for(const x of W.ents){if(x.type!=='ship'||!x.alive||x===e||!hostE(e.side,x)||mHid(x,e)||(x.isPlayer&&(S.player.docked||W.dead)))continue;const d=d3(x,e);if(d>R*1.15)continue;const v=f(x,d);if(v!=null&&v<bd){bd=v;best=x}}return best};
+  if(P.pref==='hurt'){const b=scan((x,d)=>(x.hull/(x.st.hull||1))*1000+d*.2);if(b)t=b}
+  else if(P.pref==='civ'){const b=scan((x,d)=>x.role==='miner'||x.role==='hauler'||x.role==='trader'?d:null);if(b)t=b}
+  else if(P.pref==='cap'){const b=scan((x,d)=>x.role==='frigate'?d:null);t=b||(hit?t:null)}
+  else if(P.pref==='guard'){const charges=W.ents.filter(x=>x.type==='ship'&&x.alive&&x.side===e.side&&(x.role==='miner'||x.role==='hauler'||x.role==='trader'||x.role==='frigate'));if(charges.length){const b=scan((x,d)=>{let m=1e12;for(const c of charges)m=Math.min(m,d3(c,x));return m<1500?m:null});if(b)t=b}}
+  if(P.loyal&&!hit){let att=null;for(const f of W.ents)if(f!==e&&f.type==='ship'&&f.alive&&f.side===e.side&&f.lastHitBy&&W.t-(f.lastHit||-99)<3&&d3(f,e)<2200){att=scan((x,d)=>x.side===f.lastHitBy&&d3(x,f)<1600?d:null);if(att)break}if(att)t=att}
+  if(P.nocap&&t&&t.role==='frigate'){t=scan((x,d)=>x.role==='frigate'?null:d)}
+  if(P.pack&&t&&!hit&&!ptFriendNear(e,1500,x=>PT_CBT.has(x.role)||x.isPlayer))t=null;
+  if(P.duel&&t)ai.duel=t;return t}}
+// ---- flying: break-off, running, formation, idle wandering, bombers' commitment
+{const o=npcThink;npcThink=function(e,dt){const P=e.npc&&!NET.cl&&ptP(e);if(!P)return o.apply(this,arguments);const ai=e.ai,cbt=PT_CBT.has(e.role);
+  try{
+    if((e.role==='patrol'||e.role==='escort'||e.role==='raider'||e.role==='pirate')&&!e.indId&&!e.leaderOf&&!e.order&&!e.aceId){
+      if(P.brk&&e.hull<e.st.hull*P.brk&&ai.tgt&&!P.stay){e.role='leave';ai.tgt=null}
+      if(P.haunt&&ptFlee(e)){e.role='flee';ai.tgt=null}}
+    if(P.solo&&e.grp&&!ai.ptSolo&&(e.role==='patrol'||e.role==='raider'||e.role==='pirate')&&grpLead(e.grp)!==e){ai.ptSolo=1;const g=e.grp;g.members=g.members.filter(m=>m!==e);e.grp=null}
+    if(P.erratic&&W.t>(ai.ptErr||0)){ai.ptErr=W.t+rnd(18,40);e.ptWant=pick([260,400,600,800]);if(Math.random()<.4)ai.tgt=null;ai.wp=null}
+    if(P.rocks&&cbt&&!ai.tgt&&(!ai.wp||d3(ai.wp,e)<140)&&!e.grp){const s=S.sectors[W.sid],L=s&&s.ast.filter(a=>!a.comet);if(L&&L.length){const a=pick(L),q=rdir(1),r=astR(a)+160;ai.wp={x:a.x+q.x*r,y:a.y+q.y*r,z:a.z+q.z*r}}}
+    if(e.role==='miner'&&e.side!=='brood'&&!e.pjRun&&!e.indId){const s=S.sectors[W.sid],SE=W.stationEnt;
+      if(P.rock&&!ai.ast&&!ai.state){const L=s.ast.filter(x=>!x.comet&&oreTotal(x)>0);const a=ptRock(e,L,SE&&SE.fac===e.side?SE:null);if(a)ai.ast=a}
+      if(P.half&&invMass(e.cargo)>=e.st.cargo*.5)ai.state='return';if(P.flee&&ptFlee(e))ai.state='return'}
+    if(isBmb(e.cls)&&(P.hitrun||P.blastAware)&&e.ptLaunch&&(e.role==='strike'||e.role==='raider')){
+      if(P.hitrun&&!(e.load.torpedo>0)&&!(ai.siege)){e.role='leave';ai.tgt=null}
+      else if(P.blastAware&&W.t-e.ptLaunch<4&&ai.tgt){const t=ai.tgt,dx=e.x-t.x,dy=e.y-t.y,dz=e.z-t.z,l=hyp(dx,dy,dz)||1;e.boosting=true;steer(e,e.x+dx/l*800,e.y+dy/l*800,e.z+dz/l*800,dt,false,1.2);faceDir(e,dx,dy,dz,dt);ai.t-=dt;e.life+=dt;return}}
+  }catch(err){console.error(err)}
+  const r=o.apply(this,arguments);
+  try{if(e.role==='miner'&&P.hoard&&ai.state==='return'&&invMass(e.cargo)<e.st.cargo&&e.hull>e.st.hull*.4&&W.t-e.lastHit>=4)ai.state=null;
+    if(P.boostOut&&e.role==='leave')e.boosting=true;
+    if((e.role==='hauler'||e.role==='trader')&&!e.indId&&(P.boost||(P.dodge&&ptNear(e,2000,x=>FAC_IDS.includes(x.side)))||ptFlee(e)))e.boosting=true}catch(err){}
+  return r}}
+// a scout's trait: how close it lets hostiles come, whom it tails, where it watches
+{const o=scoutThink;scoutThink=function(e,dt){const P=ptP(e);if(!P||NET.cl)return o.apply(this,arguments);const ai=e.ai;
+  let th=null,bd=1e12;for(const x of W.ents){if(x.type!=='ship'||!x.alive||!hostE(e.side,x)||(x.isPlayer&&(S.player.docked||W.dead))||mHid(x,e))continue;const d=d3(x,e);if(d<bd){bd=d;th=x}}
+  const away=(R,boost)=>{e.boosting=boost;const ax=e.x-th.x,ay=e.y-th.y,az=e.z-th.z,l=hyp(ax,ay,az)||1;let tx=e.x+ax/l*900,ty=e.y+ay/l*250,tz=e.z+az/l*900;const r=hyp(tx,ty,tz);if(r>3400){tx*=3400/r;ty*=3400/r;tz*=3400/r}steer(e,tx,ty,tz,dt,false,1);faceDir(e,e.vx,e.vy,e.vz,dt)};
+  if(P.shadow){let X=ai.shadow;if(!(X&&X.alive&&W.ents.includes(X))){X=null;let b=1e12;for(const x of W.ents){if(x.type!=='ship'||!x.alive||!hostE(e.side,x)||mHid(x,e))continue;if(!(x.role==='frigate'||x.aceId||x.pname||x.isPlayer||x.rp))continue;const d=d3(x,e);if(d<b&&d<9000){b=d;X=x}}ai.shadow=X}
+    if(X){const d=d3(X,e),want=P.shadow;if(th&&th!==X&&bd<900){away(900,true);return}const dx=e.x-X.x,dy=e.y-X.y,dz=e.z-X.z,l=hyp(dx,dy,dz)||1;e.boosting=d>want*1.6;steer(e,X.x+dx/l*want,X.y+dy/l*want*.4,X.z+dz/l*want,dt,d<want*1.15,1);faceTo(e,X,dt);return}}
+  if(P.bait&&th&&bd<2600){if(bd>1100&&!ai.baited){steer(e,th.x,th.y,th.z,dt,false,.9);faceTo(e,th,dt);return}ai.baited=1;let F=null,fd=1e12;for(const x of W.ents)if(x!==e&&x.type==='ship'&&x.alive&&x.side===e.side&&PT_CBT.has(x.role)){const d=d3(x,e);if(d<fd){fd=d;F=x}}
+    if(F){e.boosting=true;steer(e,F.x,F.y,F.z,dt,false,1.2);faceDir(e,e.vx,e.vy,e.vz,dt);return}}
+  const R0=P.flee||1400;
+  if(th&&bd<R0){if(bd<1400&&R0<=1400&&!P.noFire)return o.apply(this,arguments);away(R0,bd<R0*.7);return}
+  if((P.gate||P.roam)&&typeof scoutBeaconGoal==='function'&&scoutBeaconGoal(e))return o.apply(this,arguments);
+  if(P.gate){const gs=GATES[W.sid]||[];if(gs.length){if(!ai.ptGate||!gs.includes(ai.ptGate))ai.ptGate=pick(gs);const g=ai.ptGate,p={x:g.x*.82,y:g.y*.82+120,z:g.z*.82},d=d3(p,e);e.boosting=false;if(d>220){steer(e,p.x,p.y,p.z,dt,true,.8);faceDir(e,p.x-e.x,p.y-e.y,p.z-e.z,dt)}else{brake(e,dt);faceTo(e,g,dt)}return}}
+  if(P.roam){if(!ai.wp||d3(ai.wp,e)<220){const q=rdir(.6),r=rnd(1800,P.roam)*SPACE;ai.wp={x:q.x*r,y:q.y*r,z:q.z*r}}
+    if(th&&bd<1400){e.boosting=false;steer(e,ai.wp.x,ai.wp.y,ai.wp.z,dt,false,.8);faceDir(e,e.vx,e.vy,e.vz,dt);return}}
+  return o.apply(this,arguments)}}
+// bombers: how far out they launch (Long Launch), whether they wait for an opening or an escort (Patient, Escort Only),
+// whether they go for subsystems (Precision)
+{const o=bomberRun;bomberRun=function(e,OE,dt){const P=ptP(e);if(!P||NET.cl)return o.apply(this,arguments);const ai=e.ai;
+  if(P.tStand&&!ai.stand){const r=rdir(.8),R=Math.min(TORP_RANGE*.9,P.tStand);ai.stand={x:OE.x+r.x*R,y:OE.y+r.y*R,z:OE.z+r.z*R}}
+  const cover=()=>ptFriendNear(e,1800,x=>PT_CBT.has(x.role)&&!isBmb(x.cls));
+  if((P.escortOnly&&!cover())||(P.wait&&W.t<(ai.ptWaitT||(ai.ptWaitT=W.t+P.wait))&&!cover()&&!((OE.shield||0)<=0&&OE.type==='ship'))){if(!ai.stand){const r=rdir(.8);ai.stand={x:OE.x+r.x*2400,y:OE.y+r.y*2400,z:OE.z+r.z*2400}}
+    const hold={x:OE.x+(ai.stand.x-OE.x)*1.6,y:OE.y+(ai.stand.y-OE.y)*1.6,z:OE.z+(ai.stand.z-OE.z)*1.6};steer(e,hold.x,hold.y,hold.z,dt,true,.8);faceTo(e,OE,dt);return}
+  return o.apply(this,arguments)}}
+{const o=wkPickFor;wkPickFor=function(e,hasStation,chance){const P=ptP(e);if(P&&P.prec)chance=Math.max(chance||0,.9);return o.call(this,e,hasStation,chance)}}
+{const o=launchMissile;launchMissile=function(e,tgt,tier,kind){if(e&&e.npc&&kind==='torpedo')e.ptLaunch=W.t;return o.apply(this,arguments)}}
+// capital captains: where an AI captain puts its ship in a live fight
+{const o=frigateThink;frigateThink=function(e,dt){const r=o.apply(this,arguments);try{const t=e.tok,P=ptP(e);if(!P||!P.cap||!t||NET.cl||t.dummy||fOwn(t)||t.spin||e.charging||!S.frigates.includes(t)||!e.alive)return r;
+    let foe=null,fd=1e12;for(const x of W.ents)if(x!==e&&x.alive&&x.role==='frigate'&&hostE(e.side,x)){const d=d3(x,e)*(P.cap==='glory'?(x.cls==='carrier'?.5:x.cls==='frigate'?.7:1):1);if(d<fd){fd=d;foe=x}}
+    const go=(x,y,z,k)=>{steer(e,x,y,z,dt,true,k||.7);e.thrusting=true};
+    if((P.cap==='brawl'||P.cap==='glory')&&foe&&d3(foe,e)<7000&&d3(foe,e)>1300){const d=d3(foe,e),dx=e.x-foe.x,dy=e.y-foe.y,dz=e.z-foe.z;go(foe.x+dx/d*1200,foe.y+dy/d*1200,foe.z+dz/d*1200,.8)}
+    else if(P.cap==='back'&&foe&&d3(foe,e)<3200){const d=d3(foe,e),dx=e.x-foe.x,dy=e.y-foe.y,dz=e.z-foe.z;go(e.x+dx/d*900,e.y+dy/d*900,e.z+dz/d*900,.7)}
+    else if(P.cap==='save'&&e.hull<e.st.hull*.45){const th=foe||W.ents.find(x=>x.type==='ship'&&x.alive&&hostE(e.side,x)&&d3(x,e)<4000);if(th){const d=d3(th,e)||1,dx=e.x-th.x,dy=e.y-th.y,dz=e.z-th.z;go(e.x+dx/d*1200,e.y+dy/d*1200,e.z+dz/d*1200,1);e.boosting=true}}
+    else if(P.cap==='hold'){const SE=W.stationEnt;if(SE&&SE.fac===e.side&&d3(SE,e)>1400&&d3(SE,e)<6000)go(SE.x+(e.x-SE.x)*.3,SE.y+(e.y-SE.y)*.3,SE.z+(e.z-SE.z)*.3,.6)}
+    else if(P.cap==='fleet'){const F=W.ents.filter(x=>x!==e&&x.alive&&x.role==='frigate'&&x.side===e.side&&d3(x,e)<6000);if(F.length){const c={x:0,y:0,z:0};for(const x of F){c.x+=x.x/F.length;c.y+=x.y/F.length;c.z+=x.z/F.length}if(d3(c,e)>1500)go(c.x,c.y,c.z,.6)}}
+    else if(P.cap==='screen'){let b=null,bd=TORP_RANGE;for(const x of W.ents)if(x.type==='ship'&&x.alive&&hostE(e.side,x)&&(isBmb(x.cls)||x.role!=='frigate')&&!mHid(x,e)){const d=d3(x,e)*(isBmb(x.cls)?.5:1);if(d<bd){bd=d;b=x}}if(b&&!(e.lanceT&&e.lanceT.role==='frigate'))e.lanceT=b}
+  }catch(err){console.error(err)}return r}}
 
 //@src 17_main.js
 // ============================================================ main loop
