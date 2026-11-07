@@ -22,11 +22,11 @@ GAME='file://'+os.path.abspath(os.environ.get('DG_GAME',os.path.join(ROOT,'index
 LED="""(()=>{const l=ledger();let b=[];for(const e of RAWS)if(Math.abs(l.tot[e]-S.ledger0.tot[e])>1e-6)b.push(e+':'+(l.tot[e]-S.ledger0.tot[e]).toFixed(2));if(Math.abs(l.credits-S.ledger0.credits)>1e-3)b.push('cr:'+(l.credits-S.ledger0.credits).toFixed(2));return b.length?'LEAK '+b.join(' '):'exact'})()"""
 
 # what each single trait does to a side's pilots, as built (16g_leaders.js leaderProfiles, 16zc_dread.js dpProfile)
-BASE={'range':1,'breakoff':0,'stay':False,'honour':False,'ruthless':False,'zeal':False}
+BASE={'range':1,'breakoff':0,'honour':False,'ruthless':False,'zeal':False}
 POWER={'Ambitious':{'range':1.3},'Opportunist':{'range':1.15},'Cautious':{'range':.85,'breakoff':.3},'Patient':{'range':.9},
-  'Isolationist':{'range':.9},'Mercantile':{'breakoff':.2},'Vengeful':{'stay':True,'breakoff':0},'Honourable':{'honour':True},
+  'Isolationist':{'range':.9},'Mercantile':{'breakoff':.2},'Vengeful':{'breakoff':0},'Honourable':{'honour':True},
   'Ruthless':{'ruthless':True},'Zealous':{'zeal':True},'Scheming':{},'Wary':{},'Loyal':{},'Industrious':{}}
-PIRATE={'Bloodthirsty':{'range':1.3,'stay':True},'Showman':{'range':1.15},'Cunning':{'range':.9},'Paranoid':{'range':.8,'breakoff':.25},
+PIRATE={'Bloodthirsty':{'range':1.3},'Showman':{'range':1.15},'Cunning':{'range':.9},'Paranoid':{'range':.8,'breakoff':.25},
   'Superstitious':{'breakoff':.3},'Greedy':{'honour':True,'ruthless':True},'Gallant':{'honour':True},'Kingmaker':{}}
 # the design's pilot behaviour for traits whose profile is plain (BEYOND_DESIGN.md 11c / 12c tables)
 DESIGN_GAP={'Scheming':'hit and run, pick off isolated ships, ambush at gates','Wary':'keep their distance from allied ships; patrols scan more',
@@ -35,7 +35,7 @@ DESIGN_GAP={'Scheming':'hit and run, pick off isolated ships, ambush at gates','
   'Patient':'hold positions, wait for reinforcements, attack late and in force (only the shorter reach is built)',
   'Kingmaker':'raid whichever power leads the galaxy (events only; pilots fly plain)',
   'Opportunist':'strike whoever is weakest, join fights as a third party (only the longer reach is built)',
-  'Bloodthirsty':'finish jammed ships (the stay flag is set but nothing reads it)'}
+  'Bloodthirsty':'finish jammed ships, hit escorts and patrols (only the longer chase is built; a hurt Bloodthirsty ship breaks off when its other trait says so, user 7 Nov 2026)'}
 # ---- pilot traits (agreed 7 Nov 2026, BEYOND_DESIGN.md "Pilot traits"): one trait per AI ship, under its leader's style.
 # Starting pools by role, and the trait a pilot who comes back (aces, independents) learns from how it died. The Brood have none.
 PILOT_START={'universal':['Steady','Skittish','Unpredictable','Loyal','Greedy'],
@@ -61,7 +61,7 @@ def blend(spec,traits):
   p=dict(BASE)
   for t in traits:
     d=spec[t];p['range']*=d.get('range',1)
-    for k in('stay','honour','ruthless','zeal'):p[k]=p[k] or d.get(k,False)
+    for k in('honour','ruthless','zeal'):p[k]=p[k] or d.get(k,False)
   if 'Vengeful' in traits:p['breakoff']=0
   else:p['breakoff']=max([0]+[spec[t].get('breakoff',0) for t in traits])
   return p
@@ -93,7 +93,7 @@ def static_checks():
   ok(not bad,'names: every trait named in a call exists',' | '.join(bad[:6]))
   # profile fields that are set but never read anywhere a profile is used
   users=[s for f,s in src.items() if 'leadP(' in s or 'LEADP' in s]
-  for k in('range','breakoff','stay','honour','ruthless','zeal'):
+  for k in('range','breakoff','honour','ruthless','zeal'):
     reads=sum(len(re.findall(r"\bp\."+k+r"\b(?!\s*(?:\*|\|\||&&)?=(?!=))",s)) for s in users)
     ok(reads>0,f'profile field {k} is read somewhere','set by leaderProfiles/dpProfile, never read: the trait that sets it does nothing through it')
   # traits that reach the AI's flying: which think loops use the trait-aware target finder
@@ -220,6 +220,10 @@ async def main():
         want=role in('patrol','escort','raider')
         if want:ok(v['hurt'] and not v['whole'],f'live {side}: {t} {role} breaks off when hurt, not before',str(v))
         elif not v['hurt']:gap(f'break-off: {side} {role}s',f'{t} pilots in the {role} role never break off (npcThink wrapper only covers patrol, escort, raider)')
+    # the user, 7 Nov 2026: break-off wins over Bloodthirsty (a Bloodthirsty pirate that is also Superstitious or Paranoid breaks off)
+    bt=await j("""(()=>{const sp=__tr.sp,o={};for(const t2 of ['Superstitious','Paranoid']){__tr.setT('pirate',['Bloodthirsty',t2]);__tr.clear();const A=sp('raider','pirate','interceptor',0),B=sp('patrol','halcyon','interceptor',300);A.ai.tgt=B;A.order=null;A.hull=A.st.hull*.1;try{npcThink(A,.016)}catch(e){}o[t2]=A.role==='leave'}
+      __tr.clear();__tr.setT('pirate',[]);return JSON.stringify(o)})()""")
+    ok(all(bt.values()),'live pirate: a hurt Bloodthirsty raider breaks off when its other trait says so (break-off wins)',str(bt))
     # which roles' target choice a trait reaches (Ruthless: the miner over a nearer fighter)
     out=await j("""(()=>{const res={},sp=__tr.sp;__tr.setT('halcyon',['Ruthless']);for(const role of ['patrol','escort','raider','strike','pirate','screen']){__tr.clear();const A=sp(role,'halcyon','interceptor',0),F=sp('patrol','varkesh','interceptor',200),M=sp('miner','varkesh','prospector',700);A.ai.t=0;A.ai.tgt=null;A.order=null;try{npcThink(A,.016)}catch(e){}res[role]=A.ai.tgt===M?'miner':A.ai.tgt===F?'fighter':'none'}
       __tr.clear();__tr.setT('halcyon',[]);return JSON.stringify(res)})()""")
@@ -231,11 +235,11 @@ async def main():
     await ev(f"(()=>{{const k={keep};FAC_IDS.forEach((f,i)=>leaderOf(f).traits=k.L[i]);S.dread.traits=k.D;leaderProfiles();return 1}})()")
     # ---- successions
     sc=await j("""(()=>{const res={};const prof=f=>JSON.stringify(LEADP[f]);
-      leaderOf('halcyon').traits=['Mercantile','Cautious'];leaderProfiles();succession('halcyon','killed','varkesh');{const N=leaderOf('halcyon');const p0=prof('halcyon');leaderProfiles();res.killed={tr:N.traits,grudge:N.grudge.varkesh||0,fresh:p0===prof('halcyon'),stay:LEADP.halcyon.stay}}
+      leaderOf('halcyon').traits=['Mercantile','Cautious'];leaderProfiles();succession('halcyon','killed','varkesh');{const N=leaderOf('halcyon');const p0=prof('halcyon');leaderProfiles();res.killed={tr:N.traits,grudge:N.grudge.varkesh||0,fresh:p0===prof('halcyon'),bo:LEADP.halcyon.breakoff}}
       leaderOf('varkesh').traits=['Cautious','Patient'];leaderProfiles();succession('varkesh','ousted');{const N=leaderOf('varkesh');const p0=prof('varkesh');leaderProfiles();res.ousted={tr:N.traits,fresh:p0===prof('varkesh')}}
       S.dread.traits=['Greedy','Gallant'];leaderProfiles();dpSucceed('killedPow','ostrova');{const N=S.dread;const p0=prof('pirate');leaderProfiles();res.dread={tr:N.traits,grudge:N.grudge.ostrova||0,fresh:p0===prof('pirate')}}
       return JSON.stringify(res)})()""")
-    k=sc['killed'];ok(len(set(k['tr']))==2 and 'Vengeful' in k['tr'] and k['grudge']>0 and k['fresh'] and k['stay'],'succession: a killed leader\'s successor is Vengeful, holds a grudge, pilots follow at once',str(k))
+    k=sc['killed'];ok(len(set(k['tr']))==2 and 'Vengeful' in k['tr'] and k['grudge']>0 and k['fresh'] and k['bo']==0,'succession: a killed leader\'s successor is Vengeful, holds a grudge, pilots follow at once',str(k))
     k=sc['ousted'];ok(len(set(k['tr']))==2 and not set(k['tr'])&{'Cautious','Patient'} and set(k['tr'])<=set(POWER) and k['fresh'],'succession: an ousted Cautious, Patient leader\'s successor shares neither trait',str(k))
     k=sc['dread'];ok(len(set(k['tr']))==2 and set(k['tr'])<=set(PIRATE) and k['fresh'],'succession: the Dread Pirate\'s successor has two pirate traits, pilots follow at once',str(k))
     print('ledger',await ev(LED))

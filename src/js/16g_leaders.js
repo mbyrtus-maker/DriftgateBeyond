@@ -118,9 +118,9 @@ function succession(f,cause,by){const L0=leaderOf(f);if(!L0)return;const hist=[c
   chron(`${FAC(f).name}: ${N.title} ${N.name} succeeds ${L0.name} after ${why}. ${N.name} is ${traits.join(' and ')}.`,'big',[f])}
 // ---- what pilots do: a leader's traits shape how its power's AI ships fight (steps of stage 2)
 let LEADP={};
-function leaderProfiles(){LEADP={};if(!S||!S.leaders)return;for(const f of FAC_IDS){const L=leaderOf(f),t=x=>L.traits.includes(x),p={range:1,breakoff:0,stay:false,honour:false,ruthless:false,zeal:false};
+function leaderProfiles(){LEADP={};if(!S||!S.leaders)return;for(const f of FAC_IDS){const L=leaderOf(f),t=x=>L.traits.includes(x),p={range:1,breakoff:0,honour:false,ruthless:false,zeal:false};
   if(t('Ambitious'))p.range*=1.3;if(t('Opportunist'))p.range*=1.15;if(t('Cautious')){p.range*=.85;p.breakoff=.3}if(t('Patient'))p.range*=.9;if(t('Isolationist'))p.range*=.9;if(t('Mercantile'))p.breakoff=Math.max(p.breakoff,.2);
-  if(t('Vengeful')){p.stay=true;p.breakoff=0}if(t('Honourable'))p.honour=true;if(t('Ruthless'))p.ruthless=true;if(t('Zealous'))p.zeal=true;LEADP[f]=p}}
+  if(t('Vengeful'))p.breakoff=0;if(t('Honourable'))p.honour=true;if(t('Ruthless'))p.ruthless=true;if(t('Zealous'))p.zeal=true;LEADP[f]=p}}
 function leadP(side){return LEADP[side]||null}
 // LEADP lives outside S, so a galaxy continued from a save (where leadersInit returns early) rebuilds it from the saved
 // leaders and the Dread Pirate; without this every side flew plain until a leader died (trait-check, 7 Nov 2026)

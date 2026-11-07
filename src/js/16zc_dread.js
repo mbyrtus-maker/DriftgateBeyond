@@ -25,8 +25,8 @@ function dpSucceed(why,by){const D0=dpOf();if(!D0)return;S.dpPast=S.dpPast||[];S
   const txt={killedPow:'its captain was killed',killedPilot:'its captain was killed by a contractor',looted:'Scrapheart was looted',fat:'years of plunder',brood:'raiders lost to the Brood',leader:'a power closing on the galaxy',failed:'a long run of failed raids',kept:'bargains kept'}[why]||why;
   allFeed(`☠ ${dpName(N)} takes the hat after ${txt}. ${N.traits.length?`${N.name} is ${N.traits.join(' and ')}.`:''}`,'news');chron&&chron(`${dpName(N)} took the hat from ${D0.name} after ${txt}.`)}
 // ---- pilots fly like it (through the powers' leader profiles, by side)
-function dpProfile(){const D=dpOf();if(!D)return;const t=x=>D.traits.includes(x),p={range:1,breakoff:0,stay:false,honour:false,ruthless:false,zeal:false};
-  if(t('Bloodthirsty')){p.range*=1.3;p.stay=true}if(t('Showman'))p.range*=1.15;if(t('Cunning'))p.range*=.9;if(t('Paranoid')){p.range*=.8;p.breakoff=.25}if(t('Superstitious'))p.breakoff=Math.max(p.breakoff,.3);
+function dpProfile(){const D=dpOf();if(!D)return;const t=x=>D.traits.includes(x),p={range:1,breakoff:0,honour:false,ruthless:false,zeal:false};
+  if(t('Bloodthirsty'))p.range*=1.3;if(t('Showman'))p.range*=1.15;if(t('Cunning'))p.range*=.9;if(t('Paranoid')){p.range*=.8;p.breakoff=.25}if(t('Superstitious'))p.breakoff=Math.max(p.breakoff,.3);
   if(t('Greedy')||t('Gallant'))p.honour=true;if(t('Greedy'))p.ruthless=true;LEADP.pirate=p}
 {const o=leaderProfiles;leaderProfiles=function(){const r=o.apply(this,arguments);try{dpProfile()}catch(e){}return r}}
 // ---- the ship: the Ravager when it's afloat, a Corsair with an ace escort otherwise; spawned in a live system, moving off-screen

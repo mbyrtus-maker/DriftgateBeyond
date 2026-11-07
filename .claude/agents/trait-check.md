@@ -40,7 +40,7 @@ Build and syntax-check first (commands in `CLAUDE.md`). Wrap every browser run i
 
 ## Known findings (7 Nov 2026)
 - **Fixed 7 Nov 2026: Continue lost every side's trait behaviour** (`LEADP` lives outside `S` and `leadersInit` returns early on a saved galaxy). `startWith` now rebuilds it (wrapper in `16g_leaders.js`); `traits.py`'s save checks guard it.
-- **FAIL: `p.stay` is set and never read.** Vengeful still never breaks off (it zeroes `breakoff`), but Bloodthirsty's "stay" does nothing, so a Bloodthirsty + Superstitious Dread Pirate's ships break off.
+- **Settled 7 Nov 2026 (user): break-off wins over Bloodthirsty.** The unread `stay` flag is gone; Bloodthirsty keeps only its longer chase, and a Bloodthirsty pirate that is also Superstitious or Paranoid breaks off when hurt. `traits.py` checks it.
 - **GAP:** break-off covers only `patrol`, `escort` and `raider` (not `strike`, `pirate`, `screen`); capitals (`frigateThink`), scouts, traders, drones and the carrier's defence set never read a trait; Scheming, Wary, Loyal, Industrious and Kingmaker have no pilot effect, and Mercantile, Patient, Opportunist only part of theirs; a founder's two traits on declaring are not built.
 - **Not a trait matter (economy bot's):** saving while in flight and pressing Continue adds 15 Vantium (`nu`) each time.
 
