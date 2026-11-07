@@ -2233,7 +2233,15 @@ Then (300 galaxies each): kits on their own convoy 49% (no better: more kits now
 
   The strike AI's hold point (`ai.picket`, a station siege position) isn't carrier code and keeps its name. destroyers and stations pass.
 
-### Brood surges (proposal, 5 Nov 2026, awaiting approval)
+### Brood surges (proposal 5 Nov 2026; core built 6 Nov 2026, `16zzx_surge.js`, not yet published)
+**Built (6 Nov 2026), after the user chose surges over the Overgrowth wall as the Brood's lever ("Let's look at more surges"):**
+- **The meter** (`S.surge.m`): every ship killed live that isn't the Brood's adds its cargo's worth plus 150 credits (a capital 3,000), and every load blown into a system's debris (off-screen battles, wrecked holds and kits) adds its worth. Double next to Brood space; nothing inside Brood space counts. It drains a tenth an hour.
+- **The bar:** `SURGE.bar` = 60,000 credits of salvage, divided by (1 + 0.2 × Brood systems held), times `k`. A surge that is beaten off raises `k` by a quarter; one that breaks through resets it. One surge at a time, 30 minutes apart, none in the first 10 minutes. The galaxy map's Brood systems show the gauge ("The Bloom stirs: N% to the next surge"); News at half full.
+- **Open question 1 answered yes: the Brood eats the salvage.** Without it the surges almost never launched: the Brood's stores couldn't field a wave (68 failed launches in 3 hours, short of Conduit and torpedoes). Now the Bloom draws 3% of the debris every 10 seconds out of its own systems and the systems next to them (not the powers' home cores) into a **surge mass** (`S.surge.store`), up to what one big surge takes (500 Ferrite, 300 Cuprite, 200 Iridium, 40 Crystal), and grows the surge's kit (plate, conduit, coils, missiles, torpedoes) from it, topping up from its fleet and stores. The ledger stays exact: the debris is real, and the surge mass is counted with the faction stores. (An uncapped harvest drained the galaxy's debris so fast that every power shrank to two systems in 4 hours, so the cap matters.)
+- **The target:** a system next to Brood space that isn't the Brood's, with a station (of a power it fights) or a power's outpost, where the most salvage was made lately, else the richest.
+- **The wave:** an ordinary Brood offensive's size × `SURGE.k` 2.2 (8 to 30 ships; in practice about 24), a third to a half of them bombers, announced galaxy-wide ("☣ Brood surge: the Bloom is spilling toward …. N Brood ships, 2 minutes."), resolved as a Brood offensive, then News that it was beaten off or broke through.
+- **Not built yet:** defence bounties and the surge job, the pulsing map marker and target countdown, Hive Ships and the Gullet in the wave, the powers' shared response and war weariness. These come after the balance check.
+
 **The user's idea:** a Brood surge is a big, telegraphed Brood event the whole galaxy sees coming, and **the more the powers fight, the more the Brood surges**: the salvage their wars leave behind feeds it.
 
 **The user's choices:**
@@ -2282,9 +2290,9 @@ Then (300 galaxies each): kits on their own convoy 49% (no better: more kits now
 **Balance.** Surges make the Brood spikier, and wars feed it. The 20% target is checked by the war check (16 h) once built, and the meter's size and the wave's strength are the dials.
 
 **Open questions:**
-1. **Should the Brood actually eat the salvage?** Brood grazers could drift to battlefields and consume uncollected debris into their own stores, so goods move rather than vanish and the ledger stays exact. Contractors would then race them for salvage.
+1. **Should the Brood actually eat the salvage?** (Built: yes, see above.) Brood grazers could drift to battlefields and consume uncollected debris into their own stores, so goods move rather than vanish and the ledger stays exact. Contractors would then race them for salvage.
 2. **Count the player's own kills?** The proposal counts every destroyed ship, yours included.
-3. **Only one surge at a time?** The proposal allows one, with at least 30 minutes before the next.
+3. **Only one surge at a time?** The proposal allows one, with at least 30 minutes before the next. (Built that way.)
 
 ### Corporations with money: shares, struggles, product tweaks and market surges (proposal 5 Nov 2026; rules decided through simulation v17, 6 Nov 2026; not built)
 **Status (user, 6 Nov 2026): pilots trading shares is tabled.** The design for it is written below ("Pilot share trading: designed, not built") but not built or published. The makers' money, shares, dividends and CEOs run in the background, and what the makers do (R&D projects, materials runs, trials, spying, sabotage, product tweaks) reaches pilots as missions and news.
