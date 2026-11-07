@@ -5,15 +5,17 @@
 // "Corporate economy: last pass" in BEYOND_DESIGN.md (simulations v17 to v20). Grades through R&D, the R&D stations,
 // meetings, bulk orders and corporate missions are the next stages.
 //   - Money: each maker has a treasury (S.econ.treasury['corp_'+m], so the ledger counts it), capitalised at the start by its
-//     home (its power, or the Compact for a freeport maker) with CE.start. Credits only ever move between wallets.
+//     home (its power, or the Compact for a freeport maker) with CE.start (4,000 cr: the game's makers carry more lines than
+//     the simulations' 3,000 was set for). Credits only ever move between wallets.
 //   - Income: every sale of its parts on any market, less the station's 15% dues (the station's owner keeps those).
-//     No maker's part sells for less than 15% over its component cost after dues (the profit floor).
+//     A maker lists its parts at 1.5 times their component cost (the simulations' list price; Premium +15%, Discounter
+//     -10%) or the market's price if higher, and never below 15% over cost after dues (the profit floor).
 //   - Costs: its works pay the host station's owner for the components they take (at that market's price); running costs
 //     each hour to the host's owner: 60 cr plus, for each line, half that line's fair margin (the margin every maker line of
 //     its kind earned in the last hour, over the kind's lines), at least 10 cr a line (simulation v20). A line that hasn't
 //     sold in 2 hours is shut: it pays nothing and isn't built, but its stock stays on sale. Penny-pincher x0.75.
-//   - Prudent works: a line is built up to 2 more than it sold in the last hour (at most 4 on the shelf), and only with the
-//     maker's reserve kept back (a Penny-pincher keeps 5 hours of running costs, a Cautious CEO 6, others none).
+//   - Prudent works (simulation v19): a line is built up to 1 more than it sold in the last hour (at most 4 on the shelf), and
+//     only with an hour of running costs kept back (a Penny-pincher keeps 5, a Cautious CEO 6).
 //   - Buyers besides you: the powers refit their fleets. Every 5 minutes each power buys parts for its fleet (12 an hour at
 //     peace, 16 under tension, 24 at war) at its own stations and the freeports, choosing by its tastes, the parts' traits and
 //     price; they go into its fleet's fitted parts (counted in the ledger), which wear out half an hour and fall as debris in
@@ -30,7 +32,7 @@
 //   - Struggling below 2 hours of running costs (News); failing when it can't pay them: its works close, its stock stays on
 //     sale. 30 to 60 minutes later a new company opens at the same home, capitalised by the home, making the same kinds of
 //     part under a new name, with a new CEO and small fresh traits.
-const CE={shut:7200,start:3000,dues:.15,floor:1.15,base:60,lineF:.5,lineMin:10,shelf:2,cap:4,struggleH:2,reborn:[1800,3600],review:900,window:2700,twCool:1800,twMax:3,twStep:[.02,.04],trCap:.25,magCap:2,
+const CE={markup:1.5,shut:7200,start:4000,dues:.15,floor:1.15,base:60,lineF:.5,lineMin:10,shelf:1,cap:4,struggleH:2,reborn:[1800,3600],review:900,window:2700,twCool:1800,twMax:3,twStep:[.02,.04],trCap:.25,magCap:2,
   refit:{peace:12,tension:16,war:24,every:300,keep:3000},wear:.5,div:.4,divHome:.6,grace:7200,
   ceos:['Penny-pincher','Premium','Innovator','Expansionist','Cautious','Generous','Discounter','Restless']};
 const CE_KSTAT={gun:['dmg','ammo'],laser:['dmg','e'],missile:['mag','lock'],torpedo:['mag','lock'],charge:['mag'],mlaser:['ml','e'],cargo:['cargo'],scanner:['scan'],dronec:['dh','dd']};
@@ -41,6 +43,7 @@ const CE_NAMES=[['Lumen','Vesper','Halyard','Cinder','Tallow','Aster','Granite',
 const CE_DEF={mk:{},it:{}};for(const m in MAKERS)CE_DEF.mk[m]={name:MAKERS[m].name,short:MAKERS[m].short,parts:JSON.parse(JSON.stringify(MAKERS[m].parts))};
 for(const m in MK_LINE)for(const id of MK_LINE[m])CE_DEF.it[id]={name:ITEMS[id].name,tr:{...(ITEMS[id].tr||{})}};
 function ceW(m){return'corp_'+m}
+function ceKind(id){const I=ITEMS[id];return!I?'?':I.part||(I.sys?'sys_'+I.sys:'?')}
 function ceT(m){return(S.econ.treasury[ceW(m)])||0}
 function ceOf(m){return S.corp&&S.corp[m]}
 function ceHomeWallet(m){const h=MAKERS[m].home;return FAC_IDS.includes(h)?h:'neutral'}
@@ -62,16 +65,16 @@ function ceInit(){if(S.corp||NET.cl||S.training)return;S.corp={};for(const m in 
 // ---- prices: the profit floor and the CEO's pricing
 function ceComp(sid,id){const R=S.stations[sid],rc=ITEMS[id]&&ITEMS[id].recipe;if(!rc)return 0;let c=0;for(const k in rc)c+=(R?stPrice(R,k):baseValue(k))*rc[k];return c}
 {const o=stPrice;stPrice=function(R,id){const v=o.apply(this,arguments);try{const I=ITEMS[id],m=I&&I.maker;if(!m||!S||!S.corp||!R)return v;const c=ceOf(m),k=c&&c.ceo==='Premium'?1.15:c&&c.ceo==='Discounter'?.9:1;
-  return Math.max(v*k,ceComp(R.sid,id)*CE.floor/(1-CE.dues))}catch(e){return v}}}
+  const cc=ceComp(R.sid,id);return Math.max(v*k,cc*CE.markup*k,cc*CE.floor/(1-CE.dues))}catch(e){return v}}}
 // ---- a sale: the maker's share to its treasury, the station's dues stay with its owner
 function ceSale(m,id,n,paid,wallet,sid){if(!S.corp||!(paid>0))return;const c=ceOf(m);if(!c)return;if(c.dead){return}const net=Math.floor(paid*(1-CE.dues));const got=transfer(wallet,ceW(m),net);
-  const home=mkHomeSid(m),mar=got-ceComp(home,id)*n;c.sales.push([S.T,id,n,mar]);c.inc+=got}
+  const home=mkHomeSid(m),mar=got-ceComp(home,id)*n;c.sales.push([S.T,ITEMS[id].base||id,n,mar]);c.inc+=got}
 {const o=dockAction;dockAction=function(act,arg){if(act!=='buy'||!S||!S.corp||NET.cl)return o.apply(this,arguments);const k=String(arg).split(':')[0],I=ITEMS[k];if(!I||!I.maker)return o.apply(this,arguments);
   const c=dockCtx();if(!c||!c.market||c.wallet==='player'||c.owner==='player')return o.apply(this,arguments);const P=S.player,c0=P.credits,n0=c.market[k]||0,wl=c.wallet;const r=o.apply(this,arguments);
   try{const spent=c0-P.credits,n=n0-(c.market[k]||0);if(spent>0&&n>0)ceSale(I.maker,k,n,spent,wl,P.sector)}catch(e){console.error(e)}return r}}
 // ---- the works: prudent, and paying for their components
 function ceSold(m,id,span){const c=ceOf(m);let n=0;for(const x of c.sales)if(x[1]===id&&x[0]>S.T-span)n+=x[2];return n}
-function ceReserve(m){const c=ceOf(m);return c.ceo==='Penny-pincher'?5*ceUpkeep(m):c.ceo==='Cautious'?6*ceUpkeep(m):0}
+function ceReserve(m){const c=ceOf(m);return(c.ceo==='Penny-pincher'?5:c.ceo==='Cautious'?6:1)*ceUpkeep(m)}
 makersTick=function(){if(NET.cl||!S||S.training||S.unb)return;S.mkT=S.mkT||0;if(S.T<S.mkT)return;S.mkT=S.T+MK_WORKS.every;
   if(!S.corpConv){try{corpConvert()}catch(e){}S.corpConv=1}
   for(const m in MAKERS){const R=mkAtHome(m);if(!R)continue;if(S.corp&&!ceAlive(m))continue;const st=mkStock(R);
@@ -80,10 +83,10 @@ makersTick=function(){if(NET.cl||!S||S.training||S.unb)return;S.mkT=S.mkT||0;if(
     for(const id of ids){const rc=ITEMS[id].recipe;if(!haveIn(rc,[st]))continue;if(S.corp){const cost=Math.ceil(ceComp(R.sid,id));if(ceT(m)-cost<ceReserve(m))continue;transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);ceOf(m).cost+=cost}
       takeFrom(rc,[st]);inv.add(st,id,1);break}}};
 // ---- running costs: 60 cr an hour plus half each line's fair margin (at least 10)
-function ceFair(){const T=S.T,mar={},nl={};for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;for(const x of c.sales)if(x[0]>T-3600){const k=ITEMS[x[1]].part;mar[k]=(mar[k]||0)+x[3]}for(const id of MK_LINE[m]){const k=ITEMS[id].part;nl[k]=(nl[k]||0)+1}}
+function ceFair(){const T=S.T,mar={},nl={};for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;for(const x of c.sales)if(x[0]>T-3600){const k=ceKind(x[1]);mar[k]=(mar[k]||0)+x[3]}for(const id of MK_LINE[m]){const k=ceKind(id);nl[k]=(nl[k]||0)+1}}
   const f={};for(const k in nl)f[k]=Math.max(0,mar[k]||0)/nl[k];return f}
 let CE_FAIR={t:-1,f:{}};
-function ceUpkeep(m){if(CE_FAIR.t!==S.T){CE_FAIR={t:S.T,f:ceFair()}}const c=ceOf(m);let u=CE.base;for(const id of MK_LINE[m]||[]){if(c&&S.T>CE.shut&&!ceSold(m,id,CE.shut))continue;u+=Math.max(CE.lineMin,CE.lineF*(CE_FAIR.f[ITEMS[id].part]||0))}return u*(c&&c.ceo==='Penny-pincher'?.75:1)}
+function ceUpkeep(m){if(CE_FAIR.t!==S.T){CE_FAIR={t:S.T,f:ceFair()}}const c=ceOf(m);let u=CE.base;for(const id of MK_LINE[m]||[]){if(c&&S.T>CE.shut&&!ceSold(m,id,CE.shut))continue;u+=Math.max(CE.lineMin,CE.lineF*(CE_FAIR.f[ceKind(id)]||0))}return u*(c&&c.ceo==='Penny-pincher'?.75:1)}
 function ceMinute(){const T=S.T;for(const m in MAKERS){const c=ceOf(m);if(!c)continue;
     if(c.dead){if(T>=c.reborn)ceReborn(m);continue}
     c.sales=c.sales.filter(x=>x[0]>T-Math.max(CE.window,CE.shut,3600));
@@ -106,7 +109,7 @@ function ceTweak(m,id,why){const c=ceOf(m),I=ITEMS[id],ks=CE_KSTAT[I.part];if(!k
   const cur=(tr[s]||0)*sg;if(cur>=cap)return false;tr[s]=sg*Math.min(cap,Math.round((cur+step)*100)/100);ceBalance(tr,I.part);
   c.tr[id]=tr;const L=c.ln[id]=c.ln[id]||{tw:0,last:-1e9};L.tw++;L.last=S.T;ceApply();
   ceNews(m,`has revised its ${I.name.replace(MAKERS[m].short+' ','')} (${why}): now ${trText(tr)}.`);return true}
-function ceReview(){const T=S.T,sold={},byKind={};for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;for(const id of MK_LINE[m]){sold[id]=ceSold(m,id,CE.window);const k=ITEMS[id].part;(byKind[k]=byKind[k]||[]).push([m,id])}}
+function ceReview(){const T=S.T,sold={},byKind={};for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;for(const id of MK_LINE[m]){sold[id]=ceSold(m,id,CE.window);const k=ceKind(id);(byKind[k]=byKind[k]||[]).push([m,id])}}
   for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;const every=c.ceo==='Restless'?600:CE.review;if(T<(c.revT||0))continue;c.revT=T+every;
     for(const id of ceTrLines(m)){const k=ITEMS[id].part;if(!CE_KSTAT[k])continue;const L=c.ln[id]||{tw:0,last:-1e9};if(L.tw>=CE.twMax||T-L.last<(c.ceo==='Restless'?CE.twCool/2:CE.twCool))continue;
       const peers=byKind[k]||[],tot=peers.reduce((a,[,x])=>a+sold[x],0),fair=tot/Math.max(1,peers.length),mine=sold[id];
@@ -142,9 +145,9 @@ function ceSpark(H){const L=H.slice(-12);if(!L.length)return'';const lo=Math.min
 function ceHtml(P){let h=coViews('economy',[['hour','Hour'],['3h','3 hours'],['corps','Corporations']]);if(!S.corp)return h+'<div class="empty">The corporations\' books open with a new galaxy.</div>';
   const ms=Object.keys(MAKERS);if(!coPk.economy||!String(coPk.economy).startsWith('corp:'))coPk.economy='corp:'+ms[0];const sel=String(coPk.economy).slice(5);
   h+=`<div class="cowrap"><div class="colist">`;for(const m of ms){const c=ceOf(m),[col,word]=ceState(m),hm=MAKERS[m].home;
-    h+=coRowH({tab:'economy',key:'corp:'+m,on:sel===m,icon:coIco('15,2 27,9 27,21 15,28 3,21 3,9',FAC_IDS.includes(hm)?FACTIONS[hm].col:'#e8c878'),title:esc(MAKERS[m].name),sub:`${esc(FAC_IDS.includes(hm)?FACTIONS[hm].short:DEF[hm].name)} · CEO ${esc(c.ceo)}`,mid:ceSpark(c.pxH),right:`${coStat(col,word)}<b class="mono" style="margin-left:10px">${c.dead?'—':fmt(Math.round(c.px||0))} cr</b>`})}
+    h+=coRowH({tab:'economy',key:'corp:'+m,on:sel===m,icon:coIco('15,2 27,9 27,21 15,28 3,21 3,9',FAC_IDS.includes(hm)?FACTIONS[hm].col:'#e8c878'),title:esc(MAKERS[m].name),sub:`${esc(FAC_IDS.includes(hm)?FACTIONS[hm].short:DEF[hm].name)} · CEO ${esc(c.ceo)}`,mid:ceSpark(c.pxH),right:`${coStat(col,word)}<b class="mono" style="margin-left:10px">${c.dead||!c.px?'—':fmt(Math.round(c.px))+' cr'}</b>`})}
   const m=sel,c=ceOf(m),[col,word]=ceState(m),last=c.hist.slice(-1)[0];
-  let d=`<div class="lab">Corporation · ${esc(word)}</div><div class="ldname"><b>${esc(MAKERS[m].name)}</b></div>`+coKV([['Home',esc(DEF[mkHomeSid(m)].name)],['CEO',esc(c.ceo)],['Treasury',`${fmt(ceT(m))} cr`],['Share price',c.dead?'worthless':`${fmt(Math.round(c.px||0))} cr (rough value; shares aren't traded yet)`],
+  let d=`<div class="lab">Corporation · ${esc(word)}</div><div class="ldname"><b>${esc(MAKERS[m].name)}</b></div>`+coKV([['Home',esc(DEF[mkHomeSid(m)].name)],['CEO',esc(c.ceo)],['Treasury',`${fmt(ceT(m))} cr`],['Share price',c.dead?'worthless':c.px?`${fmt(Math.round(c.px))} cr (rough value; shares aren't traded yet)`:'valued after its first hour'],
     ['Last hour',last?`${last[1]>=0?'+':''}${fmt(last[1])} cr`:'not yet'],['Running costs',`${fmt(Math.round(ceUpkeep(m)))} cr an hour`],['Dividends paid',`${fmt(c.div)} cr`]]);
   d+=`<div class="lab" style="margin-top:12px">Its lines</div>`+(MK_LINE[m]||[]).map(id=>{const I=ITEMS[id],L=c.ln[id];return`<div class="coln">${gIcon(id,14)}<span style="flex:1;min-width:0">${esc(I.name)} <span class="mass">${id.startsWith('mq_')?'standard':esc(trText(I.tr)||'standard')}${L&&L.tw?` · revised ${L.tw}×`:''}</span></span><span class="mono note" style="margin:0">${ceSold(m,id,3600)} sold this hour</span></div>`}).join('');
   d+=`<p class="note" style="margin-top:12px">A maker earns from every sale of its parts (the station keeps 15%), pays its host for components and running costs, tweaks lines its buyers pass by, and pays dividends to its home and the Compact. One that can't pay its way fails, and a new company takes over its works.</p>`;
