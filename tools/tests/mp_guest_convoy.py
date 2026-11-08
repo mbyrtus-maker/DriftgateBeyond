@@ -16,8 +16,10 @@ async def mkConvoy(K,side,frm,to,load):
   r=json.loads(await K.Hh("""(()=>{const t=devLedger(()=>haulSend(%s,%s,%s,%s,'test:'+S.nextId,'test supplies',null));if(!t)return 'null';t.next=S.T+600;window._CV=window._CV||{};_CV[t.id]=t;
     return JSON.stringify({id:t.id,path:t.path,bounty:raidBounty(t),val:Math.round(invValue(%s)),live:!!t.live})})()"""%(J(side),J(frm),J(to),J(load),J(load))))
   # wait for the guest's copy of the state to have it
+  # (the host syncs every 5 s of game time, which is half a minute or more with two pages on one machine: send one now)
   for i in range(40):
     if await K.G("(S.traders||[]).some(x=>x.id===%d)"%r['id']):break
+    if i%5==0:await K.Hh("(()=>{for(const c of readyCl())send(c.L,syncMsg(c));return 1})()")
     await K.wait(1000)
   return r
 async def board(K,jid):
@@ -47,6 +49,11 @@ async def body(K):
   sec=await G("S.player.sector")
   # (the powers' relations settle in the first seconds of a galaxy: every pair reads as at war until then)
   await K.wait(10000)
+  # (until the first strategic tick sets up the powers' relations every pair reads as at war; with two pages on one machine
+  # that tick can be more than 10 s away, so wait for it)
+  for i in range(60):
+    if await Hh("!!S.rel"):break
+    await K.wait(1000)
   # the guest stands Neutral or better with every power at a freeport; pick a power to work for and one it fights
   pk=json.loads(await Hh("""(()=>{const P=%s,c=%s,I=jobIssuers(c,P);let f=null,g=null;for(const a of I)for(const b of FAC_IDS)if(!f&&b!==a&&hostile(a,b)){f=a;g=b}
     return JSON.stringify({issuers:I,f,g,wars:FAC_IDS.flatMap(a=>FAC_IDS.filter(b=>a<b&&hostile(a,b)).map(b=>a+'-'+b))})})()"""%(HP,CTX)))
