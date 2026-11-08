@@ -27,6 +27,26 @@ def box(M,c,size,role,taper=(1,1),sh=1.0):
     cx,cy,cz=c;w,h,l=size;tw,th=taper
     rect=lambda sw,sh_:[(cx-sw/2,cy-sh_/2),(cx+sw/2,cy-sh_/2),(cx+sw/2,cy+sh_/2),(cx-sw/2,cy+sh_/2)]
     loft(M,[(cz-l/2,rect(w,h)),(cz+l/2,rect(w*tw,h*th))],role,sh0=sh)
+def loft_top(secs,z,x=0.0):
+    # the height of a loft's upper surface at (x,z): the sections interpolated to z (as the loft's quads join them), then the
+    # highest point where the section's outline crosses x
+    S=sorted(secs,key=lambda s:s[0]);z=min(max(z,S[0][0]),S[-1][0])
+    for i in range(len(S)-1):
+        if S[i][0]<=z<=S[i+1][0]:break
+    t=(z-S[i][0])/((S[i+1][0]-S[i][0]) or 1);P=[((1-t)*a[0]+t*b[0],(1-t)*a[1]+t*b[1]) for a,b in zip(S[i][1],S[i+1][1])];ys=[]
+    for j in range(len(P)):
+        p,q=P[j],P[(j+1)%len(P)]
+        if (p[0]-x)*(q[0]-x)<=0 and p[0]!=q[0]:ys.append(p[1]+(x-p[0])/(q[0]-p[0])*(q[1]-p[1]))
+    return max(ys)
+def on_hull(M,secs,z0,z1,hw,t,role,sh=1.0,sink=.008,dx=0.0):
+    # (7 Nov 2026) a slab laid along a loft's upper surface from z0 to z1, half-width hw, standing t proud of it: slit canopies,
+    # armour bands and spine plates. They used to be flat plates and boxes at a fixed height, which floated above a hull that
+    # tapers under them, or cut into each other (a band through a canopy). This one follows the hull's slope and sits into it.
+    zs=sorted({z0,z1,*[s[0] for s in secs if z0<s[0]<z1]});S=[]
+    for z in zs:
+        lo=min(loft_top(secs,z,dx+x) for x in (-hw,0,hw))-sink;hi=loft_top(secs,z,dx)+t
+        S.append((z,[(dx-hw,lo),(dx+hw,lo),(dx+hw,hi),(dx-hw,hi)]))
+    loft(M,S,(role,sh))
 def plate(M,pts,thick,role,sh=1.0):
     # a thin convex plate through planar points (a wing, fin or armour panel), both faces and edges
     P=[np.array(p,float) for p in pts];n=np.cross(P[1]-P[0],P[2]-P[0]);n/=np.linalg.norm(n)+1e-12;o=n*thick/2;c=sum(P)/len(P)
@@ -68,7 +88,7 @@ def fang():
     hexs=lambda w,h,dy=0:[(w,dy),(w*.55,h+dy),(-w*.55,h+dy),(-w,dy),(-w*.55,-h+dy),(w*.55,-h+dy)]
     body=[(-.85,hexs(.3,.2)),(-.3,hexs(.34,.24)),(.3,hexs(.3,.22)),(.62,hexs(.2,.14,-.02)),(.8,hexs(.1,.08,-.03))]
     loft(M,body,lambda i,j:([MID,MID,MID,DARK,DARK,DARK][j],[1,1.05,1,.9,.85,.9][j]))
-    plate(M,[(-.07,.23,.42),(.07,.23,.42),(.07,.26,.12),(-.07,.26,.12)],.02,GLASS)                    # slit canopy
+    on_hull(M,body,.12,.42,.07,.035,GLASS)                                                                         # slit canopy, laid on the nose
     for sx in (1,-1):
         for k,z in enumerate((.18,-.15,-.48)):box(M,(sx*.3,.13,z),(.08,.16,.3),MID,taper=(.9,.85),sh=.96+.04*k)   # bolted side armour
         plate(M,[(sx*.3,-.04,.15),(sx*.72,-.06,-.12),(sx*.72,-.06,-.4),(sx*.3,-.04,-.55)],.07,DARK)               # stubby slab wing
@@ -76,11 +96,11 @@ def fang():
         barrel(M,(sx*.72,-.03,.09),.38,.028)
         barrel(M,(sx*.72,-.09,.09),.34,.028)
         plate(M,[(sx*.18,.05,.78),(sx*.12,-.06,.78),(sx*.09,-.07,1.02),(sx*.11,.0,1.06)],.05,ACC)                  # the fangs
-        box(M,(sx*.16,0,-.9),(.2,.2,.14),DARK);M.vent((sx*.16,0,-.97),.08)                                          # square drives
-        plate(M,[(sx*.25,.24,-.45),(sx*.33,.42,-.7),(sx*.33,.42,-.8),(sx*.25,.24,-.8)],.05,ACC,.9)                  # stub fins
+        box(M,(sx*.16,0,-.9),(.2,.2,.14),DARK);M.vent((sx*.16,0,-.98),.08)                                          # square drives (vents set just behind the drive face: flush, their glow flickered at range)
+        plate(M,[(sx*.25,.2,-.45),(sx*.33,.42,-.7),(sx*.33,.42,-.8),(sx*.25,.2,-.8)],.05,ACC,.9)                    # stub fins, footed on the side armour
     barrel(M,(0,-.2,.25),.5,.035)                                                                                  # chin gun: the extra slot
     box(M,(0,-.2,.18),(.14,.1,.22),DARK)
-    for z in (-.55,-.1,.35):box(M,(0,.25,z),(.22,.03,.12),ACC,sh=.9)                                               # armour bands
+    for z in (-.55,-.25,.05):on_hull(M,body,z-.06,z+.06,.11,.025,ACC,.9)                                         # armour bands, aft of the canopy (one used to cut through it)
     return M
 
 # ------------------------------------------------------------------ Ostrova Mote: light fighter
@@ -153,8 +173,9 @@ def osprey():
 # ------------------------------------------------------------------ Varkesh Talon: medium fighter (a pincer: two claw sponsons reach past a short cockpit pod)
 def talon():
     M=Mesh(24)
-    loft(M,[(-.75,HEX(.24,.2)),(-.2,HEX(.28,.23)),(.3,HEX(.24,.2)),(.55,HEX(.14,.12,-.02))],hex_role)              # short cockpit pod
-    plate(M,[(-.08,.22,.42),(.08,.22,.42),(.08,.25,.08),(-.08,.25,.08)],.025,GLASS)
+    pod=[(-.75,HEX(.24,.2)),(-.2,HEX(.28,.23)),(.3,HEX(.24,.2)),(.55,HEX(.14,.12,-.02))]
+    loft(M,pod,hex_role)                                                                                         # short cockpit pod
+    on_hull(M,pod,.08,.42,.08,.035,GLASS)                                                                          # slit canopy, laid on the pod
     box(M,(0,0,-.92),(1.3,.3,.34),DARK,taper=(.92,.9))                                                             # wide drive block
     for sx in (1,-1):
         loft(M,[(-.85,HEX(.15,.17,0,sx*.62)),(-.1,HEX(.17,.19,0,sx*.64)),(.75,HEX(.13,.15,-.01,sx*.6)),(1.15,HEX(.07,.08,-.02,sx*.5))],hex_role)  # claw sponson
@@ -162,20 +183,21 @@ def talon():
         plate(M,[(sx*.22,-.02,.25),(sx*.5,-.03,.45),(sx*.5,-.03,-.6),(sx*.22,-.02,-.6)],.06,DARK)                   # slab joining pod and sponson
         for dy in (.07,-.07):barrel(M,(sx*.72,dy,.55),.5,.03)
         for k,z in enumerate((.45,.05,-.35)):box(M,(sx*.79,.06,z),(.05,.2,.3),MID,taper=(.9,.85),sh=.96+.03*k)
-        for dx in (.22,.48):box(M,(sx*dx,0,-1.12),(.2,.18,.12),DARK);M.vent((sx*dx,0,-1.18),.065)
+        for dx in (.22,.48):box(M,(sx*dx,0,-1.12),(.2,.18,.12),DARK);M.vent((sx*dx,0,-1.19),.065)
         plate(M,[(sx*.62,.18,-.45),(sx*.66,.48,-.75),(sx*.66,.48,-.86),(sx*.62,.18,-.86)],.06,ACC,.9)
-    for z in (-.45,.05):box(M,(0,.24,z),(.2,.03,.12),ACC,sh=.9)
+    for z in (-.45,-.03):on_hull(M,pod,z-.06,z+.06,.1,.025,ACC,.9)                                                 # armour bands, clear of the canopy
     return M
 
 # ------------------------------------------------------------------ Varkesh Halberd: heavy fighter (a brawler: an armoured core with four gun-and-drive pods on an X of slab arms)
 def halberd():
     M=Mesh(25)
     chis=lambda w,h,dy=0:[(w,dy),(w*.8,h+dy),(-w*.8,h+dy),(-w,dy),(-w*.7,-h*.7+dy),(w*.7,-h*.7+dy)]
-    loft(M,[(-1.0,HEX(.32,.3)),(-.4,HEX(.38,.36)),(.35,HEX(.34,.32)),(.75,chis(.3,.24,-.02)),(1.1,chis(.24,.12,-.06)),(1.28,chis(.18,.03,-.09))],hex_role)   # armoured core into a chisel prow
-    plate(M,[(-.1,.33,.55),(.1,.33,.55),(.1,.37,.2),(-.1,.37,.2)],.025,GLASS)
+    core=[(-1.0,HEX(.32,.3)),(-.4,HEX(.38,.36)),(.35,HEX(.34,.32)),(.75,chis(.3,.24,-.02)),(1.1,chis(.24,.12,-.06)),(1.28,chis(.18,.03,-.09))]
+    loft(M,core,hex_role)                                                                                        # armoured core into a chisel prow
+    on_hull(M,core,.2,.55,.1,.035,GLASS)                                                                           # slit canopy, laid on the core
     for sx in (1,-1):plate(M,[(sx*.05,.24,.8),(sx*.26,.2,.8),(sx*.2,.07,1.18),(sx*.05,.08,1.18)],.03,ACC)                # chevron armour on the prow
     box(M,(0,.0,1.15),(.3,.1,.16),DARK)
-    for z in (-.55,-.1,.3):box(M,(0,.37,z),(.3,.03,.14),ACC,sh=.9)
+    for z in (-.6,-.3,0):on_hull(M,core,z-.07,z+.07,.15,.025,ACC,.9)                                               # armour bands, aft of the canopy (one used to cut through it)
     for sx in (1,-1):
         for sy in (1,-1):
             px,py=sx*.78,sy*.5
@@ -183,7 +205,7 @@ def halberd():
             box(M,(px,py,-.15),(.22,.22,1.1),MID,taper=(.8,.8))                                                  # pod
             box(M,(px,py,.38),(.16,.16,.12),ACC,sh=.95)
             barrel(M,(px,py,.42),.45,.034)                                                                         # gun out of each pod
-            box(M,(px,py,-.75),(.2,.2,.14),DARK);M.vent((px,py,-.82),.07)                                         # drive at the back of each pod
+            box(M,(px,py,-.75),(.2,.2,.14),DARK);M.vent((px,py,-.83),.07)                                         # drive at the back of each pod
             for k in range(3):box(M,(px+sx*.12,py,.1-k*.25),(.03,.18,.18),DARK,sh=.95)                              # armour ribs on the pod
     box(M,(0,-.38,.0),(.22,.12,.4),DARK);barrel(M,(0,-.4,.2),.5,.03)                                                 # ventral gun
     return M

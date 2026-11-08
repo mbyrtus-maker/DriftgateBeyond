@@ -2013,6 +2013,25 @@ The user's asks, with their choices (Drone controller on drone-bay hulls only; d
   - the beacon lights at the freeports' poles.
 - **Unused and left alone:** the old kit Vesper and Bombard (the faction designs replaced them).
 
+
+### The Varkesh ships' overlapping triangles, fixed at the source (7 Nov 2026)
+- **The user's report:** the Varkesh ships still showed triangles overlapping after the 4 Nov pass.
+- **Why the 4 Nov pass missed them:** `mdlcheck` only finds faces that lie exactly in the same plane. Most of the Varkesh faults were parts *crossing* each other, or lying in a plane a few thousandths of the model's size apart, or sitting hidden inside another part. The game's depth buffer (near plane 2, far 90000) can't keep those apart at range, so they flicker as the ship moves.
+- **The common cause:** flat canopies, armour bands and spine plates were placed at a fixed height over hulls that taper under them. They floated above the hull at one end and sank into it at the other, and on the Fang, Halberd and Talon a band cut straight through the canopy. A new helper, `on_hull()` in `beyond_hulls.py`, lays these slabs on a loft's real upper surface. It is used on the Fang, Talon, Halberd, Pick, Gouge, Sledge, Runner, Bulwark, Jackal, Wolfhound, Maul and Warhound.
+- **Fixed on single ships:**
+  - **Sledge:** its hopper bands sat inside the hoppers, so only flickering corners showed. They are now real bands round the hoppers. This is the one visible change: amber bands that were meant to be there now show.
+  - **Bastille:** its armour bands lay flush with the hull top just under the deck and flickered through it. Their tops now tuck under the deck. Its bow mouths and its beam collars stand clear of the faces behind them.
+  - **Vanguard:** its torpedo tubes were buried in the prow; their mouths are now in the prow face. Its beam collars stand clear of the beams.
+  - **Ironclad** (and so the Ravager, which shares the gun): the main gun's top plate is laid on the housing's slope.
+  - **Rampart:** the canopy pedestal sat inside the nose and is removed. The engine block's end faces were wound inward and lit from the wrong side, and are now wound outward.
+  - **Bombard:** its aft brace was wholly inside the aft section and now sits over the cannon. Its docked drone sits clear of the flank vents.
+  - **Runner:** its fins passed through the cargo door.
+  - **Bulwark:** its pod bands cut into the pods; they are now ellipses. Its hold plates rest on the holds.
+  - **Wolfhound:** its dish feed was buried in the dish.
+  - **Ward:** its spine plate floated above it.
+  - **Fighters:** the vents sat flush with the drive faces and are set just behind them.
+- **Floating parts pulled in:** the stacks on the Sledge, Runner and Bulwark, the Pick's sponsons and drives, the Gouge's ore bins and launchers, and the Bombard's drives.
+- **Checks:** `mdlcheck` is clean on every Varkesh ship. The Varkesh station speck and the Ravager's two lit-window islands were already there and are untouched.
 ### Sleep mode: a stand-in leader for your own faction (designed and built 4 Nov 2026)
 **The user's ask:** when the player is asleep, their faction should still react to things. The player creates a leader, gives it two traits, and when they come back that leader resigns.
 

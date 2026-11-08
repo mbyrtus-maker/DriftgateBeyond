@@ -31,9 +31,10 @@ def spots(M,pts,r=.12,y=0):
     for x,z in pts:
         ring(M,(x,y+.01,z),r,.012,ACC,seg=16,sides=4,axis='y')
         plate(M,[(x-r*.7,y+.012,z-.012),(x+r*.7,y+.012,z-.012),(x+r*.7,y+.012,z+.012),(x-r*.7,y+.012,z+.012)],.004,ACC)
-def mouth(M,c,w,h,d=.25):
-    # a hangar launch mouth: a dark recess with a lit lip
-    abox(M,(c[0],c[1],c[2]-d/2),(w,h,d),DARK,(1,1),.6)
+def mouth(M,c,w,h,d=.25,proud=0.0):
+    # a hangar launch mouth: a dark recess with a lit lip. proud (7 Nov 2026): how far its face stands out from c; at 0 a mouth
+    # set .01 in front of a bow face flickers against it at range
+    abox(M,(c[0],c[1],c[2]-d/2+proud),(w,h,d),DARK,(1,1),.6)
     for a,b in (((-w/2,-h/2),(w/2,-h/2)),((w/2,-h/2),(w/2,h/2)),((w/2,h/2),(-w/2,h/2)),((-w/2,h/2),(-w/2,-h/2))):
         tube(M,[(c[0]+a[0],c[1]+a[1],c[2]+.01),(c[0]+b[0],c[1]+b[1],c[2]+.01)],[.012,.012],WIN,1.0,4,cap0=False,cap1=False)
 def shieldgen(M,c,r=.14,up=True):
@@ -130,11 +131,13 @@ def vanguard():  # escort: a clean armoured smoothed-hex hull, a chisel prow wit
                  # a four-drive engine block
     M=Mesh(121)
     loft(M,[(-2.2,SMH(.48,.36)),(1.0,SMH(.48,.36)),(1.7,SMH(.36,.26,-.02)),(2.15,SMH(.18,.1,-.05))],smh_role)
-    for x in (-.14,.14):
-        for y in (.0,-.14):tube(M,[(x,y,1.75),(x,y,1.95)],[.055,.055],DARK,.85,8,cap1=False);M.blob((x,y,1.92),.04,ACC,sub=1,noise=0)   # torpedo tubes
+    # torpedo tubes, their mouths in the chisel prow's end face (7 Nov 2026: they ended inside the prow, which runs on to 2.15:
+    # all four were hidden in game and the lower two's caps showed through its underside as specks)
+    for x in (-.075,.075):
+        for y in (-.002,-.088):tube(M,[(x,y,2.0),(x,y,2.17)],[.04,.04],DARK,.85,8,cap1=False);M.blob((x,y,2.145),.03,ACC,sub=1,noise=0)
     for sx in (1,-1):
         loft(M,[(-1.6,[(a+sx*.86,b-.02) for a,b in SMH(.06,.07)]),(-1.3,[(a+sx*.86,b-.02) for a,b in SMH(.14,.16)]),(.9,[(a+sx*.86,b-.02) for a,b in SMH(.14,.16)]),(1.2,[(a+sx*.86,b-.02) for a,b in SMH(.06,.07)])],smh_role)   # turret pylon, standing off the hull
-        for z in (.7,-1.1):abox(M,(sx*.6,-.02,z),(.5,.11,.17),MID,(1,1),.95);abox(M,(sx*.6,-.02,z),(.46,.125,.05),ACC,(1,1),.95)   # beams to the hull, fore and aft
+        for z in (.7,-1.1):abox(M,(sx*.6,-.02,z),(.5,.11,.17),MID,(1,1),.95);abox(M,(sx*.6,-.02,z),(.46,.14,.05),ACC,(1,1),.95)    # beams to the hull, fore and aft (the amber collar a little prouder: .0075 above the beam it flickered at range)
         for z in (-1.0,-.25,.5):pd(M,(sx*.88,.14,z),.07,MID)
         sidewin(M,sx*.485,.06,-1.5,.8)
     for z in (-1.4,-.4,.6):loft(M,[(z-.05,SMH(.5,.38)),(z+.05,SMH(.5,.38))],(ACC,.95))                                # armour bands
@@ -155,12 +158,16 @@ def bastille():  # carrier: a smooth slab fortress, a railed flight deck, hangar
     spots(M,[(-.35,1.4),(.35,1.4),(-.35,-.5),(.35,-.5)],.15,.51)
     for sx in (1,-1):
         loft(M,[(-1.3,[(a+sx*.82,b+.56) for a,b in SMH(.04,.04)]),(1.95,[(a+sx*.82,b+.56) for a,b in SMH(.04,.04)])],(ACC,.95))   # deck rail
-        mouth(M,(sx*.45,.0,2.26),.48,.3)
+        mouth(M,(sx*.45,.0,2.26),.48,.3,proud=.02)                                                                # (its face .03 clear of the bow, not .01)
         loft(M,[(-1.9,[(a+sx*1.5,b-.04) for a,b in SMH(.08,.1)]),(-1.6,[(a+sx*1.5,b-.04) for a,b in SMH(.18,.24)]),(1.4,[(a+sx*1.5,b-.04) for a,b in SMH(.18,.24)]),(1.7,[(a+sx*1.5,b-.04) for a,b in SMH(.08,.1)])],smh_role)   # turret pylon, standing off the hull
-        for z in (1.05,-1.35):abox(M,(sx*1.17,-.04,z),(.62,.15,.24),MID,(1,1),.95);abox(M,(sx*1.17,-.04,z),(.58,.17,.07),ACC,(1,1),.95)   # beams to the hull, fore and aft
+        for z in (1.05,-1.35):abox(M,(sx*1.17,-.04,z),(.62,.15,.24),MID,(1,1),.95);abox(M,(sx*1.17,-.04,z),(.58,.19,.07),ACC,(1,1),.95)   # beams to the hull, fore and aft (collar prouder, as the Vanguard's)
         for z in (-1.2,-.4,.4,1.1):pd(M,(sx*1.53,.2,z),.075,MID)
         sidewin(M,sx*1.0,.1,-1.8,1.6)
-    for z in (-1.8,-.9,0,.9):loft(M,[(z-.05,SMH(1.03,.5)),(z+.05,SMH(1.03,.5))],(ACC,.95))                          # armour bands
+    # armour bands. (7 Nov 2026) Built as tall as the hull, their tops lay in its top face, .015 under the flight deck's surface,
+    # and showed through the deck in amber flicker at range; their bellies lay flush on its belly. The tops now tuck under the
+    # deck inside the hull (the bands look the same everywhere they show) and the bellies stand just proud of it.
+    band=lambda w:[(w,0),(w*.82,.35),(.5,.47),(-.5,.47),(-w*.82,.35),(-w,0),(-w*.82,-.3),(-w*.4,-.44),(w*.4,-.44),(w*.82,-.3)]
+    for z in (-1.8,-.9,0,.9):loft(M,[(z-.05,band(1.03)),(z+.05,band(1.03))],(ACC,.95))
     bridge_varkesh(M,(0,.5,-1.75),1.35)
     shieldgen(M,(0,.6,-.95),.16)
     loft(M,[(-2.65,SMH(.85,.42)),(-2.3,SMH(1.0,.5))],smh_role)                                                       # engine block
@@ -255,7 +262,7 @@ def giant_gun(M,c):
     ring(M,(x,y+.15,z+.62),.085,.02,ACC,seg=14,sides=4)
     tube(M,[(x,y+.15,z+1.5),(x,y+.15,z+1.72)],[.09,.09],MID,.95,8,cap1=False)
     for zz in (1.56,1.64):ring(M,(x,y+.15,z+zz),.092,.012,DARK,seg=12,sides=4)
-    plate(M,[(x-.12,y+.29,z+.15),(x+.12,y+.29,z+.15),(x+.12,y+.29,z-.15),(x-.12,y+.29,z-.15)],.006,ACC,.9)
+    plate(M,[(x-.12,y+.2885,z+.15),(x+.12,y+.2885,z+.15),(x+.12,y+.2935,z-.15),(x-.12,y+.2935,z-.15)],.012,ACC,.9)   # (7 Nov 2026) laid on the housing's slope: flat, it crossed the housing's top at 1 degree and flickered
 def ironclad():  # destroyer: an armoured smoothed-hex hull on a flared armour belt, two giant main guns on the centreline (the second
                  # raised to fire over the first), a stepped bridge behind them, exhaust stacks, a four-drive block
     M=Mesh(123)

@@ -5,7 +5,7 @@
 #   Heavy Bomber: two seats in tandem and a rear turret, torpedoes
 import math
 import numpy as np
-from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,loft,box,plate,barrel,ring,LENS,HEX,DIA,lens_role,hex_role
+from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,loft,box,plate,barrel,ring,LENS,HEX,DIA,lens_role,hex_role,on_hull
 from beyond_work import finish,tube,abox,crystal,lights,sqdrive,SP,STAR
 PI=math.pi
 
@@ -87,8 +87,9 @@ SMH=lambda w,h,dy=0:[(w,dy),(w*.82,h*.7+dy),(w*.4,h+dy),(-w*.4,h+dy),(-w*.82,h*.
 def smh_role(i,j):return ([MID,MID,MID,MID,MID,DARK,DARK,DARK,DARK,DARK][j],[1,1.03,1.06,1.06,1.03,.9,.85,.82,.85,.9][j])
 def jackal():    # scout: a streamlined but bulky smoothed-hex wedge, the sensor faired into the nose, a raked mast
     M=Mesh(91)
-    loft(M,[(-.8,SMH(.14,.1)),(-.45,SMH(.22,.15)),(.05,SMH(.22,.15)),(.45,SMH(.13,.09,-.01)),(.78,SMH(.04,.03,-.02))],smh_role)
-    plate(M,[(-.05,.14,.32),(.05,.14,.32),(.05,.155,.08),(-.05,.155,.08)],.02,GLASS)
+    hull=[(-.8,SMH(.14,.1)),(-.45,SMH(.22,.15)),(.05,SMH(.22,.15)),(.45,SMH(.13,.09,-.01)),(.78,SMH(.04,.03,-.02))]
+    loft(M,hull,smh_role)
+    on_hull(M,hull,.08,.32,.05,.02,GLASS)                                                                          # slit canopy, laid on the hull
     M.blob((0,-.05,.6),.05,WIN,sub=1,squash=(1,.7,1.6),noise=0)                                                       # sensor faired into the nose
     tube(M,[(0,.13,-.3),(0,.34,-.6)],[.016,.008],LIGHT,.9,5);ring(M,(0,.26,-.48),.035,.007,ACC,seg=10,sides=4,axis='y')   # raked mast
     for sx in (1,-1):
@@ -99,21 +100,23 @@ def jackal():    # scout: a streamlined but bulky smoothed-hex wedge, the sensor
     return finish(M,2.05,.78)
 def wolfhound(): # advanced scout: a broad streamlined smoothed-hex hull with sensor blisters faired into its flanks, a dorsal dish, limpets, beacon
     M=Mesh(92)
-    loft(M,[(-1.05,SMH(.17,.12)),(-.6,SMH(.3,.19)),(.15,SMH(.3,.19)),(.6,SMH(.17,.11,-.01)),(1.0,SMH(.04,.03,-.02))],smh_role)
-    plate(M,[(-.06,.18,.5),(.06,.18,.5),(.06,.2,.25),(-.06,.2,.25)],.02,GLASS)
+    hull=[(-1.05,SMH(.17,.12)),(-.6,SMH(.3,.19)),(.15,SMH(.3,.19)),(.6,SMH(.17,.11,-.01)),(1.0,SMH(.04,.03,-.02))]
+    loft(M,hull,smh_role)
+    on_hull(M,hull,.25,.5,.06,.02,GLASS)                                                                           # slit canopy, laid on the hull
     for sx in (1,-1):
         loft(M,[(-.6,[(a+sx*.3,b) for a,b in SMH(.04,.04)]),(-.35,[(a+sx*.3,b) for a,b in SMH(.08,.07)]),(.15,[(a+sx*.3,b) for a,b in SMH(.08,.07)]),(.45,[(a+sx*.3,b) for a,b in SMH(.02,.02)])],smh_role)   # sensor blister
         M.blob((sx*.35,.02,.1),.04,WIN,sub=1,noise=0)
         limpets(M,(sx*.3,-.08,-.05),3)
         plate(M,[(sx*.14,.14,-.68),(sx*.2,.32,-.92),(sx*.2,.32,-.98),(sx*.14,.14,-.96)],.035,ACC,.9)
         M.vent((sx*.11,0,-1.07),.07)
-    dish(M,(0,.34,-.3),.3);tube(M,[(0,.17,-.3),(0,.3,-.3)],[.03,.03],LIGHT,.9,5);M.blob((0,.38,-.3),.05,WIN,sub=1,noise=0)   # a big radar dish
+    dish(M,(0,.34,-.3),.3);tube(M,[(0,.17,-.3),(0,.3,-.3)],[.03,.03],LIGHT,.9,5);M.blob((0,.43,-.3),.05,WIN,sub=1,noise=0)   # a big radar dish (its lit feed on the crest: at .38 it was inside the dish, a speck)
     abox(M,(0,-.15,.05),(.1,.05,.22),ACC,(1,1))                                                                     # beacon device
     return finish(M,2.45,.78)
 def maul():      # bomber: a compact streamlined smoothed-hex hull with the torpedo magazine faired into its belly, two tubes forward
     M=Mesh(93)
-    loft(M,[(-.85,SMH(.24,.2)),(-.45,SMH(.32,.26)),(.3,SMH(.3,.25)),(.62,SMH(.18,.15,-.01)),(.8,SMH(.07,.06,-.02))],smh_role)
-    plate(M,[(-.07,.25,.45),(.07,.25,.45),(.07,.28,.2),(-.07,.28,.2)],.025,GLASS)
+    hull=[(-.85,SMH(.24,.2)),(-.45,SMH(.32,.26)),(.3,SMH(.3,.25)),(.62,SMH(.18,.15,-.01)),(.8,SMH(.07,.06,-.02))]
+    loft(M,hull,smh_role)
+    on_hull(M,hull,.2,.45,.07,.03,GLASS)                                                                           # slit canopy, laid on the hull
     loft(M,[(-.6,SMH(.12,.08,-.24)),(-.35,SMH(.2,.12,-.27)),(.35,SMH(.2,.12,-.27)),(.5,SMH(.12,.08,-.25))],smh_role)   # torpedo magazine faired into the belly
     for x in (-.08,.08):tube(M,[(x,-.27,.48),(x,-.27,.52)],[.045,.045],DARK,.8,8,cap0=False,cap1=False);M.blob((x,-.27,.5),.035,ACC,sub=1,noise=0)
     for sx in (1,-1):
@@ -124,8 +127,9 @@ def maul():      # bomber: a compact streamlined smoothed-hex hull with the torp
     return finish(M,2.2,1.0)
 def warhound():  # heavy bomber: a streamlined smoothed-hex hull, two seats, a turret faired into the aft spine, torpedoes along the flanks
     M=Mesh(94)
-    loft(M,[(-1.0,SMH(.22,.19)),(-.5,SMH(.3,.25)),(.45,SMH(.28,.24)),(.8,SMH(.16,.13,-.01)),(1.0,SMH(.06,.05,-.02))],smh_role)
-    for z in (.6,.3):plate(M,[(-.07,.25,z+.1),(.07,.25,z+.1),(.07,.27,z-.1),(-.07,.27,z-.1)],.022,GLASS)          # two seats
+    hull=[(-1.0,SMH(.22,.19)),(-.5,SMH(.3,.25)),(.45,SMH(.28,.24)),(.8,SMH(.16,.13,-.01)),(1.0,SMH(.06,.05,-.02))]
+    loft(M,hull,smh_role)
+    for z in (.6,.3):on_hull(M,hull,z-.1,z+.1,.07,.025,GLASS)                                                      # two seats, laid on the hull
     loft(M,[(-.95,SMH(.06,.05,.22)),(-.75,SMH(.12,.1,.24)),(-.45,SMH(.1,.08,.23))],smh_role);turret(M,(0,.32,-.75),.09,MID)   # turret faired into the aft spine
     for sx in (1,-1):plate(M,[(sx*.18,.18,-.6),(sx*.3,.42,-.88),(sx*.3,.42,-.96),(sx*.18,.18,-.95)],.05,ACC,.9)     # tail fins
     for sx in (1,-1):

@@ -45,7 +45,7 @@ def bombard():
     for z in (-.4,.3,.9):ring(M,(0,0,z),.12,.02,ACC,seg=14,sides=4)
     tube(M,[(0,0,1.45),(0,0,1.8)],[.13,.13],MID,.95,8,cap1=False)
     for z in (1.56,1.68):ring(M,(0,0,z),.135,.015,DARK,seg=12,sides=4)
-    loft(M,[(-1.55,SMH(.62,.3)),(-.65,SMH(.66,.32)),(-.45,SMH(.5,.24))],smh_role)                                   # aft section the gun runs into
+    loft(M,[(-1.6,SMH(.62,.3)),(-.65,SMH(.66,.32)),(-.45,SMH(.5,.24))],smh_role)                                    # aft section the gun runs into (to -1.6: at -1.55 the drives hung behind it)
     for sx in (1,-1):
         loft(M,[(-1.3,[(a+sx*.45,b) for a,b in SMH(.2,.22)]),(.6,[(a+sx*.45,b) for a,b in SMH(.22,.24)]),(1.0,[(a+sx*.45,b-.02) for a,b in SMH(.14,.15)]),(1.2,[(a+sx*.45,b-.04) for a,b in SMH(.05,.05)])],smh_role)   # side hull
         sqdrive(M,(sx*.45,0,-1.68),.26);stacks(M,(sx*.45,.3,-1.1),1,.2,.26)
@@ -55,9 +55,9 @@ def bombard():
         lights(M,[(sx*.45,-.12,1.1)],.03)
         plate(M,[(sx*.62,-.02,-.2),(sx*.95,-.06,-.48),(sx*.95,-.06,-.6),(sx*.62,-.02,-.62)],.03,MID,.95)            # very small wing on the side hull
         M.blob((sx*.95,-.06,-.54),.025,WIN,sub=1,noise=0)
-    for z in (-.55,.35):abox(M,(0,.16,z),(.7,.12,.2),MID,(1,1),.9)                                                   # braces over the cannon
+    for z in (-.3,.35):abox(M,(0,.16,z),(.7,.12,.2),MID,(1,1),.9)                                                    # braces over the cannon (the aft one was at -.55, wholly inside the aft section)
     M.blob((-.45,.25,.55),.13,GLASS,sub=2,squash=(1,.65,1.5),noise=0)                                                # cockpit, port hull
-    abox(M,(.45,.3,-.3),(.3,.18,.55),MID,(.9,.9));box(M,(.62,-.02,.25),(.1,.14,.2),MID)                             # hopper and docked Ward Drone, starboard
+    abox(M,(.45,.3,-.3),(.3,.18,.55),MID,(.9,.9));box(M,(.655,-.02,.25),(.1,.14,.2),MID)                            # hopper and docked Ward Drone, starboard (its face clear of the flank vents under it)
     return finish(M,3.0,1.0)
 def vesper():
     # Ostrova house-brand scout: a slender faceted spire that is itself a railgun, two long crystal rails reaching forward through three

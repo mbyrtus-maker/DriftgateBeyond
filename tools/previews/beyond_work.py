@@ -8,7 +8,7 @@
 #      Ostrova  diamond spires, halos, the Wisp's crescent, the Vigil's prongs and crossed rings, crystal bodies
 import math
 import numpy as np
-from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,loft,box,plate,barrel,ring,LENS,HEX,DIA,lens_role,hex_role
+from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,loft,box,plate,barrel,ring,LENS,HEX,DIA,lens_role,hex_role,loft_top,on_hull
 PI=math.pi
 
 def finish(M,length,girth=1.12):
@@ -28,14 +28,17 @@ def launcher(M,base,n,role=DARK,sp=.08):
 def vents(M,pts,r):[M.vent(p,r) for p in pts]
 def sqdrive(M,c,s):box(M,c,(s,s*.9,s*.7),DARK);M.vent((c[0],c[1],c[2]-s*.38),s*.38)
 def hatch(M,c,w,l,y=None):plate(M,[(c[0]-w/2,c[1],c[2]+l/2),(c[0]+w/2,c[1],c[2]+l/2),(c[0]+w/2,c[1],c[2]-l/2),(c[0]-w/2,c[1],c[2]-l/2)],.012,DARK,.95)
-def stacks(M,base,n,sp=.16,h=.3):
+def stacks(M,base,n,sp=.16,h=.3,foot=None):
     # exhaust stacks standing up off the back: square Varkesh columns on a footing, an amber band near the top and a dark
-    # mouth (built from boxes: a vertical tube collapsed to nothing in the exporter, which left the bands floating)
+    # mouth (built from boxes: a vertical tube collapsed to nothing in the exporter, which left the bands floating).
+    # foot: (7 Nov 2026) the hull's height under them, when that is below base: the footing goes down onto the hull and the
+    # column runs up from it to the same top (on three hulls the stacks hung in the air above a hull that falls away there)
     h=h*.55
     for k in range(n):
-        b=np.array(base,float)+[k*sp-(n-1)*sp/2,0,0]
-        box(M,tuple(b+[0,.03,0]),(.14,.06,.14),DARK)
-        box(M,tuple(b+[0,.03+h/2,0]),(.09,h,.09),MID)
+        b=np.array(base,float)+[k*sp-(n-1)*sp/2,0,0];f=b.copy()
+        if foot is not None:f[1]=foot
+        box(M,tuple(f+[0,.03,0]),(.14,.06,.14),DARK)
+        box(M,(b[0],(f[1]+b[1]+.03+h)/2+.015,b[2]),(.09,b[1]+h-f[1],.09),MID)
         box(M,tuple(b+[0,.03+h*.78,0]),(.118,.03,.118),ACC)
         box(M,tuple(b+[0,.03+h+.006,0]),(.08,.014,.08),DARK)
 def lights(M,pts,r=.035):
@@ -145,15 +148,17 @@ def pelican():   # heavy hauler: a huge bulbous cargo pouch hull between two big
 # ============================================================== VARKESH
 def pick():      # light miner: a stubby hex body with two short claw sponsons, each ending in a drill: the pick
     M=Mesh(61)
-    loft(M,[(-.75,HEX(.26,.22)),(-.2,HEX(.32,.26)),(.35,HEX(.28,.23)),(.6,HEX(.24,.2,-.02))],hex_role)
-    plate(M,[(-.08,.24,.45),(.08,.24,.45),(.08,.27,.18),(-.08,.27,.18)],.025,GLASS)
+    body=[(-.8,HEX(.26,.22)),(-.2,HEX(.32,.26)),(.35,HEX(.28,.23)),(.6,HEX(.24,.2,-.02))]                         # (7 Nov 2026) its stern reaches the drives (it stopped short and they hung behind it)
+    loft(M,body,hex_role)
+    on_hull(M,body,.18,.45,.08,.035,GLASS)                                                                         # slit canopy, laid on the body
     for sx in (1,-1):
         loft(M,[(-.55,HEX(.11,.13,0,sx*.45)),(.1,HEX(.13,.15,0,sx*.47)),(.55,HEX(.1,.12,-.01,sx*.42))],hex_role)        # claw sponson
         drill(M,(sx*.42,-.01,.55),.42,.1)
         launcher(M,(sx*.45,.16,-.1),2)
         sqdrive(M,(sx*.15,0,-.85),.18)
+        plate(M,[(sx*.25,-.03,.3),(sx*.4,-.03,.3),(sx*.4,-.03,-.45),(sx*.25,-.03,-.45)],.06,DARK)                    # slab joining body and sponson (they hung apart)
     box(M,(0,-.27,-.15),(.42,.12,.6),DARK);box(M,(0,-.2,-.15),(.46,.03,.62),ACC,sh=.9)                          # ore bin
-    for z in (-.4,.05):box(M,(0,.27,z),(.24,.03,.12),ACC,sh=.9)
+    for z in (-.32,.05):on_hull(M,body,z-.06,z+.06,.12,.025,ACC,.9)                                                 # armour bands (the aft one clear of the stacks' footings)
     stacks(M,(0,.24,-.5),2);lights(M,[(.12,-.05,.62),(-.12,-.05,.62)])
     return finish(M,2.0)
 def abox(M,c,size,role,taper=(1,1),sh=1.0):
@@ -167,24 +172,29 @@ def laser(M,base,length=.35,r=.07):
     lens_head(M,tuple(b+[0,0,length]),r*.95)
 def gouge():     # medium miner: a broad hex hull with three mining lasers across its prow, angled ore bins on the flanks
     M=Mesh(62)
-    loft(M,[(-1.0,HEX(.42,.3)),(-.4,HEX(.48,.34)),(.25,HEX(.46,.32)),(.55,HEX(.4,.28,-.02)),(.7,HEX(.34,.22,-.03))],hex_role)
-    plate(M,[(-.1,.33,.35),(.1,.33,.35),(.1,.36,.05),(-.1,.36,.05)],.025,GLASS)
+    body=[(-1.0,HEX(.42,.3)),(-.4,HEX(.48,.34)),(.25,HEX(.46,.32)),(.55,HEX(.4,.28,-.02)),(.7,HEX(.34,.22,-.03))]
+    loft(M,body,hex_role)
+    on_hull(M,body,.05,.35,.1,.035,GLASS)                                                                          # slit canopy, laid on the body
     abox(M,(0,-.02,.72),(.95,.22,.16),DARK,(.9,.8));abox(M,(0,.1,.72),(.85,.05,.14),ACC,(.9,1),.9)                # angled laser mount
     for x in (-.32,0,.32):laser(M,(x,-.02,.82))                                                                     # three mining lasers
     for sx in (1,-1):
         abox(M,(sx*.62,-.02,-.35),(.3,.44,.95),DARK,(.7,.75));abox(M,(sx*.62,.19,-.38),(.22,.05,.85),ACC,(.75,1),.9)  # angled ore bins
+        abox(M,(sx*.48,-.02,-.4),(.16,.22,.7),DARK,(1,1),.9)                                                          # a mount between bin and hull (the bins hung beside it)
         for dy in (.12,-.12):abox(M,(sx*.24,dy,-1.08),(.2,.18,.14),DARK,(1.1,1.1));M.vent((sx*.24,dy,-1.16),.07)   # angled drives
-        launcher(M,(sx*.3,.34,.3),2)
-    for z in (-.55,-.1):abox(M,(0,.35,z),(.3,.04,.13),ACC,(1,1),.9)
+        for bx in (sx*.26,sx*.34):tube(M,[(bx,loft_top(body,z,bx)+.022,z) for z in (.3,.5)],[.032,.032],DARK,.9,6)   # charge launchers laid along the hull's shoulder (straight, they floated over it)
+    for z in (-.55,-.1):on_hull(M,body,z-.065,z+.065,.15,.03,ACC,.9)
     stacks(M,(0,.32,-.75),3);lights(M,[(.25,.3,.48),(-.25,.3,.48)])
     return finish(M,2.6)
 def sledge():    # heavy miner: the Heron's layout in Varkesh form: a broad, bulky hex hull, two stacked hex hoppers, four mining lasers
     M=Mesh(63)
-    loft(M,[(-1.25,HEX(.55,.3)),(-.7,HEX(.9,.42)),(.3,HEX(.92,.44)),(.8,HEX(.62,.32,-.02)),(1.02,HEX(.4,.2,-.04))],hex_role)   # broad bulky hull
+    hull=[(-1.25,HEX(.55,.3)),(-.7,HEX(.9,.42)),(.3,HEX(.92,.44)),(.8,HEX(.62,.32,-.02)),(1.02,HEX(.4,.2,-.04))]
+    loft(M,hull,hex_role)                                                                                        # broad bulky hull
     for x in (-.4,.4):
         loft(M,[(-.95,HEX(.14,.1,.36,x)),(-.7,HEX(.28,.24,.4,x)),(.3,HEX(.28,.24,.4,x)),(.52,HEX(.12,.1,.36,x))],hex_role)   # stacked hoppers
-        for z in (-.45,-.1,.2):abox(M,(x,.55,z),(.4,.04,.12),ACC,(1,1),.9)
-    plate(M,[(-.14,.42,.8),(.14,.42,.8),(.14,.46,.45),(-.14,.46,.45)],.025,GLASS)
+        # armour bands round each hopper (7 Nov 2026: they were flat bars at .55, inside the hoppers, whose top is at .64: hidden
+        # in game, with only their corners showing through the hoppers' chamfers as flickering specks)
+        for z in (-.45,-.1,.2):loft(M,[(z-.06,HEX(.3,.26,.4,x)),(z+.06,HEX(.3,.26,.4,x))],(ACC,.9),cap0=False,cap1=False)
+    on_hull(M,hull,.45,.8,.14,.035,GLASS)                                                                          # slit canopy, laid on the hull
     abox(M,(0,-.08,1.0),(1.4,.24,.18),DARK,(.9,.8))
     for x in (-.54,-.18,.18,.54):laser(M,(x,-.08,1.1),.4,.085)                                                      # four mining lasers
     for sx in (1,-1):
@@ -194,37 +204,41 @@ def sledge():    # heavy miner: the Heron's layout in Varkesh form: a broad, bul
         for dx in (.25,.6):
             for dy in (.12,-.12):abox(M,(sx*dx,dy,-1.3),(.24,.2,.16),DARK,(1.1,1.1));M.vent((sx*dx,dy,-1.39),.08)
         abox(M,(sx*.72,.28,-.6),(.08,.3,.45),ACC,(.7,.7),.9)
-    stacks(M,(0,.5,-1.05),3,.22,.32)
-    lights(M,[(.6,.1,1.0),(-.6,.1,1.0)])
+    stacks(M,(0,.5,-1.05),3,.22,.32,foot=loft_top(hull,-1.05)-.01)
+    lights(M,[(.6,.06,1.0),(-.6,.06,1.0)])                                                                        # on the laser mount
     return finish(M,3.2)
 def runner():    # light hauler: an armoured courier wedge: a chisel prow widening into a boxy cargo body, cargo doors on top, side skirts
     M=Mesh(64)
     chis=lambda w,h,dy=0:[(w,dy),(w*.8,h+dy),(-w*.8,h+dy),(-w,dy),(-w*.7,-h*.7+dy),(w*.7,-h*.7+dy)]
-    loft(M,[(-.85,HEX(.42,.32)),(-.2,HEX(.44,.34)),(.3,chis(.36,.27,-.02)),(.65,chis(.26,.16,-.05)),(.8,chis(.2,.08,-.07))],hex_role)   # the wedge
-    plate(M,[(-.09,.26,.4),(.09,.26,.4),(.09,.3,.15),(-.09,.3,.15)],.025,GLASS)
-    for z in (-.6,-.25):plate(M,[(-.34,.345,z+.14),(.34,.345,z+.14),(.34,.345,z-.14),(-.34,.345,z-.14)],.012,ACC,.9)   # cargo doors on top
-    plate(M,[(0,.35,-.78),(0,.35,-.08),(0,.36,-.08),(0,.36,-.78)],.02,DARK)
+    wedge=[(-.9,HEX(.42,.32)),(-.2,HEX(.44,.34)),(.3,chis(.36,.27,-.02)),(.65,chis(.26,.16,-.05)),(.8,chis(.2,.08,-.07))]
+    loft(M,wedge,hex_role)                                                                                       # the wedge
+    on_hull(M,wedge,.15,.4,.09,.035,GLASS)                                                                         # slit canopy, laid on the wedge
+    for z in (-.6,-.25):plate(M,[(-.34,.336,z+.14),(.34,.336,z+.14),(.34,.336,z-.14),(-.34,.336,z-.14)],.012,ACC,.9)   # cargo doors on top
+    plate(M,[(0,.338,-.78),(0,.338,-.08),(0,.352,-.08),(0,.352,-.78)],.02,DARK)
     for sx in (1,-1):
         box(M,(sx*.45,-.08,-.35),(.06,.3,1.0),DARK)                                                                  # side skirts
         for z in (-.7,-.35,0):box(M,(sx*.47,.08,z),(.03,.12,.2),ACC,sh=.9)
         sqdrive(M,(sx*.2,.0,-.95),.22)
-        plate(M,[(sx*.3,.3,-.45),(sx*.38,.5,-.7),(sx*.38,.5,-.8),(sx*.3,.3,-.8)],.05,ACC,.9)
-    stacks(M,(0,.35,.05),2,.16,.22);lights(M,[(.15,-.06,.78),(-.15,-.06,.78)])
+        plate(M,[(sx*.3,.342,-.48),(sx*.38,.5,-.7),(sx*.38,.5,-.8),(sx*.3,.342,-.74)],.05,ACC,.9)                   # fins standing on the aft cargo door (they used to pass through it)
+    stacks(M,(0,.35,.05),2,.16,.22,foot=loft_top(wedge,.05)-.01);lights(M,[(.15,-.06,.78),(-.15,-.06,.78)])
     return finish(M,2.0)
 def bulwark():   # medium hauler: the Talon's pincer sponsons become two armoured holds; two smoothed cargo pods on the spine
     M=Mesh(65)
-    loft(M,[(-.95,HEX(.24,.22)),(-.2,HEX(.28,.26)),(.55,HEX(.24,.22)),(.82,HEX(.22,.19,-.02))],hex_role)
-    plate(M,[(-.08,.25,.7),(.08,.25,.7),(.08,.28,.4),(-.08,.28,.4)],.025,GLASS)
+    body=[(-.95,HEX(.24,.22)),(-.2,HEX(.28,.26)),(.55,HEX(.24,.22)),(.82,HEX(.22,.19,-.02))]
+    loft(M,body,hex_role)
+    on_hull(M,body,.4,.7,.08,.035,GLASS)                                                                           # slit canopy, laid on the body
     for sx in (1,-1):
-        loft(M,[(-1.0,HEX(.24,.3,0,sx*.62)),(-.2,HEX(.27,.33,0,sx*.65)),(.6,HEX(.24,.3,-.01,sx*.62)),(.85,HEX(.14,.18,-.02,sx*.55))],hex_role)   # armoured hold
-        for z in (-.6,-.2,.2):box(M,(sx*.65,.34,z),(.4,.03,.28),ACC,sh=.9)
+        hold=[(-1.0,HEX(.24,.3,0,sx*.62)),(-.2,HEX(.27,.33,0,sx*.65)),(.6,HEX(.24,.3,-.01,sx*.62)),(.85,HEX(.14,.18,-.02,sx*.55))]
+        loft(M,hold,hex_role)                                                                                    # armoured hold
+        for z in (-.6,-.2,.2):box(M,(sx*.65,min(loft_top(hold,z+d,sx*.65) for d in (-.14,.14))+.011,z),(.4,.03,.28),ACC,sh=.9)   # plates resting on the hold
         plate(M,[(sx*.25,.0,.4),(sx*.42,.0,.4),(sx*.42,.0,-.6),(sx*.25,.0,-.6)],.08,DARK)
         for dy in (.12,-.12):sqdrive(M,(sx*.62,dy,-1.08),.2)
     oct=lambda w,h,dy:[(math.cos(a)*w,math.sin(a)*h+dy) for a in np.linspace(PI/8,2*PI+PI/8,8,endpoint=False)]
     for z in (-.55,-.05):                                                                                            # smoothed spine pods
         loft(M,[(z-.22,oct(.14,.1,.4)),(z-.16,oct(.22,.17,.4)),(z+.16,oct(.22,.17,.4)),(z+.22,oct(.14,.1,.4))],lambda i,j:((MID,1.0) if j in (1,2,3) else (MID,.9)))
-        ring(M,(0,.4,z),.215,.012,ACC,seg=16,sides=4)
-    stacks(M,(0,.27,-.85),2);lights(M,[(.1,-.04,.84),(-.1,-.04,.84)])
+        # its amber band, an ellipse hugging the pod (7 Nov 2026: a circle, it stood off the pod's top and cut into its sides)
+        M.tube([(math.cos(a)*.232,math.sin(a)*.182+.4,z) for a in np.linspace(0,2*PI,25)],[.012]*25,4,lambda i,j,n,p:(ACC,1.0),cap0=False,cap1=False)
+    stacks(M,(0,.27,-.85),2,foot=loft_top(body,-.85)-.01);lights(M,[(.1,-.04,.84),(-.1,-.04,.84)])
     return finish(M,2.6)
 def rampart():   # heavy hauler: a six-shooter: six ribbed armoured cargo pylons in a cylinder round a central axle, a tapered nose and cockpit ahead, a four-engine block astern
     M=Mesh(66)
@@ -241,11 +255,11 @@ def rampart():   # heavy hauler: a six-shooter: six ribbed armoured cargo pylons
     loft(M,[(1.0,nose(R+.32)),(1.25,nose(R+.3)),(1.65,nose(.62,.03)),(2.0,nose(.36,.02)),(2.2,nose(.14,0))],lambda i,j:([LIGHT,LIGHT,MID,DARK,DARK,MID][j],[1,.95,.95,.85,.85,.95][j]))   # tapered nose
     for z in (1.1,1.5):loft(M,[(z-.03,nose(R+.33 if z<1.3 else .78)),(z+.03,nose(R+.33 if z<1.3 else .78))],(ACC,.95))
     M.blob((0,.52,1.55),.22,GLASS,sub=2,squash=(1.1,.55,1.6),noise=0)                                            # cockpit canopy on the nose
-    loft(M,[(1.3,HEX(.26,.12,.5)),(1.75,HEX(.2,.1,.48))],(MID,.95))
+    # (7 Nov 2026) the canopy's pedestal is gone: it sat inside the nose and the canopy, and only its corners showed, as specks
     loft(M,[(-1.3,[(math.cos(a)*(R+.3),math.sin(a)*(R+.3)) for a in np.linspace(PI/6,2*PI+PI/6,6,endpoint=False)]),
             (-1.18,[(math.cos(a)*(R+.3),math.sin(a)*(R+.3)) for a in np.linspace(PI/6,2*PI+PI/6,6,endpoint=False)])],(ACC,.95))  # aft collar
     for sx in (1,-1):barrel(M,(sx*.62,.0,1.55),.45,.032)
-    loft(M,[(-1.32,HEX(.85,.68)),(-1.5,HEX(.9,.72)),(-1.75,HEX(.78,.62))],hex_role)                                # four-engine block astern
+    loft(M,[(-1.75,HEX(.78,.62)),(-1.5,HEX(.9,.72)),(-1.32,HEX(.85,.68))],hex_role)                                # four-engine block astern (built aft to fore: built the other way its end faces were wound inward and lit from the wrong side)
     for x in (-.38,.38):
         for y in (-.27,.27):abox(M,(x,y,-1.9),(.42,.38,.3),DARK,(1.1,1.1));M.vent((x,y,-2.06),.16)
     loft(M,[(-1.55,HEX(.92,.74)),(-1.45,HEX(.92,.74))],(ACC,.95))
