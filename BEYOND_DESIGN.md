@@ -3008,4 +3008,8 @@ The user's design check: powers gather ore into components, then hulls, capitals
 - **Starting treasury 8,000 cr** (was 4,000), still capitalised by the maker's home; a reborn company gets the same.
 - **A maker's own store of components:** each maker starts with 60 Alloy Plate, 40 Conduit and 20 Coil of its own, made with the galaxy. Its works use these before buying off the market, and pay only for what they buy. The ledger counts the store with the stations.
 - **Supply runs land in that store**, not on the home market. Before, a power maker's supply run filled its power's warehouse, which the power could then spend.
-- War check on the result: below.
+- **War checks (16 h, neutral leaders):**
+  - this build (600 galaxies): Brood 26%, Varkesh 24%, Halcyon 23%, Ostrova 22%, unfinished 6%;
+  - the haul-job build with the makers' extra production for far shelves turned off (300): Brood 31%. That production is not the cause; the lower warehouse plate the trace showed doesn't explain the gain;
+  - the build from before the day's maker work (300): Brood 20%.
+  The remaining 6 points are not traced yet. The morning build (systems shipping only, no haul jobs) is being measured to split them.
