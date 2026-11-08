@@ -427,8 +427,8 @@ function payKill(e,src,at){const D=e.dmg||{},kp=at&&at.gk?at.gk:at&&at.src&&at.s
   if(!NET.cl)sideKill(e,sh,killer);
   if(S.unb){const ks=new Set(Object.keys(sh));if(killer)ks.add(killer);for(const k of ks)runAs(isMe(k)?null:k,()=>unbKill(e));return}
   for(const k in sh)runAs(isMe(k)?null:k,()=>{const f=bountyPayer(e.side,S.player),x=sh[k],pct=Math.round(x*100);if(k===killer)S.player.kills++;if(!f)return;weKill(e,x);
-    const nm=`${e.side==='pirate'?'Unbound':FACTIONS[e.side]?FACTIONS[e.side].short:'Brood'} ${killNoun(e)}`,part=x<.995?` Your damage: ${pct}%.`:'';
-    if(e.role==='trader'&&e.tradeT&&e.tradeT.kind==='haul'){const got=transfer(f,'player',Math.round(raidBounty(e.tradeT)*x));weAdd(f,3*x);if(got)feed(`Convoy raid: +${fmt(got)} cr for cutting ${FACTIONS[e.side].short} supplies.${part}`,'good')}
+    const nm=`${e.side==='pirate'?'Unbound':FACTIONS[e.side]?fShort(e.side):'Brood'} ${killNoun(e)}`,part=x<.995?` Your damage: ${pct}%.`:'';
+    if(e.role==='trader'&&e.tradeT&&e.tradeT.kind==='haul'){const got=transfer(f,'player',Math.round(raidBounty(e.tradeT)*x));weAdd(f,3*x);if(got)feed(`Convoy raid: +${fmt(got)} cr for cutting ${fShort(e.side)} supplies.${part}`,'good')}
     const b=transfer(f,'player',Math.max(1,Math.round(bountyOf(e)*x)));if(!S.player.sworn)standWork(S.player,f,Math.min(3,bountyOf(e)*x/400),'');feed(`${nm} destroyed${k===killer?'':' (shared kill)'}.${b?` Bounty +${b} cr.`:''}${part}`,'good');if(e.side==='brood'&&e.role==='builder'){const c=transfer(f,'player',Math.round(CONTAIN.seeder*x));if(c)feed(`Containment order: Seeder killed before it planted. +${fmt(c)} cr.`,'good')}})}
 // containment orders, open to every faction pilot: a Seeder killed, a Bloom Node burned (more for a node that has rooted)
 const CONTAIN={seeder:600,young:900,node:1500,youngT:180};

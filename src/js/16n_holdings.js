@@ -29,7 +29,7 @@ function lairMake(P,a){const force={};takeFrom(LAIR_B.cost,[P.cargo]);inv.addAll
 function lairWorldB(dt){const Ls=(S.lairs||[]).filter(L=>L.sid===W.sid&&L.hull>0);if(!Ls.length)return;
   for(const L of Ls){const O=lairOwner(L);if(!O)continue;if(L.build&&S.T>=L.build){L.build=0;keyFeed(L.pid,`⛏ Your Lair in ${DEF[L.sid].name} is ready: dock with E nearby.`,'good')}
     for(const e of W.ents){if(e.type!=='ship'||!e.alive||!FAC_IDS.includes(e.side)||!e.npc)continue;if(!pilotHostile(O,e.side))continue;
-      if(e.role==='scout'&&!L.seen[e.side]&&d3(e,L)<LAIR_B.seeR){L.seen[e.side]=1;keyFeed(L.pid,`⚠ A ${FACTIONS[e.side].short} scout has found your Lair in ${DEF[W.sid].name}. Their ships will attack it on sight.`,'bad')}
+      if(e.role==='scout'&&!L.seen[e.side]&&d3(e,L)<LAIR_B.seeR){L.seen[e.side]=1;keyFeed(L.pid,`⚠ A ${fShort(e.side)} scout has found your Lair in ${DEF[W.sid].name}. Their ships will attack it on sight.`,'bad')}
       if(L.seen[e.side]&&d3(e,L)<2500)L.hull-=6*dt}
     if(L.hull<=0){const s=S.sectors[W.sid];if(Object.keys(L.stash).length)s.crates.push({id:S.nextId++,x:L.x,y:L.y,z:L.z,inv:L.stash,until:S.T+600});toDebris(s,L.fort||{});L.stash={};L.fort={};S.lairs=S.lairs.filter(x=>x!==L);
       if(!MUTE)fxBoom(L,260,'#ffcf5a');keyFeed(L.pid,`✕ Your Lair in ${DEF[W.sid].name} was destroyed. Its stash is drifting as salvage.`,'bad');lairEvict(L)}}}

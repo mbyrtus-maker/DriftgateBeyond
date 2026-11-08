@@ -310,8 +310,8 @@ function killShip(e,src,at){if(e.role==='limpet'){limpetShot(e,src,at);return}
   if(e.flights)for(const p of e.flights)if(p.alive){p.mom=null;p.role='leave'}
   if(e.role==='frigate'&&e.tok){if(S.unb&&e.tok.call&&e.tok.call.until>S.T){const f=sideNorm(src),by=e.tok.call.by;if(FAC_IDS.includes(f)){const go=()=>heatAdd(f,10,`your called ${capName(e.tok)} ${e.tok.name} was lost`);if(NET.on&&by&&by!=='me')runAs(by,go);else go()}}capPingPay(e.tok);S.frigates=S.frigates.filter(x=>x!==e.tok);{const T=e.tok;if(T.load&&Object.keys(T.load).length){inv.addAll(e.load,T.load);T.load={}}if(T.store){inv.addAll(e.load,T.store);T.store={}}if(T.fab){inv.addAll(e.load,T.fab.kit||{});T.fab=null}}   // its store and the craft half-built aboard spill with the rest of its hold
     fxBoom(e,320,'#ffe2b0');fxBoom(e,200,sideCol(e.side));W.shake=Math.max(W.shake||0,.6);feed(`${e.side==='player'?'Your '+capName(e.tok):e.side==='brood'?'The Brood '+broodCap(e.tok):sideName(e.side)+' '+capName(e.tok)} ${e.tok.name} has been destroyed!`,friendSide(e.side)?'bad':'good')}
-  if(e.escortG){e.escortG.escort=null;for(const m of grpAlive(e.escortG))if(m.role==='escort'){m.role='patrol';m.ai.retireAt=W.t+40}if(friendSide(e.side))feed(`${FACTIONS[e.side].short} freighter lost in ${DEF[W.sid].name}${e.escortG?' despite its escort':''}.`,'bad')}
-  else if(e.role==='hauler'&&friendSide(e.side))feed(`An unescorted ${FACTIONS[e.side].short} freighter was destroyed in ${DEF[W.sid].name}.`,'bad');
+  if(e.escortG){e.escortG.escort=null;for(const m of grpAlive(e.escortG))if(m.role==='escort'){m.role='patrol';m.ai.retireAt=W.t+40}if(friendSide(e.side))feed(`${fShort(e.side)} freighter lost in ${DEF[W.sid].name}${e.escortG?' despite its escort':''}.`,'bad')}
+  else if(e.role==='hauler'&&friendSide(e.side))feed(`An unescorted ${fShort(e.side)} freighter was destroyed in ${DEF[W.sid].name}.`,'bad');
   const s=S.sectors[W.sid];
   if(e.isPlayer){playerDeath();return}
   if(e.rp){rpDeath(e);return}

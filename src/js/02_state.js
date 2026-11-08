@@ -62,6 +62,8 @@ const TYPE_TEXT={forge:'Forge · Lattice and Cores',yard:'Salvage Yard · harves
 function oStats(o){const L=o.level;return{sMax:400+350*L,hMax:900+450*L,dmg:7+3*L,rof:1.6+.3*L,range:950}}
 function sideCol(s){return s==='player'?PLAYER_COL:s==='neutral'?NEUTRAL.col:s==='pirate'?PIRATE.col:FACTIONS[s]?FACTIONS[s].col:'#7f8aa3'}
 function sideName(s){return s==='player'?'You':s==='neutral'?NEUTRAL.short:s==='pirate'?'The Unbound':FACTIONS[s]?FACTIONS[s].short:'Unclaimed'}
+// a side's short name for any side (a faction, the Brood, the Unbound, the Compact, the player): the sweep of 8 Nov 2026
+function fShort(s){return s==='pirate'?'Unbound':sideName(s)}
 
 // ============================================================ jamming (the AI Unbound, in every galaxy): a jammer does nothing to a ship with shields up. On an
 // unshielded ship it fills the Jam bar (the ship's full hull, at the rate guns would deal damage); stop jamming for 1.5 s and the bar
@@ -79,7 +81,7 @@ function jamHit(e,b){e.lastHit=W.t;e.lastHitBy=b.side;if(e.shield>0){if(b.dmg>0&
     if(e.shield<=.01){e.shield=0;e.shBreakT=W.t;e.shDown=true;fxShieldBreak(e);if(e.isPlayer){flash('Shields down! Hold Shift to boost away.',true);SFX.shieldDown&&SFX.shieldDown()}}else return}else{fxSpark(b,'#8fc8ff',3);return}}if(jamDark(e)||(e.jamHard||0)>W.t){fxSpark(b,'#b7c6ff',2);return}
   if(!(e.jam>0)){ // the bar appears: a Snap-back emitter answers once a minute, freighters call for help, a pilot is warned
     if(e.st.snapBack&&!((e.snapT||0)>W.t)){e.shield=e.st.sCap*.3;e.snapT=W.t+60;fxSpark(e,'#8fc8ff',8);if(e.isPlayer)flash('Snap-back emitter: shields back to 30%. The jam is broken.',true);return}
-    if(e.isPlayer)flash('Jammer on your hull! Get your shields back up or break away.',true);else if(e.npc&&(e.role==='hauler'||e.role==='miner')&&FACTIONS[e.side])distressCall(W.sid,`a ${FACTIONS[e.side].short} ${CLASSES[e.cls].name}`,e.side,b.side)}
+    if(e.isPlayer)flash('Jammer on your hull! Get your shields back up or break away.',true);else if(e.npc&&(e.role==='hauler'||e.role==='miner')&&FACTIONS[e.side])distressCall(W.sid,`a ${fShort(e.side)} ${CLASSES[e.cls].name}`,e.side,b.side)}
   if(b.src&&b.src.isPlayer||e.isPlayer)SFX.jammer();e.jam=(e.jam||0)+b.dmg*((b.src&&b.src.st&&b.src.st.jamK)||1)*(b.src&&b.src.isPlayer&&unbWork('powder')>=1?1.1:1);e.jamT=W.t;fxSpark(b,'#b7c6ff',3);
   if(e.jam>=jamCap(e)){e.jam=0;e.jamOff=W.t+jamWin(e);e.jamHard=e.jamOff+JAM.harden;e.boosting=false;e.thrusting=false;fxSpark(e,'#b7c6ff',12);
     if(e.isPlayer){flash(`Jammed: every system offline for ${jamWin(e)} s. Pirates will hook your hold.`,true);SFX.shieldDown&&SFX.shieldDown()}

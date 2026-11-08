@@ -43,7 +43,7 @@ function fallRetake(R,P){const sid=R.sid,W0=R.was;R.owner='player';if(W0.pid&&W0
 lairWorldB=function(dt){const Ls=(S.lairs||[]).filter(L=>L.sid===W.sid&&L.hull>0);if(!Ls.length)return;
   for(const L of Ls){const O=lairOwner(L);if(!O)continue;if(L.build&&S.T>=L.build){L.build=0;keyFeed(L.pid,`⛏ Your Lair in ${DEF[L.sid].name} is ready: dock with E nearby.`,'good')}let by=null;
     for(const e of W.ents){if(e.type!=='ship'||!e.alive||!FAC_IDS.includes(e.side)||!e.npc)continue;if(!pilotHostile(O,e.side))continue;
-      if(e.role==='scout'&&!L.seen[e.side]&&d3(e,L)<LAIR_B.seeR){L.seen[e.side]=1;keyFeed(L.pid,`⚠ A ${FACTIONS[e.side].short} scout has found your Lair in ${DEF[W.sid].name}. Their ships will attack it on sight.`,'bad')}
+      if(e.role==='scout'&&!L.seen[e.side]&&d3(e,L)<LAIR_B.seeR){L.seen[e.side]=1;keyFeed(L.pid,`⚠ A ${fShort(e.side)} scout has found your Lair in ${DEF[W.sid].name}. Their ships will attack it on sight.`,'bad')}
       if(L.seen[e.side]&&d3(e,L)<2500){L.hull-=6*dt;by=e.side}}
     if(L.hull<=0){const s=S.sectors[W.sid],imp=by&&fallChoice(L,by,true)==='capture';let msg;
       if(imp){const lost={};for(const k in L.stash){const m=Math.floor((L.stash[k]||0)*rnd(0,FALL.lose));if(m>0)lost[k]=inv.take(L.stash,k,m)}toDebris(s,lost);const t=invMass(L.stash);{const sh={...L.stash};for(const k in sh)inv.take(L.stash,k,sh[k]);frShip(by,W.sid,sh,'plunder','plunder')}

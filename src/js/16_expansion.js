@@ -115,7 +115,7 @@ function aceInit(){if(!S||S.aces||NET.cl)return;const m=aceMem(),used=new Set();
     while(S.aces.filter(a=>a.side===side).length<want)S.aces.push(aceNew(side,used))}}
 function aceLabel(A){return`${A.name.includes(A.nick)?A.name:`${A.name.split(' ')[0]} “${A.nick}” ${A.name.split(' ').slice(1).join(' ')}`}`}
 function aceById(id){return(S.aces||[]).find(a=>a.id===id)||null}
-function aceWho(A){return A.side==='pirate'?'Unbound captain':`${FACTIONS[A.side].short} ace`}
+function aceWho(A){return A.side==='pirate'?'Unbound captain':`${fShort(A.side)} ace`}
 function aceEnts(){const L=[];for(const sid in WORLDS)for(const e of WORLDS[sid].ents)if(e.aceId&&e.alive)L.push([e,WORLDS[sid]]);return L}
 // a veteran: the wing lead gets tuned systems, more armour and a steadier aim (tier drives NPC aim error)
 function aceBoost(e,A){const st=shipStats(e.side==='pirate'?null:e.side,e.cls,3,1);st.hull*=2.2;st.sCap*=1.6;st.dmg*=1.3;st.turn*=1.12;st.maxSpd*=1.06;st.thrust*=1.1;
@@ -439,7 +439,7 @@ function raidFight(r){const sid=r.sector;
     inv.addAll(r.loot,raidGrab(dStore(R),RAID.carryDep,.4));R.hull=Math.max(1,R.hull-R.hMax*.04);raidAttrition(r,sid);
     if(friendSide(R.owner))feed(`⚠ ${raidWho(r.side)} raiders hit ${R.name} and got away with part of its stores.`,'bad');else if(covered(sid))feed(`${raidWho(r.side)} raiders hit ${R.name} in ${DEF[sid].name}.`,'news');raidHome(r);return true}
   const t=(S.traders||[]).find(x=>x.id===r.tgt);if(!t)return false;const win=Math.random()<raidOdds(r,sid,RAID.win[t.cls]||.65,t.side);
-  if(!win){raidWipe(r,sid,friendSide(t.side)?`✔ A ${FACTIONS[t.side].short} supply convoy fought off ${raidWho(r.side)} raiders in ${DEF[sid].name}.`:null);return false}
+  if(!win){raidWipe(r,sid,friendSide(t.side)?`✔ A ${fShort(t.side)} supply convoy fought off ${raidWho(r.side)} raiders in ${DEF[sid].name}.`:null);return false}
   inv.addAll(r.loot,raidGrab(t.load,RAID.carry,.5));haulLost(t,sid,r.side);raidAttrition(r,sid);raidHome(r);return true}
 // a convoy jumps into a system: a raid waiting (or passing) there for it springs
 // (an escort a jump behind gets a moment to follow it in, so the fight happens in the open)
@@ -533,7 +533,7 @@ function ujMine(j){return(j.k||'me')===pkey()||(!NET.on&&!j.k)}
 function ujPilotOn(P){return!NET.on||!P.pid||isMe(P.pid)||Object.values(MP.cl||{}).some(c=>c.pid===P.pid&&c.ready)}
 function ujobOffer(){const P=S.player,k=pkey(),J=ujobs();if(J.filter(j=>!j.on&&j.k===k).length>=UJOB.offers)return;
   if(Math.random()<.55){let best=null;for(const f of FAC_IDS){if(f==='brood')continue;for(const t of S.traders||[]){if(t.kind!=='haul'||t.side!==f||J.some(j=>j.tgt===t.id&&j.k===k))continue;const I=icptFor(t,P,ujobOk);if(!I)continue;const v=invValue(t.load||{});if(v<60)continue;const sc=v/(1+I.j);if(!best||sc>best.sc)best={sc,t,I,v}}}
-    if(best){const t=best.t,pay=Math.round((UJOB.icpt.cr+best.v*UJOB.icpt.val)/10)*10;J.push({id:S.nextId++,k,kind:'icpt',f:t.side,tgt:t.id,at:best.I.c,v:best.v,pay,inf:UJOB.icpt.inf,until:S.T+UJOB.life,title:`Intercept: ${FACTIONS[t.side].short} supply convoy (${haulWhat(t)})`});return}}
+    if(best){const t=best.t,pay=Math.round((UJOB.icpt.cr+best.v*UJOB.icpt.val)/10)*10;J.push({id:S.nextId++,k,kind:'icpt',f:t.side,tgt:t.id,at:best.I.c,v:best.v,pay,inf:UJOB.icpt.inf,until:S.T+UJOB.life,title:`Intercept: ${fShort(t.side)} supply convoy (${haulWhat(t)})`});return}}
   const m=ujobMinePick(P);if(m)J.push({id:S.nextId++,k,kind:'mine',f:m.f,sid:m.sid,need:UJOB.mine.need,n:0,pay:UJOB.mine.cr,inf:UJOB.mine.inf,until:S.T+UJOB.life,title:`Disrupt ${FACTIONS[m.f].short} mining in ${DEF[m.sid].name}`})}
 // (called in the job owner's context: runAs on the host, so the pay and Infamy reach the right pilot)
 function ujobEnd(j,ok,why){const J=ujobs();if(J.includes(j))J.splice(J.indexOf(j),1);if(!j.on)return;
