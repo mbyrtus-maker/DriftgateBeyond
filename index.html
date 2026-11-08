@@ -1374,7 +1374,7 @@ function hostile(a,b){if(!a||!b||a===b)return false;if(S&&S.unb&&(a==='player'||
 let S=null,W=null,running=false;
 // truce zones: every Brood-held system (The Bloom included) and 30 s after its last node burns. Faction ships can't target or hurt
 // each other there; only the Brood is a target. STRAT marks the strategic layer, which keeps its own rules.
-let STRAT=false;const ACCORD_ON=5,ACCORD_OFF=4;
+let STRAT=false;const ACCORD_ON=10,ACCORD_OFF=8;
 function isFacSide(x){return x==='player'?!(S&&S.unb):FAC_IDS.includes(x)}
 function broodHeld(sid){return sectorOwner(sid)==='brood'||(DEF[sid]&&DEF[sid].kind==='hive')}
 function truceAt(sid){return broodHeld(sid)||(((S.truceT||{})[sid])||0)>S.T}
@@ -2339,7 +2339,10 @@ const VIC_NEED=20;   // Beyond: 20 of the 42 systems that can be held (freeports
 // the side a pilot's work counts for: their sworn faction, or the Freeport Compact for an independent contractor
 function sideNorm(sd){return sd==='player'?(S.player.sworn||'neutral'):sd}
 function coalNames(m){const n=m.map(f=>FACTIONS[f].short);return n.length>1?n.slice(0,-1).join(', ')+' and '+n[n.length-1]:n[0]}
-function coalTick(){const n=controlCounts();let lead=null,best=0;for(const k in n){if(k==='pirate')continue;if(n[k]>best){best=n[k];lead=k}}
+// (8 Nov 2026, the user) no truce against a power or your declared faction at 20 systems: only the Containment Accord
+// against the Brood remains. TRUCE_POWERS=false skips the truce; a saved truce against a power is dropped.
+const TRUCE_POWERS=false;
+function coalTick(){if(!TRUCE_POWERS){S.ffa=null;if(S.coal&&S.coal.lead!=='brood')S.coal=null}const n=controlCounts();let lead=null,best=0;for(const k in n){if(k==='pirate')continue;if(n[k]>best){best=n[k];lead=k}}
   const C=S.coal,pf=S.player.sworn,nb=n.brood||0;
   if(nb>=ACCORD_ON&&!(C&&C.lead==='brood')){S.ffa=null;S.coal={lead:'brood',mem:[...FAC_IDS],since:S.T,accord:1};if(running&&!STRAT_SIM())SFX.accord();feed(`⚠ The Containment Accord: the Brood holds ${nb} systems. Halcyon, Varkesh and Ostrova stop fighting each other everywhere and turn their fleets on the Bloom until it is pushed back below ${ACCORD_OFF}.`,'bad');return}
   // a faction passing the truce's leader while that leader still holds 7 breaks the truce: a free-for-all, and the leader's
@@ -2350,7 +2353,7 @@ function coalTick(){const n=controlCounts();let lead=null,best=0;for(const k in 
   if(C){const m=n[C.lead]||0;if(C.lead==='brood'?m<ACCORD_OFF:m<=VIC_NEED-2){S.coal=null;feed(`The truce against ${C.lead==='brood'?'the Brood':sideName(C.lead)} has collapsed: ${m} systems is no longer a threat. ${coalNames(C.mem)} go back to their own wars.`,'news')}
     else if(C.lead==='brood'||!(lead&&lead!==C.lead&&best>=VIC_NEED&&best>m&&m<VIC_NEED))return}   // the truce stays on its leader while that leader still holds 7
   if(S.victory&&S.victory.side!=='brood'&&(n[S.victory.side]||0)===best)lead=S.victory.side;   // a tie: the truce goes after the side on the clock
-  if(!lead||best<VIC_NEED)return;const mem=FAC_IDS.filter(f=>f!==lead);if(!mem.length)return;S.coal={lead,mem,since:S.T};
+  if(!lead||best<VIC_NEED)return;if(!TRUCE_POWERS&&lead!=='brood')return;const mem=FAC_IDS.filter(f=>f!==lead);if(!mem.length)return;S.coal={lead,mem,since:S.T};
   if(lead==='brood')feed(`⚠ The Brood holds ${best} systems. ${coalNames(mem)} have set aside their war to stop the Bloom: their fleets hold fire on each other and turn on the Brood.`,'bad');
   else feed(`${coalNames(mem)} have called a truce to stop ${lead==='player'?(S.player.decl||{}).name||'your faction':FACTIONS[lead].name} (${best} of ${VIC_NEED} systems). Their fleets now hold fire on each other and go after ${lead==='player'?'you':FACTIONS[lead].short}.${lead===pf||lead==='player'?' The galaxy is coming for you.':mem.includes(pf)?` ${FAC(pf).short} is in the truce: their ships won't fire on you and your guns won't touch theirs.`:''}`,lead===pf?'bad':'warn')}
 // the deadline: if no one has held 7 systems for 20 minutes by two hours of game time, the faction holding the most systems wins.

@@ -112,7 +112,7 @@ function hostile(a,b){if(!a||!b||a===b)return false;if(S&&S.unb&&(a==='player'||
 let S=null,W=null,running=false;
 // truce zones: every Brood-held system (The Bloom included) and 30 s after its last node burns. Faction ships can't target or hurt
 // each other there; only the Brood is a target. STRAT marks the strategic layer, which keeps its own rules.
-let STRAT=false;const ACCORD_ON=5,ACCORD_OFF=4;
+let STRAT=false;const ACCORD_ON=10,ACCORD_OFF=8;
 function isFacSide(x){return x==='player'?!(S&&S.unb):FAC_IDS.includes(x)}
 function broodHeld(sid){return sectorOwner(sid)==='brood'||(DEF[sid]&&DEF[sid].kind==='hive')}
 function truceAt(sid){return broodHeld(sid)||(((S.truceT||{})[sid])||0)>S.T}
