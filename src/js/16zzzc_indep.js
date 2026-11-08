@@ -22,7 +22,7 @@
 //            or retires and its purse goes to the Compact. Shooting one costs no standing with anyone (the user: a
 //            free-for-all for now).
 // Everything moves exactly: goods only between stores, holds, kits, rocks and debris; credits only between wallets.
-const IND={trade:true,start:4,cap:6,max:18,arrive:[1200,2400],stake:1500,reserve:400,hop:45,pass:60,back:300,boardAge:480,minProfit:60,minPurse:300,
+const IND={trade:true,need:0,cool:0,start:4,cap:6,max:18,arrive:[1200,2400],stake:1500,reserve:400,hop:45,pass:60,back:300,boardAge:480,minProfit:60,minPurse:300,
   mineT:{skiff:3,prospector:5,dredger:7},fill:.9,
   line:{fighter:['interceptor','striker','heavy'],miner:['skiff','prospector','dredger'],hauler:['courier','freighter','bulker']},
   slots:{hauler:[['cargo']],miner:[['mlaser']],fighter:[['laser','gun']]},sys:{hauler:['cargo','engine','armor','shield'],miner:['drill','cargo','armor','shield'],fighter:['weapon','shield','armor','engine']},buys:3,risk:{brood:.06,den:.05,near:.015}};
@@ -103,10 +103,10 @@ function indGo(I,k,to,extra){const p=indPath(I,I.sector,to);I.run=Object.assign(
   if(WORLDS[I.sector])inW(WORLDS[I.sector],()=>indSpawn(I,false))}
 function indMarkets(I,from,maxH){const L=[];for(const id in S.stations){const D=S.stations[id];if(!D||!indMarketOK(I,D))continue;const h=indHops(from,id);if(h<=maxH)L.push({D,h})}return L}
 // a hauler's trade: the best margin from here, per hop
-function indTradePlan(I,R){if(!IND.trade||!indFree(R)||!indMarketOK(I,R))return null;const mk=mkStock(R),cap=indCargo(I)*(ptHas(I,'Overloader')?1:.8),budget=indPurse(I)-IND.reserve;if(budget<200)return null;let best=null;
+function indTradePlan(I,R){if(!IND.trade||!indFree(R)||!indMarketOK(I,R))return null;if(IND.cool&&S.T<(I.tradeT||0))return null;const mk=mkStock(R),cap=indCargo(I)*(ptHas(I,'Overloader')?1:.8),budget=indPurse(I)-IND.reserve;if(budget<200)return null;let best=null;
   for(const{D,h}of indMarkets(I,R.sid,ptHas(I,'Speed Demon')?3:4)){if(D===R)continue;const wl=D.owner==='neutral'?'neutral':D.owner,tr=S.econ.treasury[wl]||0;
     const risk=indPath(I,R.sid,D.sid).reduce((a,s)=>a+indDanger(s),0);if(risk>.12&&!ptHas(I,'Greedy')&&!ptHas(I,'Speed Demon'))continue;
-    for(const k of IND_GOODS){if(!(mk[k]>0)||ITEMS[k].maker)continue;const b=mkPartPrice(R,k,I.cls),s=mkPartSell(D,k,I.cls),m=s-b;if(m<=0)continue;const n=Math.min(mk[k],Math.floor(cap/mass(k)),Math.floor(budget/b),Math.floor(tr/s));if(n<=0)continue;
+    const dmk=mkStock(D);for(const k of IND_GOODS){if(!(mk[k]>0)||ITEMS[k].maker)continue;if(IND.need&&D.owner!=='neutral'&&(dmk[k]||0)>=stockTarget(k)*IND.need)continue;const b=mkPartPrice(R,k,I.cls),s=mkPartSell(D,k,I.cls),m=s-b;if(m<=0)continue;const n=Math.min(mk[k],Math.floor(cap/mass(k)),Math.floor(budget/b),Math.floor(tr/s));if(n<=0)continue;
       const pr=m*n,sc=pr/(h+(ptHas(I,'Speed Demon')?.3:1))*(ptHas(I,'Greedy')?1:1-risk*3);if(pr>=IND.minProfit&&(!best||sc>best.sc))best={k,n,to:D.sid,sc,pr}}}
   return best}
 // a freeport request (or a blockade or containment run) left 8 minutes: buy it here and carry it in
@@ -133,7 +133,7 @@ function indPlan(I){const R=S.stations[I.sector];if(I.st!=='dock')return;
   // haulers waiting for company (Convoy Lover, Convoy Only) set off when another independent leaves with them, or after a while
   if(I.role==='hauler'&&(ptHas(I,'Convoy Lover')||ptHas(I,'Convoy Only'))){const pal=indAll().some(o=>o!==I&&o.st==='go'&&o.run&&o.run.T0>S.T-120&&o.run.path[0]===I.sector);if(!pal&&S.T-I.idleT<(ptHas(I,'Convoy Only')?900:300))return}
   if(I.role==='hauler'&&R){const b=indBoardHaul(I,R);if(b){const n=indBuy(I,R,b.c.item,b.n);if(n>0){b.c.ind=I.id;I.res={[b.c.item]:n};indGo(I,'board',b.c.st,{c:b.c.id,item:b.c.item});return}}
-    const t=indTradePlan(I,R);if(t){const n=indBuy(I,R,t.k,t.n);if(n>0){indGo(I,'trade',t.to,{item:t.k});return}}}
+    const t=indTradePlan(I,R);if(t){const n=indBuy(I,R,t.k,t.n);if(n>0){I.tradeT=S.T+IND.cool;indGo(I,'trade',t.to,{item:t.k});return}}}
   if(I.role==='miner'){const o=indBoardOre(I);if(o){o.c.ind=I.id;indGo(I,'mine',o.at,{c:o.c.id,want:o.c.item});return}
     const at=indMineSys(I);if(at){indGo(I,'mine',at,{});return}}
   // a hauler that sold at a power's market goes to the nearest freeport to load; anyone else home after a while
