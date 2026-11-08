@@ -3013,3 +3013,12 @@ The user's design check: powers gather ore into components, then hulls, capitals
   - the haul-job build with the makers' extra production for far shelves turned off (300): Brood 31%. That production is not the cause; the lower warehouse plate the trace showed doesn't explain the gain;
   - the build from before the day's maker work (300): Brood 20%.
   The remaining 6 points are not traced yet. The morning build (systems shipping only, no haul jobs) is being measured to split them.
+
+### Brood grazing 1.3 (user, 8 Nov 2026)
+**Why:** with the makers' shipping, the Brood stayed at about 26% after the richer-makers change. The cause is not traced. Ruled out: the makers' extra production for far shelves, supply runs, shipping to depots (no shipping to depots: 26%), and the `FAC_HOME` crash fix (old version back: 35%).
+**Grazing sweep on the richer-makers build** (300 galaxies each, 16 h, neutral leaders; Brood / Halcyon / Ostrova / Varkesh / unfinished):
+- 1.6: 25 / 21 / 24 / 25 / 6
+- 1.3: 23 / 24 / 25 / 24 / 4
+- 1.0: 20 / 29 / 27 / 23 / 1
+**Set: 1.3.** The user: "Set it for 1.3 I like the even of it". The powers are even and the Brood is 3 points over its target.
+**Note for tune files:** set `BR0.brGraze`, not `BAL.brGraze`. The Brood's ramp (`broodRamp`, `16s_declare.js`) resets BAL's Brood dials from BR0 every tick, so a tune of BAL.brGraze does nothing.
