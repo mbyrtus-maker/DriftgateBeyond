@@ -21,10 +21,10 @@
 //            or retires and its purse goes to the Compact. Shooting one costs no standing with anyone (the user: a
 //            free-for-all for now).
 // Everything moves exactly: goods only between stores, holds, kits, rocks and debris; credits only between wallets.
-const IND={trade:false,start:4,cap:6,max:18,arrive:[1200,2400],stake:1500,reserve:400,hop:45,pass:60,back:300,boardAge:480,minProfit:60,minPurse:300,
+const IND={trade:true,start:4,cap:6,max:18,arrive:[1200,2400],stake:1500,reserve:400,hop:45,pass:60,back:300,boardAge:480,minProfit:60,minPurse:300,
   mineT:{skiff:3,prospector:5,dredger:7},fill:.9,
   line:{fighter:['interceptor','striker','heavy'],miner:['skiff','prospector','dredger'],hauler:['courier','freighter','bulker']},
-  slots:{hauler:[['cargo']],miner:[['mlaser']],fighter:[['laser','gun']]},risk:{brood:.06,den:.05,near:.015}};
+  slots:{hauler:[['cargo']],miner:[['mlaser']],fighter:[['laser','gun']]},sys:{hauler:['cargo','engine','armor','shield'],miner:['drill','cargo','armor','shield'],fighter:['weapon','shield','armor','engine']},buys:3,risk:{brood:.06,den:.05,near:.015}};
 const IND_GOODS=['fe','cu','ir','xc','au','nu','plate','wire','coil','lattice','core','missile','drone'];
 const IND_FIRST=['Mara','Tobin','Ilse','Corvin','Neve','Bastian','Yara','Dorran','Petra','Halvard','Isolde','Rhett','Sunniva','Cato','Liesel','Emeric','Ondine','Ferris','Greta','Joss','Anouk','Silas','Thea','Wolf'];
 const IND_LAST=['Venn','Okafor','Brask','Lindqvist','Moreau','Kade','Szabo','Ferreira','Thorne','Abara','Kowal','Hesketh','Duval','Rourke','Vasquez','Ingram','Nakai','Sorel','Petrakis','Wyle'];
@@ -43,7 +43,11 @@ function indDoing(I){const r=I.run;if(I.st==='pj')return'On a job';if(I.st==='do
 function indLabel(I){return`Independent · ${I.name} · ${indDoing(I)}${I.pt?' · '+ptName(I.pt):''}`}
 function indName(){const used=new Set(indAll().map(I=>I.name));for(let i=0;i<40;i++){const n=pick(IND_FIRST)+' '+pick(IND_LAST);if(!used.has(n))return n}return pick(IND_FIRST)+' '+pick(IND_LAST)+' '+ri(2,9)}
 function indCargo(I){return shipStats(null,I.cls,indGrades(I)||baseTiers()).cargo}
-function indGrades(I){const T={engine:1,power:1,shield:1,weapon:1,armor:1,drill:1,cargo:1,payload:1};let any=false;
+function indTiers(I){return I.tiers=I.tiers||{engine:1,power:1,shield:1,weapon:1,armor:1,drill:1,cargo:1,payload:1}}
+// the goods an independent's system upgrades hold (in the ship, as yours are)
+function indSysInv(I){const o={};for(const sl in I.tiers||{})for(let k=2;k<=(I.tiers[sl]||1);k++){const r=upgRecipe(sl,k);for(const i in r)o[i]=(o[i]||0)+r[i]}return o}
+function indFree(R){return!!R&&R.owner==='neutral'&&R.kind==='free'}
+function indGrades(I){const T={...indTiers(I)};let any=Object.values(T).some(v=>v>1);
   for(const id in I.kit||{}){const It=ITEMS[id];if(!It||!(I.kit[id]>0))continue;const g=It.grade||1,sl=It.part==='cargo'?'cargo':It.part==='mlaser'?'drill':It.part==='gun'||It.part==='laser'?'weapon':null;if(sl&&g>T[sl]){T[sl]=g;any=true}}return any?T:null}
 function indFly(e,I){const T=indGrades(I);if(T){e.st=shipStats(e.fac,e.cls,T);e.hull=e.st.hull;e.shield=e.st.sCap;e.energy=e.st.eCap}return e}
 // a market an independent may use: the freeports always; a power's station unless the power counts it hostile
@@ -65,12 +69,21 @@ function indArrivals(){const A=S.ind.arr;for(const sid of indPorts()){const n=in
   if(A[sid]==null){for(let i=n;i<IND.start;i++)indNew(sid);A[sid]=S.T+rnd(IND.arrive[0],IND.arrive[1]);continue}
   if(S.T>=A[sid]){if(n<IND.start&&n<IND.cap)indNew(sid);A[sid]=S.T+rnd(IND.arrive[0],IND.arrive[1])}}}
 // ---- buying parts and hulls, as a pilot does
-function indShop(I,R){if(!R||!S.corp||!(R.owner==='neutral'||FAC_IDS.includes(R.owner))||!indMarketOK(I,R))return 0;const w=indW(I),cls=I.cls,gcap=gradeCap(I);let n=0;
-  const keep=IND.reserve+(START_HULLS.includes(cls)?0:hullPrice(cls));
-  for(const kinds of IND.slots[I.role]||[]){const budget=indPurse(I)-keep;if(budget<=0)break;let have=null;for(const id in I.kit)if(I.kit[id]>0&&ITEMS[id]&&kinds.includes(ITEMS[id].part)){have=id;break}
-    if(!have){const id=aipBest(R,kinds,gcap,budget,cls,0);if(id&&mkBuyOne(R,id,w,cls,I.kit))n++;continue}
-    const g=ITEMS[have].grade||1,id=aipBest(R,kinds,gcap,budget+mkPartSell(R,have,cls),cls,g);if(!id)continue;if(mkSellOne(R,have,w,cls,I.kit)&&mkBuyOne(R,id,w,cls,I.kit))n++}
-  return n}
+// what a hull's slots want: a part for every weapon and utility slot (the landing kit and claim mounts aside)
+function indWants(I){const D=slotsOf(I.cls),c={};for(const k of[...(D.w||[]),...(D.u||[])]){if(k==='land'||k==='claim')continue;c[k]=(c[k]||0)+1}return c}
+function indSaving(I){const L=IND.line[I.role],nx=L[L.indexOf(I.cls)+1];return!!nx&&ratingOf(I)>=(HULL_RATING[nx]||1)&&indPurse(I)<hullPrice(nx)+IND.reserve+300}
+// buying, as a pilot does, and only at a freeport: empty slots first, then upgrades (not while saving for the next hull)
+function indShop(I,R){if(!indFree(R)||!S.corp)return 0;const w=indW(I),cls=I.cls,gcap=gradeCap(I),keep=IND.reserve+(START_HULLS.includes(cls)?0:hullPrice(cls)),want=indWants(I),save=indSaving(I);let n=0;
+  const ofKind=k=>{const L=[];for(const id in I.kit)if(I.kit[id]>0&&ITEMS[id]&&ITEMS[id].part===k)for(let i=0;i<I.kit[id];i++)L.push(id);return L};
+  for(const k in want){while(n<IND.buys&&ofKind(k).length<want[k]){const budget=indPurse(I)-keep;if(budget<=0)break;const id=aipBest(R,[k],gcap,budget,cls,0);if(!id||!mkBuyOne(R,id,w,cls,I.kit))break;n++}}
+  if(!save)for(const k in want){if(n>=IND.buys)break;const L=ofKind(k);if(!L.length)continue;const low=L.sort((a,b)=>(ITEMS[a].grade||1)-(ITEMS[b].grade||1))[0],g=ITEMS[low].grade||1;
+    const budget=indPurse(I)-keep;if(budget<=0)break;const id=aipBest(R,[k],gcap,budget+mkPartSell(R,low,cls),cls,g);if(!id)continue;if(mkSellOne(R,low,w,cls,I.kit)&&mkBuyOne(R,id,w,cls,I.kit))n++}
+  if(!save)indSysUp(I,R);return n}
+// one system grade a visit, as yours: the recipe's goods off the freeport's market and the station's 8% fee
+function indSysUp(I,R){if(!indFree(R))return false;const T=indTiers(I),cap=Math.min(gradeCap(I),MK_TOP),keep=IND.reserve+(START_HULLS.includes(I.cls)?0:hullPrice(I.cls)),mk=mkStock(R);
+  for(const sl of IND.sys[I.role]||[]){const t=T[sl]||1;if(t>=cap)continue;const r=upgRecipe(sl,t+1);let cost=0,ok=true;for(const k in r){if((mk[k]||0)<r[k]){ok=false;break}cost+=mkPartPrice(R,k,I.cls)*r[k]}if(!ok)continue;
+    const fee=Math.ceil(invValue(r)*.08);if(indPurse(I)-keep<cost+fee)return false;const paid=transfer(indW(I),'neutral',cost+fee);if(paid<cost+fee){transfer('neutral',indW(I),paid);return false}
+    for(const k in r)inv.take(mk,k,r[k]);T[sl]=t+1;return true}return false}
 function indYardOK(R){return!!R&&((R.owner==='neutral'&&R.kind==='free')||(FAC_IDS.includes(R.owner)&&R.kind==='core'))}
 function indUpgrade(I,R){if(!indYardOK(R)||!indMarketOK(I,R))return false;const L=IND.line[I.role],i=L.indexOf(I.cls),nx=L[i+1];if(!nx||ratingOf(I)<(HULL_RATING[nx]||1))return false;
   const pr=hullPrice(nx),old=I.cls,wl=R.owner==='neutral'?'neutral':R.owner;if(indPurse(I)<pr+IND.reserve+300)return false;if(transfer(indW(I),wl,pr)<pr)return false;
@@ -80,7 +93,8 @@ function indUpgrade(I,R){if(!indYardOK(R)||!indMarketOK(I,R))return false;const 
 function indSell(I,R,only){if(!R||!indMarketOK(I,R))return 0;const wl=R.owner==='neutral'?'neutral':R.owner,mk=mkStock(R);let got=0;
   for(const k of Object.keys(I.hold)){if(only&&k!==only)continue;if(I.res&&I.res[k])continue;const have=I.hold[k]||0;if(!have||!ITEMS[k])continue;const pr=mkPartSell(R,k,I.cls),n=Math.min(have,Math.floor((S.econ.treasury[wl]||0)/pr));if(n<=0)continue;
     inv.take(I.hold,k,n);inv.add(mk,k,n);got+=transfer(wl,indW(I),n*pr)}
-  I.earned+=got;return got}
+  // a sale into a power's or a freeport's market is work for it: Rating points and standing
+  if(got>0)indWork(I,R.owner,1+got/1500);I.earned+=got;return got}
 function indBuy(I,R,k,n){const wl=R.owner==='neutral'?'neutral':R.owner,mk=mkStock(R),pr=mkPartPrice(R,k,I.cls);n=Math.min(n,mk[k]||0,Math.floor(indPurse(I)/pr),Math.floor((indCargo(I)-invMass(I.hold))/mass(k)));if(n<=0)return 0;
   const paid=transfer(indW(I),wl,n*pr);if(paid<n*pr){transfer(wl,indW(I),paid);return 0}inv.take(mk,k,n);inv.add(I.hold,k,n);if(ITEMS[k].maker&&typeof ceSale==='function')ceSale(ITEMS[k].maker,k,n,paid,wl,R.sid);return n}
 // ---- deciding what to do next, docked
@@ -88,14 +102,14 @@ function indGo(I,k,to,extra){const p=indPath(I,I.sector,to);I.run=Object.assign(
   if(WORLDS[I.sector])inW(WORLDS[I.sector],()=>indSpawn(I,false))}
 function indMarkets(I,from,maxH){const L=[];for(const id in S.stations){const D=S.stations[id];if(!D||!indMarketOK(I,D))continue;const h=indHops(from,id);if(h<=maxH)L.push({D,h})}return L}
 // a hauler's trade: the best margin from here, per hop
-function indTradePlan(I,R){if(!IND.trade||!indMarketOK(I,R))return null;const mk=mkStock(R),cap=indCargo(I)*(ptHas(I,'Overloader')?1:.8),budget=indPurse(I)-IND.reserve;if(budget<200)return null;let best=null;
+function indTradePlan(I,R){if(!IND.trade||!indFree(R)||!indMarketOK(I,R))return null;const mk=mkStock(R),cap=indCargo(I)*(ptHas(I,'Overloader')?1:.8),budget=indPurse(I)-IND.reserve;if(budget<200)return null;let best=null;
   for(const{D,h}of indMarkets(I,R.sid,ptHas(I,'Speed Demon')?3:4)){if(D===R)continue;const wl=D.owner==='neutral'?'neutral':D.owner,tr=S.econ.treasury[wl]||0;
     const risk=indPath(I,R.sid,D.sid).reduce((a,s)=>a+indDanger(s),0);if(risk>.12&&!ptHas(I,'Greedy')&&!ptHas(I,'Speed Demon'))continue;
     for(const k of IND_GOODS){if(!(mk[k]>0)||ITEMS[k].maker)continue;const b=mkPartPrice(R,k,I.cls),s=mkPartSell(D,k,I.cls),m=s-b;if(m<=0)continue;const n=Math.min(mk[k],Math.floor(cap/mass(k)),Math.floor(budget/b),Math.floor(tr/s));if(n<=0)continue;
       const pr=m*n,sc=pr/(h+(ptHas(I,'Speed Demon')?.3:1))*(ptHas(I,'Greedy')?1:1-risk*3);if(pr>=IND.minProfit&&(!best||sc>best.sc))best={k,n,to:D.sid,sc,pr}}}
   return best}
 // a freeport request (or a blockade or containment run) left 8 minutes: buy it here and carry it in
-function indBoardHaul(I,R){if(!IND.trade||!indMarketOK(I,R))return null;const mk=mkStock(R);let best=null;
+function indBoardHaul(I,R){if(!IND.trade||!indFree(R)||!indMarketOK(I,R))return null;const mk=mkStock(R);let best=null;
   for(const c of S.contracts||[]){if(!c.st||c.ind||!(c.n>0)||!ITEMS[c.item]||c.st===R.sid)continue;c.seen=c.seen||S.T;if(S.T-c.seen<IND.boardAge)continue;const D=S.stations[c.st];if(!D)continue;
     if(c.fac!=='neutral'&&(!FAC_IDS.includes(c.fac)||(I.stand[c.fac]||0)<=STAND.dock))continue;const h=indHops(R.sid,c.st);if(h>5||(c.until&&c.until<S.T+IND.hop*(h+1)))continue;
     const pr=mkPartPrice(R,c.item,I.cls),n=Math.min(c.n,mk[c.item]||0,Math.floor(indCargo(I)/mass(c.item)),Math.floor((indPurse(I)-100)/pr));if(n<Math.min(c.n,jobMin(c)))continue;
@@ -114,14 +128,15 @@ function indMineSys(I,want){const near=[];for(const id in S.sectors){const h=ind
   if(ptHas(I,'Prospector')){const x=near.filter(n=>n.h>=1).sort((a,b)=>b.o-a.o)[0];if(x)return x.id}
   return near.sort((a,b)=>a.h-b.h||b.o-a.o)[0].id}
 function indPlan(I){const R=S.stations[I.sector];if(I.st!=='dock')return;
-  if(R){indSell(I,R);indShop(I,R);indUpgrade(I,R)}
+  if(R){indSell(I,R);indUpgrade(I,R);indShop(I,R)}
   // haulers waiting for company (Convoy Lover, Convoy Only) set off when another independent leaves with them, or after a while
   if(I.role==='hauler'&&(ptHas(I,'Convoy Lover')||ptHas(I,'Convoy Only'))){const pal=indAll().some(o=>o!==I&&o.st==='go'&&o.run&&o.run.T0>S.T-120&&o.run.path[0]===I.sector);if(!pal&&S.T-I.idleT<(ptHas(I,'Convoy Only')?900:300))return}
   if(I.role==='hauler'&&R){const b=indBoardHaul(I,R);if(b){const n=indBuy(I,R,b.c.item,b.n);if(n>0){b.c.ind=I.id;I.res={[b.c.item]:n};indGo(I,'board',b.c.st,{c:b.c.id,item:b.c.item});return}}
     const t=indTradePlan(I,R);if(t){const n=indBuy(I,R,t.k,t.n);if(n>0){indGo(I,'trade',t.to,{item:t.k});return}}}
   if(I.role==='miner'){const o=indBoardOre(I);if(o){o.c.ind=I.id;indGo(I,'mine',o.at,{c:o.c.id,want:o.c.item});return}
     const at=indMineSys(I);if(at){indGo(I,'mine',at,{});return}}
-  // nothing here: home to the freeport after a while
+  // a hauler that sold at a power's market goes to the nearest freeport to load; anyone else home after a while
+  if(I.role==='hauler'&&!indFree(R)){let to=I.port,bh=indHops(I.sector,I.port);for(const sid of indPorts()){const h=indHops(I.sector,sid);if(h<bh){bh=h;to=sid}}indGo(I,'home',to,{});return}
   if(I.sector!==I.port&&S.T-I.idleT>240)indGo(I,'home',I.port,{})}
 // ---- the clock: hops out of sight, mining out of sight
 function indMineOff(I){const s=S.sectors[I.sector];if(!s)return;const r=I.run,cap=indCargo(I),fill=ptHas(I,'Light Load')?.5:ptHas(I,'Hoarder')?1:IND.fill;
@@ -132,7 +147,8 @@ function indMineDone(I){const r=I.run;let to=I.port;if(r&&r.c){const c=(S.contra
   indGo(I,'home',to,{})}
 function indTick(){if(!indOn()||!S.econ)return;indAll();const pass=S.T>=(S.ind.passT||0);if(pass){S.ind.passT=S.T+IND.pass;indArrivals()}
   for(const I of indAll().slice()){
-    if(I.st==='down'){if(S.T>=I.back)indBack(I);continue}
+    if(I.st==='down'){if(!(I.back>0))I.back=S.T;if(S.T>=I.back)indBack(I);continue}
+    if(pass)indWear(I);
     if(I.st==='pj'){const r=pjRunOf(I.pj);if(!r){I.st='dock';I.pj=null;if(!S.stations[I.sector])indGo(I,'home',I.port,{})}else I.sector=r.sector;continue}
     if(I.st==='dock'){if(pass)indPlan(I);continue}
     const r=I.run;if(!r){I.st='dock';continue}if(I.live)continue;
@@ -141,6 +157,8 @@ function indTick(){if(!indOn()||!S.econ)return;indAll();const pass=S.T>=(S.ind.p
     r.leg++;I.sector=r.path[r.leg];r.next=S.T+IND.hop*ptHopK(I);
     if(WORLDS[I.sector]){inW(WORLDS[I.sector],()=>indSpawn(I,true));continue}
     const d=indDanger(I.sector)*ptRiskK(I);if(d>0&&Math.random()<d)indDownOff(I)}}
+// fitted parts wear out as the fleets' and crews' do, falling as debris where the ship is
+function indWear(I){const s=S.sectors[I.sector];for(const id of Object.keys(I.kit||{})){let n=I.kit[id];while(n-->0)if(Math.random()<CE.wear*IND.pass/3600){inv.take(I.kit,id,1);if(s)toDebris(s,{[id]:1});else inv.addAll(indStore(I),{[id]:1})}}}
 // at the end of a route
 function indArrive(I){const r=I.run;if(!r){I.st='dock';return}
   if(r.k==='mine'){I.st='work';r.cut=0;return}
@@ -152,10 +170,10 @@ function indArrive(I){const r=I.run;if(!r){I.st='dock';return}
   if(!R){indGo(I,'home',I.port,{});return}
   indSell(I,R);if(r.k==='trade')I.jobs++}
 // Rating and standing from work done for a power
-function indWork(I,f,n){if(!(n>0))return;const r0=ratingOf(I);I.rp=(I.rp||0)+n*RATING.k;if(FAC_IDS.includes(f))I.stand[f]=clamp((I.stand[f]||0)+n,-100,100);const r1=ratingOf(I);
+function indWork(I,f,n){if(!(n>0))return;const r0=ratingOf(I);I.rp=(I.rp||0)+n*RATING.k;if(FAC_IDS.includes(f))I.stand[f]=clamp((I.stand[f]||0)+n*.5,-100,100);const r1=ratingOf(I);
   if(r1>r0&&r1===6)allFeed(`★ ${I.name}, an independent out of ${DEF[I.port].name}, has reached Contractor Rating 6.`,'info')}
 // ---- shot down, and coming back
-function indDown(I,cause,sid){const s=S.sectors[sid]||S.sectors[I.sector];if(s){toDebris(s,I.kit);toDebris(s,I.hold)}else{inv.addAll(indStore(I),I.kit);inv.addAll(indStore(I),I.hold)}
+function indDown(I,cause,sid){const s=S.sectors[sid]||S.sectors[I.sector],sys=indSysInv(I);if(s){toDebris(s,I.kit);toDebris(s,I.hold);toDebris(s,sys)}else{inv.addAll(indStore(I),I.kit);inv.addAll(indStore(I),I.hold);inv.addAll(indStore(I),sys)}I.tiers=null;
   I.kit={};I.hold={};I.res=null;if(I.run&&I.run.c){const c=(S.contracts||[]).find(x=>x.id===I.run.c);if(c)c.ind=null}
   I.lost=I.cls;I.st='down';I.live=false;I.run=null;I.pj=null;I.deaths++;I.back=S.T+IND.back;I.cause=cause||'unknown';I.sector=sid||I.sector;
   if(cause==='pirate'||cause==='raided'||cause==='ambush')allFeed(`${I.name}, an independent out of ${DEF[I.port].name}, was lost to raiders in ${DEF[I.sector].name}.`,'info')}
@@ -170,7 +188,7 @@ function indBack(I){const port=I.port,R=S.stations[port];if(!R){indRetire(I);ret
   const old=I.pt;I.pt=ptDeath(I.role,I.cause,I);I.cls=cls;I.paid=pr||null;I.st='dock';I.sector=port;I.run=null;I.idleT=S.T;
   if(old!==I.pt)allFeed(`${I.name} is flying again out of ${DEF[port].name}, ${ptName(I.pt)} now${I.cause&&I.cause!=='unknown'?'':' after a bad loss'}.`,'info');
   try{indShop(I,R)}catch(e){console.error(e)}}
-function indRetire(I){transfer(indW(I),'neutral',indPurse(I));delete S.econ.treasury[indW(I)];inv.addAll(indStore(I),I.hold);inv.addAll(indStore(I),I.kit);I.hold={};I.kit={};
+function indRetire(I){transfer(indW(I),'neutral',indPurse(I));delete S.econ.treasury[indW(I)];inv.addAll(indStore(I),I.hold);inv.addAll(indStore(I),I.kit);inv.addAll(indStore(I),indSysInv(I));I.tiers=null;I.hold={};I.kit={};
   const L=indAll(),i=L.indexOf(I);if(i>=0)L.splice(i,1);allFeed(`${I.name} has hung up their flight suit: an independent retires from ${DEF[I.port].name}.`,'info')}
 // ---- posted jobs: an independent signs on when one is free and its hull fits
 function indTake(j){const R=S.stations[j.sid];if(!R)return null;const role=indRoleOfJob(j.kind);let best=null,bh=99;
@@ -226,12 +244,12 @@ function indRock(e,s,I){const L=s.ast.filter(x=>!x.comet&&oreTotal(x)>0);if(!L.l
 {const o=killShip;killShip=function(e,src,at){if(e&&e.indId&&!NET.cl){const I=indById(e.indId),sid=W&&W.sid;if(I&&I.st!=='down'){let cause='unknown';try{cause=ptCause(e,src,at,I.role)}catch(err){}
     I.killer=typeof ptKillerTag==='function'?ptKillerTag(at&&at.src&&at.src.type==='ship'?at.src:null):null;if(I.role==='miner'&&(src==='pirate'||src==='brood'||FAC_IDS.includes(src))&&cause!=='named')cause=invMass(e.cargo)>=e.st.cargo*.85?'full':indHops(sid,I.port)>=2?'far':'raided';
     if(I.role==='hauler'&&cause!=='named')cause=broodHeld(sid)||DEF[sid].kind==='den'?'hostile':W.ents.some(x=>x!==e&&x.alive&&x.indId&&x.type==='ship')?'ambush':'alone';
-    I.st='down';const x=o.apply(this,arguments);I.st='go';indDown(I,cause,sid);return x}}return o.apply(this,arguments)}}
+    I.st='down';try{return o.apply(this,arguments)}finally{I.st='go';indDown(I,cause,sid)}}}return o.apply(this,arguments)}}
 {const o=openWorld;openWorld=function(sid){const w=o.apply(this,arguments);try{if(indOn())inW(w,()=>{for(const I of indAll())if(I.sector===sid&&(I.st==='go'||I.st==='work')&&I.run){I.live=false;indSpawn(I,false)}})}catch(e){console.error(e)}return w}}
 // shooting an independent costs no standing (it's nobody's ship)
 {const o=dmgRec;dmgRec=function(e){if(e&&e.indId){const s=e.side;e.side='_ind';try{return o.apply(this,arguments)}finally{e.side=s}}return o.apply(this,arguments)}}
 {const o=holderIn;holderIn=function(st,path){if(typeof path==='string'&&path.startsWith('ind:')){const I=((st.ind&&st.ind.list)||[]).find(x=>String(x.id)===path.split(':')[1]);return I?(I.hold=I.hold||{}):(st.econ.stock.pirate)}return o.apply(this,arguments)}}
-{const o=ledger;ledger=function(){const r=o.apply(this,arguments);try{const L=r.L['Fleets in muster'];for(const I of(S.ind&&S.ind.list)||[]){for(const x of[I.hold||{},I.kit||{}]){const v=invVec(x);for(const k of RAWS){L[k]+=v[k];r.tot[k]+=v[k]}}}}catch(e){}return r}}
+{const o=ledger;ledger=function(){const r=o.apply(this,arguments);try{const L=r.L['Fleets in muster'];for(const I of(S.ind&&S.ind.list)||[]){for(const x of[I.hold||{},I.kit||{},indSysInv(I)]){const v=invVec(x);for(const k of RAWS){L[k]+=v[k];r.tot[k]+=v[k]}}}}catch(e){}return r}}
 {const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{indTick()}catch(e){console.error(e)}return r}}
 // ---- where you see them: a freeport's panel on the galaxy map lists its independents
 {const o=mpHtml;mpHtml=function(sid){let h=o.apply(this,arguments);try{if(S&&S.ind&&FREEPORTS.some(f=>f.sid===sid)){const L=indAll().filter(I=>I.port===sid);if(L.length)h+=`<div class="h3" style="margin-top:12px">Independents</div><div class="note" style="margin-bottom:4px">Contractors out of this freeport: they take jobs nobody else does, trade and mine.</div>`+L.map(I=>`<div class="kv"><span>${esc(I.name)} · ${esc(CLASSES[I.cls].name)}</span><b>${esc(ptName(I.pt)||'')} · ${esc(indDoing(I))}${I.sector!==sid&&I.st!=='down'?' in '+esc(DEF[I.sector].name):''}</b></div>`).join('')}}catch(e){console.error(e)}return h}}

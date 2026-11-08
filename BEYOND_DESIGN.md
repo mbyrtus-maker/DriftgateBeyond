@@ -2928,3 +2928,15 @@ Some death traits share a name with a starting trait (Homebody, Safe Routes): a 
 - **Causes of death:** killed by you, another player, an ace or an independent is "named" (Vengeful or Haunted, with that pilot as the nemesis); otherwise by role from the killing shot and the scene (a missile or torpedo, a capital's or station's guns, three or more hostiles near, a full hold, far from home, hostile space, alone). Unclassified is Shaken.
 - **Tests:** `indep.py` (arrival, an hour out of sight, a posted job, live flight, a live loss and return with Haunted, death traits by cause, rolls, an ace's lesson, Opportunist, Light Load, Tripwire; ledger exact).
 - **Not yet checked:** the war check (600 galaxies, 16 h) and the 4-hour AI soak against the makers' target; published first, the user's call.
+
+### Independents: supply runs only, and they spend like players (agreed, user 7 Nov 2026)
+**Why:** the war check after independents and pilot traits went live (600 galaxies, 16 h, neutral leaders) gave Brood 48%, Varkesh 13%, Ostrova 11%, Halcyon 11%, unfinished 17%. Diagnosis (200 galaxies each): `main` before them Brood 19%; traits on, independents off 28%; independents on, traits off 56%; independents idle 20%; independents without trading 19%; without mining 48%. **Their trading caused it:** haulers bought plates, coils, conduit, drones and iridium out of the powers' own markets (the warehouses their fleets are built from) and sold them elsewhere, starving the powers' shipbuilding. Trading was paused in the live game the same evening.
+
+**Decided (the user's choices):**
+- **Supply runs only:** an independent buys goods and parts **only at the freeports**; it sells anywhere it may dock (a power's station or depot, or another freeport). So its trade carries goods into the powers instead of out of them. The same for the boards' delivery jobs: the goods are bought at a freeport. A hauler that has sold at a power's market heads for the nearest freeport to load again.
+- **They spend like players** (all at freeports, credits to the Compact and the makers, goods taken off the shelves):
+  - **every slot fitted:** a part for each weapon and utility slot its hull has (not only the one its work uses), upgraded as its Rating allows;
+  - **system upgrades:** one grade a visit in the systems its work leans on (hauler: cargo, engine, armour, shield; miner: drill, cargo, armour, shield; fighter: weapon, shield, armour, engine), the recipe's goods bought off the freeport's market plus the station's 8% fee, as your own upgrades; the goods are in the ship (ledger) and fall as salvage when it is shot down;
+  - **wear:** fitted parts wear out as the powers' fleets' and your crews' do, so they keep buying replacements;
+  - the next hull of its line still when its Rating allows (it saves for it first).
+- Then one war check (600 galaxies, 16 h) on the result before trading is switched back on in the published game.

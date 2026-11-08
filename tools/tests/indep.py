@@ -27,6 +27,22 @@ async def main():
     r=json.loads(await ev("(()=>{for(let i=0;i<360;i++){S.T+=10;strategicTick();updateEvents()}const L=indAll();return JSON.stringify({jobs:L.reduce((a,I)=>a+I.jobs,0),earned:L.reduce((a,I)=>a+I.earned,0),busy:L.filter(I=>I.st!=='dock').length})})()"))
     chk('an hour of work: ore, trades and deliveries earn money',r['earned']>2000,r)
     chk('ledger after an hour',(await ev(LED))=='exact',await ev(LED))
+    # supply runs only, and spending like a pilot (two more hours, buys traced)
+    r=json.loads(await ev("""(()=>{const bad=[];{const o=indBuy;indBuy=function(I,R){const x=o.apply(this,arguments);if(x>0&&!indFree(R))bad.push(R.name);return x}}
+      {const o=mkBuyOne;mkBuyOne=function(R,id,from){const x=o.apply(this,arguments);if(x>0&&String(from).startsWith('ind_')&&!indFree(R))bad.push(R.name+' part');return x}}
+      for(let i=0;i<720;i++){S.T+=10;strategicTick();updateEvents()}const L=indAll();
+      return JSON.stringify({bad:bad.slice(0,4),nbad:bad.length,sys:L.filter(I=>I.tiers&&Object.values(I.tiers).some(v=>v>1)).length,full:L.filter(I=>{const w=indWants(I);let need=0,have=0;for(const k in w){need+=w[k];have+=Math.min(w[k],Object.keys(I.kit).filter(id=>ITEMS[id].part===k).reduce((a,id)=>a+I.kit[id],0))}return need&&have>=need}).length,purses:L.map(I=>indPurse(I))})})()"""))
+    chk('independents buy goods and parts only at freeports',r['nbad']==0,r)
+    pur=sorted(r['purses']);chk('they spend what they earn (median purse under 3,000 cr)',pur[len(pur)//2]<3000,r)
+    r=json.loads(await ev("""(()=>{const I=indAll().find(x=>x.st==='dock'&&x.role==='hauler')||indAll().find(x=>x.st==='dock');if(!I)return '{}';const R=S.stations[I.port];I.sector=I.port;I.rp=Math.max(I.rp||0,700);transfer('neutral',indW(I),20000);
+      const mk=mkStock(R);devLedger(()=>{for(const k of ['plate','wire','coil'])if((mk[k]||0)<20)inv.add(mk,k,20)});const t0=JSON.stringify(indTiers(I)),k0=Object.values(I.kit).reduce((a,b)=>a+b,0);for(let i=0;i<4;i++)indShop(I,R);
+      return JSON.stringify({up:JSON.stringify(I.tiers)!==t0,parts:Object.values(I.kit).reduce((a,b)=>a+b,0)-k0,want:indWants(I),tiers:I.tiers})})()"""))
+    chk('a rated independent with money upgrades its systems at a freeport',r.get('up'),r)
+    chk('ledger after its upgrades',(await ev(LED))=='exact',await ev(LED))
+    chk('ledger after two hours of spending',(await ev(LED))=='exact',await ev(LED))
+    r=json.loads(await ev("""(()=>{const I=indAll().find(x=>x.st!=='down'&&x.tiers&&Object.values(x.tiers).some(v=>v>1));if(!I)return '{}';const sid=I.sector;if(I.live){for(const w in WORLDS)for(const e of WORLDS[w].ents)if(e.indId===I.id)inW(WORLDS[w],()=>{despawn(e)})}I.live=false;indDown(I,'unknown',sid);return JSON.stringify({tiers:I.tiers})})()"""))
+    chk('an upgraded ship lost: its systems fall as salvage',r.get('tiers',1) is None,r)
+    chk('ledger after losing an upgraded ship',(await ev(LED))=='exact',await ev(LED))
     # a posted job goes to an independent
     print('depot',await ev("""(()=>{const P=S.player;undock();P.rp=5000;const sid=SECTOR_DEFS.map(d=>d.id).find(id=>!S.stations[id]&&canBuildIn(id,'player')&&!OUT_BY_SECTOR[id]&&S.sectors[id].ast.some(a=>!a.rift&&oreTotal(a)>40));exitSector();P.sector=sid;P.docked=null;enterSector(sid);P.cls='bulker';fitOf(P);refreshPlayerStats();devLedger(()=>{P.cargo={frame:2}});
       depFresh(P);transfer('halcyon','player',20000);window._SID=sid;const p=W.player;p.x=4000;p.y=2000;p.z=4000;for(const I of indAll())if(I.role==='hauler'&&I.st!=='down'){I.st='dock';I.run=null;I.live=false;I.sector=I.port}return sid})()"""))
@@ -47,8 +63,8 @@ async def main():
     chk('shot down live: down, kit lost, no standing lost',r['st']=='down' and r['kit']==0 and r['stand'],r)
     chk('killed by you counts as a named pilot',r['cause']=='named',r)
     chk('ledger after the loss (hold and kit as salvage)',(await ev(LED))=='exact',await ev(LED))
-    r=json.loads(await ev("""(()=>{const I=indById(window._L);for(let i=0;i<40;i++){S.T+=10;strategicTick()}return JSON.stringify(I?{st:I.st,pt:I.pt,nem:I.nem,cls:I.cls,sector:I.sector,port:I.port}:{gone:1})})()"""))
-    chk('back at its freeport after 5 minutes with a death trait (Haunted: you killed it)',r.get('gone') or (r['st']!='down' and r['pt']=='Haunted' and r['nem']=='me'),r)
+    r=json.loads(await ev("""(()=>{const I=indById(window._L);const b0=I&&I.back;for(let i=0;i<40;i++){S.T+=10;strategicTick()}return JSON.stringify(I?{st:I.st,pt:I.pt,nem:I.nem,cls:I.cls,role:I.role,sector:I.sector,port:I.port,b0,T:S.T}:{gone:1})})()"""))
+    chk('back at its freeport after 5 minutes with a death trait (you killed it: Vengeful if it fights, else Haunted)',r.get('gone') or (r['st']!='down' and r['pt']==('Vengeful' if r['role']=='fighter' else 'Haunted') and r['nem']=='me'),r)
     chk('ledger after its return',(await ev(LED))=='exact',await ev(LED))
     # death traits by cause
     r=json.loads(await ev("JSON.stringify({f1:ptDeath('fighter','missile'),f2:ptDeath('fighter','pd'),f3:ptDeath('fighter','outnumbered'),m:ptDeath('miner','full'),h:ptDeath('hauler','alone'),b:ptDeath('bomber','escape'),c:ptDeath('capital','bomber'),s:ptDeath('scout','shadow'),u:ptDeath('miner','?'),v:ptDeath('fighter','named',{killer:'ace:3'})})"))
