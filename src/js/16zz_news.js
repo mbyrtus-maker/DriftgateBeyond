@@ -31,6 +31,6 @@ let newsSig='';
 function newsRender(){const el=$('hNews');if(!el)return;const L=(S&&!S.training&&S.news||[]).filter(x=>S.T-x.T<NEWS.life);
   const sig=L.map(x=>x.id).join(',')+'|'+L.map(x=>Math.ceil(Math.min(NEWS.fade,NEWS.life-(S.T-x.T)))).join(',');if(sig===newsSig)return;newsSig=sig;
   el.hidden=!L.length;if(!L.length){el.innerHTML='';return}
-  el.innerHTML=`<div class="cmt">News</div>`+L.slice().reverse().map(x=>{const left=NEWS.life-(S.T-x.T),op=left<NEWS.fade?Math.max(.08,left/NEWS.fade):1,col=sideCol(x.f),fac=x.f==='pirate'?'The Unbound':FAC(x.f).short;
+  el.innerHTML=`<div class="cmt">News</div>`+L.slice().reverse().map(x=>{const left=NEWS.life-(S.T-x.T),op=left<NEWS.fade?Math.max(.08,left/NEWS.fade):1,col=sideCol(x.f),fac=x.f==='pirate'?'The Unbound':FAC(x.f)?FAC(x.f).short:sideName(x.f);
     return`<div class="nwi${x.big?' big':''}" style="border-left-color:${col};opacity:${op.toFixed(2)}"><div class="nwh"><b style="color:${col}">${esc(fac)}</b> · ${esc(x.who)}</div><div class="nwm">${esc(x.msg)}</div></div>`}).join('')}
 {const o=hudUpdate;hudUpdate=function(){const r=o.apply(this,arguments);try{newsRender()}catch(e){}return r}}

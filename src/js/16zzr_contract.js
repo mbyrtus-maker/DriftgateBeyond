@@ -80,4 +80,4 @@ function pjLeave(e,r){const j=pjJob(r);return j&&r.state!=='work'&&r.leg<r.path.
 function pjRunLine(j){const r=pjRunOf(j.run);if(!r)return'';return r.state==='work'?(r.kind==='guard'?`on guard, ${fmtT(Math.max(0,r.until-S.T))} left`:`mining: ${Math.round(r.cut)} of ${j.n} t`):`in ${DEF[r.sector].name}${r.leg<r.path.length-1?`, ${r.path.length-1-r.leg} jump${r.path.length-1-r.leg>1?'s':''} out`:''}`}
 {const o=populate;populate=function(initial){try{if(W&&!NET.cl)for(const r of pjRuns())if(r.respawn&&!r.live&&r.depot===W.sid){r.respawn=false;pjSpawn(r,false)}}catch(e){console.error(e)}return o.apply(this,arguments)}}
 // a contractor's label: whose pilot, and on what job
-{const o=shipLabel;shipLabel=function(e){if(e&&e.pjName){const k=PJB.kinds[e.pjName]||'';return`${e.side==='neutral'?'Compact':FAC(e.side).short} contractor${k?' · '+k:''}`}return o.apply(this,arguments)}}
+{const o=shipLabel;shipLabel=function(e){if(e&&e.pjName){const k=PJB.kinds[e.pjName]||'';return`${e.side==='neutral'?'Compact':FAC(e.side)?FAC(e.side).short:sideName(e.side)} contractor${k?' · '+k:''}`}return o.apply(this,arguments)}}

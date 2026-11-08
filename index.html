@@ -12697,7 +12697,7 @@ let newsSig='';
 function newsRender(){const el=$('hNews');if(!el)return;const L=(S&&!S.training&&S.news||[]).filter(x=>S.T-x.T<NEWS.life);
   const sig=L.map(x=>x.id).join(',')+'|'+L.map(x=>Math.ceil(Math.min(NEWS.fade,NEWS.life-(S.T-x.T)))).join(',');if(sig===newsSig)return;newsSig=sig;
   el.hidden=!L.length;if(!L.length){el.innerHTML='';return}
-  el.innerHTML=`<div class="cmt">News</div>`+L.slice().reverse().map(x=>{const left=NEWS.life-(S.T-x.T),op=left<NEWS.fade?Math.max(.08,left/NEWS.fade):1,col=sideCol(x.f),fac=x.f==='pirate'?'The Unbound':FAC(x.f).short;
+  el.innerHTML=`<div class="cmt">News</div>`+L.slice().reverse().map(x=>{const left=NEWS.life-(S.T-x.T),op=left<NEWS.fade?Math.max(.08,left/NEWS.fade):1,col=sideCol(x.f),fac=x.f==='pirate'?'The Unbound':FAC(x.f)?FAC(x.f).short:sideName(x.f);
     return`<div class="nwi${x.big?' big':''}" style="border-left-color:${col};opacity:${op.toFixed(2)}"><div class="nwh"><b style="color:${col}">${esc(fac)}</b> · ${esc(x.who)}</div><div class="nwm">${esc(x.msg)}</div></div>`}).join('')}
 {const o=hudUpdate;hudUpdate=function(){const r=o.apply(this,arguments);try{newsRender()}catch(e){}return r}}
 
@@ -13936,7 +13936,7 @@ function pjLeave(e,r){const j=pjJob(r);return j&&r.state!=='work'&&r.leg<r.path.
 function pjRunLine(j){const r=pjRunOf(j.run);if(!r)return'';return r.state==='work'?(r.kind==='guard'?`on guard, ${fmtT(Math.max(0,r.until-S.T))} left`:`mining: ${Math.round(r.cut)} of ${j.n} t`):`in ${DEF[r.sector].name}${r.leg<r.path.length-1?`, ${r.path.length-1-r.leg} jump${r.path.length-1-r.leg>1?'s':''} out`:''}`}
 {const o=populate;populate=function(initial){try{if(W&&!NET.cl)for(const r of pjRuns())if(r.respawn&&!r.live&&r.depot===W.sid){r.respawn=false;pjSpawn(r,false)}}catch(e){console.error(e)}return o.apply(this,arguments)}}
 // a contractor's label: whose pilot, and on what job
-{const o=shipLabel;shipLabel=function(e){if(e&&e.pjName){const k=PJB.kinds[e.pjName]||'';return`${e.side==='neutral'?'Compact':FAC(e.side).short} contractor${k?' · '+k:''}`}return o.apply(this,arguments)}}
+{const o=shipLabel;shipLabel=function(e){if(e&&e.pjName){const k=PJB.kinds[e.pjName]||'';return`${e.side==='neutral'?'Compact':FAC(e.side)?FAC(e.side).short:sideName(e.side)} contractor${k?' · '+k:''}`}return o.apply(this,arguments)}}
 
 //@src 16zzs_crewruns.js
 // ============================================================ Beyond: your crews do real work (live space stage 1b, 6 Nov 2026)
