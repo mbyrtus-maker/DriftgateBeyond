@@ -1656,7 +1656,9 @@ function makeStation(sid,owner,kind,pos,fort){const k=STN[kind];return S.station
 function stationSite(sid){const gs=GATES[sid];for(let k=0;k<40;k++){const d=rdir(.5),r=rnd(800,1400),p={x:Math.round(d.x*r),y:Math.round(d.y*r),z:Math.round(d.z*r)};if(gs.some(g=>d3(g,p)<900))continue;if(S.sectors[sid].ast.some(a=>d3(a,p)<astR(a)+200))continue;return p}return{x:900,y:0,z:0}}
 function canBuildIn(sid,side){const d=DEF[sid];if(S.stations[sid]||d.kind==='hive')return false;if(side!=='brood'&&FREEPORTS.some(f=>f.sid===sid))return false;if(d.home&&d.home!==side)return false;const oid=OUT_BY_SECTOR[sid];if(oid&&side!=='brood'){const ow=S.outposts[oid].owner;if(ow&&ow!==side&&hostile(side,ow)&&!(side==='player'&&!!S.player.sworn&&ow===S.player.sworn))return false}return true}
 function yardHome(f){return f==='brood'?'bl':FAC_HOME(f)}   // the Brood grow their Leviathans at the Bloom
-function FAC_HOME(f){return SECTOR_DEFS.find(d=>d.home===f&&d.kind==='core').id}
+// (8 Nov 2026) null for a side with no core (the Compact): an Unbound raid on a Compact freighter (a pilot's shipment home,
+// a freeport maker's systems) crashed the raids tick
+function FAC_HOME(f){const d=SECTOR_DEFS.find(d=>d.home===f&&d.kind==='core');return d?d.id:null}
 // fac: the design faction (and allegiance, for training and the Unbound); port: a freeport sector for an independent contractor
 function newGame(fac,cls,pname,port){
   WORLDS={};LW=null;W=null;   // worlds left open from a previous galaxy would hand their ships' cargo to the new one when closed
@@ -11840,24 +11842,34 @@ function ldSlotHtml(c,P,g,i){const F=fitOf(P),kind=(g==='w'?F.w:F.u)[i],gr=((g==
   for(const k of kinds)for(const it of partItems(k)){if(it===cur)continue;const have=countIn(it,srcs);if(!have)continue;
     rows+=`<div class="ldopt">${gIcon(it,15)}<span style="flex:1;min-width:0"><span>${esc(ITEMS[it].name)}</span><br><span class="mass" style="margin:0">${esc(ITEMS[it].trTxt||'standard')} · ${have} on hand</span></span><button class="btn sm" data-act="fit" data-arg="${g}:${i}:${it}">Fit</button></div>`}
   if(rows)h+=`<div class="lab" style="margin-top:12px">Fit instead · from your hold and hangar</div>${rows}`;else h+=`<div class="note" style="margin-top:12px">No other parts for this slot in your hold or hangar.${c.market?' Buy parts on the Market, then fit them here.':''}</div>`;return h}
-function ldLeft(c,P){const F=fitOf(P),W0=640,H0=380,cx=W0/2,cy=H0/2-10,st=W.player&&W.player.st;
-  const nW=F.w.length,nU=F.u.length,slots=[];
-  F.w.forEach((k,i)=>{const side=i%2?1:-1,row=Math.floor(i/2),ny=Math.ceil(nW/2);slots.push({g:'w',i,x:side<0?8:W0-150,y:30+row*(H0-150)/Math.max(1,ny-1||1),ax:cx+side*(40+row*18),ay:cy-60+row*40})});
-  F.u.forEach((k,i)=>{slots.push({g:'u',i,x:W0/2-75*nU+i*150+8,y:H0-58,ax:cx+(i-(nU-1)/2)*24,ay:cy+90})});
-  let svg=`<svg width="${W0}" height="${H0}" viewBox="0 0 ${W0} ${H0}" aria-hidden="true" style="position:absolute;inset:0"><path d="${ldShape(P.cls)}" transform="translate(${cx} ${cy}) scale(.95)" fill="#0f1729" stroke="${sideCol(P.faction)||'#4fd8d0'}" stroke-width="1.6"/>`;
-  let btns='';for(const s of slots){const on=ldSel===`${s.g}:${s.i}`,kind=(s.g==='w'?F.w:F.u)[s.i],gr=((s.g==='w'?F.g:F.ug)[s.i])||1,id=kind?(((s.g==='w'?F.wi:F.ui)||[])[s.i]||PART[kind]):null;
-    svg+=`<line x1="${s.ax}" y1="${s.ay}" x2="${s.x+71}" y2="${s.y>H0/2?s.y:s.y+44}" stroke="${on?'#f0b24a':'#2b3a52'}"/><circle cx="${s.ax}" cy="${s.ay}" r="3.5" fill="${on?'#f0b24a':'#2b3a52'}"/>`;
-    btns+=`<button class="ldslot${on?' on':''}" type="button" data-act="ldsel" data-arg="${s.g}:${s.i}" style="left:${s.x}px;top:${s.y}px"><span class="lab" style="font-size:10px">${s.g==='w'?'Weapon':'Utility'} ${s.i+1}</span><span class="ldsn">${id?gIcon(id,13)+esc(ITEMS[id].name):'<span style="color:var(--dim)">empty</span>'}</span><span>${id?ldPips(gr):''}</span></button>`}
+// (user, 8 Nov 2026) the systems have their own places on the ship, like the weapon and utility slots: fire control, the
+// shield emitter, the reactor and armour down the left, the payload bay, cargo hold, blast rig (mining hulls) and drive down
+// the right, each on a leader line to where it sits in the hull; the strip of systems under the ship is gone
+// (user, 8 Nov 2026) armour, the cargo hold and the payload bay sit at the side with no leader line: they're the whole hull
+const LD_SYS_FREE=new Set(['armor','cargo','payload']);
+const LD_SYS_AT={weapon:[0,-112],shield:[-8,-62],power:[0,6],armor:[-14,74],payload:[10,-34],cargo:[14,42],drill:[12,82],engine:[0,104]};
+function ldSysName(P,sl){const m=(P.sysm||{})[sl],t=P.tiers[sl]||1,I=m&&typeof rdGid==='function'?ITEMS[rdGid(`sy_${m}_${sl}`,t)]:null;return I?I.name:'Standard'}
+function ldLeft(c,P){const F=fitOf(P),W0=572,cw=134,rh=54,st=W.player&&W.player.st;
+  const nW=F.w.length,nU=F.u.length,ny=Math.max(1,Math.ceil(nW/2));
+  const L=['weapon','shield','power','armor'],R=['payload','cargo',...(blHull(P.cls)?['drill']:[]),'engine'],y0=8+ny*rh+10,uy=y0+Math.max(L.length,R.length)*rh+6,H0=uy+52,cx=W0/2,cy=Math.round((8+uy)/2)+6,k=.95;
+  const slots=[];
+  F.w.forEach((w,i)=>{const side=i%2?1:-1,row=Math.floor(i/2);slots.push({g:'w',i,x:side<0?4:W0-cw-4,y:8+row*rh,ax:cx+side*(40+row*18),ay:cy-60+row*40,side})});
+  F.u.forEach((u,i)=>{slots.push({g:'u',i,x:W0/2-(cw+8)*nU/2+i*(cw+8)+4,y:uy,ax:cx+(i-(nU-1)/2)*24,ay:cy+90,side:0})});
+  L.forEach((sl,i)=>slots.push({g:'s',sl,x:4,y:y0+i*rh,ax:cx+LD_SYS_AT[sl][0]*k,ay:cy+LD_SYS_AT[sl][1]*k,side:-1}));
+  R.forEach((sl,i)=>slots.push({g:'s',sl,x:W0-cw-4,y:y0+i*rh,ax:cx+LD_SYS_AT[sl][0]*k,ay:cy+LD_SYS_AT[sl][1]*k,side:1}));
+  let svg=`<svg width="${W0}" height="${H0}" viewBox="0 0 ${W0} ${H0}" aria-hidden="true" style="position:absolute;inset:0"><path d="${ldShape(P.cls)}" transform="translate(${cx} ${cy}) scale(${k})" fill="#0f1729" stroke="${sideCol(P.faction)||'#4fd8d0'}" stroke-width="1.6"/>`;
+  let btns='';for(const s of slots){const sys=s.g==='s',key=sys?'sys:'+s.sl:`${s.g}:${s.i}`,on=ldSel===key,ex=s.side<0?s.x+cw:s.side>0?s.x:s.x+cw/2,ey=s.side?s.y+24:s.y;
+    if(!(sys&&LD_SYS_FREE.has(s.sl)))svg+=`<line x1="${s.ax}" y1="${s.ay}" x2="${ex}" y2="${ey}" stroke="${on?'#f0b24a':sys?'#26344a':'#2b3a52'}"${sys?' stroke-dasharray="3 3"':''}/><circle cx="${s.ax}" cy="${s.ay}" r="${sys?3:3.5}" fill="${on?'#f0b24a':sys?'#26344a':'#2b3a52'}"/>`;
+    const pos=`left:${s.x}px;top:${s.y}px;width:${cw}px${s.side>0?';text-align:right;align-items:flex-end':''}`;
+    if(sys){const t=P.tiers[s.sl]||1,lab=typeof RD_SYSN!=='undefined'&&RD_SYSN[s.sl]?RD_SYSN[s.sl][0].toUpperCase()+RD_SYSN[s.sl].slice(1):SLOT[s.sl].name,m=(P.sysm||{})[s.sl];
+      btns+=`<button class="ldslot ldsysp${on?' on':''}" type="button" data-act="ldsel" data-arg="${key}" style="${pos}" title="${esc(lab)}: ${esc(ldSysName(P,s.sl))}"><span class="lab" style="font-size:10px">${esc(lab)}</span><span class="ldsn">${m&&typeof mkLogoSvg==='function'?mkLogoSvg(m,12,true)+' ':''}${esc(ldSysName(P,s.sl))}</span><span>${ldPips(t)}${(P.tune||{})[s.sl]?' '+'✦'.repeat(P.tune[s.sl]):''}</span></button>`;continue}
+    const kind=(s.g==='w'?F.w:F.u)[s.i],gr=((s.g==='w'?F.g:F.ug)[s.i])||1,id=kind?(((s.g==='w'?F.wi:F.ui)||[])[s.i]||PART[kind]):null;
+    btns+=`<button class="ldslot${on?' on':''}" type="button" data-act="ldsel" data-arg="${key}" style="${pos}"><span class="lab" style="font-size:10px">${s.g==='w'?'Weapon':'Utility'} ${s.i+1}</span><span class="ldsn">${id?gIcon(id,13)+esc(ITEMS[id].name):'<span style="color:var(--dim)">empty</span>'}</span><span>${id?ldPips(gr):''}</span></button>`}
   svg+=`</svg>`;
-  // (user, 3 Nov 2026) a small + on each system opens its grades: amber when you have what the next grade takes
-  const srcs0=[P.cargo,c.storage||P.vault];
-  let sys='';for(const sl of SLOTS){if(sl.id==='drill'&&!blHull(P.cls))continue;const t=P.tiers[sl.id]||1,on=ldSel==='sys:'+sl.id,top=t>=MK_TOP,rc=top?null:upgRecipe(sl.id,t+1),ok=rc&&haveIn(rc,srcs0)&&(typeof gradeCap!=='function'||t+1<=gradeCap(P));
-    sys+=`<span class="ldsysw"><button class="ldsys${on?' on':''}" type="button" data-act="ldsel" data-arg="sys:${sl.id}"><span class="lab" style="font-size:10px">${esc(sl.name)}</span><span>${ldPips(t)}${(P.tune||{})[sl.id]?' '+'✦'.repeat(P.tune[sl.id]):''}</span></button>${top?'':`<button class="ldplus${ok?' ok':''}" type="button" data-act="ldsel" data-arg="sys:${sl.id}" title="${esc(sl.name)}: grade ${t+1}${ok?' (you have what it takes)':''}" aria-label="Upgrade ${esc(sl.name)}">+</button>`}</span>`}
   const q=rearmQuote(P),t=isTorpHull(P.cls),rows=[ammoCap(P)?`Rounds ${fmt(P.ammo||0)} / ${fmt(ammoCap(P))}`:'',pRack(P)?`${t?'Torpedoes':'Missiles'} ${P.rack||0} / ${pRack(P)}`:'',blCap(P)?`Charges ${P.blN||0} / ${blCap(P)}`:'',typeof drnCap==='function'&&drnCap(P)?`Drones ${(P.bay&&P.bay.drone)||0} / ${drnCap(P)}`:''].filter(Boolean);
   return`<div class="ldhead"><b>${esc((FAC(P.faction)||{hulls:{}}).hulls[P.cls]||CLASSES[P.cls].name)}</b> <span class="note" style="margin:0">${esc(CLASSES[P.cls].name)} · ${F.w.length} weapon, ${F.u.length} utility${st?` · ${Math.round(st.maxSpd)} m/s · ${Math.round(st.sCap)} shield · ${Math.round(st.hull)} hull · ${st.cargo} t`:''}</span></div>
     <div class="ldmap"><div style="position:relative;width:${W0}px;height:${H0}px">${svg}${btns}</div></div>
-    <div class="ldsysrow">${sys}</div>
-    <div class="act" style="margin-top:8px;align-items:center"><button class="btn" data-act="rearm" ${q.n&&(!c.wallet||P.credits>0)?'':'disabled'}>Rearm${q.n?` · ${fmt(q.tot)} cr`:''}</button><span class="note" style="margin:0 0 0 8px">${rows.join(' · ')||'No payload weapons fitted.'}</span></div>`}
+    <div class="act" style="margin-top:8px;align-items:center;border-top:1px solid var(--line);padding-top:8px"><button class="btn" data-act="rearm" ${q.n&&(!c.wallet||P.credits>0)?'':'disabled'}>Rearm${q.n?` · ${fmt(q.tot)} cr`:''}</button><span class="note" style="margin:0 0 0 8px">${rows.join(' · ')||'No payload weapons fitted.'}</span></div>`}
 {const o=loadoutHtml;loadoutHtml=function(c,P){return S&&!S.unb&&!S.training?'':o.apply(this,arguments)}}
 {const o=dockClick;dockClick=function(act,arg){if(act==='ldsel'){ldSel=arg;renderDock();return}return o.apply(this,arguments)}}
 {const o=renderDock;renderDock=function(){const r=o.apply(this,arguments);try{
@@ -11878,7 +11890,7 @@ function ldTarget(P,it){const k=ITEMS[it]&&ITEMS[it].part;if(!k)return null;cons
   const ok=i=>ws?wpnOK(P.cls,k,i):!(k==='dronec'&&!drnHull(P.cls))&&!(k==='claim'&&!beaconCls(P.cls))&&!(['bdev','lrack'].includes(k)&&!isScoutCls(P.cls))&&!!UTIL[k];
   let i=A.findIndex((x,j)=>!x&&ok(j));if(i<0)i=A.findIndex((x,j)=>x===k&&ok(j));if(i<0)i=A.findIndex((x,j)=>ok(j));return i<0?null:{g:ws?'w':'u',i,was:A[i]}}
 function ldPartsHtml(c,P){const srcs=[P.cargo,c.storage||P.vault],L=ITEM_ORDER.filter(it=>ITEMS[it]&&ITEMS[it].part&&countIn(it,srcs)>0);
-  let h=`<div class="lab">Your parts</div><div class="ldname"><b>Fit from your hold and hangar</b></div><div class="note" style="margin:4px 0 12px">Parts you have that this ship can take. Pick a slot on the ship to see its part, grades and other choices, or a system's + to raise its grade.</div>`;
+  let h=`<div class="lab">Your parts</div><div class="ldname"><b>Fit from your hold and hangar</b></div><div class="note" style="margin:4px 0 12px">Parts you have that this ship can take. Pick a slot on the ship to see its part, grades and other choices, or a system to see what's installed and what can replace it.</div>`;
   let rows='',no=0;for(const it of L){const T=ldTarget(P,it);if(!T){no++;continue}const was=T.was?ITEMS[(((T.g==='w'?fitOf(P).wi:fitOf(P).ui)||[])[T.i])||PART[T.was]]:null;
     rows+=`<div class="ldopt">${gIcon(it,15)}<span style="flex:1;min-width:0"><span>${esc(ITEMS[it].name)}</span><br><span class="mass" style="margin:0">${esc(ITEMS[it].trTxt||'standard')} · ${countIn(it,srcs)} on hand · ${T.g==='w'?'Weapon':'Utility'} ${T.i+1}${was?` (replaces ${esc(was.name)})`:' (empty)'}</span></span><button class="btn sm" data-act="fit" data-arg="${T.g}:${T.i}:${it}">Fit</button></div>`}
   h+=rows||`<div class="empty">No parts for this ship in your hold or hangar.${c.market?' Buy parts on the Market (Trade), then fit them here.':''}</div>`;
@@ -14473,7 +14485,8 @@ function rdGid(id,g){return g>1?`${id}_g${g}`:id}
     for(const m of SYS_LINES[sl]){const id=`sy_${m}_${sl}`;for(let g=1;g<=5;g++){const gid=rdGid(id,g);ITEMS[gid]={name:`${MAKERS[m].short} ${SYSN[sl]}${g>1?' G'+g:''}`,recipe:compInv(sl,g),col:'#9fb3d8',sys:sl,grade:g,base:id,maker:m,tr:{},trTxt:`${MAKERS[m].name}: ${SYSN[sl]}, grade ${g}.`};ITEM_ORDER.push(gid)}
       MK_LINE[m].push(id);CE_DEF.it[id]={name:ITEMS[id].name,tr:{}}}}
   for(const m in MK_LINE)for(const id of MK_LINE[m])for(let g=2;g<=5;g++){const gid=rdGid(id,g);if(ITEMS[gid]&&!CE_DEF.it[gid])CE_DEF.it[gid]={name:ITEMS[gid].name,tr:ITEMS[gid].tr||{}}}})();
-function rdLineG(m,id){const c=ceOf(m);return(c&&c.g&&c.g[id])||1}
+// (8 Nov 2026) a maker's payload bay line starts at grade 2: grade 1 is built into every hull and has no recipe
+function rdLineG(m,id){const c=ceOf(m);return(c&&c.g&&c.g[id])||(ITEMS[id]&&ITEMS[id].sys==='payload'?2:1)}
 function rdOn(){return!!(S&&S.corp&&!S.training)}
 // names and traits follow the line (a tweak or a new company)
 const RD_SYSN={engine:'drive',power:'reactor',shield:'shield emitter',weapon:'fire control',armor:'armour',drill:'blast rig',cargo:'cargo hold',payload:'payload bay'};
@@ -14514,7 +14527,7 @@ function rdSysFit(arg){const[sl,id]=arg.split(':'),I=ITEMS[id],c=dockCtx(),P=S.p
 // ---- the works build each line's current grade
 makersTick=(function(o){return function(){if(!rdOn())return o.apply(this,arguments);if(NET.cl||!S||S.training||S.unb)return;S.mkT=S.mkT||0;if(S.T<S.mkT)return;S.mkT=S.T+MK_WORKS.every;
   if(!S.corpConv){try{corpConvert()}catch(e){}S.corpConv=1}
-  for(const m in MAKERS){const R=mkAtHome(m);if(!R||!ceAlive(m))continue;const st=mkStock(R),gidOf=id=>rdGid(id,rdLineG(m,id)),want=id=>Math.min(CE.cap,CE.shelf+ceSold(m,id,3600));
+  for(const m in MAKERS){const R=mkAtHome(m);if(!R||!ceAlive(m))continue;const st=mkStock(R),gidOf=id=>rdGid(id,rdLineG(m,id)),want=id=>Math.min(CE.cap,CE.shelf+ceSold(m,id,3600)+syfWant(m,id));
     const ids=MK_LINE[m].filter(id=>{const gid=gidOf(id);return ITEMS[gid]&&Object.keys(ITEMS[gid].recipe).length&&(st[gid]||0)<want(id)&&!(S.T>CE.shut&&!ceSold(m,id,CE.shut)&&(st[gid]||0)>0)}).sort((a,b)=>(st[gidOf(a)]||0)/want(a)-(st[gidOf(b)]||0)/want(b));
     for(const id of ids){const gid=gidOf(id),rc=ITEMS[gid].recipe;if(!rdCanMake(st,rc,R))continue;const cost=Math.ceil(ceComp(R.sid,gid));if(ceT(m)-cost<ceReserve(m))continue;
       rdCraftFor(st,rc,R);if(!haveIn(rc,[st]))continue;transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);ceOf(m).cost+=cost;takeFrom(rc,[st]);inv.add(st,gid,1);break}}}})(makersTick);
@@ -14594,7 +14607,7 @@ function rdSysHtml(c,P,sl){const t=P.tiers[sl]||1,m=(P.sysm||{})[sl],cur=ITEMS[r
 // one of the station's own makers' systems (and bigger: 1 to 2 against 1); freeports 3 to 5 lots, the powers' core stations
 // 3 to 4, their other stations 1 to 2. All grade 1, made with the galaxy before its baseline is taken.
 const RD_SEED={free:[3,5],core:[3,4],depot:[1,2]};
-function rdSeedSystems(){const all=Object.keys(MAKERS),sys=m=>(MK_LINE[m]||[]).filter(id=>ITEMS[id]&&ITEMS[id].sys&&Object.keys(ITEMS[id].recipe).length);
+function rdSeedSystems(){const all=Object.keys(MAKERS),sys=m=>(MK_LINE[m]||[]).filter(id=>ITEMS[id]&&ITEMS[id].sys).map(id=>rdGid(id,rdLineG(m,id))).filter(g=>ITEMS[g]&&Object.keys(ITEMS[g].recipe).length);
   for(const sid in S.stations||{}){const R=S.stations[sid];if(!R||sid===WRACK.sid)continue;const L=corpLocal(R);if(!L)continue;let st;try{st=mkStock(R)}catch(e){continue}if(!st)continue;
     const local=L.flatMap(sys),foreign=all.filter(m=>!L.includes(m)).flatMap(sys);if(!local.length&&!foreign.length)continue;
     const type=R.owner==='neutral'?'free':R.kind==='core'?'core':'depot',[a,b]=RD_SEED[type],n=ri(a,b);
@@ -15100,6 +15113,70 @@ function ptTok(e,t,role){if(!e||!t)return e;if(t.pt===undefined)t.pt=e.side==='b
     else if(P.cap==='fleet'){const F=W.ents.filter(x=>x!==e&&x.alive&&x.role==='frigate'&&x.side===e.side&&d3(x,e)<6000);if(F.length){const c={x:0,y:0,z:0};for(const x of F){c.x+=x.x/F.length;c.y+=x.y/F.length;c.z+=x.z/F.length}if(d3(c,e)>1500)go(c.x,c.y,c.z,.6)}}
     else if(P.cap==='screen'){let b=null,bd=TORP_RANGE;for(const x of W.ents)if(x.type==='ship'&&x.alive&&hostE(e.side,x)&&(isBmb(x.cls)||x.role!=='frigate')&&!mHid(x,e)){const d=d3(x,e)*(isBmb(x.cls)?.5:1);if(d<bd){bd=d;b=x}}if(b&&!(e.lanceT&&e.lanceT.role==='frigate'))e.lanceT=b}
   }catch(err){console.error(err)}return r}}
+
+//@src 16zzzf_sysfreight.js
+// ============================================================ Beyond: makers ship their systems (user, 8 Nov 2026)
+// The user found no drives, reactors, shield emitters, armour, cargo holds or payload bays on the markets. A new galaxy seeds
+// about 50 systems over 9 stations; after that only each maker's home works built them, and those stalled within the hour
+// once their market ran out of wire. Payload bays never appeared at all (a grade 1 bay is built into every hull and has no
+// recipe). Agreed: "Makers ship them".
+//   - Out: every 1.5 to 2.5 minutes a maker with no freighter of its systems under way sends one from its home to the market
+//     that lacks most of its systems (the freeports and core stations first, where pilots dock most; nearest first on a tie): up to 4 systems, at the line's current grade, toward one of
+//     each line on every shelf it serves. A power's maker serves its own power's stations and the three freeports; a
+//     freeport's maker the three freeports and each power's core station. The maker pays the carrier 40 cr + 10 a jump.
+//     The freighter flies under the home's colours (a power's, or the Compact's for a freeport maker): a real convoy, raided
+//     and escorted like any other. Whatever it lands goes on the destination's market; a sale there pays the maker as at home.
+//   - In: when the home market lacks what the next systems take (wire, plate, coil, or what a Calibration Matrix, lattice or
+//     core is made of), the maker buys it at the nearest market that has spare (keeping 8 there; never at a power's station
+//     at war with the home's owner), pays that market's price to its owner, and ships it home, up to 12 units a run.
+//   - A maker ships, and buys for its systems, only while it holds 1,500 cr above its reserve: stocking far shelves is
+//     what a maker does with spare money.
+//   - The home works build systems for the shelves they serve as well as their own (up to 4 of a line on the home shelf).
+//   - A maker's payload bay line starts at grade 2 (a bay you can buy is at least grade 2).
+// Host only; the ledger stays exact (goods only move between stores and freighters; credits between wallets).
+const SYF={every:[90,150],load:4,tgt:1,fee:40,hop:10,res:8,inMax:12,cushion:1500};
+function syfLines(m){return(MK_LINE[m]||[]).filter(id=>ITEMS[id]&&ITEMS[id].sys)}
+function syfGid(m,id){const g=rdGid(id,rdLineG(m,id));return ITEMS[g]&&Object.keys(ITEMS[g].recipe).length?g:null}
+function syfHave(st,id){let n=0;for(let g=1;g<=5;g++)n+=st[rdGid(id,g)]||0;return n}
+function syfSide(R){return R.owner==='neutral'?'neutral':R.owner}
+function syfOk(R){return!!R&&R.sid!==WRACK.sid&&(R.owner==='neutral'&&isFreeF(R)||FAC_IDS.includes(R.owner))}
+// the markets a maker's systems are shipped to
+function syfDests(m){const R0=mkAtHome(m);if(!R0)return[];const h=MAKERS[m].home,fac=FAC_IDS.includes(h);
+  return Object.values(S.stations).filter(R=>syfOk(R)&&R!==R0&&HOP[R0.sid]&&HOP[R0.sid][R.sid]!=null&&(R.owner==='neutral'||(fac?R.owner===h:R.kind==='core')))}
+// how many more of a line the shelves a maker serves still lack (cached per tick)
+let SYF_W={t:-1,S:null,w:{}};
+function syfWant(m,id){if(!S||!ITEMS[id]||!ITEMS[id].sys)return 0;if(SYF_W.t!==S.T||SYF_W.S!==S)SYF_W={t:S.T,S,w:{}};const k=m+'|'+id;
+  if(SYF_W.w[k]===undefined){let n=0;try{for(const R of syfDests(m))n+=Math.max(0,SYF.tgt-syfHave(mkStock(R),id))}catch(e){}SYF_W.w[k]=Math.min(SYF.load,n)}return SYF_W.w[k]}
+function syfBusy(m,k){return(S.traders||[]).some(t=>t.syf&&t.syf.m===m&&t.syf.k===k)}
+function syfOut(m){const R0=mkAtHome(m);if(!R0)return false;const st=mkStock(R0);let best=null;
+  for(const R of syfDests(m)){const ds=mkStock(R),want={};let n=0;
+    for(const id of syfLines(m)){const gid=syfGid(m,id);if(!gid)continue;const q=Math.min(SYF.tgt-syfHave(ds,id),st[gid]||0);if(q>0){want[gid]=q;n+=q}}
+    if(!n)continue;const h=HOP[R0.sid][R.sid],sc=n*100-h+(R.kind==='core'||isFreeF(R)?500:0);if(!best||sc>best.sc)best={R,want,sc,h}}
+  if(!best)return false;const fee=SYF.fee+SYF.hop*best.h;if(ceT(m)-fee<ceReserve(m)+SYF.cushion)return false;
+  const load={};let k=0;for(const gid in best.want){const q=Math.min(best.want[gid],SYF.load-k);if(q<=0)break;load[gid]=inv.take(st,gid,q);k+=load[gid]}
+  for(const g in load)if(!load[g])delete load[g];if(!k)return false;
+  const t=haulSend(syfSide(R0),R0.sid,best.R.sid,load,'syf:'+m,`${MAKERS[m].short} systems`,null);if(!t){inv.addAll(st,load);return false}
+  t.syf={m,k:'out'};const paid=transfer(ceW(m),syfSide(R0),fee);ceOf(m).cost+=paid;return true}
+// what the next systems need that the home market hasn't got (a matrix, lattice or core counts as what it's made of)
+function syfNeed(m){const R0=mkAtHome(m),st=mkStock(R0),need={};
+  const add=(rc,x,d)=>{for(const k in rc){const q=rc[k]*x;if(RD_CRAFT.has(k)&&d<3&&ITEMS[k].recipe&&!(ITEMS[k].forge&&!rdForgeAt(R0))){const sh=q-(st[k]||0);if(sh>0)add(ITEMS[k].recipe,sh,d+1)}else need[k]=(need[k]||0)+q}};
+  for(const id of syfLines(m)){const gid=syfGid(m,id);if(!gid)continue;const w=Math.min(CE.cap,CE.shelf+ceSold(m,id,3600)+syfWant(m,id))-(st[gid]||0);if(w<=0)continue;add(ITEMS[gid].recipe,Math.min(2,w),0)}
+  for(const k in need){need[k]=Math.ceil(need[k]-(st[k]||0));if(need[k]<=0)delete need[k]}return need}
+function syfIn(m){const R0=mkAtHome(m);if(!R0)return false;const need=syfNeed(m);if(!Object.keys(need).length)return false;let best=null;
+  for(const R of Object.values(S.stations)){if(!syfOk(R)||R===R0||!HOP[R0.sid]||HOP[R0.sid][R.sid]==null)continue;if(R.owner!=='neutral'&&R0.owner!=='neutral'&&R.owner!==R0.owner&&hostile(R0.owner,R.owner))continue;
+    const ss=mkStock(R);if(ss===mkStock(R0))continue;const buy={};let n=0;for(const k in need){const q=Math.min(need[k],Math.floor((ss[k]||0)-SYF.res),SYF.inMax-n);if(q>0){buy[k]=q;n+=q}}
+    if(!n)continue;const h=HOP[R0.sid][R.sid],sc=n*10-h;if(!best||sc>best.sc)best={R,buy,sc,h}}
+  if(!best)return false;const R=best.R,ss=mkStock(R),wl=syfSide(R);let cost=SYF.fee+SYF.hop*best.h;for(const k in best.buy)cost+=stPrice(R,k)*best.buy[k];cost=Math.ceil(cost);
+  if(ceT(m)-cost<ceReserve(m)+SYF.cushion)return false;const load={};for(const k in best.buy){const q=inv.take(ss,k,best.buy[k]);if(q>0)load[k]=q}if(!Object.keys(load).length)return false;
+  const t=haulSend(syfSide(R0),R.sid,R0.sid,load,'syf:'+m,`${MAKERS[m].short} supplies`,null);if(!t){inv.addAll(ss,load);return false}
+  t.syf={m,k:'in'};let paid=0;for(const k in load)paid+=transfer(ceW(m),wl,Math.ceil(stPrice(R,k)*load[k]));paid+=transfer(ceW(m),syfSide(R0),SYF.fee+SYF.hop*best.h);ceOf(m).cost+=paid;return true}
+function syfTick(){if(NET.cl||!S||S.training||S.unb||!rdOn())return;S.syf=S.syf||{};
+  for(const m in MAKERS){if(!ceAlive(m)||!mkAtHome(m))continue;const A=S.syf[m]=S.syf[m]||{t:S.T+rnd(20,120)};if(S.T<A.t)continue;A.t=S.T+rnd(...SYF.every);
+    try{if(!syfBusy(m,'out'))syfOut(m);if(!syfBusy(m,'in'))syfIn(m)}catch(e){console.error(e)}}}
+{const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{syfTick()}catch(e){console.error(e)}return r}}
+// a maker's freighter lands on the destination's market (its home's, if the destination has fallen to the Brood or a pilot)
+{const o=haulArrive;haulArrive=function(t){if(!t||!t.syf)return o.apply(this,arguments);cvEnd(t,true);const R=S.stations[t.to];let into=syfOk(R)?mkStock(R):null;
+  if(!into){const H=mkAtHome(t.syf.m);into=H?mkStock(H):(S.econ.stock[t.side]||S.econ.stock.pirate)}inv.addAll(into,t.load);t.load={}}}
 
 //@src 17_main.js
 // ============================================================ main loop

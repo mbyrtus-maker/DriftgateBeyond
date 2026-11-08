@@ -32,24 +32,34 @@ function ldSlotHtml(c,P,g,i){const F=fitOf(P),kind=(g==='w'?F.w:F.u)[i],gr=((g==
   for(const k of kinds)for(const it of partItems(k)){if(it===cur)continue;const have=countIn(it,srcs);if(!have)continue;
     rows+=`<div class="ldopt">${gIcon(it,15)}<span style="flex:1;min-width:0"><span>${esc(ITEMS[it].name)}</span><br><span class="mass" style="margin:0">${esc(ITEMS[it].trTxt||'standard')} · ${have} on hand</span></span><button class="btn sm" data-act="fit" data-arg="${g}:${i}:${it}">Fit</button></div>`}
   if(rows)h+=`<div class="lab" style="margin-top:12px">Fit instead · from your hold and hangar</div>${rows}`;else h+=`<div class="note" style="margin-top:12px">No other parts for this slot in your hold or hangar.${c.market?' Buy parts on the Market, then fit them here.':''}</div>`;return h}
-function ldLeft(c,P){const F=fitOf(P),W0=640,H0=380,cx=W0/2,cy=H0/2-10,st=W.player&&W.player.st;
-  const nW=F.w.length,nU=F.u.length,slots=[];
-  F.w.forEach((k,i)=>{const side=i%2?1:-1,row=Math.floor(i/2),ny=Math.ceil(nW/2);slots.push({g:'w',i,x:side<0?8:W0-150,y:30+row*(H0-150)/Math.max(1,ny-1||1),ax:cx+side*(40+row*18),ay:cy-60+row*40})});
-  F.u.forEach((k,i)=>{slots.push({g:'u',i,x:W0/2-75*nU+i*150+8,y:H0-58,ax:cx+(i-(nU-1)/2)*24,ay:cy+90})});
-  let svg=`<svg width="${W0}" height="${H0}" viewBox="0 0 ${W0} ${H0}" aria-hidden="true" style="position:absolute;inset:0"><path d="${ldShape(P.cls)}" transform="translate(${cx} ${cy}) scale(.95)" fill="#0f1729" stroke="${sideCol(P.faction)||'#4fd8d0'}" stroke-width="1.6"/>`;
-  let btns='';for(const s of slots){const on=ldSel===`${s.g}:${s.i}`,kind=(s.g==='w'?F.w:F.u)[s.i],gr=((s.g==='w'?F.g:F.ug)[s.i])||1,id=kind?(((s.g==='w'?F.wi:F.ui)||[])[s.i]||PART[kind]):null;
-    svg+=`<line x1="${s.ax}" y1="${s.ay}" x2="${s.x+71}" y2="${s.y>H0/2?s.y:s.y+44}" stroke="${on?'#f0b24a':'#2b3a52'}"/><circle cx="${s.ax}" cy="${s.ay}" r="3.5" fill="${on?'#f0b24a':'#2b3a52'}"/>`;
-    btns+=`<button class="ldslot${on?' on':''}" type="button" data-act="ldsel" data-arg="${s.g}:${s.i}" style="left:${s.x}px;top:${s.y}px"><span class="lab" style="font-size:10px">${s.g==='w'?'Weapon':'Utility'} ${s.i+1}</span><span class="ldsn">${id?gIcon(id,13)+esc(ITEMS[id].name):'<span style="color:var(--dim)">empty</span>'}</span><span>${id?ldPips(gr):''}</span></button>`}
+// (user, 8 Nov 2026) the systems have their own places on the ship, like the weapon and utility slots: fire control, the
+// shield emitter, the reactor and armour down the left, the payload bay, cargo hold, blast rig (mining hulls) and drive down
+// the right, each on a leader line to where it sits in the hull; the strip of systems under the ship is gone
+// (user, 8 Nov 2026) armour, the cargo hold and the payload bay sit at the side with no leader line: they're the whole hull
+const LD_SYS_FREE=new Set(['armor','cargo','payload']);
+const LD_SYS_AT={weapon:[0,-112],shield:[-8,-62],power:[0,6],armor:[-14,74],payload:[10,-34],cargo:[14,42],drill:[12,82],engine:[0,104]};
+function ldSysName(P,sl){const m=(P.sysm||{})[sl],t=P.tiers[sl]||1,I=m&&typeof rdGid==='function'?ITEMS[rdGid(`sy_${m}_${sl}`,t)]:null;return I?I.name:'Standard'}
+function ldLeft(c,P){const F=fitOf(P),W0=572,cw=134,rh=54,st=W.player&&W.player.st;
+  const nW=F.w.length,nU=F.u.length,ny=Math.max(1,Math.ceil(nW/2));
+  const L=['weapon','shield','power','armor'],R=['payload','cargo',...(blHull(P.cls)?['drill']:[]),'engine'],y0=8+ny*rh+10,uy=y0+Math.max(L.length,R.length)*rh+6,H0=uy+52,cx=W0/2,cy=Math.round((8+uy)/2)+6,k=.95;
+  const slots=[];
+  F.w.forEach((w,i)=>{const side=i%2?1:-1,row=Math.floor(i/2);slots.push({g:'w',i,x:side<0?4:W0-cw-4,y:8+row*rh,ax:cx+side*(40+row*18),ay:cy-60+row*40,side})});
+  F.u.forEach((u,i)=>{slots.push({g:'u',i,x:W0/2-(cw+8)*nU/2+i*(cw+8)+4,y:uy,ax:cx+(i-(nU-1)/2)*24,ay:cy+90,side:0})});
+  L.forEach((sl,i)=>slots.push({g:'s',sl,x:4,y:y0+i*rh,ax:cx+LD_SYS_AT[sl][0]*k,ay:cy+LD_SYS_AT[sl][1]*k,side:-1}));
+  R.forEach((sl,i)=>slots.push({g:'s',sl,x:W0-cw-4,y:y0+i*rh,ax:cx+LD_SYS_AT[sl][0]*k,ay:cy+LD_SYS_AT[sl][1]*k,side:1}));
+  let svg=`<svg width="${W0}" height="${H0}" viewBox="0 0 ${W0} ${H0}" aria-hidden="true" style="position:absolute;inset:0"><path d="${ldShape(P.cls)}" transform="translate(${cx} ${cy}) scale(${k})" fill="#0f1729" stroke="${sideCol(P.faction)||'#4fd8d0'}" stroke-width="1.6"/>`;
+  let btns='';for(const s of slots){const sys=s.g==='s',key=sys?'sys:'+s.sl:`${s.g}:${s.i}`,on=ldSel===key,ex=s.side<0?s.x+cw:s.side>0?s.x:s.x+cw/2,ey=s.side?s.y+24:s.y;
+    if(!(sys&&LD_SYS_FREE.has(s.sl)))svg+=`<line x1="${s.ax}" y1="${s.ay}" x2="${ex}" y2="${ey}" stroke="${on?'#f0b24a':sys?'#26344a':'#2b3a52'}"${sys?' stroke-dasharray="3 3"':''}/><circle cx="${s.ax}" cy="${s.ay}" r="${sys?3:3.5}" fill="${on?'#f0b24a':sys?'#26344a':'#2b3a52'}"/>`;
+    const pos=`left:${s.x}px;top:${s.y}px;width:${cw}px${s.side>0?';text-align:right;align-items:flex-end':''}`;
+    if(sys){const t=P.tiers[s.sl]||1,lab=typeof RD_SYSN!=='undefined'&&RD_SYSN[s.sl]?RD_SYSN[s.sl][0].toUpperCase()+RD_SYSN[s.sl].slice(1):SLOT[s.sl].name,m=(P.sysm||{})[s.sl];
+      btns+=`<button class="ldslot ldsysp${on?' on':''}" type="button" data-act="ldsel" data-arg="${key}" style="${pos}" title="${esc(lab)}: ${esc(ldSysName(P,s.sl))}"><span class="lab" style="font-size:10px">${esc(lab)}</span><span class="ldsn">${m&&typeof mkLogoSvg==='function'?mkLogoSvg(m,12,true)+' ':''}${esc(ldSysName(P,s.sl))}</span><span>${ldPips(t)}${(P.tune||{})[s.sl]?' '+'✦'.repeat(P.tune[s.sl]):''}</span></button>`;continue}
+    const kind=(s.g==='w'?F.w:F.u)[s.i],gr=((s.g==='w'?F.g:F.ug)[s.i])||1,id=kind?(((s.g==='w'?F.wi:F.ui)||[])[s.i]||PART[kind]):null;
+    btns+=`<button class="ldslot${on?' on':''}" type="button" data-act="ldsel" data-arg="${key}" style="${pos}"><span class="lab" style="font-size:10px">${s.g==='w'?'Weapon':'Utility'} ${s.i+1}</span><span class="ldsn">${id?gIcon(id,13)+esc(ITEMS[id].name):'<span style="color:var(--dim)">empty</span>'}</span><span>${id?ldPips(gr):''}</span></button>`}
   svg+=`</svg>`;
-  // (user, 3 Nov 2026) a small + on each system opens its grades: amber when you have what the next grade takes
-  const srcs0=[P.cargo,c.storage||P.vault];
-  let sys='';for(const sl of SLOTS){if(sl.id==='drill'&&!blHull(P.cls))continue;const t=P.tiers[sl.id]||1,on=ldSel==='sys:'+sl.id,top=t>=MK_TOP,rc=top?null:upgRecipe(sl.id,t+1),ok=rc&&haveIn(rc,srcs0)&&(typeof gradeCap!=='function'||t+1<=gradeCap(P));
-    sys+=`<span class="ldsysw"><button class="ldsys${on?' on':''}" type="button" data-act="ldsel" data-arg="sys:${sl.id}"><span class="lab" style="font-size:10px">${esc(sl.name)}</span><span>${ldPips(t)}${(P.tune||{})[sl.id]?' '+'✦'.repeat(P.tune[sl.id]):''}</span></button>${top?'':`<button class="ldplus${ok?' ok':''}" type="button" data-act="ldsel" data-arg="sys:${sl.id}" title="${esc(sl.name)}: grade ${t+1}${ok?' (you have what it takes)':''}" aria-label="Upgrade ${esc(sl.name)}">+</button>`}</span>`}
   const q=rearmQuote(P),t=isTorpHull(P.cls),rows=[ammoCap(P)?`Rounds ${fmt(P.ammo||0)} / ${fmt(ammoCap(P))}`:'',pRack(P)?`${t?'Torpedoes':'Missiles'} ${P.rack||0} / ${pRack(P)}`:'',blCap(P)?`Charges ${P.blN||0} / ${blCap(P)}`:'',typeof drnCap==='function'&&drnCap(P)?`Drones ${(P.bay&&P.bay.drone)||0} / ${drnCap(P)}`:''].filter(Boolean);
   return`<div class="ldhead"><b>${esc((FAC(P.faction)||{hulls:{}}).hulls[P.cls]||CLASSES[P.cls].name)}</b> <span class="note" style="margin:0">${esc(CLASSES[P.cls].name)} · ${F.w.length} weapon, ${F.u.length} utility${st?` · ${Math.round(st.maxSpd)} m/s · ${Math.round(st.sCap)} shield · ${Math.round(st.hull)} hull · ${st.cargo} t`:''}</span></div>
     <div class="ldmap"><div style="position:relative;width:${W0}px;height:${H0}px">${svg}${btns}</div></div>
-    <div class="ldsysrow">${sys}</div>
-    <div class="act" style="margin-top:8px;align-items:center"><button class="btn" data-act="rearm" ${q.n&&(!c.wallet||P.credits>0)?'':'disabled'}>Rearm${q.n?` · ${fmt(q.tot)} cr`:''}</button><span class="note" style="margin:0 0 0 8px">${rows.join(' · ')||'No payload weapons fitted.'}</span></div>`}
+    <div class="act" style="margin-top:8px;align-items:center;border-top:1px solid var(--line);padding-top:8px"><button class="btn" data-act="rearm" ${q.n&&(!c.wallet||P.credits>0)?'':'disabled'}>Rearm${q.n?` · ${fmt(q.tot)} cr`:''}</button><span class="note" style="margin:0 0 0 8px">${rows.join(' · ')||'No payload weapons fitted.'}</span></div>`}
 {const o=loadoutHtml;loadoutHtml=function(c,P){return S&&!S.unb&&!S.training?'':o.apply(this,arguments)}}
 {const o=dockClick;dockClick=function(act,arg){if(act==='ldsel'){ldSel=arg;renderDock();return}return o.apply(this,arguments)}}
 {const o=renderDock;renderDock=function(){const r=o.apply(this,arguments);try{
@@ -70,7 +80,7 @@ function ldTarget(P,it){const k=ITEMS[it]&&ITEMS[it].part;if(!k)return null;cons
   const ok=i=>ws?wpnOK(P.cls,k,i):!(k==='dronec'&&!drnHull(P.cls))&&!(k==='claim'&&!beaconCls(P.cls))&&!(['bdev','lrack'].includes(k)&&!isScoutCls(P.cls))&&!!UTIL[k];
   let i=A.findIndex((x,j)=>!x&&ok(j));if(i<0)i=A.findIndex((x,j)=>x===k&&ok(j));if(i<0)i=A.findIndex((x,j)=>ok(j));return i<0?null:{g:ws?'w':'u',i,was:A[i]}}
 function ldPartsHtml(c,P){const srcs=[P.cargo,c.storage||P.vault],L=ITEM_ORDER.filter(it=>ITEMS[it]&&ITEMS[it].part&&countIn(it,srcs)>0);
-  let h=`<div class="lab">Your parts</div><div class="ldname"><b>Fit from your hold and hangar</b></div><div class="note" style="margin:4px 0 12px">Parts you have that this ship can take. Pick a slot on the ship to see its part, grades and other choices, or a system's + to raise its grade.</div>`;
+  let h=`<div class="lab">Your parts</div><div class="ldname"><b>Fit from your hold and hangar</b></div><div class="note" style="margin:4px 0 12px">Parts you have that this ship can take. Pick a slot on the ship to see its part, grades and other choices, or a system to see what's installed and what can replace it.</div>`;
   let rows='',no=0;for(const it of L){const T=ldTarget(P,it);if(!T){no++;continue}const was=T.was?ITEMS[(((T.g==='w'?fitOf(P).wi:fitOf(P).ui)||[])[T.i])||PART[T.was]]:null;
     rows+=`<div class="ldopt">${gIcon(it,15)}<span style="flex:1;min-width:0"><span>${esc(ITEMS[it].name)}</span><br><span class="mass" style="margin:0">${esc(ITEMS[it].trTxt||'standard')} · ${countIn(it,srcs)} on hand · ${T.g==='w'?'Weapon':'Utility'} ${T.i+1}${was?` (replaces ${esc(was.name)})`:' (empty)'}</span></span><button class="btn sm" data-act="fit" data-arg="${T.g}:${T.i}:${it}">Fit</button></div>`}
   h+=rows||`<div class="empty">No parts for this ship in your hold or hangar.${c.market?' Buy parts on the Market (Trade), then fit them here.':''}</div>`;

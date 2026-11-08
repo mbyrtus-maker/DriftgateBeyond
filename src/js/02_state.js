@@ -394,7 +394,9 @@ function makeStation(sid,owner,kind,pos,fort){const k=STN[kind];return S.station
 function stationSite(sid){const gs=GATES[sid];for(let k=0;k<40;k++){const d=rdir(.5),r=rnd(800,1400),p={x:Math.round(d.x*r),y:Math.round(d.y*r),z:Math.round(d.z*r)};if(gs.some(g=>d3(g,p)<900))continue;if(S.sectors[sid].ast.some(a=>d3(a,p)<astR(a)+200))continue;return p}return{x:900,y:0,z:0}}
 function canBuildIn(sid,side){const d=DEF[sid];if(S.stations[sid]||d.kind==='hive')return false;if(side!=='brood'&&FREEPORTS.some(f=>f.sid===sid))return false;if(d.home&&d.home!==side)return false;const oid=OUT_BY_SECTOR[sid];if(oid&&side!=='brood'){const ow=S.outposts[oid].owner;if(ow&&ow!==side&&hostile(side,ow)&&!(side==='player'&&!!S.player.sworn&&ow===S.player.sworn))return false}return true}
 function yardHome(f){return f==='brood'?'bl':FAC_HOME(f)}   // the Brood grow their Leviathans at the Bloom
-function FAC_HOME(f){return SECTOR_DEFS.find(d=>d.home===f&&d.kind==='core').id}
+// (8 Nov 2026) null for a side with no core (the Compact): an Unbound raid on a Compact freighter (a pilot's shipment home,
+// a freeport maker's systems) crashed the raids tick
+function FAC_HOME(f){const d=SECTOR_DEFS.find(d=>d.home===f&&d.kind==='core');return d?d.id:null}
 // fac: the design faction (and allegiance, for training and the Unbound); port: a freeport sector for an independent contractor
 function newGame(fac,cls,pname,port){
   WORLDS={};LW=null;W=null;   // worlds left open from a previous galaxy would hand their ships' cargo to the new one when closed

@@ -32,7 +32,8 @@ function rdGid(id,g){return g>1?`${id}_g${g}`:id}
     for(const m of SYS_LINES[sl]){const id=`sy_${m}_${sl}`;for(let g=1;g<=5;g++){const gid=rdGid(id,g);ITEMS[gid]={name:`${MAKERS[m].short} ${SYSN[sl]}${g>1?' G'+g:''}`,recipe:compInv(sl,g),col:'#9fb3d8',sys:sl,grade:g,base:id,maker:m,tr:{},trTxt:`${MAKERS[m].name}: ${SYSN[sl]}, grade ${g}.`};ITEM_ORDER.push(gid)}
       MK_LINE[m].push(id);CE_DEF.it[id]={name:ITEMS[id].name,tr:{}}}}
   for(const m in MK_LINE)for(const id of MK_LINE[m])for(let g=2;g<=5;g++){const gid=rdGid(id,g);if(ITEMS[gid]&&!CE_DEF.it[gid])CE_DEF.it[gid]={name:ITEMS[gid].name,tr:ITEMS[gid].tr||{}}}})();
-function rdLineG(m,id){const c=ceOf(m);return(c&&c.g&&c.g[id])||1}
+// (8 Nov 2026) a maker's payload bay line starts at grade 2: grade 1 is built into every hull and has no recipe
+function rdLineG(m,id){const c=ceOf(m);return(c&&c.g&&c.g[id])||(ITEMS[id]&&ITEMS[id].sys==='payload'?2:1)}
 function rdOn(){return!!(S&&S.corp&&!S.training)}
 // names and traits follow the line (a tweak or a new company)
 const RD_SYSN={engine:'drive',power:'reactor',shield:'shield emitter',weapon:'fire control',armor:'armour',drill:'blast rig',cargo:'cargo hold',payload:'payload bay'};
@@ -73,7 +74,7 @@ function rdSysFit(arg){const[sl,id]=arg.split(':'),I=ITEMS[id],c=dockCtx(),P=S.p
 // ---- the works build each line's current grade
 makersTick=(function(o){return function(){if(!rdOn())return o.apply(this,arguments);if(NET.cl||!S||S.training||S.unb)return;S.mkT=S.mkT||0;if(S.T<S.mkT)return;S.mkT=S.T+MK_WORKS.every;
   if(!S.corpConv){try{corpConvert()}catch(e){}S.corpConv=1}
-  for(const m in MAKERS){const R=mkAtHome(m);if(!R||!ceAlive(m))continue;const st=mkStock(R),gidOf=id=>rdGid(id,rdLineG(m,id)),want=id=>Math.min(CE.cap,CE.shelf+ceSold(m,id,3600));
+  for(const m in MAKERS){const R=mkAtHome(m);if(!R||!ceAlive(m))continue;const st=mkStock(R),gidOf=id=>rdGid(id,rdLineG(m,id)),want=id=>Math.min(CE.cap,CE.shelf+ceSold(m,id,3600)+syfWant(m,id));
     const ids=MK_LINE[m].filter(id=>{const gid=gidOf(id);return ITEMS[gid]&&Object.keys(ITEMS[gid].recipe).length&&(st[gid]||0)<want(id)&&!(S.T>CE.shut&&!ceSold(m,id,CE.shut)&&(st[gid]||0)>0)}).sort((a,b)=>(st[gidOf(a)]||0)/want(a)-(st[gidOf(b)]||0)/want(b));
     for(const id of ids){const gid=gidOf(id),rc=ITEMS[gid].recipe;if(!rdCanMake(st,rc,R))continue;const cost=Math.ceil(ceComp(R.sid,gid));if(ceT(m)-cost<ceReserve(m))continue;
       rdCraftFor(st,rc,R);if(!haveIn(rc,[st]))continue;transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);ceOf(m).cost+=cost;takeFrom(rc,[st]);inv.add(st,gid,1);break}}}})(makersTick);
@@ -153,7 +154,7 @@ function rdSysHtml(c,P,sl){const t=P.tiers[sl]||1,m=(P.sysm||{})[sl],cur=ITEMS[r
 // one of the station's own makers' systems (and bigger: 1 to 2 against 1); freeports 3 to 5 lots, the powers' core stations
 // 3 to 4, their other stations 1 to 2. All grade 1, made with the galaxy before its baseline is taken.
 const RD_SEED={free:[3,5],core:[3,4],depot:[1,2]};
-function rdSeedSystems(){const all=Object.keys(MAKERS),sys=m=>(MK_LINE[m]||[]).filter(id=>ITEMS[id]&&ITEMS[id].sys&&Object.keys(ITEMS[id].recipe).length);
+function rdSeedSystems(){const all=Object.keys(MAKERS),sys=m=>(MK_LINE[m]||[]).filter(id=>ITEMS[id]&&ITEMS[id].sys).map(id=>rdGid(id,rdLineG(m,id))).filter(g=>ITEMS[g]&&Object.keys(ITEMS[g].recipe).length);
   for(const sid in S.stations||{}){const R=S.stations[sid];if(!R||sid===WRACK.sid)continue;const L=corpLocal(R);if(!L)continue;let st;try{st=mkStock(R)}catch(e){continue}if(!st)continue;
     const local=L.flatMap(sys),foreign=all.filter(m=>!L.includes(m)).flatMap(sys);if(!local.length&&!foreign.length)continue;
     const type=R.owner==='neutral'?'free':R.kind==='core'?'core':'depot',[a,b]=RD_SEED[type],n=ri(a,b);
