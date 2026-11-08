@@ -14486,7 +14486,11 @@ function rdShipsRefresh(){if(NET.cl||!S||!S.player)return;try{const oW=W;W=LW;tr
   if(rdOn()&&act==='sysfit'){dockErr=rdSysFit(String(arg));return}
   if(rdOn()&&act==='make'){const I=ITEMS[String(arg).split(':')[0]];if(I&&(I.maker||I.sys)){dockErr=`Only its maker builds the ${I.name}.`;return}}return o.apply(this,arguments)}}
 // fitting a graded part: it goes in as its line's part at that grade (and comes out again as the graded part)
-{const o=fitDo;fitDo=function(c,P,arg){const[g,i0,k]=String(arg).split(':'),G=k&&ITEMS[k];if(!G||!G.grade||G.grade<2||!G.base||G.sys)return o.apply(this,arguments);
+{const o=fitDo;fitDo=function(c,P,arg){const[g,i0,k]=String(arg).split(':'),G=k&&ITEMS[k];
+  // taking a graded part out: the message names it with its grade (bug sweep, 8 Nov 2026: it named the line's grade 1 part)
+  if(!k&&rdOn()){let F0=null;try{F0=fitOf(P)}catch(e){}const ws=g==='w',was=F0&&(ws?F0.wi:F0.ui)?(ws?F0.wi:F0.ui)[+i0]:null,wg=F0?((ws?F0.g:F0.ug)||[])[+i0]||1:1;
+    const r=o.apply(this,arguments);const gid=was&&rdGid(was,wg);if(typeof r==='string'&&wg>1&&ITEMS[gid]&&ITEMS[was])return r.replace(ITEMS[was].name,ITEMS[gid].name);return r}
+  if(!G||!G.grade||G.grade<2||!G.base||G.sys)return o.apply(this,arguments);
   if(typeof gradeCap==='function'&&!S.unb&&G.grade>gradeCap(P))return`Your Contractor Rating allows grade ${gradeCap(P)} parts: the ${G.name} is grade ${G.grade}.`;
   const st=c.storage||P.vault,srcs=[P.cargo,st];if(countIn(k,srcs)<1)return`No ${G.name} in your hold or hangar.`;
   // unpack it into its line's part and its grade components, fit the part, then set the slot's grade (taking the components)
