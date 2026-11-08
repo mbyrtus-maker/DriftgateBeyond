@@ -504,14 +504,14 @@ function campOffensive(f,m,mn){const isSt=!!m.st,Rr=isSt?S.stations[m.st]:null,o
   for(let i=0;i<n;i++){let cl=i<nb?bmbPick(f,i,'patrol',tier,srcs):pickFighter('patrol'),ld=loadout('patrol',tier,cl);if(!haveIn(ld,srcs)){cl='striker';ld=loadout('patrol',tier,cl)}if(takeFrom(ld,srcs)){inv.addAll(force,ld);cls.push(cl);got++}else break}
   if(got<(mn||4)){inv.addAll(campOf(f).res,force);return null}
   if(isSt&&m.boost){const t=inv.take(S.econ.stock[f],'torpedo',6);if(t)inv.add(force,'torpedo',t)}
-  const ev={id:S.nextId++,type:'offensive',att:f,target:isSt?null:m.out,st:isSt?m.st:undefined,stName:isSt?Rr.name:o.name,sector:m.sector,eta:S.T+70,force,n:got,tier,cls,stage:'inbound',camp:m.id};if(isSt)siegeLoads(ev,srcs);
+  const ev={id:S.nextId++,type:'offensive',att:f,target:isSt?null:m.out,st:isSt?m.st:undefined,stName:isSt?Rr.name:o.name,sector:m.sector,eta:S.T+70*ddK(f),force,n:got,tier,cls,stage:'inbound',camp:m.id};if(isSt)siegeLoads(ev,srcs);
   S.events.push(ev);announce(ev);return ev}
 function campBuild(f,m,mn){const sid=m.sector;if(!canBuildIn(sid,f))return'gone';if(S.events.some(e=>e.type==='build'&&e.sector===sid))return null;
   const st=S.econ.stock[f],R=campOf(f).res||(campOf(f).res={}),srcs=[R,S.econ.fleet[f],st];if(!haveIn(FWD_COST,[R,st])||!haveIn(CONSTR_LD,srcs))return null;
   const force={};takeFrom(FWD_COST,[R,st]);inv.addAll(force,FWD_COST);takeFrom(CONSTR_LD,srcs);inv.addAll(force,CONSTR_LD);
   const tier=factionTier(f),cls=[];for(let i=0;i<3+Math.min(3,m.boost||0);i++){const cl=pickFighter('patrol'),ld=loadout('patrol',tier,cl);if(takeFrom(ld,srcs)){inv.addAll(force,ld);cls.push(cl)}}
   if(cls.length<CR_ESC_MIN){inv.addAll(R,force);return null}   // never without an escort
-  const ev={id:S.nextId++,type:'build',att:f,sector:sid,eta:S.T+80,stage:'inbound',force,n:cls.length,tier,cls,site:stationSite(sid),prog:0,camp:m.id};S.events.push(ev);announce(ev);return ev}
+  const ev={id:S.nextId++,type:'build',att:f,sector:sid,eta:S.T+80*ddK(f),stage:'inbound',force,n:cls.length,tier,cls,site:stationSite(sid),prog:0,camp:m.id};S.events.push(ev);announce(ev);return ev}
 // the faction holds its other attacks and constructor convoys while its campaign strike forms and flies (CAMP_SAVE would also
 // hold them for the end of the supply drive before it: 0 measured best in the faction war)
 let CAMP_SAVE=0,CAMP_MN=3,CAMP_RES_K=.35;
@@ -645,7 +645,7 @@ function sideTake(o){const k=pkey();if(!o.acc.includes(k)){if(NET.cl){netSend({t
 // system for it), nearest first; never its faction's core
 const ICPT_HOP=40;
 function icptPick(vs,P){let best=null;for(const t of S.traders||[]){if(t.kind!=='haul'||sideNorm(t.side)!==vs)continue;const core=FAC_HOME(t.side),left=t.path.length-1-t.leg,eta0=Math.max(0,t.next-S.T);
-    for(let i=0;i<=left;i++){const c=t.path[t.leg+i];if(c===core)continue;const j=HOP[P.sector][c],tp=j*ICPT_HOP,leave=i===0?eta0:eta0+i*TRADER_HOP;if(tp>leave-10)continue;if(!best||tp<best.tp)best={t,c,j,tp};break}}return best}
+    for(let i=0;i<=left;i++){const c=t.path[t.leg+i];if(c===core)continue;const j=HOP[P.sector][c],tp=j*ICPT_HOP,leave=i===0?eta0:eta0+i*TRADER_HOP*ddK(t.side);if(tp>leave-10)continue;if(!best||tp<best.tp)best={t,c,j,tp};break}}return best}
 // no freighter catchable: the system on their lanes (current routes, the order's target system) that's best to wait in
 function icptLane(o,P){const sc={},core=FAC_HOME(o.vs);for(const t of S.traders||[]){if(t.kind!=='haul'||sideNorm(t.side)!==o.vs)continue;for(const c of t.path.slice(t.leg))if(c!==core)sc[c]=(sc[c]||0)+1}
   if(o.sector&&o.sector!==core)sc[o.sector]=(sc[o.sector]||0)+1.5;let best=null,bs=-1e9;for(const c in sc){const v=sc[c]-.35*HOP[P.sector][c];if(v>bs){bs=v;best=c}}best=best||o.sector||P.sector;return{sid:best,n:Math.floor(sc[best]||0)}}
@@ -655,8 +655,8 @@ function icptTick(){const P=S.player;if(!P||!P.sworn||!S.plans||!S.plans[P.sworn
   for(const o of sideOf(S.plans[P.sworn])){if(o.stage!=='active'||o.kind!=='interdict'||!o.acc.includes(me)||!o.at)continue;const t=(S.traders||[]).find(x=>x.id===o.tgt);
     if(t&&t.sector===P.sector){icptMark(o);continue}
     if(o.onLane){if(P.sector!==o.at&&P.route!==o.at){o.at=null;continue}const I=icptPick(o.vs,P);if(I){o.onLane=0;o.tgt=I.t.id;o.at=I.c;if(I.c!==P.sector){P.route=I.c;if(W&&!P.docked&&apOn){const g=routeNext();if(g)W.tgt={kind:'gate',ref:g}}}
-        const gi=I.t.path[I.t.path.indexOf(I.c,I.t.leg)-1];feed(I.c===P.sector?`⚑ Interdiction: a ${FACTIONS[o.vs].short} freighter is inbound${gi&&gi!==I.c?' through the '+DEF[gi].name+' gate':''}, about ${Math.max(0,Math.round(I.t.next-S.T+(I.t.path.indexOf(I.c,I.t.leg)-I.t.leg-1)*TRADER_HOP))} s out.`:`⚑ Interdiction: a ${FACTIONS[o.vs].short} freighter you can catch: meet it in ${DEF[I.c].name}. Course set.`,'good')}continue}
-    const ok=t&&t.path.indexOf(o.at,t.leg)>=t.leg&&HOP[P.sector][o.at]*ICPT_HOP<=Math.max(0,t.next-S.T)+(t.path.indexOf(o.at,t.leg)-t.leg)*TRADER_HOP+5;if(ok)continue;
+        const gi=I.t.path[I.t.path.indexOf(I.c,I.t.leg)-1];feed(I.c===P.sector?`⚑ Interdiction: a ${FACTIONS[o.vs].short} freighter is inbound${gi&&gi!==I.c?' through the '+DEF[gi].name+' gate':''}, about ${Math.max(0,Math.round(I.t.next-S.T+(I.t.path.indexOf(I.c,I.t.leg)-I.t.leg-1)*TRADER_HOP*ddK(I.t.side)))} s out.`:`⚑ Interdiction: a ${FACTIONS[o.vs].short} freighter you can catch: meet it in ${DEF[I.c].name}. Course set.`,'good')}continue}
+    const ok=t&&t.path.indexOf(o.at,t.leg)>=t.leg&&HOP[P.sector][o.at]*ICPT_HOP<=Math.max(0,t.next-S.T)+(t.path.indexOf(o.at,t.leg)-t.leg)*TRADER_HOP*ddK(t.side)+5;if(ok)continue;
     if(P.route!==o.at&&P.sector!==o.at){o.at=null;continue}   // the pilot has flown off elsewhere: stop steering them
     const I=icptPick(o.vs,P);if(!I){const L=icptLane(o,P);o.onLane=1;o.tgt=null;o.at=L.sid;if(L.sid!==P.sector){P.route=L.sid;if(W&&!P.docked&&apOn){const g=routeNext();if(g)W.tgt={kind:'gate',ref:g}}}feed(`Interdiction: that freighter got away. ${L.sid===P.sector?'Wait here on their supply lane':'Course set to '+DEF[L.sid].name+', on their supply lane'}; you'll be told when one is inbound.`,'warn');continue}
     o.tgt=I.t.id;o.at=I.c;if(I.c!==P.sector){P.route=I.c;if(W&&!P.docked&&apOn){const g=routeNext();if(g)W.tgt={kind:'gate',ref:g}}}feed(`Interdiction: new intercept in ${DEF[I.c].name} (${FACTIONS[o.vs].short} freighter now in ${DEF[I.t.sector].name}).`,'info')}}

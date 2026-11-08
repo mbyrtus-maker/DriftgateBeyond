@@ -251,6 +251,10 @@ function fRelease(t){if(!t.cmd||!fMine(t))return false;delete t.owner;delete t.c
 function yk(){return NET.on?'p:'+curPid():'player'}
 function ykPid(k){return typeof k==='string'&&k.startsWith('p:')?k.slice(2):null}
 function pmul(t,k){return fOwn(t)?fctl(t).power[k]/3:1}
+// a capital's jump drive: spin-up rate (1 = JUMP_TIME seconds) live, and one strategic tick's worth of off-screen travel
+// (a hop takes 2 ticks); 16zzzc_deepdrive.js wraps both for Ostrova's Deep Drive
+function capJumpK(t){return pmul(t,'eng')*(isEsc(t)?ESC_JUMP:1)}
+function capMoveStep(t){t.moveT=(t.moveT||0)+pmul(t,'eng');if(t.moveT<(isEsc(t)?1.2:2))return false;t.moveT=0;return true}
 const CAR_K={ostrova:.92};function carCostF(f){const k=CAR_K[f]||1;if(k===1)return withSeal(CARRIER_COST,f,CAP_SEAL.carrier);const o={};for(const x in CARRIER_COST)o[x]=Math.max(1,Math.round(CARRIER_COST[x]*k));if(sealed(f))o.seal=CAP_SEAL.carrier;return o}
 function capitalTick(){const T=S.T;S.frigates=S.frigates||[];if(!S.capGateSaid&&T>=CAP_GATE-180){S.capGateSaid=1;feed(`Capital slips are cleared: from minute ${CAP_GATE/60} the factions can launch carriers and escorts.`,'news')}
   // AI shipyards: the carrier, then escorts beside it (or while the carrier kit is out of reach)
@@ -269,7 +273,7 @@ const force={};takeFrom(EC,[st]);inv.addAll(force,EC);S.events.push({id:S.nextId
   for(const t of S.frigates){if(!t.live&&t.sector===capBase(t))capRefill(t);
     if(!fOwn(t)&&isEsc(t)&&t.side!=='brood'&&t.sector!==capBase(t)&&(t.aload||0)<1&&capCanRefill(t))t.dest=capBase(t);
     else if(!fOwn(t)&&!(t.call&&t.call.until>S.T)&&(!t.dest||t.dest===t.sector)&&Math.random()<.35)t.dest=frigOrders(t);
-    if(t.live)continue;if(isCar(t)&&t.dest&&t.dest!==t.sector&&HOP[t.sector][t.dest]===1&&capSiegeAt(t.dest,t)){t.moveT=0;if(!fOwn(t)){const Rk=S.stations[t.dest].kind;if(Rk==='core'||Rk==='hive'){t.soT=t.soT||S.T;if(S.T-t.soT>600){t.dest=null;t.soT=0}}else t.soT=0}continue}const nx=frigHop(t);if(!nx){t.moveT=0;t.spin=null;continue}t.moveT=(t.moveT||0)+pmul(t,'eng');if(t.moveT<(isEsc(t)?1.2:2))continue;t.moveT=0;t.spin=null;t.jumpTo=null;t.sector=nx;t.hold=0;
+    if(t.live)continue;if(isCar(t)&&t.dest&&t.dest!==t.sector&&HOP[t.sector][t.dest]===1&&capSiegeAt(t.dest,t)){t.moveT=0;if(!fOwn(t)){const Rk=S.stations[t.dest].kind;if(Rk==='core'||Rk==='hive'){t.soT=t.soT||S.T;if(S.T-t.soT>600){t.dest=null;t.soT=0}}else t.soT=0}continue}const nx=frigHop(t);if(!nx){t.moveT=0;t.spin=null;continue}if(!capMoveStep(t))continue;t.spin=null;t.jumpTo=null;t.sector=nx;t.hold=0;
     if(fOwn(t)&&t.sector===t.dest)feedTo(t.owner,`${t.name} has arrived in ${DEF[t.sector].name}.`,'info');if(WORLDS[nx])inW(WORLDS[nx],()=>spawnFrigate(t,true))}
   // abstract fighting away from the player
   for(const t of S.frigates.slice()){if(t.live||t.hull<=0)continue;const own=t.sector;let hit=0;
@@ -393,7 +397,7 @@ function planOffensive(f){if(FACTIONS[f]&&f!=='brood'&&campBusy(f)){S.ai[f].next
     if(!haveIn(ld,srcs)){cl='striker';ld=loadout(role,tier,cl)}
     if(takeFrom(ld,srcs)){inv.addAll(force,ld);clsList.push(cl);got++}else break}
   if(got<4){inv.addAll(S.econ.stock[f],force);S.ai[f].next=S.T+rnd(25,45);return}
-  const ev={id:S.nextId++,type:'offensive',att:f,target:isSt?null:pk.out,st:isSt?pk.st:undefined,stName:name,sector,eta:S.T+(f===pf?75:60),force,n:got,tier,cls:clsList,stage:'inbound'};if(isSt)siegeLoads(ev,srcs);
+  const ev={id:S.nextId++,type:'offensive',att:f,target:isSt?null:pk.out,st:isSt?pk.st:undefined,stName:name,sector,eta:S.T+(f===pf?75:60)*ddK(f),force,n:got,tier,cls:clsList,stage:'inbound'};if(isSt)siegeLoads(ev,srcs);
   S.events.push(ev);announce(ev);
 }
 function loseInv(src,frac,s){const lost={};for(const k in src){const m=Math.min(src[k],Math.floor(src[k]*frac+Math.random()));if(m>0){inv.take(src,k,m);lost[k]=m}}toDebris(s,lost)}
@@ -484,7 +488,7 @@ function threatTick(){const T=S.T;for(const f of FAC_IDS){const A=S.ai[f];if(!A)
       for(let k=0;k<2&&hm.cls.length<hm.need;k++){const want=nb+k<Math.ceil(hm.need*.6)?bmbPick(f,nb+k,'patrol',tier,srcs):pickFighter('patrol'),ld=loadout('patrol',tier,want);if(takeFrom(ld,srcs)){inv.addAll(hm.force,ld);hm.cls.push(want)}else if(isBmb(want))break}
       const nb2=hm.cls.filter(c=>isBmb(c)).length;
       if(hm.cls.length>=hm.need||(T-hm.start>=150&&hm.cls.length>=4&&nb2>=2)||(T-hm.start>=240&&hm.cls.length>=3&&nb2>=2)){const src=respSource(f,t.sector);
-        const ev={id:S.nextId++,type:'response',kind:'hunt',att:f,tok:t.id,tokName:t.name,sector:t.sector,eta:T+35+22*(src?src.h:2),force:hm.force,n:hm.cls.length,cls:hm.cls,tier,stage:'inbound',tries:0};S.events.push(ev);A.hm=null;
+        const ev={id:S.nextId++,type:'response',kind:'hunt',att:f,tok:t.id,tokName:t.name,sector:t.sector,eta:T+(35+22*(src?src.h:2))*ddK(f),force:hm.force,n:hm.cls.length,cls:hm.cls,tier,stage:'inbound',tries:0};S.events.push(ev);A.hm=null;
         ownerFeed(t,`⚠ ${F} hunter group launched: ${ev.n} ships (${nb2} bombers) inbound to ${DEF[t.sector].name} for ${t.name}, about ${Math.round(ev.eta-T)} s out.`,'bad');
         if(friendSide(f))feed(`${F} hunter group (${ev.n} ships, ${nb2} bombers) launched against the ${t.side==='brood'?'Brood '+broodCap(t):sideAdj(t.side)+' '+capName(t)+' '+t.name} in ${DEF[t.sector].name}.`,'good')}
       continue}
@@ -496,7 +500,7 @@ function dispatchResponse(f,sid,kind,o){o=o||{};if(!FACTIONS[f])return null;cons
   const capHere=frigatesIn(sid).some(t=>hostile(f,t.side)),n=kind==='pilot'?4:capHere?5:4,nb=capHere?2:0,tier=factionTier(f),srcs=[S.econ.fleet[f],S.econ.stock[f]],force={},cls=[];
   for(let i=0;i<n;i++){let cl=i<nb?bmbPick(f,i,'patrol',tier,srcs):pickFighter('patrol'),ld=loadout('patrol',tier,cl);if(!haveIn(ld,srcs)){cl='striker';ld=loadout('patrol',tier,cl)}if(takeFrom(ld,srcs)){inv.addAll(force,ld);cls.push(cl)}else break}
   if(cls.length<2){inv.addAll(S.econ.stock[f],force);return null}
-  const ev={id:S.nextId++,type:'response',kind,att:f,sector:sid,eta:S.T+25+22*src.h,force,n:cls.length,cls,tier,stage:'inbound',pid:o.pid||null,name:o.name||'',from:src.sid};S.events.push(ev);return ev}
+  const ev={id:S.nextId++,type:'response',kind,att:f,sector:sid,eta:S.T+(25+22*src.h)*ddK(f),force,n:cls.length,cls,tier,stage:'inbound',pid:o.pid||null,name:o.name||'',from:src.sid};S.events.push(ev);return ev}
 function respSpawnGate(ev){const G=GATES[ev.sector];const src=ev.from||(respSource(ev.att,ev.sector)||{}).sid;let g=G[0],bh=99;if(src)for(const x of G){const h=HOP[src][x.to];if(h<bh){bh=h;g=x}}return g||pick(G)}
 function pilotEnt(pid){if(!pid||pid===NET.me){const p=W.player;return W===LW&&p&&p.alive&&!S.player.docked&&!W.dead?p:null}const e=MP.rp[pid];return e&&e.alive&&W.ents.includes(e)?e:null}
 function engageResponse(ev){ev.stage='engaged';ev.until=S.T+(ev.kind==='hunt'?300:170);const g=respSpawnGate(ev);let n=0;
@@ -523,7 +527,7 @@ function resolveCapHit(ev,t){const s=S.sectors[ev.sector],nb=ev.cls.filter(c=>is
 function responseTick(ev){const T=S.T;
   if(ev.stage==='inbound'&&T>=ev.eta){
     if(ev.kind==='hunt'){const t=(S.frigates||[]).find(x=>x.id===ev.tok&&x.hull>0);if(!t){finishOffensive(ev);return}
-      if(t.sector!==ev.sector){const h=HOP[t.sector][ev.sector];if(h<=2&&ev.tries<2){ev.tries++;ev.sector=t.sector;ev.eta=T+25*h;ownerFeed(t,`The ${FACTIONS[ev.att].short} hunter group is following ${t.name} to ${DEF[t.sector].name}.`,'warn');return}finishOffensive(ev);return}}
+      if(t.sector!==ev.sector){const h=HOP[t.sector][ev.sector];if(h<=2&&ev.tries<2){ev.tries++;ev.sector=t.sector;ev.eta=T+25*h*ddK(ev.att);ownerFeed(t,`The ${FACTIONS[ev.att].short} hunter group is following ${t.name} to ${DEF[t.sector].name}.`,'warn');return}finishOffensive(ev);return}}
     const lw=liveIn(ev.sector);if(lw){inW(lw,()=>engageResponse(ev));return}
     if(ev.kind==='hunt'){const t=(S.frigates||[]).find(x=>x.id===ev.tok);if(t)resolveCapHit(ev,t)}
     else if(ev.kind==='distress'){const t=frigatesIn(ev.sector).find(x=>!x.live&&hostile(ev.att,x.side));if(t)resolveCapHit(ev,t)}

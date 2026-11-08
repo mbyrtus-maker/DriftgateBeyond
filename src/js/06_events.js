@@ -250,7 +250,7 @@ function planBuild(f){if(FACTIONS[f]&&campBusy(f))return;const terr=territory(f)
   const sid=wpickArr(c),force={};takeFrom(DC,[st]);inv.addAll(force,DC);takeFrom(CL,srcs);inv.addAll(force,CL);
   const tier=factionTier(f),cls=[];for(let i=0;i<3;i++){const cl=pickFighter('patrol'),ld=loadout('patrol',tier,cl);if(takeFrom(ld,srcs)){inv.addAll(force,ld);cls.push(cl)}}
   if(f==='brood'&&cls.length<SEED_GUARDS){inv.addAll(st,force);return}   // a Seeder never flies unguarded: everything goes back to stores until two guards can be kitted
-  const ev={id:S.nextId++,type:'build',att:f,sector:sid,eta:S.T+80,stage:'inbound',force,n:cls.length,tier,cls,site:stationSite(sid),prog:0};S.events.push(ev);
+  const ev={id:S.nextId++,type:'build',att:f,sector:sid,eta:S.T+80*ddK(f),stage:'inbound',force,n:cls.length,tier,cls,site:stationSite(sid),prog:0};S.events.push(ev);
   announce(ev)}
 function buildRisk(sid,f){let r=.08;const oid=OUT_BY_SECTOR[sid];if(oid){const ow=S.outposts[oid].owner;if(ow&&hostile(f,ow))r+=.35}if(f!=='brood'&&broodNear(sid))r+=.15;if(DEF[sid].kind==='deep')r+=.07;return r}
 function buildTick(ev,T){const lw=liveIn(ev.sector),live=!!lw;if(lw&&W!==lw)return inW(lw,()=>buildTick(ev,T));

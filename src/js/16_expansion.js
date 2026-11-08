@@ -408,7 +408,7 @@ function raidSources(side){const L=[];if(side==='pirate'){const H=S.stations.wr;
 // the first system on a convoy's route a raid from sid can reach before the convoy does
 function raidIntercept(src,t){const left=t.path.length-1-t.leg,eta0=Math.max(0,t.next-S.T),core=homeOf(t.side);
   for(let i=t.live?1:0;i<=left;i++){const c=t.path[t.leg+i];if(c===core||DEF[c].kind==='hive')continue;if(!src.deep&&!PIR_OK0.has(c))continue;if(src.cap&&!PIR_OK.has(c))continue;const h=HOP[src.sid][c];if(h>src.reach)continue;
-    const eta=i?eta0+(i-1)*TRADER_HOP:0;if(h*RAID.hop>eta+RAID.slack)continue;if(i===0&&h>0)continue;return{c,i,h}}return null}
+    const eta=i?eta0+(i-1)*TRADER_HOP*ddK(t.side):0;if(h*RAID.hop*ddK(src.side)>eta+RAID.slack)continue;if(i===0&&h>0)continue;return{c,i,h}}return null}
 function raidTaken(t){return(S.raids||[]).some(r=>r.tgt===t.id)}
 function edgeDepot(R){if(!isDepotF(R))return false;const T=territory(R.owner);return NEIGH[R.sid].some(n=>!T.has(n))}
 // choose a target for a side (or for a raid already out, re-tasking from where it is)
@@ -454,7 +454,7 @@ function raidUnload(r){const C=r.cap&&(S.frigates||[]).find(x=>x.id===r.cap&&x.s
   inv.addAll(lootTo,r.loot);r.kit={};r.loot={};S.raids.splice(S.raids.indexOf(r),1)}
 function raidsTick(){if(NET.cl||!S||S.training)return;S.raids=S.raids||[];raidDispatch();
   for(const r of S.raids.slice()){if(!S.raids.includes(r))continue;if(r.live){raidLiveCheck(r);continue}
-    if(r.state==='wait'){if(raidCatch(r))continue;if(!raidStillOn(r)||S.T>r.until){const pk=r.dep?null:raidPick(r.side,[{sid:r.sector,srcs:[],cap:r.cap,reach:r.side==='pirate'&&!r.cap?RAID.reachHaven:RAID.reach,deep:r.side!=='pirate'||!!r.cap}]);
+    if(r.state==='wait'){if(raidCatch(r))continue;if(!raidStillOn(r)||S.T>r.until){const pk=r.dep?null:raidPick(r.side,[{sid:r.sector,side:r.side,srcs:[],cap:r.cap,reach:r.side==='pirate'&&!r.cap?RAID.reachHaven:RAID.reach,deep:r.side!=='pirate'||!!r.cap}]);
         if(pk&&!WORLDS[r.sector]){r.tgt=pk.tgt;r.dep=pk.dep;r.dest=pk.c;r.path=trPath(r.sector,pk.c);r.leg=0;r.state='out';r.next=S.T+RAID.hop;if(r.path.length===1)raidArrive(r)}else raidHome(r)}continue}
     if(r.state==='out'&&!raidStillOn(r)){raidHome(r)}
     if(S.T<r.next)continue;if(r.leg>=r.path.length-1){raidArrive(r);continue}
@@ -524,7 +524,7 @@ const UJOB={offers:2,life:240,icpt:{cr:300,val:.08,inf:30,T:420},mine:{cr:350,in
 function ujobs(){return S.ujobs||(S.ujobs=[])}
 // haven jobs stay out of faction space: no home systems and no system with a faction depot or station (their guns)
 function ujobOk(sid){const R=S.stations[sid];return!DEF[sid].home&&DEF[sid].kind!=='hive'&&!(R&&FAC_IDS.includes(R.owner))}
-function icptFor(t,P,ok){const left=t.path.length-1-t.leg,eta0=Math.max(0,t.next-S.T);for(let i=0;i<=left;i++){const c=t.path[t.leg+i];if(ok&&!ok(c))continue;const j=HOP[P.sector][c],tp=j*ICPT_HOP,leave=i===0?eta0:eta0+i*TRADER_HOP;if(tp<=leave-10)return{c,j}}return null}
+function icptFor(t,P,ok){const left=t.path.length-1-t.leg,eta0=Math.max(0,t.next-S.T);for(let i=0;i<=left;i++){const c=t.path[t.leg+i];if(ok&&!ok(c))continue;const j=HOP[P.sector][c],tp=j*ICPT_HOP,leave=i===0?eta0:eta0+i*TRADER_HOP*ddK(t.side);if(tp<=leave-10)return{c,j}}return null}
 // faction miners out in open space: the systems where a faction holds the outpost (forge) but no depot
 function ujobMinePick(P){const L=[];for(const f of FAC_IDS){if(f==='brood')continue;for(const id in S.outposts){const o=S.outposts[id],sid=o.sector;if(o.owner!==f||DEF[sid].kind!=='contested'||!ujobOk(sid)||!S.sectors[sid].ast.length)continue;const h=HOP[P.sector][sid];if(h>UJOB.mine.hops||ujobs().some(j=>j.sid===sid&&j.kind==='mine'))continue;L.push({f,sid,h})}}return L.length?pick(L):null}
 // every pilot has their own board: each job carries its pilot's key (k), offers are drawn from where that pilot is,
@@ -548,7 +548,7 @@ function ujobTickFor(){const P=S.player,k=pkey(),J=ujobs();
   for(const j of J.slice()){if(j.k!==k)continue;if(!j.on){if(S.T>j.until||(j.kind==='icpt'&&!(S.traders||[]).some(t=>t.id===j.tgt)))J.splice(J.indexOf(j),1);continue}
     if(j.kind==='icpt'){const t=(S.traders||[]).find(x=>x.id===j.tgt);if(!t){ujobEnd(j,false,'the convoy docked or was lost to someone else');continue}if(S.T>j.until){ujobEnd(j,false,'time ran out');continue}
       if(t.sector===P.sector)continue;
-      const i=t.path.indexOf(j.at,t.leg),late=i<t.leg||HOP[P.sector][j.at]*ICPT_HOP>Math.max(0,t.next-S.T)+(i-t.leg)*TRADER_HOP+5;if(!late)continue;const I=icptFor(t,P,ujobOk);if(!I){ujobEnd(j,false,'it got past you');continue}
+      const i=t.path.indexOf(j.at,t.leg),late=i<t.leg||HOP[P.sector][j.at]*ICPT_HOP>Math.max(0,t.next-S.T)+(i-t.leg)*TRADER_HOP*ddK(t.side)+5;if(!late)continue;const I=icptFor(t,P,ujobOk);if(!I){ujobEnd(j,false,'it got past you');continue}
       if(I.c!==j.at){j.at=I.c;feed(`Job: the convoy moved on. New intercept in ${DEF[I.c].name}.`,'info')}}
     else if(S.T>j.until)ujobEnd(j,false,'time ran out')}}
 {const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{ujobTick()}catch(e){frameErr('unbound jobs',e)}return r}}
@@ -1162,7 +1162,7 @@ function carWingsFor(R){return stationLevel(R)>=2?CAR_WING:SORTIE.wing}
 function carStrikeOff(t,sid){if(t.live)return;const Rs=S.stations[sid];if(!Rs||!capSiegeAt(sid,t))return;
   if(sortiesOf(t).length||S.T<(t.sorT||0))return;const n=Math.min((t.wing||[]).length,carWingsFor(Rs));if(n<AICAR.minCraft)return;
   const craft=t.wing.splice(0,n),force={};for(const c of craft){const ld=carKit(c);for(const k in ld){const m=Math.min(ld[k],t.load[k]||0);if(m>0)inv.addAll(force,{[k]:inv.take(t.load,k,m)})}}
-  const ev={id:S.nextId++,type:'sortie',wg:null,car:t.id,side:t.side,from:t.sector,to:sid,sector:sid,tgt:'st',craft,force,pending:0,stage:'out',until:S.T+(sid===t.sector?1:SORTIE.transit),start:S.T,lost:0,dmg:0,n0:craft.length,mode:t.side!=='brood'&&aAvail(t)>0?'cap':'raze'};
+  const ev={id:S.nextId++,type:'sortie',wg:null,car:t.id,side:t.side,from:t.sector,to:sid,sector:sid,tgt:'st',craft,force,pending:0,stage:'out',until:S.T+(sid===t.sector?1:SORTIE.transit*ddK(t.side)),start:S.T,lost:0,dmg:0,n0:craft.length,mode:t.side!=='brood'&&aAvail(t)>0?'cap':'raze'};
   S.events.push(ev);t.sorT=S.T+AICAR.cool}
 
 // the bridge's Comms tab offers the supply run too (it was only in the flight Comms menu, and not for guests)

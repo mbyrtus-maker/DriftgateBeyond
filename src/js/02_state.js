@@ -288,9 +288,9 @@ function sortieHome(ev){const t=(S.frigates||[]).find(x=>x.id===ev.car&&isCar(x)
   else{for(const c of ev.craft)t.wing.push(c);inv.addAll(t.load,ev.force)}
   ev.force={};ev.craft=[];sortieFeed(ev,`${t.name}'s strike is back: ${n} craft returned${ev.lost?`, ${ev.lost} lost`:''}.`,ev.lost?'warn':'good')}
 function sortieTick(){for(const ev of S.events){if(ev.type!=='sortie'||ev.stage==='done')continue;const t=(S.frigates||[]).find(x=>x.id===ev.car);
-    if(ev.stage==='gather'){if(!t||!t.live||S.T>ev.until)ev.pending=0;if(ev.pending>0)continue;if(!ev.craft.length){ev.stage='done';continue}ev.stage='out';ev.until=S.T+SORTIE.transit;
+    if(ev.stage==='gather'){if(!t||!t.live||S.T>ev.until)ev.pending=0;if(ev.pending>0)continue;if(!ev.craft.length){ev.stage='done';continue}ev.stage='out';ev.until=S.T+SORTIE.transit*ddK(ev.side);
       sortieFeed(ev,`${ev.craft.length} craft from ${t?t.name:'the carrier'} are through the gate, striking ${sortieTgtName(ev)} in ${DEF[ev.to].name}.`,'info');continue}
-    if(ev.stage==='out'){if(ev.recall){ev.stage='back';ev.until=S.T+SORTIE.transit;sortieFeed(ev,`The strike on ${DEF[ev.to].name} was called back before it arrived.`,'info');continue}if(S.T>=ev.until){ev.stage='strike';ev.until=S.T+(BAL2.on?BAL2.sTime:SORTIE.time);ev.n0=ev.craft.length}continue}
+    if(ev.stage==='out'){if(ev.recall){ev.stage='back';ev.until=S.T+SORTIE.transit*ddK(ev.side);sortieFeed(ev,`The strike on ${DEF[ev.to].name} was called back before it arrived.`,'info');continue}if(S.T>=ev.until){ev.stage='strike';ev.until=S.T+(BAL2.on?BAL2.sTime:SORTIE.time);ev.n0=ev.craft.length}continue}
     if(ev.stage==='back'){if(S.T>=ev.until)sortieHome(ev);continue}
     // strike
     const sd=sortieSide(ev),w=WORLDS[ev.to];if(!ev.craft.length){ev.stage='done';sortieFeed(ev,`The strike on ${DEF[ev.to].name} was wiped out.`,'bad');continue}
@@ -307,7 +307,7 @@ function sortieTick(){for(const ev of S.events){if(ev.type!=='sortie'||ev.stage=
       for(let i=ev.craft.length-1;i>=0;i--)if(Math.random()<pl){const c=ev.craft.splice(i,1)[0],ld=carKit(c),got={};for(const kk in ld){const m=Math.min(ld[kk],ev.force[kk]||0);if(m>0)got[kk]=inv.take(ev.force,kk,m)}toDebris(S.sectors[ev.to],got);ev.lost++}}
     sortieReport(ev,t);
     const broken=BAL2.on?ev.craft.length<=(ev.n0||1)*BAL2.brk:ev.craft.length*2<=(ev.n0||1);
-    if(S.T>=ev.until||!sortieTgtLive(ev)||!t||broken){if(w&&ev.spawned)inW(w,()=>{for(const e of W.ents.slice())if(e.sortieEv===ev.id&&e.alive){fxWarp(e,sideCol(e.side));despawn(e)}});ev.spawned=0;ev.stage='back';ev.until=S.T+SORTIE.back;
+    if(S.T>=ev.until||!sortieTgtLive(ev)||!t||broken){if(w&&ev.spawned)inW(w,()=>{for(const e of W.ents.slice())if(e.sortieEv===ev.id&&e.alive){fxWarp(e,sideCol(e.side));despawn(e)}});ev.spawned=0;ev.stage='back';ev.until=S.T+SORTIE.back*ddK(ev.side);
       sortieFeed(ev,!sortieTgtLive(ev)?(ev.tgt==='st'&&!S.stations[ev.to]?`✔ Strike on ${DEF[ev.to].name}: the depot is destroyed. The craft are heading back.`:ev.tgt==='st'&&S.stations[ev.to]&&sideNorm(S.stations[ev.to].owner)===sd?`✔ Strike on ${DEF[ev.to].name}: ${S.stations[ev.to].name} captured. The craft are heading back.`:`✔ Strike on ${DEF[ev.to].name}: target down. The craft are heading back.`):broken?`Strike on ${DEF[ev.to].name}: half the craft are lost. The rest are breaking off.`:`Strike on ${DEF[ev.to].name} is over; the craft are heading back.`,broken?'warn':'info')}}}
 // live strike runs: the same damage per 10 s as off-screen, applied to the real station or capital, with hits shown on it
 function sortieLiveHit(ev,w,sd){const pw=ev.craft.reduce((a,c)=>a+crPow(c),0)*(t&&fOwn(t)||BAL2.on?1:WING_K),k=strikeK(pw);if(!pw)return;inW(w,()=>{

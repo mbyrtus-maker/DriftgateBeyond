@@ -33,13 +33,13 @@ function audRequest(P,f){if(!audOn(P))return'Leaders grant audiences only to the
   const L=leaderOf(f);if(!L||!L.ship)return'They have no leader right now.';if(!L.ship.alive)return`${lName(f)} isn't flying: back in ${fmtT(Math.max(0,L.ship.back-S.T))}.`;
   if(standOf(f,P)<=STAND.hostile)return`${lName(f)} won't receive you: you're Hostile with ${FACTIONS[f].short}.`;const A=audOf(P,f);if(A&&A.stage!=='done')return'You already have an audience requested.';
   if(A&&S.T<A.next)return`${lName(f)} will receive you again in ${fmtT(A.next-S.T)}.`;if(L.ship.aud&&L.ship.aud.pk!==pkeyOf(P)&&L.ship.aud.until>S.T)return`${lName(f)} is busy with another audience.`;
-  const h=HOP[L.ship.sid]&&HOP[L.ship.sid][R.sid]!=null?HOP[L.ship.sid][R.sid]:3;P.aud[f]={sid:R.sid,stage:'coming',T:S.T,eta:S.T+AUD.base+h*AUD.hop,next:0};
+  const h=HOP[L.ship.sid]&&HOP[L.ship.sid][R.sid]!=null?HOP[L.ship.sid][R.sid]:3;P.aud[f]={sid:R.sid,stage:'coming',T:S.T,eta:S.T+AUD.base+h*AUD.hop*ddK(f),next:0};
   L.ship.aud={pk:pkeyOf(P),sid:R.sid,eta:P.aud[f].eta,until:P.aud[f].eta+AUD.open};
   return`✓ ${lName(f)} will receive you at ${R.name}: about ${fmtT(P.aud[f].eta-S.T)} until the flagship docks.`}
 // the flagship flies there (one jump at a time), docks and stays for the audience; then it goes about its business
 {const o=leaderShipTick;leaderShipTick=function(){if(!NET.cl&&S&&S.leaders&&!S.training)for(const f of FAC_IDS){const L=leaderOf(f),Sh=L&&L.ship,A=Sh&&Sh.aud;if(!A)continue;
     if(!Sh.alive||S.T>A.until){Sh.aud=null;continue}
-    if(Sh.sid!==A.sid){const steps=HOP[Sh.sid]&&HOP[Sh.sid][A.sid];const left=A.eta-S.T;if(steps!=null&&left<=steps*AUD.hop){const nx=(NEIGH[Sh.sid]||[]).find(n=>HOP[n]&&HOP[n][A.sid]===steps-1);if(nx){if(Sh.live){const e=leaderEnt(f);if(e)try{despawn(e)}catch(x){}Sh.live=0}Sh.sid=nx}}}
+    if(Sh.sid!==A.sid){const steps=HOP[Sh.sid]&&HOP[Sh.sid][A.sid];const left=A.eta-S.T;if(steps!=null&&left<=steps*AUD.hop*ddK(f)){const nx=(NEIGH[Sh.sid]||[]).find(n=>HOP[n]&&HOP[n][A.sid]===steps-1);if(nx){if(Sh.live){const e=leaderEnt(f);if(e)try{despawn(e)}catch(x){}Sh.live=0}Sh.sid=nx}}}
     Sh.move=S.T+60}
   const r=o.apply(this,arguments);try{audTick()}catch(e){console.error(e)}return r}}
 function audTick(){if(NET.cl||!S)return;for(const P of allPilots()){if(!P||!P.aud)continue;const k=pkeyOf(P);

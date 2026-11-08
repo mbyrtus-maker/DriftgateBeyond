@@ -227,7 +227,7 @@ function cReqTick(){if(NET.cl||!S.cReq)return;for(const f in S.cReq){const q=S.c
     const force={};takeFrom(DEPOT_COST,[st]);inv.addAll(force,DEPOT_COST);takeFrom(CONSTR_LD,srcs);inv.addAll(force,CONSTR_LD);const cls=[];
     for(const[cl,ld]of esc)if(takeFrom(ld,srcs)){inv.addAll(force,ld);cls.push(cl)}
     if(cls.length<CR_ESC_MIN){inv.addAll(st,force);continue}
-    const from=nearestOwnStation(f,q.sid),hops=from?HOP[from][q.sid]||0:2,eta=S.T+30+CR_HOP*hops;
+    const from=nearestOwnStation(f,q.sid),hops=from?HOP[from][q.sid]||0:2,eta=S.T+(30+CR_HOP*hops)*ddK(f);
     const ev={id:S.nextId++,type:'build',att:f,sector:q.sid,eta,stage:'inbound',force,n:cls.length,tier,cls,site:q.site,prog:0,from,hops,T0:S.T};S.events.push(ev);announce(ev);delete S.cReq[f];
     facFeed(f,`${F} command: constructor away from ${from?stN(from):'the rear'} with ${cls.length} escorts. ${hops} jump${hops===1?'':'s'} to ${nm}, ETA ${fmtT(eta-S.T)}. Track it under Jobs or in comms.`,'good')}}
 function feedTo(pid,msg,k){const o=CTX;CTX=pid||null;try{feed(msg,k)}finally{CTX=o}}
