@@ -21,7 +21,7 @@
 //            or retires and its purse goes to the Compact. Shooting one costs no standing with anyone (the user: a
 //            free-for-all for now).
 // Everything moves exactly: goods only between stores, holds, kits, rocks and debris; credits only between wallets.
-const IND={start:4,cap:6,max:18,arrive:[1200,2400],stake:1500,reserve:400,hop:45,pass:60,back:300,boardAge:480,minProfit:60,minPurse:300,
+const IND={trade:false,start:4,cap:6,max:18,arrive:[1200,2400],stake:1500,reserve:400,hop:45,pass:60,back:300,boardAge:480,minProfit:60,minPurse:300,
   mineT:{skiff:3,prospector:5,dredger:7},fill:.9,
   line:{fighter:['interceptor','striker','heavy'],miner:['skiff','prospector','dredger'],hauler:['courier','freighter','bulker']},
   slots:{hauler:[['cargo']],miner:[['mlaser']],fighter:[['laser','gun']]},risk:{brood:.06,den:.05,near:.015}};
@@ -88,14 +88,14 @@ function indGo(I,k,to,extra){const p=indPath(I,I.sector,to);I.run=Object.assign(
   if(WORLDS[I.sector])inW(WORLDS[I.sector],()=>indSpawn(I,false))}
 function indMarkets(I,from,maxH){const L=[];for(const id in S.stations){const D=S.stations[id];if(!D||!indMarketOK(I,D))continue;const h=indHops(from,id);if(h<=maxH)L.push({D,h})}return L}
 // a hauler's trade: the best margin from here, per hop
-function indTradePlan(I,R){if(!indMarketOK(I,R))return null;const mk=mkStock(R),cap=indCargo(I)*(ptHas(I,'Overloader')?1:.8),budget=indPurse(I)-IND.reserve;if(budget<200)return null;let best=null;
+function indTradePlan(I,R){if(!IND.trade||!indMarketOK(I,R))return null;const mk=mkStock(R),cap=indCargo(I)*(ptHas(I,'Overloader')?1:.8),budget=indPurse(I)-IND.reserve;if(budget<200)return null;let best=null;
   for(const{D,h}of indMarkets(I,R.sid,ptHas(I,'Speed Demon')?3:4)){if(D===R)continue;const wl=D.owner==='neutral'?'neutral':D.owner,tr=S.econ.treasury[wl]||0;
     const risk=indPath(I,R.sid,D.sid).reduce((a,s)=>a+indDanger(s),0);if(risk>.12&&!ptHas(I,'Greedy')&&!ptHas(I,'Speed Demon'))continue;
     for(const k of IND_GOODS){if(!(mk[k]>0)||ITEMS[k].maker)continue;const b=mkPartPrice(R,k,I.cls),s=mkPartSell(D,k,I.cls),m=s-b;if(m<=0)continue;const n=Math.min(mk[k],Math.floor(cap/mass(k)),Math.floor(budget/b),Math.floor(tr/s));if(n<=0)continue;
       const pr=m*n,sc=pr/(h+(ptHas(I,'Speed Demon')?.3:1))*(ptHas(I,'Greedy')?1:1-risk*3);if(pr>=IND.minProfit&&(!best||sc>best.sc))best={k,n,to:D.sid,sc,pr}}}
   return best}
 // a freeport request (or a blockade or containment run) left 8 minutes: buy it here and carry it in
-function indBoardHaul(I,R){if(!indMarketOK(I,R))return null;const mk=mkStock(R);let best=null;
+function indBoardHaul(I,R){if(!IND.trade||!indMarketOK(I,R))return null;const mk=mkStock(R);let best=null;
   for(const c of S.contracts||[]){if(!c.st||c.ind||!(c.n>0)||!ITEMS[c.item]||c.st===R.sid)continue;c.seen=c.seen||S.T;if(S.T-c.seen<IND.boardAge)continue;const D=S.stations[c.st];if(!D)continue;
     if(c.fac!=='neutral'&&(!FAC_IDS.includes(c.fac)||(I.stand[c.fac]||0)<=STAND.dock))continue;const h=indHops(R.sid,c.st);if(h>5||(c.until&&c.until<S.T+IND.hop*(h+1)))continue;
     const pr=mkPartPrice(R,c.item,I.cls),n=Math.min(c.n,mk[c.item]||0,Math.floor(indCargo(I)/mass(c.item)),Math.floor((indPurse(I)-100)/pr));if(n<Math.min(c.n,jobMin(c)))continue;
