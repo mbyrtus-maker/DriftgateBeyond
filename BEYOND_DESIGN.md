@@ -2957,3 +2957,11 @@ Some death traits share a name with a starting trait (Homebody, Safe Routes): a 
 - **The Containment Accord starts at 10 Brood systems (was 5) and ends below 8 (was 4).**
 - **Brood grazing lowered to bring the Brood back to about 20%** (no truce plus Accord at 10 gave Brood 29% at grazing 2.6). Value from a 300-galaxy sweep, below.
 - **Grazing sweep (300 galaxies each, 16 h, no truce, Accord at 10):** 2.2: Ostrova 28%, Halcyon 24%, Brood 21%, Varkesh 21%, unfinished 6%. **1.9: Ostrova 26%, Halcyon 26%, Varkesh 23%, Brood 20%, unfinished 4%.** 1.6: Halcyon 28%, Varkesh 26%, Brood 23%, Ostrova 20%, unfinished 3%. **Brood grazing set to 1.9** (was 2.6): on target, the powers 23–26%, and nearly every galaxy finishes.
+
+
+### Bug sweep (8 Nov 2026)
+The user: "A lot of changes have been made. Please run a bug sweep thoroughly through the code and double check guest in multiplayer."
+- **Checks run:** every quick test, every multiplayer guest test, a soak (every dock tab, Loadout system panel, Company tab and view, every map panel, flying through all 46 systems, 6 hours of strategy: no errors, ledger exact), a scan for calls to functions that don't exist (none), and saves from the four builds published this week (v46 to v49) loaded in the current build and played an hour (ledger exact, screens fine).
+- **New guest test** (`mp_guest_sweep.py`): the week's systems from a guest's side: every screen including the Corporations view, upgrades in place and fabricating a maker's part refused, a maker's sale, a grade 2 part fitted and taken out, a system installed, the map panels. All pass.
+- **Fixed:** a black-market run whose buyer's station had since been destroyed broke the freeport's Jobs list (it is no longer offered, and taking one that has just lost its buyer says the run is gone); taking out a graded part named it as its line's grade 1 part.
+- **Already fixed by the other chats' passes:** a guest's copy of the makers' names, traits and grades (`16zzb_mpfix.js`); the Install button on a guest.
