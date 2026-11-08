@@ -1,6 +1,8 @@
-# Beyond, makers ship their systems (8 Nov 2026): maker freighters carry systems from home to the shelves they serve and
-# bring missing components home; a maker's payload bay line starts at grade 2; the Loadout shows every system on the ship;
-# the ledger stays exact throughout
+# Beyond, makers' goods seek buyers by haul job (8 Nov 2026): every system has its place on the Loadout ship; a maker's
+# payload bay line starts at grade 2; makers post freight jobs at the source's Jobs board; a pilot takes one (goods to the
+# hold, collateral in escrow) and delivers it (pay and collateral back, goods on the destination's market); a job nobody
+# takes goes by the maker's own freighter; R&D materials go by haul job and a named test pilot flies the trials (shot down,
+# the project goes back to materials; home, the line launches); the ledger stays exact throughout
 import asyncio,json
 from playwright.async_api import async_playwright
 import os
@@ -17,19 +19,38 @@ async def main():
     def check(name,ok,info=''):
       print(('ok   ' if ok else 'FAIL ')+name,info)
       if not ok:bad.append(name)
-    # the Loadout: every system has its place on the ship
     lo=json.loads(await ev("""(()=>{const P=S.player;P.docked='station';openDock();dockTab='upg';ldSel='parts';renderDock();const n=document.querySelectorAll('.ldsysp').length,strip=document.querySelectorAll('.ldsysrow').length;
       document.querySelector('.ldsysp[data-arg="sys:engine"]').click();const panel=!!document.querySelector('#ldSysHost');dockTab='home';renderDock();return JSON.stringify({n,strip,panel})})()"""))
     check('every system has a place on the ship (7 on a fighter), no strip, a click opens its panel',lo['n']==7 and lo['strip']==0 and lo['panel'],lo)
     check('a maker\'s payload bay line starts at grade 2',await ev("rdLineG('wf','sy_wf_payload')===2&&rdLineG('mwa','sy_mwa_payload')===2"))
-    r=json.loads(await ev("""(()=>{const cen=()=>{let n=0;for(const sid in S.stations){const R=S.stations[sid];if(!syfOk(R))continue;const st=mkStock(R);if(Object.keys(st).some(id=>ITEMS[id]&&ITEMS[id].sys&&st[id]>0))n++}return n};
-      const a=cen();running=false;exitSector();W=null;const seen={out:0,in:0},ids=new Set();let land=0;
-      for(let i=0;i<540;i++){S.T+=10;strategicTick();updateEvents();for(const t of S.traders||[])if(t.syf&&!ids.has(t.id)){ids.add(t.id);seen[t.syf.k]++}}
-      const live=new Set((S.traders||[]).filter(t=>t.syf).map(t=>t.id));for(const id of ids)if(!live.has(id))land++;
-      return JSON.stringify({before:a,after:cen(),of:Object.values(S.stations).filter(syfOk).length,seen,landed:land})})()"""))
-    check('maker freighters went out and brought supplies in',r['seen']['out']>=5 and r['seen']['in']>=1 and r['landed']>=3,r)
-    check('more markets carry systems after an hour and a half',r['after']>r['before'],r)
-    l=await ev(LED);check('ledger exact',l=='exact',l)
+    # a freight job posted, taken by the pilot (flying a light hauler: the test books the hull swap into the ledger's start) and delivered
+    r=json.loads(await ev("""(()=>{running=false;exitSector();W=null;let j=null,i=0;while(!j&&i<200){S.T+=10;strategicTick();updateEvents();j=mfjAll().find(x=>x.k==='out'&&x.st==='open');i++}
+      if(!j)return JSON.stringify({posted:false});const P=S.player;{const l0=ledger();P.cls='courier';P.fit=fitNew('courier',null);const l1=ledger();for(const e of RAWS)S.ledger0.tot[e]+=l1.tot[e]-l0.tot[e]}P.sector=j.from;enterSector(j.from);running=false;P.docked='station';P.cargo={};P.credits+=0;const need=mfjVal(j)+10;if(P.credits<need){const n=need-P.credits;S.econ.treasury.neutral-=n;P.credits+=n}
+      const c0=P.credits,c=dockCtx(),L=jobsList(c,P,[P.cargo,P.vault]),onBoard=L.some(x=>x.id==='mf:'+j.id&&x.btn&&x.btn[0]==='mftake');
+      dockAction('mftake',j.id);const took=dockErr,inHold=Object.keys(j.load).every(k=>(P.cargo[k]||0)>=j.load[k]),esc=S.econ.treasury[mfjW(j)]||0,coll=c0-P.credits;
+      const D=S.stations[j.to],ds=mkStock(D),before={};for(const k in j.load)before[k]=ds[k]||0;exitSector();P.sector=j.to;enterSector(j.to);running=false;P.docked='station';const L2=jobsList(dockCtx(),P,[P.cargo,P.vault]),delBtn=L2.some(x=>x.id==='mf:'+j.id&&x.btn&&x.btn[0]==='mfdel');
+      const c1=P.credits;dockAction('mfdel',j.id);const del=dockErr,onShelf=Object.keys(j.load).every(k=>(ds[k]||0)>=before[k]+j.load[k]),got=P.credits-c1;
+      return JSON.stringify({posted:true,onBoard,took,inHold,esc,coll,delBtn,del,onShelf,got,pay:j.pay,gone:!mfjAll().includes(j),escLeft:S.econ.treasury[mfjW(j)]||0})})()"""))
+    check('a maker posts a freight job and it shows on the source\'s board',r.get('posted') and r.get('onBoard'),r)
+    check('taking it loads the goods and puts their value in escrow',r.get('inHold') and r.get('esc')>0 and r.get('coll')==r.get('esc'),r)
+    check('Deliver at the destination: goods on its market, pay and collateral back',r.get('delBtn') and r.get('onShelf') and r.get('got')==r.get('pay')+r.get('coll') and r.get('gone') and r.get('escLeft')==0,r)
+    l=await ev(LED);check('ledger exact after the freight job',l=='exact',l)
+    # a job nobody takes goes by the maker's own freighter
+    r=json.loads(await ev("""(()=>{exitSector();W=null;let i=0,n0=0;const seen=new Set();let npc=0;for(;i<120;i++){S.T+=10;strategicTick();updateEvents();for(const t of S.traders||[])if(t.syf&&!seen.has(t.id)){seen.add(t.id);npc++}}
+      return JSON.stringify({npc,open:mfjAll().filter(j=>j.st==='open').length})})()"""))
+    check('untaken jobs go by the makers\' own freighters',r['npc']>=2,r)
+    # R&D: materials by haul job, trials by a named test pilot (shot down once, then home)
+    r=json.loads(await ev("""(()=>{const m='mg',id='mp_mg_gun';const c=ceOf(m);c.rd=null;S.econ.treasury[ceW(m)]+=20000;S.econ.treasury.varkesh-=20000;const ok=rdStart(m,id,'test');c.rd.until=S.T;
+      const st={};let i=0,lost=false,flew=null,mat=null,news=[];
+      for(;i<1500&&rdLineG(m,id)<2;i++){S.T+=10;strategicTick();updateEvents();const P=c.rd;if(!P)continue;if(P.mj&&!mat)mat=P.mj;st[P.stage]=1;
+        const t=(S.traders||[]).find(x=>x.test&&x.test.m===m);if(t&&!flew)flew={name:t.test.name,cls:t.cls,path:t.path.length};
+        if(t&&!lost&&t.leg>=1){lost=true;const i2=S.traders.indexOf(t);S.traders.splice(i2,1);haulLost(t,t.sector,'pirate');news.push(c.rd&&c.rd.stage)}}
+      const P=c.rd,tt=(S.traders||[]).find(x=>x.test&&x.test.m===m);return JSON.stringify({ok,mat:!!mat,flew,lost,backTo:news[0],launched:rdLineG(m,id)>=2,end:P?P.stage+' mj'+(P.mj||0)+' fly'+(P.fly||0)+(tt?' at '+tt.sector+' leg '+tt.leg:''):'none',grade:rdLineG(m,id),mins:Math.round(i/6),stages:Object.keys(st)})})()"""))
+    check('R&D materials are posted as a haul job',r['ok'] and r['mat'],r)
+    check('a named test pilot flies the prototype out and home',bool(r['flew']) and ' ' in r['flew']['name'] and r['flew']['cls']=='striker' and r['flew']['path']>=5,r)
+    check('shot down, the project goes back to materials',r['lost'] and r['backTo']=='materials',r)
+    check('home again, the line launches at grade 2',r['launched'] and r['grade']==2,r)
+    l=await ev(LED);check('ledger exact after R&D',l=='exact',l)
     check('no errors',not errs,errs[:3])
     print('ALL OK' if not bad else 'FAILED: '+', '.join(bad))
     await b.close()

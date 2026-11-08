@@ -57,6 +57,18 @@ async def body(K):
   gt=await G("S.player.tiers.engine")
   check('the guest\'s copy shows the new drive',gt==2,gt)
   await K.ledger('after the install')
+  # ---- a maker's freight job on the guest's board, taken by the guest (done on the host: goods to its hold, collateral in escrow;
+  # the test moves the guest's hold into its vault to make room)
+  j=json.loads(await Hh("""(()=>{const P=%s,R=S.stations[P.sector];let m=null,id=null;for(const mm of Object.keys(MAKERS))if(ceAlive(mm)&&mkAtHome(mm))for(const x of MK_LINE[mm])if(ITEMS[x]&&!ITEMS[x].sys&&Object.keys(ITEMS[x].recipe).length&&(!id||mass(x)<mass(id))){m=mm;id=x}const D=Object.values(S.stations).find(X=>syfOk(X)&&X!==R&&tradeOK(P,X.owner));
+    devLedger(()=>inv.add(mkStock(R),id,3));const j=mfjPost(m,'out',P.sector,D.sid,{[id]:1},false);inv.addAll(P.vault,P.cargo);P.cargo={};const need=mfjVal(j)+10;if(P.credits<need){const n=need-P.credits;S.econ.treasury.neutral-=n;P.credits+=n}
+    for(const c of readyCl())send(c.L,syncMsg(c));return JSON.stringify({id:j.id,item:id})})()"""%HP))
+  await K.wait(3000)
+  ob=await G("jobsList(dockCtx(),S.player,[S.player.cargo,S.player.vault]).some(x=>x.id==='mf:%s'&&x.btn&&x.btn[0]==='mftake')"%j['id'])
+  check('a maker\'s freight job shows on the guest\'s board with Take',ob)
+  r=await K.act('mftake',str(j['id']),3000)
+  h=json.loads(await Hh("(()=>{const P=%s,x=mfjAll().find(y=>y.id===%s);return JSON.stringify({hold:P.cargo[%s]||0,st:x&&x.st,esc:x?S.econ.treasury[mfjW(x)]||0:0,shelf:mkStock(S.stations[x?x.from:P.sector])[%s]||0,ok:x?syfOk(S.stations[x.from]):null,from:x&&x.from,sec:P.sector})})()"%(HP,j['id'],json.dumps(j['item']),json.dumps(j['item']))))
+  check('the guest takes it (host: goods in its hold, collateral in escrow)',h['hold']>=1 and h['st']=='taken' and h['esc']>0,'%s · %s'%(h,r[:100]))
+  await K.ledger('after the freight job')
   # ---- the map's panels on the guest
   mp=await G("""(()=>{const out=[];for(const d of SECTOR_DEFS){try{mapSectorNow(d.id)}catch(e){out.push(d.id+': '+e.message)}}const h=mapSectorNow('bl');if(!/Bloom stirs/.test(h))out.push('no Bloom gauge');if(S.outposts.hollow)out.push('the Relay is still there');return out.join(' | ')||'ok'})()""")
   check('the map panels on the guest (the Bloom gauge, no Relay)',mp=='ok',mp)

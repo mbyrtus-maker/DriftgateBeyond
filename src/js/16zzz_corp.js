@@ -80,7 +80,7 @@ function ceComp(sid,id){const R=S.stations[sid],rc=ITEMS[id]&&ITEMS[id].recipe;i
   const cc=ceComp(R.sid,id);return Math.max(v*k,cc*CE.markup*k,cc*CE.floor/(1-CE.dues))}catch(e){return v}}}
 // ---- a sale: the maker's share to its treasury, the station's dues stay with its owner
 function ceSale(m,id,n,paid,wallet,sid){if(!S.corp||!(paid>0))return;const c=ceOf(m);if(!c)return;if(c.dead){return}const net=Math.floor(paid*(1-CE.dues));const got=transfer(wallet,ceW(m),net);
-  const home=mkHomeSid(m),mar=got-ceComp(home,id)*n;c.sales.push([S.T,ITEMS[id].base||id,n,mar]);c.inc+=got}
+  const home=mkHomeSid(m),mar=got-ceComp(home,id)*n;c.sales.push([S.T,ITEMS[id].base||id,n,mar,sid]);c.inc+=got}
 {const o=dockAction;dockAction=function(act,arg){if(act!=='buy'||!S||!S.corp||NET.cl)return o.apply(this,arguments);const k=String(arg).split(':')[0],I=ITEMS[k];if(!I||!I.maker)return o.apply(this,arguments);
   const c=dockCtx();if(!c||!c.market||c.wallet==='player'||c.owner==='player')return o.apply(this,arguments);const P=S.player,c0=P.credits,n0=c.market[k]||0,wl=c.wallet;const r=o.apply(this,arguments);
   try{const spent=c0-P.credits,n=n0-(c.market[k]||0);if(spent>0&&n>0)ceSale(I.maker,k,n,spent,wl,P.sector)}catch(e){console.error(e)}return r}}
