@@ -6,6 +6,16 @@
 
 **Beyond's identity (keep it):** browser storage keys `dgbeyond.*` (save `dgbeyond.save.v1`), multiplayer host ids `dgbeyond1-<code>-host`, relay topics `dgbeyond1/…`, tab channel `dgbeyond`, title "Driftgate Beyond". Published page: https://claude.ai/artifact/9DnfnBp7b1bfJEMe25nkJv (publish with the Artifact tool and that `url`).
 
+## Settled findings (read before stating a cause)
+Causes and decisions the user has confirmed or corrected. They override anything older in `BEYOND_DESIGN.md`. **Before you state why something happened, look it up here or in the design notes; don't go from memory or an earlier summary.** When the user corrects a finding, add or fix it here in the same turn, and mark the old claim where it stands in `BEYOND_DESIGN.md` with a one-line *Superseded: …* note.
+- **The Brood's gain with independent pilots (7–8 Nov 2026):** not a warehouse drain. Independent miners sold ore to the freeports, every power's warehouse swelled evenly, and wars between even powers stalled. Fixed by no truce against a power at 20 systems, the Containment Accord at 10 (off below 8), and Brood grazing 1.9. Result: Brood 20%, powers 23–26%, unfinished 4%. See "Independents' supply runs: war check and tuning" and "No truce against the powers".
+- **Galaxy stalls (6 Nov 2026):** the powers ran short of Ferrite and Cuprite, while their warehouses filled with Crystal, Iridium and Aurorite. Fixed by miners passing over ore their power holds 300 of (`mineSkip`). See "Brood surges".
+- **Ostrova's lead after the corporate economy (7 Nov 2026):** the Hollow Relay's tolls. The Relay is removed (the user).
+- **The Brood (6 Nov 2026, the user):** every Brood ship, node upgrade and capital is made from ore alone. Spending order: defence, then node upgrades, then capitals, then everything else. Bloom Nodes hold off carriers with Overgrowth.
+- **Maker failures are fine** (the user, 7 Nov 2026: "I'm fine with multiple failings"). Don't tune to avoid them.
+- **The convoy test's raid failures (8 Nov 2026)** were the test's timing (guest sync, relations not yet set up), not the game.
+- **Open (8 Nov 2026):** after makers' goods went out by haul job, a war check gave Brood 31%, Halcyon 23, Varkesh 22, Ostrova 21, unfinished 3 (600 galaxies). The cause is not known yet; it is being measured with freight off and with supply runs off.
+
 ## Source and build
 - The game is one file, `index.html`, built from `src/`: `src/page.html` (markup and CSS), `src/data/*.html` (sound and model packs), `src/js/NN_name.js` in the order of `src/ORDER.txt`, `src/end.html`. Edit `src/`, never `index.html` directly.
 - Build: `python3 tools/build.py`. It refuses duplicate function names across files and code after a mid-line `//` comment (put comments on their own line).
@@ -32,7 +42,7 @@ Six agents in `.claude/agents/` take whole jobs off the main session: `war-sim` 
 ## Working in parallel
 Several chats (each with its own machine and clone) and several sub-bots may work on Beyond at once. To keep out of each other's way:
 - **Never merge `index.html`.** It is built output. When a pull or rebase conflicts on it, rebuild instead: `python3 tools/build.py`, syntax check, `git add index.html`, `git rebase --continue`. Same for `src/data/mdlidx.html` and `src/data/mdlbin.html` (rerun the model pack steps above).
-- **`BEYOND_DESIGN.md`:** add new notes under their own new `###` heading rather than editing a section another chat may be editing; on a conflict keep both sides' text.
+- **`BEYOND_DESIGN.md`:** add new notes under their own new `###` heading rather than editing a section another chat may be editing, with one exception: a claim that has been disproved gets a one-line *Superseded: see …* note where it stands (and the finding goes on the Settled findings list above). On a conflict keep both sides' text.
 - **Pull before you start and before every push** (`git pull -q --rebase`), and push small commits often so others rebase onto less.
 - **Sub-bots in one chat share its CPU.** Run one heavy simulation at a time (a war check, `run.sh mp`, `run.sh full`) alongside lighter work; timing-sensitive tests (limpet, multiplayer) can fail falsely under load, so rerun a failure alone before believing it. When several sub-bots share a machine, wrap every browser run (a test, `fastsim.py`, `duel.py`, a preview render through Chromium) in `flock /tmp/dgbeyond-browser.lock <command>` so they take turns; read code while you wait.
 - **Sub-bots that edit code** (visuals, training-mission, economy fixes) run in their own worktree (`isolation: "worktree"`), so two of them never build into the same folder. The main session brings their changes in, rebuilds and commits.
