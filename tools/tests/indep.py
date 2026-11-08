@@ -63,7 +63,7 @@ async def main():
     chk('shot down live: down, kit lost, no standing lost',r['st']=='down' and r['kit']==0 and r['stand'],r)
     chk('killed by you counts as a named pilot',r['cause']=='named',r)
     chk('ledger after the loss (hold and kit as salvage)',(await ev(LED))=='exact',await ev(LED))
-    r=json.loads(await ev("""(()=>{const I=indById(window._L);const b0=I&&I.back;for(let i=0;i<40;i++){S.T+=10;strategicTick()}return JSON.stringify(I?{st:I.st,pt:I.pt,nem:I.nem,cls:I.cls,role:I.role,sector:I.sector,port:I.port,b0,T:S.T}:{gone:1})})()"""))
+    r=json.loads(await ev("""(()=>{const I=indById(window._L);const b0=I&&I.back;let n=0,seen=0,err=null,on=[];{const o=indTick;indTick=function(){n++;on.push(indOn()+':'+!!S.econ);try{return o.apply(this,arguments)}catch(e){err=String(e.stack).slice(0,300);throw e}}}{const o=indBack;indBack=function(J){if(J===I)seen++;return o.apply(this,arguments)}}for(let i=0;i<40;i++){S.T+=10;strategicTick()}return JSON.stringify(I?{n,seen,err,on:on.slice(0,2),inList:indAll().includes(I),st:I.st,pt:I.pt,nem:I.nem,cls:I.cls,role:I.role,sector:I.sector,port:I.port,b0,T:S.T}:{gone:1})})()"""))
     chk('back at its freeport after 5 minutes with a death trait (you killed it: Vengeful if it fights, else Haunted)',r.get('gone') or (r['st']!='down' and r['pt']==('Vengeful' if r['role']=='fighter' else 'Haunted') and r['nem']=='me'),r)
     chk('ledger after its return',(await ev(LED))=='exact',await ev(LED))
     # death traits by cause
