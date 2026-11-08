@@ -2940,3 +2940,7 @@ Some death traits share a name with a starting trait (Homebody, Safe Routes): a 
   - **wear:** fitted parts wear out as the powers' fleets' and your crews' do, so they keep buying replacements;
   - the next hull of its line still when its Rating allows (it saves for it first).
 - Then one war check (600 galaxies, 16 h) on the result before trading is switched back on in the published game.
+
+### Independents' supply runs: war check and tuning (7 Nov 2026)
+- **War check with supply runs and spending (600 galaxies, 16 h, neutral leaders):** Brood 26%, Varkesh 20%, Ostrova 19%, Halcyon 18%, unfinished 17%. Trading paused (200 galaxies): Brood 19%, Varkesh 28%, Halcyon 26%, Ostrova 17%, unfinished 11%. The warehouse drain is gone, but haulers paid by the powers for the goods they bring still move credits out of the powers' treasuries.
+- **The user: ship it all, then tune** the haulers' margins until the Brood are back near 20%. Published with supply runs on; tuning follows.
