@@ -14,7 +14,7 @@ Causes and decisions the user has confirmed or corrected. They override anything
 - **The Brood (6 Nov 2026, the user):** every Brood ship, node upgrade and capital is made from ore alone. Spending order: defence, then node upgrades, then capitals, then everything else. Bloom Nodes hold off carriers with Overgrowth.
 - **Maker failures are fine** (the user, 7 Nov 2026: "I'm fine with multiple failings"). Don't tune to avoid them.
 - **The convoy test's raid failures (8 Nov 2026)** were the test's timing (guest sync, relations not yet set up), not the game.
-- **Open (8 Nov 2026):** after makers' goods went out by haul job, a war check gave Brood 31%, Halcyon 23, Varkesh 22, Ostrova 21, unfinished 3 (600 galaxies). The cause is not known yet; it is being measured with freight off and with supply runs off.
+- **Open (8 Nov 2026):** after makers' goods went out by haul job, a war check gave Brood 31%, Halcyon 23, Varkesh 22, Ostrova 21, unfinished 3 (600 galaxies). The build from just before (05a2395) gives Brood 20% (300 galaxies), so the gain is in that day's maker work. Supply runs off: Brood 35% (not the cause). All maker freight off: 26% (200 galaxies; that run also leaves R&D stuck at materials). The mechanism is being traced; not known yet.
 
 ## Source and build
 - The game is one file, `index.html`, built from `src/`: `src/page.html` (markup and CSS), `src/data/*.html` (sound and model packs), `src/js/NN_name.js` in the order of `src/ORDER.txt`, `src/end.html`. Edit `src/`, never `index.html` directly.
