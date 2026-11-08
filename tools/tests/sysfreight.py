@@ -39,8 +39,10 @@ async def main():
     r=json.loads(await ev("""(()=>{exitSector();W=null;let i=0,n0=0;const seen=new Set();let npc=0;for(;i<120;i++){S.T+=10;strategicTick();updateEvents();for(const t of S.traders||[])if(t.syf&&!seen.has(t.id)){seen.add(t.id);npc++}}
       return JSON.stringify({npc,open:mfjAll().filter(j=>j.st==='open').length})})()"""))
     check('untaken jobs go by the makers\' own freighters',r['npc']>=2,r)
-    # R&D: materials by haul job, trials by a named test pilot (shot down once, then home)
-    r=json.loads(await ev("""(()=>{const m='mg',id='mp_mg_gun';const c=ceOf(m);c.rd=null;S.econ.treasury[ceW(m)]+=20000;S.econ.treasury.varkesh-=20000;const ok=rdStart(m,id,'test');c.rd.until=S.T;
+    # R&D: materials by haul job, trials by a named test pilot (shot down once, then home). The test stocks the nearest other
+    # market with the prototype's components (booked into the ledger's start), so there is a market to buy them at.
+    r=json.loads(await ev("""(()=>{const m='mg',id='mp_mg_gun';const c=ceOf(m);c.rd=null;S.econ.treasury[ceW(m)]+=20000;S.econ.treasury.varkesh-=20000;const R0=mkAtHome(m),src=Object.values(S.stations).filter(R=>syfSrcOk(R0,R)).sort((a,b)=>HOP[R0.sid][a.sid]-HOP[R0.sid][b.sid])[0],rc=ITEMS[rdGid(id,2)].recipe;for(const k in rc){const q=rc[k]+4;inv.add(mkStock(src),k,q);const v=invVec({[k]:q});for(const e of RAWS)S.ledger0.tot[e]+=v[e]}
+      const ok=rdStart(m,id,'test');c.rd.until=S.T;
       const st={};let i=0,lost=false,flew=null,mat=null,news=[];
       for(;i<1500&&rdLineG(m,id)<2;i++){S.T+=10;strategicTick();updateEvents();const P=c.rd;if(!P)continue;if(P.mj&&!mat)mat=P.mj;st[P.stage]=1;
         const t=(S.traders||[]).find(x=>x.test&&x.test.m===m);if(t&&!flew)flew={name:t.test.name,cls:t.cls,path:t.path.length};
