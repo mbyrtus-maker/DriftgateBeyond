@@ -14673,11 +14673,12 @@ function aipFly(e,k){const T=e&&aipGrades(k);if(!T)return e;e.st=shipStats(e.fac
 //   Work:    posted jobs (Supply, Haul, Mine, Guard) go to the nearest free independent whose hull fits (the one-off Compact
 //            contractor only when none is free), flown by the same tracked run (16zzr_contract.js) and paid into its purse;
 //            the boards' jobs (freeport requests, blockade and containment runs, the powers' ore orders) once a job has gone
-//            untaken for 8 minutes; between jobs a hauler trades (buys at one market, sells at another where the margin beats
-//            the fees) and a miner mines real rock and sells the ore.
-//   Buying:  docked at a market with money above a reserve (400 cr plus a rebuy of its hull) it fits and upgrades one part per
-//            work slot (the crews' rule, 16zzzb_aipilots.js: best value by traits, grade and price, up to its Rating), off the
-//            shelf with the maker paid; at a high enough Rating it buys the next hull of its line at a yard.
+//            untaken for 8 minutes; between jobs a hauler makes supply runs (buys only at a freeport, sells anywhere where the
+//            margin beats the fees: goods go into the powers, never out of their warehouses) and a miner mines real rock.
+//   Buying:  as a pilot does, only at freeports, above a reserve (400 cr plus a rebuy of its hull): a part for every weapon and
+//            utility slot, upgraded up to its Rating (best value by traits, grade and price), a system grade a visit (goods off
+//            the market plus the 8% fee), worn parts replaced; it saves first for the next hull of its line when its Rating allows.
+//            A sale into a power's or a freeport's market counts as work (Rating points, standing).
 //   Risk:    it flies the lanes and can be shot down like any ship, live or (in Brood-held systems and pirate dens) out of
 //            sight. Shot down, it loses its hull, kit and hold (salvage where it fell); after 5 minutes it rebuys a hull at
 //            home if it has the money (its lost hull, else a free light hull), with a new trait learned from how it died,
