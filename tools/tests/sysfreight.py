@@ -19,6 +19,9 @@ async def main():
     def check(name,ok,info=''):
       print(('ok   ' if ok else 'FAIL ')+name,info)
       if not ok:bad.append(name)
+    st=json.loads(await ev("JSON.stringify({store:Object.keys(MAKERS).every(m=>ceStore(m).plate===60&&ceStore(m).wire===40&&ceStore(m).coil===20),cr:Math.min(...Object.keys(MAKERS).map(m=>Math.round(ceT(m))))})"))
+    check('makers start with 8,000 cr and their own 60 plate, 40 conduit and 20 coil',st['store'] and st['cr']>=7500,st)
+    l=await ev(LED);check('ledger exact at the start (the makers\' starting components are part of the galaxy)',l=='exact',l)
     lo=json.loads(await ev("""(()=>{const P=S.player;P.docked='station';openDock();dockTab='upg';ldSel='parts';renderDock();const n=document.querySelectorAll('.ldsysp').length,strip=document.querySelectorAll('.ldsysrow').length;
       document.querySelector('.ldsysp[data-arg="sys:engine"]').click();const panel=!!document.querySelector('#ldSysHost');dockTab='home';renderDock();return JSON.stringify({n,strip,panel})})()"""))
     check('every system has a place on the ship (7 on a fighter), no strip, a click opens its panel',lo['n']==7 and lo['strip']==0 and lo['panel'],lo)

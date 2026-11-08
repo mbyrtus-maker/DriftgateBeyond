@@ -2998,3 +2998,14 @@ The user's design check: powers gather ore into components, then hulls, capitals
 - **Checked:** `sysfreight.py` covers posting, taking and delivering a freight job, the NPC fallback, and an R&D project whose test flight is shot down once and then launches. A guest takes a freight job in `mp_guest_sweep.py`. The ledger stays exact.
   - **Six-hour AI galaxy:** 82 freight shipments and 19 supply runs went by the makers' own freighters (nobody took the jobs). Half the makers launched grade 2 lines (two reached grade 2 on two lines), and two projects were in materials at the end.
   - **Maker treasuries are lower** (73 to 1,119 cr against 137 to 2,703 with systems-only shipping), so expect more failures. The user is fine with failures.
+
+### Makers start richer, with their own components (user, 8 Nov 2026)
+**Why:** the war check after makers' goods went out by haul job gave Brood 31% (600 galaxies). The build from just before gave 20% (300). A trace of 8 galaxies a build over 6 hours found:
+- makers spent most of their capital in the first hour (combined treasuries about 10,000 cr against 40,000), buying components off the powers' markets to stock every shelf they serve;
+- the powers' warehouse Alloy Plate ran lower (86 against 206 at 6 h), while their Ferrite sits at the 80 they keep back in both builds.
+
+**The user: "Double the makers' starting treasury. Give the makers some components to start with."**
+- **Starting treasury 8,000 cr** (was 4,000), still capitalised by the maker's home; a reborn company gets the same.
+- **A maker's own store of components:** each maker starts with 60 Alloy Plate, 40 Conduit and 20 Coil of its own, made with the galaxy. Its works use these before buying off the market, and pay only for what they buy. The ledger counts the store with the stations.
+- **Supply runs land in that store**, not on the home market. Before, a power maker's supply run filled its power's warehouse, which the power could then spend.
+- War check on the result: below.

@@ -76,8 +76,10 @@ makersTick=(function(o){return function(){if(!rdOn())return o.apply(this,argumen
   if(!S.corpConv){try{corpConvert()}catch(e){}S.corpConv=1}
   for(const m in MAKERS){const R=mkAtHome(m);if(!R||!ceAlive(m))continue;const st=mkStock(R),gidOf=id=>rdGid(id,rdLineG(m,id)),want=id=>Math.min(CE.cap,CE.shelf+ceSold(m,id,3600)+syfWant(m,id));
     const ids=MK_LINE[m].filter(id=>{const gid=gidOf(id);return ITEMS[gid]&&Object.keys(ITEMS[gid].recipe).length&&(st[gid]||0)<want(id)&&!(S.T>CE.shut&&!ceSold(m,id,CE.shut)&&(st[gid]||0)>0)}).sort((a,b)=>(st[gidOf(a)]||0)/want(a)-(st[gidOf(b)]||0)/want(b));
-    for(const id of ids){const gid=gidOf(id),rc=ITEMS[gid].recipe;if(!rdCanMake(st,rc,R))continue;const cost=Math.ceil(ceComp(R.sid,gid));if(ceT(m)-cost<ceReserve(m))continue;
-      rdCraftFor(st,rc,R);if(!haveIn(rc,[st]))continue;transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);ceOf(m).cost+=cost;takeFrom(rc,[st]);inv.add(st,gid,1);break}}}})(makersTick);
+    // (user, 8 Nov 2026) the maker's own components first (its starting stock and its supply runs); only the rest is bought off the market
+    for(const id of ids){const gid=gidOf(id),rc=ITEMS[gid].recipe,own=ceStore(m),mk={};for(const k in rc){const q=rc[k]-Math.min(rc[k],own[k]||0);if(q>0)mk[k]=q}
+      if(!rdCanMake(st,mk,R))continue;let cost=0;for(const k in mk)cost+=stPrice(R,k)*mk[k];cost=Math.ceil(cost);if(ceT(m)-cost<ceReserve(m))continue;
+      rdCraftFor(st,mk,R);if(!haveIn(mk,[st]))continue;if(cost)transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);ceOf(m).cost+=cost;for(const k in rc){const q=Math.min(rc[k],own[k]||0);if(q>0)inv.take(own,k,q)}takeFrom(mk,[st]);inv.add(st,gid,1);break}}}})(makersTick);
 // a grade's Calibration Matrices, lattices and cores the station doesn't stock are made in the works from the station's stock
 // (design: "a grade's Calibration Matrices, lattices and cores are made in the works from the station's stock"); nothing else
 // is made (plates, conduit and coils must be on the market), and lattices and cores only where the station has a forge (as at

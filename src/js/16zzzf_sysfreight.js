@@ -58,8 +58,10 @@ function mfjCost(j){const R=S.stations[j.from];let c=0;if(j.buy)for(const k in j
 // take the goods off the source's shelf (buying them for the maker if it must); returns the load or null
 function mfjLift(j,extra){const R=S.stations[j.from];if(!mfjReady(j))return null;const cost=mfjCost(j);if(cost+(extra||0)>0&&ceT(j.m)<cost+(extra||0))return null;
   const st=mkStock(R),load={};for(const k in j.load){const q=inv.take(st,k,j.load[k]);if(q>0)load[k]=q}if(cost){const paid=transfer(ceW(j.m),syfSide(R),cost);ceOf(j.m).cost+=paid}return load}
-// where a delivered load goes: an out shipment onto the destination's market; supplies into the works' market; materials into the prototype
+// where a delivered load goes: an out shipment onto the destination's market; supplies into the maker's own store (8 Nov 2026:
+// they used to land on the home market, which for a power's maker is the power's warehouse); materials into the prototype
 function mfjLand(m,k,to,load,rid){const c=ceOf(m);if(k==='mat'&&c&&c.rd&&c.rd.mj===rid){inv.addAll(c.rd.proto,load);c.rd.got=1;c.rd.mj=null;c.rd.stage='trials';c.rd.until=S.T+1e7;return}
+  if(k==='in'&&c&&!c.dead){inv.addAll(ceStore(m),load);return}
   const R=S.stations[to];let into=syfOk(R)?mkStock(R):null;if(!into){const H=mkAtHome(m);into=H?mkStock(H):(S.econ.stock.neutral||S.econ.stock.pirate)}inv.addAll(into,load)}
 // a job untaken for 5 minutes goes by the maker's own freighter
 function mfjNpc(j){const R=S.stations[j.from],R0=mkAtHome(j.m);if(!R||!R0)return false;const fee=mfjPay(j);if(ceT(j.m)<fee+mfjCost(j))return false;
@@ -97,7 +99,7 @@ function syfPlanOut(m){const R0=mkAtHome(m);if(!R0)return null;const st0=mkStock
     (S.syf.cold=S.syf.cold||{})[x.R.sid+'|'+x.id]=S.T+SYF.stale;delete S.syf.seen[x.R.sid+'|'+x.id];return{from:x.R.sid,to:to.sid,load:{[x.gid]:1}}}
   return null}
 // what the works' next goods need that the home market hasn't got (a matrix, lattice or core counts as what it's made of)
-function syfNeed(m){const R0=mkAtHome(m),st=mkStock(R0),need={};
+function syfNeed(m){const R0=mkAtHome(m),st={...mkStock(R0)},need={},own=ceStore(m);for(const k in own)st[k]=(st[k]||0)+own[k];
   const add=(rc,x,d)=>{for(const k in rc){const q=rc[k]*x;if(RD_CRAFT.has(k)&&d<3&&ITEMS[k].recipe&&!(ITEMS[k].forge&&!rdForgeAt(R0))){const sh=q-(st[k]||0);if(sh>0)add(ITEMS[k].recipe,sh,d+1)}else need[k]=(need[k]||0)+q}};
   for(const id of syfAll(m)){const gid=syfGid(m,id);if(!gid)continue;const w=Math.min(CE.cap,CE.shelf+ceSold(m,id,3600)+syfWant(m,id))-(st[gid]||0);if(w<=0)continue;add(ITEMS[gid].recipe,Math.min(2,w),0)}
   for(const k in need){need[k]=Math.ceil(need[k]-(st[k]||0));if(need[k]<=0)delete need[k]}return need}

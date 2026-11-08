@@ -5,7 +5,7 @@
 // "Corporate economy: last pass" in BEYOND_DESIGN.md (simulations v17 to v20). Grades through R&D, the R&D stations,
 // meetings, bulk orders and corporate missions are the next stages.
 //   - Money: each maker has a treasury (S.econ.treasury['corp_'+m], so the ledger counts it), capitalised at the start by its
-//     home (its power, or the Compact for a freeport maker) with CE.start (4,000 cr: the game's makers carry more lines than
+//     home (its power, or the Compact for a freeport maker) with CE.start (8,000 cr since 8 Nov 2026, was 4,000: the game's makers carry more lines than
 //     the simulations' 3,000 was set for). Credits only ever move between wallets.
 //   - Income: every sale of its parts on any market, less the station's 15% dues (the station's owner keeps those).
 //     A maker lists its parts at 1.5 times their component cost (the simulations' list price; Premium +15%, Discounter
@@ -32,7 +32,7 @@
 //   - Struggling below 2 hours of running costs (News); failing when it can't pay them: its works close, its stock stays on
 //     sale. 30 to 60 minutes later a new company opens at the same home, capitalised by the home, making the same kinds of
 //     part under a new name, with a new CEO and small fresh traits.
-const CE={markup:1.5,shut:7200,start:4000,dues:.15,floor:1.15,base:60,lineF:.5,lineMin:10,shelf:1,cap:4,struggleH:2,reborn:[1800,3600],review:900,window:2700,twCool:1800,twMax:3,twStep:[.02,.04],trCap:.25,magCap:2,
+const CE={markup:1.5,shut:7200,start:8000,dues:.15,floor:1.15,base:60,lineF:.5,lineMin:10,shelf:1,cap:4,struggleH:2,reborn:[1800,3600],review:900,window:2700,twCool:1800,twMax:3,twStep:[.02,.04],trCap:.25,magCap:2,
   refit:{peace:12,tension:16,war:24,every:300,keep:3000,away:.35},wear:.5,div:.4,divHome:.6,grace:7200,
   ceos:['Penny-pincher','Premium','Innovator','Expansionist','Cautious','Generous','Discounter','Restless']};
 const CE_KSTAT={gun:['dmg','ammo'],laser:['dmg','e'],missile:['mag','lock'],torpedo:['mag','lock'],charge:['mag'],mlaser:['ml','e'],cargo:['cargo'],scanner:['scan'],dronec:['dh','dd']};
@@ -71,7 +71,12 @@ function ceApply(){if(S&&S.corp&&!NET.cl)for(const m in S.corp)if(S.corp[m]&&!S.
       I.name=c&&c.short&&c.short!==d.short?D.name.replace(d.short,c.short):D.name;I.trTxt=id.startsWith('mq_')?`${MAKERS[m].name}: standard.`:(trText(I.tr)?`${MAKERS[m].name}: ${trText(I.tr)}.`:`${MAKERS[m].name}: standard.`);
       const tw=c&&c.ln&&c.ln[id]&&c.ln[id].tw;if(tw)I.trTxt+=` Revised ${tw===1?'once':tw===2?'twice':tw+' times'}.`}}}
 function ceInit(){if(S.corp||NET.cl||S.training)return;S.corp={};for(const m in MAKERS){const home=ceHomeWallet(m);S.corp[m]={logo:m,ceo:pick(CE.ceos),ceoT:0,ln:{},tr:{},sales:[],hist:[],E:0,px:0,pxH:[],div:0,gen:1,inc:0,cost:0};
-    transfer(home,ceW(m),CE.start)}ceApply()}
+    transfer(home,ceW(m),CE.start);S.corp[m].store={...CE_STOCK};if(S.ledger0){const v=invVec(CE_STOCK);for(const e of RAWS)S.ledger0.tot[e]+=v[e]}}ceApply()}
+// (user, 8 Nov 2026) "Double the makers' starting treasury. Give the makers some components to start with." A maker starts with 8,000 cr and
+// its own store of components (made with the galaxy), which its works use before buying off the market; its supply runs land there too
+const CE_STOCK={plate:60,wire:40,coil:20};
+function ceStore(m){const c=ceOf(m);if(!c)return{};return c.store=c.store||{}}
+{const o=ledger;ledger=function(){const r=o.apply(this,arguments);try{const L=r.L.Stations;for(const m in S.corp||{}){const st=S.corp[m].store;if(!st)continue;const v=invVec(st);for(const e of RAWS){L[e]+=v[e];r.tot[e]+=v[e]}}}catch(e){}return r}}
 {const o=newGame;newGame=function(){const r=o.apply(this,arguments);try{if(S){S.corp=null;ceApply();if(!S.training)ceInit()}}catch(e){console.error(e)}return r}}
 {const o=startWith;startWith=function(st){const r=o.apply(this,arguments);try{if(S){ceApply();if(!S.corp&&!S.training)ceInit()}}catch(e){console.error(e)}return r}}
 // ---- prices: the profit floor and the CEO's pricing

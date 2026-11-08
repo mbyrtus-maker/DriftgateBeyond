@@ -14279,7 +14279,7 @@ function bloomCapTick(){if(NET.cl||!S||S.training)return;const T=S.T,f='brood',A
 // "Corporate economy: last pass" in BEYOND_DESIGN.md (simulations v17 to v20). Grades through R&D, the R&D stations,
 // meetings, bulk orders and corporate missions are the next stages.
 //   - Money: each maker has a treasury (S.econ.treasury['corp_'+m], so the ledger counts it), capitalised at the start by its
-//     home (its power, or the Compact for a freeport maker) with CE.start (4,000 cr: the game's makers carry more lines than
+//     home (its power, or the Compact for a freeport maker) with CE.start (8,000 cr since 8 Nov 2026, was 4,000: the game's makers carry more lines than
 //     the simulations' 3,000 was set for). Credits only ever move between wallets.
 //   - Income: every sale of its parts on any market, less the station's 15% dues (the station's owner keeps those).
 //     A maker lists its parts at 1.5 times their component cost (the simulations' list price; Premium +15%, Discounter
@@ -14306,7 +14306,7 @@ function bloomCapTick(){if(NET.cl||!S||S.training)return;const T=S.T,f='brood',A
 //   - Struggling below 2 hours of running costs (News); failing when it can't pay them: its works close, its stock stays on
 //     sale. 30 to 60 minutes later a new company opens at the same home, capitalised by the home, making the same kinds of
 //     part under a new name, with a new CEO and small fresh traits.
-const CE={markup:1.5,shut:7200,start:4000,dues:.15,floor:1.15,base:60,lineF:.5,lineMin:10,shelf:1,cap:4,struggleH:2,reborn:[1800,3600],review:900,window:2700,twCool:1800,twMax:3,twStep:[.02,.04],trCap:.25,magCap:2,
+const CE={markup:1.5,shut:7200,start:8000,dues:.15,floor:1.15,base:60,lineF:.5,lineMin:10,shelf:1,cap:4,struggleH:2,reborn:[1800,3600],review:900,window:2700,twCool:1800,twMax:3,twStep:[.02,.04],trCap:.25,magCap:2,
   refit:{peace:12,tension:16,war:24,every:300,keep:3000,away:.35},wear:.5,div:.4,divHome:.6,grace:7200,
   ceos:['Penny-pincher','Premium','Innovator','Expansionist','Cautious','Generous','Discounter','Restless']};
 const CE_KSTAT={gun:['dmg','ammo'],laser:['dmg','e'],missile:['mag','lock'],torpedo:['mag','lock'],charge:['mag'],mlaser:['ml','e'],cargo:['cargo'],scanner:['scan'],dronec:['dh','dd']};
@@ -14345,7 +14345,12 @@ function ceApply(){if(S&&S.corp&&!NET.cl)for(const m in S.corp)if(S.corp[m]&&!S.
       I.name=c&&c.short&&c.short!==d.short?D.name.replace(d.short,c.short):D.name;I.trTxt=id.startsWith('mq_')?`${MAKERS[m].name}: standard.`:(trText(I.tr)?`${MAKERS[m].name}: ${trText(I.tr)}.`:`${MAKERS[m].name}: standard.`);
       const tw=c&&c.ln&&c.ln[id]&&c.ln[id].tw;if(tw)I.trTxt+=` Revised ${tw===1?'once':tw===2?'twice':tw+' times'}.`}}}
 function ceInit(){if(S.corp||NET.cl||S.training)return;S.corp={};for(const m in MAKERS){const home=ceHomeWallet(m);S.corp[m]={logo:m,ceo:pick(CE.ceos),ceoT:0,ln:{},tr:{},sales:[],hist:[],E:0,px:0,pxH:[],div:0,gen:1,inc:0,cost:0};
-    transfer(home,ceW(m),CE.start)}ceApply()}
+    transfer(home,ceW(m),CE.start);S.corp[m].store={...CE_STOCK};if(S.ledger0){const v=invVec(CE_STOCK);for(const e of RAWS)S.ledger0.tot[e]+=v[e]}}ceApply()}
+// (user, 8 Nov 2026) "Double the makers' starting treasury. Give the makers some components to start with." A maker starts with 8,000 cr and
+// its own store of components (made with the galaxy), which its works use before buying off the market; its supply runs land there too
+const CE_STOCK={plate:60,wire:40,coil:20};
+function ceStore(m){const c=ceOf(m);if(!c)return{};return c.store=c.store||{}}
+{const o=ledger;ledger=function(){const r=o.apply(this,arguments);try{const L=r.L.Stations;for(const m in S.corp||{}){const st=S.corp[m].store;if(!st)continue;const v=invVec(st);for(const e of RAWS){L[e]+=v[e];r.tot[e]+=v[e]}}}catch(e){}return r}}
 {const o=newGame;newGame=function(){const r=o.apply(this,arguments);try{if(S){S.corp=null;ceApply();if(!S.training)ceInit()}}catch(e){console.error(e)}return r}}
 {const o=startWith;startWith=function(st){const r=o.apply(this,arguments);try{if(S){ceApply();if(!S.corp&&!S.training)ceInit()}}catch(e){console.error(e)}return r}}
 // ---- prices: the profit floor and the CEO's pricing
@@ -14529,8 +14534,10 @@ makersTick=(function(o){return function(){if(!rdOn())return o.apply(this,argumen
   if(!S.corpConv){try{corpConvert()}catch(e){}S.corpConv=1}
   for(const m in MAKERS){const R=mkAtHome(m);if(!R||!ceAlive(m))continue;const st=mkStock(R),gidOf=id=>rdGid(id,rdLineG(m,id)),want=id=>Math.min(CE.cap,CE.shelf+ceSold(m,id,3600)+syfWant(m,id));
     const ids=MK_LINE[m].filter(id=>{const gid=gidOf(id);return ITEMS[gid]&&Object.keys(ITEMS[gid].recipe).length&&(st[gid]||0)<want(id)&&!(S.T>CE.shut&&!ceSold(m,id,CE.shut)&&(st[gid]||0)>0)}).sort((a,b)=>(st[gidOf(a)]||0)/want(a)-(st[gidOf(b)]||0)/want(b));
-    for(const id of ids){const gid=gidOf(id),rc=ITEMS[gid].recipe;if(!rdCanMake(st,rc,R))continue;const cost=Math.ceil(ceComp(R.sid,gid));if(ceT(m)-cost<ceReserve(m))continue;
-      rdCraftFor(st,rc,R);if(!haveIn(rc,[st]))continue;transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);ceOf(m).cost+=cost;takeFrom(rc,[st]);inv.add(st,gid,1);break}}}})(makersTick);
+    // (user, 8 Nov 2026) the maker's own components first (its starting stock and its supply runs); only the rest is bought off the market
+    for(const id of ids){const gid=gidOf(id),rc=ITEMS[gid].recipe,own=ceStore(m),mk={};for(const k in rc){const q=rc[k]-Math.min(rc[k],own[k]||0);if(q>0)mk[k]=q}
+      if(!rdCanMake(st,mk,R))continue;let cost=0;for(const k in mk)cost+=stPrice(R,k)*mk[k];cost=Math.ceil(cost);if(ceT(m)-cost<ceReserve(m))continue;
+      rdCraftFor(st,mk,R);if(!haveIn(mk,[st]))continue;if(cost)transfer(ceW(m),R.owner==='neutral'?'neutral':R.owner,cost);ceOf(m).cost+=cost;for(const k in rc){const q=Math.min(rc[k],own[k]||0);if(q>0)inv.take(own,k,q)}takeFrom(mk,[st]);inv.add(st,gid,1);break}}}})(makersTick);
 // a grade's Calibration Matrices, lattices and cores the station doesn't stock are made in the works from the station's stock
 // (design: "a grade's Calibration Matrices, lattices and cores are made in the works from the station's stock"); nothing else
 // is made (plates, conduit and coils must be on the market), and lattices and cores only where the station has a forge (as at
@@ -15174,8 +15181,10 @@ function mfjCost(j){const R=S.stations[j.from];let c=0;if(j.buy)for(const k in j
 // take the goods off the source's shelf (buying them for the maker if it must); returns the load or null
 function mfjLift(j,extra){const R=S.stations[j.from];if(!mfjReady(j))return null;const cost=mfjCost(j);if(cost+(extra||0)>0&&ceT(j.m)<cost+(extra||0))return null;
   const st=mkStock(R),load={};for(const k in j.load){const q=inv.take(st,k,j.load[k]);if(q>0)load[k]=q}if(cost){const paid=transfer(ceW(j.m),syfSide(R),cost);ceOf(j.m).cost+=paid}return load}
-// where a delivered load goes: an out shipment onto the destination's market; supplies into the works' market; materials into the prototype
+// where a delivered load goes: an out shipment onto the destination's market; supplies into the maker's own store (8 Nov 2026:
+// they used to land on the home market, which for a power's maker is the power's warehouse); materials into the prototype
 function mfjLand(m,k,to,load,rid){const c=ceOf(m);if(k==='mat'&&c&&c.rd&&c.rd.mj===rid){inv.addAll(c.rd.proto,load);c.rd.got=1;c.rd.mj=null;c.rd.stage='trials';c.rd.until=S.T+1e7;return}
+  if(k==='in'&&c&&!c.dead){inv.addAll(ceStore(m),load);return}
   const R=S.stations[to];let into=syfOk(R)?mkStock(R):null;if(!into){const H=mkAtHome(m);into=H?mkStock(H):(S.econ.stock.neutral||S.econ.stock.pirate)}inv.addAll(into,load)}
 // a job untaken for 5 minutes goes by the maker's own freighter
 function mfjNpc(j){const R=S.stations[j.from],R0=mkAtHome(j.m);if(!R||!R0)return false;const fee=mfjPay(j);if(ceT(j.m)<fee+mfjCost(j))return false;
@@ -15213,7 +15222,7 @@ function syfPlanOut(m){const R0=mkAtHome(m);if(!R0)return null;const st0=mkStock
     (S.syf.cold=S.syf.cold||{})[x.R.sid+'|'+x.id]=S.T+SYF.stale;delete S.syf.seen[x.R.sid+'|'+x.id];return{from:x.R.sid,to:to.sid,load:{[x.gid]:1}}}
   return null}
 // what the works' next goods need that the home market hasn't got (a matrix, lattice or core counts as what it's made of)
-function syfNeed(m){const R0=mkAtHome(m),st=mkStock(R0),need={};
+function syfNeed(m){const R0=mkAtHome(m),st={...mkStock(R0)},need={},own=ceStore(m);for(const k in own)st[k]=(st[k]||0)+own[k];
   const add=(rc,x,d)=>{for(const k in rc){const q=rc[k]*x;if(RD_CRAFT.has(k)&&d<3&&ITEMS[k].recipe&&!(ITEMS[k].forge&&!rdForgeAt(R0))){const sh=q-(st[k]||0);if(sh>0)add(ITEMS[k].recipe,sh,d+1)}else need[k]=(need[k]||0)+q}};
   for(const id of syfAll(m)){const gid=syfGid(m,id);if(!gid)continue;const w=Math.min(CE.cap,CE.shelf+ceSold(m,id,3600)+syfWant(m,id))-(st[gid]||0);if(w<=0)continue;add(ITEMS[gid].recipe,Math.min(2,w),0)}
   for(const k in need){need[k]=Math.ceil(need[k]-(st[k]||0));if(need[k]<=0)delete need[k]}return need}
