@@ -218,6 +218,10 @@ import beyond_stations as _BS
 BASE_MODELS={'by_lair1':lambda:_BS.lair(1),'by_lair2':lambda:_BS.lair(2),'by_depot1':lambda:_BS.depot(1),'by_depot2':lambda:_BS.depot(2),'by_depot3':lambda:_BS.depot(3),'by_core':lambda:_BS.station_core('standard',True),
   'by_yard':_BS.shipyard,'by_storage':_BS.ext_storage,'by_defence':_BS.defence_platform,'by_hangar':_BS.hangar,'by_forge':_BS.forge,'by_market':_BS.market_wing}
 for _k,_f in BASE_MODELS.items():MODELS[_k]=('base',(lambda f:lambda:f().out())(_f))
+# (8 Nov 2026) the five other base designs a player company can pick (tools/previews/beyond_base_designs.py): by_d<N>_depot1-3
+# and by_d<N>_core, N = 2..6, in the same units as the standard set; each carries its turret seats as 'tp'
+import beyond_base_designs as _BD
+for _k,(_f,_tp) in _BD.models().items():MODELS[_k]=('base',(lambda f:lambda:f().out())(_f));MOUNTS[_k]=_tp
 for _k,_v in WORKS.items():MODELS[_k]=('struct',_v[0] if len(_v)>2 else (lambda f:lambda:comp_model(f))(_v[0]))
 FIT={'rockbase':230,'station':150,'depot':105,'forge':120,'relay':120,'yard':120,**{k:v[1] for k,v in WORKS.items()}}
 FIT.update({'by_st_halcyon':170,'by_st_varkesh':170,'by_st_ostrova':170,'by_dp_halcyon':105,'by_dp_varkesh':105,'by_dp_ostrova':105,'by_freeport':210,'by_freeport_cw':210,'by_freeport_ew':210,'by_haven':240})   # world half-size: docking ports scale by it

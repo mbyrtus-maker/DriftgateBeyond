@@ -25,3 +25,18 @@ const MK_SPARE={json.dumps(list(SPARE_LOGOS))};
 const MK_ACC={json.dumps(acc)};
 """
 out=os.path.join(R,'..','src','js','16zzz_logos.js');open(out,'w').write(js);print('wrote',os.path.abspath(out),len(js),'bytes')
+# (8 Nov 2026) the twelve marks for player companies (tools/previews/beyond_cologos.py), written as src/js/16zzz_cologos.js:
+# CO_LOGO in order (the company profile stores the index), and coLogoSvg to draw one
+from beyond_cologos import CO_LOGOS
+co=[{'n':n,'d':path(P)} for _,n,P in CO_LOGOS]
+js2=f"""//@src 16zzz_cologos.js
+// ============================================================ the player companies' marks (generated: do not edit)
+// Written by tools/corp_logos_js.py from tools/previews/beyond_cologos.py (CO_LOGOS). Twelve heraldic marks for player
+// companies, in the makers' logo style but apart from every maker's and spare mark. Each: its name and its glyph as an SVG
+// path in a [-1,1] box (y down). Your company profile keeps the index.
+const CO_LOGO={json.dumps(co,separators=(',',':'),ensure_ascii=False)};
+// mark i as inline SVG, size px square, in colour col: the glyph alone, or (board) on a dark board with a rim like a maker's
+function coLogoSvg(i,size,col,board){{const L=CO_LOGO[i];if(!L)return'';col=col||'#e8c878';const t=board?`<rect x="-1.08" y="-1.08" width="2.16" height="2.16" rx=".12" fill="#0e121e" stroke="${{col}}" stroke-width=".14"/><path d="${{L.d}}" fill="${{col}}" transform="scale(.74)"/>`:`<path d="${{L.d}}" fill="${{col}}"/>`;
+  return`<svg class="mklogo cologo" width="${{size}}" height="${{size}}" viewBox="-1.16 -1.16 2.32 2.32" role="img" aria-label="${{esc(L.n)}}" style="vertical-align:middle;flex:none"><title>${{esc(L.n)}}</title>${{t}}</svg>`}}
+"""
+out2=os.path.join(R,'..','src','js','16zzz_cologos.js');open(out2,'w').write(js2);print('wrote',os.path.abspath(out2),len(js2),'bytes')

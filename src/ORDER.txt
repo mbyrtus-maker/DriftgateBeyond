@@ -93,6 +93,7 @@ js/16zzx_surge.js
 js/16zzy_bloom.js
 js/16zzz_corp.js
 js/16zzz_logos.js
+js/16zzz_cologos.js
 js/16zzza_rd.js
 js/16zzzb_aipilots.js
 js/16zzzc_indep.js
