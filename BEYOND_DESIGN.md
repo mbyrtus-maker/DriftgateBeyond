@@ -3052,4 +3052,5 @@ The user, after the economy test: "Add an R&D random roll for success in each la
   - median hourly price move 17% → 12%; makers at the 1.0 floor 13% → 0%; CEO replacements 14 → 11 a galaxy;
   - failed trials 88 against 250 launches;
   - failures 0.1 → 0.5 a galaxy, all Archive Dynamics, a heavy R&D spender, for want of cash.
+- **Checks:** quick suite all pass (71). War check (300 galaxies, 16 h): Brood 26%, Halcyon 24%, Varkesh 24%, Ostrova 24%, unfinished 2%. The powers are even; the Brood is 3 points above the 23% measured at grazing 1.3, within the noise of 300 galaxies.
 - **Still not as the user described:** makers that never launch end with the highest prices (157), because they sit on their starting cash. Nothing makes a company fail when its share price collapses; only running out of cash does.
