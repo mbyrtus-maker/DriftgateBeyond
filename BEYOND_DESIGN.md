@@ -3199,7 +3199,7 @@ The user: "Blackmarket jobs should have their own tab under jobs."
 - At a freeport and at the Rusty Tankard, the fixers' runs (and the Tankard's rumours) move off the main Jobs board onto **Jobs → Black market**: the same rows and detail panel, with no kind filter (they are all hauls).
 - The Company screen's Black Market tab still lists every offer galaxy-wide.
 
-### Proposal, revised: four components as alternatives (user, 8 Nov 2026; not built)
+### Proposal, revised: four components as alternatives (user, 8 Nov 2026; built 9 Nov 2026, see "The four components, built")
 The user, on the first proposal: "4 Components are there to add flexibility; maybe not all armor just needs alloy plates, maybe some use Vantium plating instead. Trying to add variety while still maintaining current economies. Also Vantium and Aurorite should be considered in R&D items or upgraded maker items."
 - **Standard parts, standard systems and the AI fleets' kits keep today's recipes.** The economy the balance rests on doesn't move.
 - **The four components** (made like plate and conduit: at the powers' works, depots with production and freeports, and by Fabricate):
@@ -3312,3 +3312,16 @@ The guest build test failed now and then at "Lair built": the guest saw a good s
 - **The map's sector view** (M, click a system) has a key under it when the system has Riftstone: "Pink: Riftstone (n rocks, out beyond the gates)".
 - **The Riftstone buyer job** names the nearest three systems with Riftstone left, with their jumps.
 Every deep and quiet system has two Riftstone rocks (the two richest in Xenocrystal), as before.
+
+### The four components, built (user, 9 Nov 2026: "Push the new components")
+Built as the revised proposal says (`16zzzq_components.js`, `tools/tests/components.py`):
+- **Items:** Vantium Plating (2 Vantium, 1 Ferrite), Aurorite Cell (1 Aurorite, 2 Cuprite), Optic Array (1 Xenocrystal, 2 Cuprite), Thrust Vane (1 Iridium, 2 Ferrite). Traded on every market (Market → Components) and made by Fabricate.
+- **Who makes them:** the powers' works, keeping 80 Ferrite and 80 Cuprite (as their plate and conduit making does), up to 30 of each; freeports with production; and a maker's works from the station's ore when the market has none (like matrices). A maker whose host is short of Aurorite or Vantium asks for it to be mined, as before, so those requests now feed real parts.
+- **Where they go:**
+  - characterful maker parts by the table in the proposal;
+  - maker systems by slot;
+  - each R&D grade above 1 swaps one more plate (structural kinds) or coil (energy kinds, conduit where there is no coil);
+  - Coldwater Refit and the makers' plain lines (mq_) at grade 1 stay standard.
+  - Each swap uses less Ferrite and Cuprite than the standard component it replaces (the galaxy's tight ores) and more of Vantium, Aurorite, Xenocrystal and Iridium (the plentiful ones).
+- **Ledger:** a fitted maker system counts as the item it is (not as a standard system); a fitted graded maker part as its graded item; stripping a ship's grades gives back what a maker system's grades really hold; a save from before is rebased once on load.
+- **Not changed:** standard parts, standard systems, the AI fleets' kits, hulls, capital ships and stations.
