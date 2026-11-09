@@ -101,5 +101,6 @@ js/16zzzf_sysfreight.js
 js/16zzzg_rdroll.js
 js/16zzzh_systraits.js
 js/16zzzi_escort.js
+js/16zzzj_kits.js
 js/17_main.js
 end.html

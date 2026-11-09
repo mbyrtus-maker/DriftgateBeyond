@@ -21,7 +21,7 @@ async def main():
       if not ok:bad.append(name)
     check('escort pay is 150 cr a jump',await ev("ESC_CV.hop===150&&cvPay({load:{}},3)===510"))
     # an independent miner hires a guard for a trip into deep space
-    r=json.loads(await ev("""(()=>{running=false;const I=indAll().find(x=>x.role==='miner'&&x.st==='dock');if(!I)return JSON.stringify({miner:false});
+    r=json.loads(await ev("""(()=>{running=false;for(let i=0;i<6&&!indAll().some(x=>x.role==='miner');i++){S.T+=10;strategicTick()}const I=indAll().find(x=>x.role==='miner'&&x.st!=='down'&&!x.live);if(!I)return JSON.stringify({miner:false});I.st='dock';I.sector=I.port;I.run=null;I.hire=null;I.guard=null;
       transfer('neutral',indW(I),4000);const to=Object.keys(DEF).filter(s=>DEF[s].kind==='deep'&&indHops(I.sector,s)<=3).sort((a,b)=>indHops(I.sector,a)-indHops(I.sector,b))[0];
       const P=S.player;exitSector();W=null;P.sector=I.sector;enterSector(I.sector);running=false;P.docked='station';
       indGo(I,'mine',to,{});const H=I.hire,waits=I.st==='dock'&&H&&H.st==='wait';indPlan(I);const still=I.st==='dock';
@@ -35,7 +35,7 @@ async def main():
     # a jump with it pays 150 cr; a minute within 2.5 km while it mines pays 50 cr
     r=json.loads(await ev(f"""(()=>{{const I=indById({json.dumps(iid)}),P=S.player,G=I.guard,c0=P.credits,p0=indPurse(I);
       const nx=I.run.path[1]||I.run.to;I.sector=nx;fmHost(.01);const jump=P.credits-c0;
-      exitSector();W=null;P.sector=nx;P.docked=null;enterSector(nx);running=false;I.run.to=nx;I.st='work';I.live=false;const e=indSpawn(I,false);I.st='work';
+      I.run.to=nx;I.st='work';I.live=false;exitSector();W=null;P.sector=nx;P.docked=null;enterSector(nx);running=false;const e=W.ents.find(x=>x.alive&&x.indId===I.id)||indSpawn(I,false);
       const p=W.player;p.x=e.x+200;p.y=e.y;p.z=e.z;p.vx=p.vy=p.vz=0;const c1=P.credits;fmHost(.3);fmHost(61);const min=P.credits-c1;
       return JSON.stringify({{jump,min,paid:G.paid,purse:p0-indPurse(I),fmE:P.fmE,eid:e.id}})}})()"""))
     check('a jump with it pays 150 cr and a minute guarding it pays 50 cr, from its purse',r['jump']==150 and r['min']==50 and r['paid']==200 and r['purse']==200,r)
@@ -43,7 +43,7 @@ async def main():
     l=await ev(LED);check('ledger exact after guard pay',l=='exact',l)
     # formation: J on it flies alongside; a hostile fighter breaks it off; it vanishing at a gate takes you through with it
     r=json.loads(await ev("""(()=>{const p=W.player,E=fmEnt();W.tgt={kind:'ship',ref:E};apOn=false;toggleAutopilot();const on=!!(W.fmn&&apOn&&W.fmn.ref===E);
-      E.vx=60;E.vy=0;E.vz=0;p.x=E.x+600;p.vx=p.vy=p.vz=0;for(let i=0;i<60;i++){autopilot(p,1/30);p.x+=p.vx/30;p.y+=p.vy/30;p.z+=p.vz/30;E.x+=E.vx/30}const closing=d3(p,E)<600&&p.vx>0;
+      for(const x of W.ents.slice())if(x.type==='ship'&&x.alive&&!x.isPlayer&&x!==E&&hostile('player',x.side))despawn(x);E.vx=60;E.vy=0;E.vz=0;p.x=E.x+600;p.y=E.y;p.z=E.z;p.vx=p.vy=p.vz=0;const d0=d3(p,E);for(let i=0;i<90;i++){autopilot(p,1/30);p.x+=p.vx/30;p.y+=p.vy/30;p.z+=p.vz/30;E.x+=E.vx/30}const closing=!!W.fmn&&d3(p,E)<d0-100;
       const H=makeNPC('patrol','pirate','interceptor',1,{},'test');H.x=p.x+900;H.y=p.y;H.z=p.z;W.ents.push(H);autopilot(p,1/30);const broke=!W.fmn&&!apOn&&W.tgt&&W.tgt.ref===H;H.alive=false;W.ents.splice(W.ents.indexOf(H),1);
       W.tgt={kind:'ship',ref:E};toggleAutopilot();const back=!!W.fmn;const g=GATES[W.sid][0];E.x=g.x*.97;E.y=g.y*.97;E.z=g.z*.97;p.x=E.x+150;p.y=E.y;p.z=E.z;autopilot(p,1/30);despawn(E);autopilot(p,1/30);
       const J=W.jump;return JSON.stringify({on,closing,broke,back,jump:J?J.to:null,gate:g.to})})()"""))

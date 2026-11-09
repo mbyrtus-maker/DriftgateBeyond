@@ -10518,7 +10518,7 @@ function crewTick(){for(const R of Object.values(S.stations||{})){if(!R||R.owner
 {const o=holdingsHtml;holdingsHtml=function(P){let h=o.apply(this,arguments);const D=myDepots(P);const L=P.docked==='lair'&&(S.lairs||[]).find(x=>x.id===P.lairId);
   let d=`<div class="h3" style="margin-top:16px">Depots</div><p class="note" style="margin:0 0 8px">A Depot is on every map, with a market, Driftgate 1's modules (Works tab when docked) and a hangar for AI crews. Upgrade a Lair in place (2 Depot Frames from your hold or its stash, docked there), or build fresh with 2 Depot Frames in your hold in a system with no station.</p>`;
   d+=D.length?`<div class="tblw"><table class="t"><thead><tr><th>Depot</th><th>Level</th><th class="r">Store</th><th class="r">Crews</th><th>Hull</th></tr></thead><tbody>${D.map(R=>`<tr><td class="iname">${esc(R.name)}</td><td>${depLvl(R)}</td><td class="r num">${invMass(R.stock)} t</td><td class="r num">${(R.crew||[]).length}/${crewCap(R)}</td><td>${Math.round(R.hull/R.hMax*100)}%</td></tr>`).join('')}</tbody></table></div>`:'<div class="note">No depots yet.</div>';
-  if(L)d+=`<button class="btn pri" type="button" data-co="depotup" style="margin-top:8px">Upgrade this Lair to a Depot · 2 Depot Frames</button>`;else if(!P.docked&&W&&W.player)d+=`<button class="btn" type="button" data-co="depotbuild" style="margin-top:8px" ${depCan(W.sid)&&haveIn(DEP.cost,[P.cargo])?'':'disabled'}>Build a Depot here · 2 Depot Frames in your hold</button>`;return h+d}}
+  if(L)d+=`<button class="btn pri" type="button" data-co="depotup" style="margin-top:8px">Upgrade this Lair to a Depot · 2 Depot Frames or a Depot Kit</button>`;else if(!P.docked&&W&&W.player)d+=`<button class="btn" type="button" data-co="depotbuild" style="margin-top:8px" ${depCan(W.sid)&&kitOr(DEP.cost,[P.cargo],'kit_depot')?'':'disabled'}>Build a Depot here · 2 Depot Frames or a Depot Kit in your hold</button>`;return h+d}}
 function economyHtml(P){const D=myDepots(P),now=S.T;let h=`<p class="note" style="margin:0 0 10px">What each base earned and spent over the last hour, its trend over the last three, and why. Credits only ever move between you, the powers' treasuries and the Compact.</p>`;let tot=0;
   for(const R of D){const H=[0,1,2].map(i=>{const s=ecoSum(R,now-3600*(i+1),now-3600*i);return{s,n:Object.values(s).reduce((a,b)=>a+b,0)}}),net=H[0].n;tot+=net;const tr=H[0].n>H[1].n+50?'rising':H[0].n<H[1].n-50?'falling':'steady';
     const lines=Object.entries(H[0].s).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]));const why=(R.eco||[]).slice(-3).reverse().map(e=>e.w);
@@ -10576,7 +10576,7 @@ function capBuild(P,R,kind){if(!isPSta(R)||!hasB(R,'yard'))return'Capital ships 
 // Holdings: each depot's road to a Station, and each Station's buildings and slips
 {const o=holdingsHtml;holdingsHtml=function(P){let h=o.apply(this,arguments);const D=myDepots(P);if(!D.length)return h;
   h+=`<div class="h3" style="margin-top:16px">Stations</div><p class="note" style="margin:0 0 8px">Upgrade a Depot to a Station with a Capital Keel, 2 Depot Frames and a Compact Seal (from its store or your hold). A Station holds the system for you and grows one building per level, up to five; each building takes a Depot Frame, 20 Alloy Plate and 4 Flux Coils.</p>`;
-  for(const R of D){if(!R.pst){h+=`<div style="margin:4px 0"><b>${esc(R.name)}</b> <button class="btn sm" type="button" data-co="staup" data-arg="${R.sid}" ${haveIn(STA.cost,[P.cargo,R.stock])?'':'disabled'}>Upgrade to a Station · ${Object.keys(STA.cost).map(k=>`${STA.cost[k]} ${esc(ITEMS[k].name)}`).join(', ')}</button></div>`;continue}
+  for(const R of D){if(!R.pst){h+=`<div style="margin:4px 0"><b>${esc(R.name)}</b> <button class="btn sm" type="button" data-co="staup" data-arg="${R.sid}" ${kitOr(STA.cost,[P.cargo,R.stock],'kit_station')?'':'disabled'}>Upgrade to a Station · ${Object.keys(STA.cost).map(k=>`${STA.cost[k]} ${esc(ITEMS[k].name)}`).join(', ')}, or a Station Kit</button></div>`;continue}
     h+=`<div style="border-top:1px solid var(--line);padding:6px 0"><b>${esc(R.name)}</b> · level ${staLvl(R)} · ${(R.bld||[]).map(k=>esc(STA.B[k][0])).join(', ')||'no buildings yet'}<div class="act" style="flex-wrap:wrap;margin-top:4px">`;
     if((R.bld||[]).length<5)for(const k in STA.B)if(!hasB(R,k))h+=`<button class="btn sm" type="button" data-co="stabld" data-arg="${R.sid}:${k}" title="${esc(STA.B[k][1])}" ${haveIn(STA.bcost,[P.cargo,R.stock])?'':'disabled'}>${esc(STA.B[k][0])}</button>`;
     if(hasB(R,'yard'))h+=`<button class="btn sm" type="button" data-co="capbld" data-arg="${R.sid}:esc" ${staLvl(R)>=3&&haveIn(escCost('player'),[P.cargo,R.stock])?'':'disabled'}>Escort (level 3)</button><button class="btn sm" type="button" data-co="capbld" data-arg="${R.sid}:car" ${staLvl(R)>=5&&haveIn(carCostF('player'),[P.cargo,R.stock])?'':'disabled'}>Carrier (level 5)</button>`;
@@ -12080,7 +12080,7 @@ function coDetail(P,b){const s=[];
   if(b.L){const L=b.L,seen=Object.keys(L.seen||{}).filter(f=>L.seen[f]),here=P.docked==='lair'&&P.lairId===L.id;
     s.push(`<div class="lab">Lair · level ${L.lvl||1} of 2</div><div class="ldname"><b>${esc(DEF[L.sid].name)}</b></div><div class="note" style="margin:2px 0 12px">${L.build>S.T?`building · ${Math.ceil(L.build-S.T)} s`:seen.length?`<span style="color:var(--danger)">found by ${seen.map(f=>esc(FACTIONS[f].short)).join(', ')}</span> · hull ${Math.round(L.hull/LAIR_B.hull*100)}%`:'hidden from every power'} · stash ${invMass(L.stash)} / ${lairStash(L)} t</div>`);
     if((L.lvl||1)<2)s.push(`<div class="lab">Next: level 2 · a workshop, a forge, a 400 t stash</div><div style="margin:6px 0">${coCost(LAIR_B.up,[P.cargo,L.stash])}</div><div class="act"><button class="btn pri" type="button" data-co="lairup" data-arg="${L.id}">To level 2</button>${here?'':'<span class="note" style="margin:0 0 0 8px">dock at this Lair to upgrade it</span>'}</div>`);
-    s.push(`<div class="lab" style="margin-top:14px">Upgrade to a Depot · visible on every map</div><div style="margin:6px 0">${coCost(DEP.cost,[P.cargo,L.stash])}</div><div class="act"><button class="btn" type="button" data-co="depotup">Upgrade to a Depot</button>${here?'':'<span class="note" style="margin:0 0 0 8px">dock at this Lair first</span>'}</div>`)}
+    s.push(`<div class="lab" style="margin-top:14px">Upgrade to a Depot · visible on every map</div><div style="margin:6px 0">${coCost(DEP.cost,[P.cargo,L.stash])}${countIn('kit_depot',[P.cargo,L.stash])?' · or the Depot Kit you have':' · or a Depot Kit'}</div><div class="act"><button class="btn" type="button" data-co="depotup">Upgrade to a Depot</button>${here?'':'<span class="note" style="margin:0 0 0 8px">dock at this Lair first</span>'}</div>`)}
   else{const R=b.R,srcs=[P.cargo,R.stock],t=coThreat(R);
     s.push(`<div class="lab">${b.kind} · level ${R.pst?staLvl(R)+' of 5':depLvl(R)+' of 3'}</div><div class="ldname"><b>${esc(DEF[R.sid].name)}</b></div><div class="note" style="margin:2px 0 12px">${esc(R.name)} · store ${invMass(R.stock)} t · crews ${(R.crew||[]).length} / ${crewCap(R)} · hull ${Math.round(R.hull/R.hMax*100)}%${R.pst?' · holds the system':''}</div>`);
     if(t&&t.hurt)s.push(`<div class="coalert"><span class="cdot" style="background:var(--danger)"></span><span style="flex:1">Its hull is down</span><button class="btn sm" type="button" data-co="hgguard" data-arg="${R.sid}">Send a guard</button></div>`);
@@ -12089,7 +12089,7 @@ function coDetail(P,b){const s=[];
       if(hasB(R,'yard')){const slips=S.events.filter(e=>['escbuild','frigbuild','dstbuild'].includes(e.type)&&e.att===yardKeyOf(R)&&e.stage==='building');
         s.push(`<div class="lab" style="margin-top:12px">Capital ships</div><div class="act" style="flex-wrap:wrap;margin-top:6px"><button class="btn sm" type="button" data-co="capbld" data-arg="${R.sid}:esc" ${staLvl(R)>=3&&haveIn(escCost('player'),srcs)?'':'disabled'}>Escort · level 3</button><button class="btn sm" type="button" data-co="capbld" data-arg="${R.sid}:dst" ${staLvl(R)>=DST.lvl&&haveIn(dstCost('player'),srcs)?'':'disabled'}>Destroyer · level ${DST.lvl}</button><button class="btn sm" type="button" data-co="capbld" data-arg="${R.sid}:car" ${staLvl(R)>=5&&haveIn(carCostF('player'),srcs)?'':'disabled'}>Carrier · level 5</button></div>${slips.map(e=>`<div class="note" style="margin:4px 0 0">${e.type==='escbuild'?'Escort':e.type==='dstbuild'?'Destroyer':'Carrier'} in the slip: ${fmtT(Math.max(0,e.until-S.T))}</div>`).join('')}`)}}
     else{const d=devOf(R),mods=['store','prod','def','armor','hangar','life'].filter(k=>d[k]).map(k=>({store:'storage',prod:'production',def:'defence',armor:'armour',hangar:'hangar',life:'life support'})[k]+(d[k]>1?' '+d[k]:''));
-      s.push(`<div class="lab">Modules</div><div class="note" style="margin:4px 0 12px">${mods.join(' · ')||'none yet: build them at the depot\'s Works tab'}</div><div class="lab">Upgrade to a Station · holds the system, grows a building a level</div><div style="margin:6px 0">${coCost(STA.cost,srcs)}</div><div class="act"><button class="btn pri" type="button" data-co="staup" data-arg="${R.sid}" ${haveIn(STA.cost,srcs)?'':'disabled'}>Upgrade to a Station</button></div>`)}
+      s.push(`<div class="lab">Modules</div><div class="note" style="margin:4px 0 12px">${mods.join(' · ')||'none yet: build them at the depot\'s Works tab'}</div><div class="lab">Upgrade to a Station · holds the system, grows a building a level</div><div style="margin:6px 0">${coCost(STA.cost,srcs)}${countIn('kit_station',srcs)?' · or the Station Kit you have':' · or a Station Kit'}</div><div class="act"><button class="btn pri" type="button" data-co="staup" data-arg="${R.sid}" ${kitOr(STA.cost,srcs,'kit_station')?'':'disabled'}>Upgrade to a Station</button></div>`)}
     s.push(`<div class="act" style="margin-top:16px"><button class="btn sm" type="button" data-co="tab" data-arg="economy">Economy ›</button><button class="btn sm" type="button" data-co="tab" data-arg="crews">Crews and jobs ›</button></div>`)}
   return s.join('')}
 {const o=holdingsHtml;holdingsHtml=function(P){if(!S||S.unb||S.training||coFull.holdings)return o.apply(this,arguments);P=P||S.player;const B=coBases(P);if(!coSel||!B.some(b=>b.key===coSel))coSel=B.length?B[0].key:null;
@@ -15575,6 +15575,66 @@ function fmFly(p,dt){const F=W.fmn,R=F.ref;
 // after a jump together: fall back in on it when it appears (unless you take the stick first)
 {const o=playerUpdate;playerUpdate=function(dt){const r=o.apply(this,arguments);try{if(W&&W.fmn&&!apOn)W.fmn=null;
   if(FM_AFTER){if(performance.now()>FM_AFTER||fmMan()||S.player.docked)FM_AFTER=0;else if(!apOn&&W&&!W.jump&&!W.dead){const E=fmEnt();if(E){FM_AFTER=0;fmStart(E,true);flash(`Back in formation on ${W.fmn.name}.`)}}}}catch(e){console.error(e)}return r}}
+
+//@src 16zzzj_kits.js
+// ============================================================ Beyond: Lair, Depot and Station kits (user, 8 Nov 2026)
+// The user: the bases' recipes "should still be needed to create the kits, but they should be purchaseable on the market and
+// be able to be slotted into Cargo slots. They should require a certain tonnage cargo space (large)"; "Constructor is not a
+// player ship. So they should all only fit in the heavy hauler; it's end game stuff"; carried in the hold; any ship that can
+// carry one deploys it; "They are freely stocked at all stations."
+//   Items: Lair Kit (1 Depot Frame, 6 Alloy Plate), Depot Kit (2 Depot Frames), Station Kit (1 Capital Keel, 2 Depot
+//     Frames, 1 Compact Seal): 150, 180 and 220 t in the hold, and only a Heavy Hauler's hold takes one (bought by another
+//     hull, it goes to your hangar). Fabricated at a dock from the recipe like any component.
+//   Stocked: every power's and freeport's market has one of each while a pilot is docked there, assembled from that market's
+//     own store (from the recipe's components, or what they are made of); when no pilot is docked, unsold kits are broken
+//     back into exactly what they were made from. The ledger stays exact.
+//   Deploying: a kit in the hold (or the base's store, for an upgrade) stands in for the loose materials: Build a Lair, Build a
+//     Depot here (any hull, no Constructor), Upgrade a Lair to a Depot, Upgrade a Depot to a Station. It is unpacked into its
+//     components at that moment and used as they would be.
+ITEMS.kit_lair={name:'Lair Kit',recipe:{frame:1,plate:6},col:'#c9a86a',kit:1};
+ITEMS.kit_depot={name:'Depot Kit',recipe:{frame:2},col:'#a8c0e0',kit:1};
+ITEMS.kit_station={name:'Station Kit',recipe:{keel:1,frame:2,seal:1},col:'#e0c070',kit:1};
+const KIT_IDS=['kit_lair','kit_depot','kit_station'],KIT_T={kit_lair:150,kit_depot:180,kit_station:220},KIT_HULL='bulker';
+for(const k of KIT_IDS){ITEM_ORDER.push(k);CRAFTABLE.push(k)}
+{const o=mass;mass=function(id){return KIT_T[id]||o.apply(this,arguments)}}
+{const o=stockTarget;stockTarget=function(id){return KIT_T[id]?1:o.apply(this,arguments)}}
+function isKit(k){return!!KIT_T[k]}
+// a cost met by loose materials, or by the kit that stands in for them
+function kitOr(cost,srcs,kid){return haveIn(cost,srcs)||countIn(kid,srcs)>0}
+// unpack one kit (from the first source holding one) into its components, in that same source
+function kitUnpack(kid,srcs){for(const s of srcs)if(s&&(s[kid]||0)>0){inv.take(s,kid,1);inv.addAll(s,ITEMS[kid].recipe);return true}return false}
+// ---- the market: one of each kit on the shelf while a pilot is docked
+function kitKey(R){const s=storeOf(R);return S.econ.stock[R.owner]&&s===S.econ.stock[R.owner]?'w:'+R.owner:'s:'+R.sid}
+function kitMkOf(key){if(key.startsWith('w:'))return S.econ.stock[key.slice(2)]||null;const R=S.stations[key.slice(2)];return R?storeOf(R):null}
+// what one kit takes from a store: the recipe's components where it has them, else what they are made of (down to ore)
+function kitPlan(mk,k){const left={...mk},took={};
+  const need=(id,n)=>{const h=Math.min(left[id]||0,n);if(h>0){left[id]-=h;took[id]=(took[id]||0)+h;n-=h}if(n<=0)return true;if(RAWS.includes(id)||!ITEMS[id]||!ITEMS[id].recipe)return false;const r=ITEMS[id].recipe;for(const x in r)if(!need(x,r[x]*n))return false;return true};
+  const r=ITEMS[k].recipe;for(const x in r)if(!need(x,r[x]))return null;return took}
+function kitTick(){if(NET.cl||!S||!S.econ||S.training||S.unb)return;S.kitShelf=S.kitShelf||{};const want={},L=mkStations();
+  for(const P of allPilots()){if(!P||P.docked!=='station')continue;const R=S.stations[P.sector];if(R&&L.includes(R))want[kitKey(R)]=R}
+  for(const key in want){const mk=kitMkOf(key);if(!mk)continue;const rec=S.kitShelf[key]=S.kitShelf[key]||[];
+    for(const k of KIT_IDS){const have=mk[k]||0;let mine=rec.filter(x=>x.k===k);while(mine.length>have){rec.splice(rec.indexOf(mine[0]),1);mine=mine.slice(1)}
+      if(have<1){const took=kitPlan(mk,k);if(took){takeFrom(took,[mk]);inv.add(mk,k,1);rec.push({k,took})}}}}
+  for(const key of Object.keys(S.kitShelf)){if(want[key])continue;const mk=kitMkOf(key);
+    if(mk)for(const x of S.kitShelf[key])if((mk[x.k]||0)>0){inv.take(mk,x.k,1);inv.addAll(mk,x.took)}
+    delete S.kitShelf[key]}}
+{const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{kitTick()}catch(e){console.error(e)}return r}}
+// docking puts them on the shelf at once (the host; a guest's arrive with the next tick)
+{const o=finishDock;finishDock=function(){const r=o.apply(this,arguments);try{kitTick()}catch(e){console.error(e)}return r}}
+// ---- only a Heavy Hauler's hold takes a kit
+let KIT_NOHOLD=false;
+{const o=holdFree;holdFree=function(){return KIT_NOHOLD?0:o.apply(this,arguments)}}
+{const o=dockAction;dockAction=function(act,arg){const k=typeof arg==='string'?arg.split(':')[0]:'';
+  if(isKit(k)&&!NET.cl&&S.player.cls!==KIT_HULL){
+    if(act==='buy'){KIT_NOHOLD=true;try{o.apply(this,arguments)}finally{KIT_NOHOLD=false}if(dockErr&&dockErr.startsWith('✓'))dockErr+=` A ${ITEMS[k].name} rides only in a Heavy Hauler's hold.`;return}
+    if(act==='mv'&&arg.split(':')[1]!=='in'){dockErr=`A ${ITEMS[k].name} (${mass(k)} t) rides only in a Heavy Hauler's hold.`;return}}
+  return o.apply(this,arguments)}}
+// ---- deploying: the kit stands in for the loose materials
+{const o=lairSpot;lairSpot=function(P){const r=o.apply(this,arguments);if(P&&r&&r.a&&r.why&&r.why.startsWith('You need')&&(P.cargo.kit_lair||0)>0)return{a:r.a};return r}}
+{const o=lairMake;lairMake=function(P){if(P&&!haveIn(LAIR_B.cost,[P.cargo])&&!P.lairKit)kitUnpack('kit_lair',[P.cargo]);return o.apply(this,arguments)}}
+{const o=depFresh;depFresh=function(P){if(P&&W&&W.player&&depCan(W.sid)&&!haveIn(DEP.cost,[P.cargo]))kitUnpack('kit_depot',[P.cargo]);return o.apply(this,arguments)}}
+{const o=depFromLair;depFromLair=function(P,L){if(P&&L&&depCan(L.sid)&&!haveIn(DEP.cost,[P.cargo,L.stash]))kitUnpack('kit_depot',[P.cargo,L.stash]);return o.apply(this,arguments)}}
+{const o=staUp;staUp=function(P,R){if(P&&R&&R.owner==='player'&&!R.pst&&(R.pid||'me')===pkeyOf(P)&&!haveIn(STA.cost,[P.cargo,R.stock]))kitUnpack('kit_station',[P.cargo,R.stock]);return o.apply(this,arguments)}}
 
 //@src 17_main.js
 // ============================================================ main loop
