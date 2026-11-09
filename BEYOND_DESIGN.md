@@ -3022,3 +3022,15 @@ The user's design check: powers gather ore into components, then hulls, capitals
 - 1.0: 20 / 29 / 27 / 23 / 1
 **Set: 1.3.** The user: "Set it for 1.3 I like the even of it". The powers are even and the Brood is 3 points over its target.
 **Note for tune files:** set `BR0.brGraze`, not `BAL.brGraze`. The Brood's ramp (`broodRamp`, `16s_declare.js`) resets BAL's Brood dials from BR0 every tick, so a tune of BAL.brGraze does nothing.
+
+### Economy test: do slow makers fail and leaders' shares climb? (user, 8 Nov 2026)
+The user asked for a test: "Companies that do not react to the market fast enough or take too long with their R&D should fail due to cash flow or market stock price fall. Companies that react and have a high selling product or overtake the previous leader due to their R&D should see a surge and their stock price should climb."
+**Run:** v59 (makers' haul jobs, 8,000 cr start, grazing 1.3), 8 AI galaxies × 12 h, neutral leaders. The tracer is `tools/ecotrace/ecotrace.py`, the analysis `tools/ecotrace/ecoan.py`.
+**Result: it doesn't work that way yet.**
+- **Failures are rare:** one in 96 maker-lives (0.12 a 12-hour galaxy), and only for want of cash; share price never causes one. The one failure (Marchgun, 4 h 54 min) had no R&D under way; its share price went 132, 56, 1, 1 first.
+- **R&D is quick and constant:** 268 launches (33 a galaxy), a project's median length 26 minutes (90% under 51). From a line's first tweak to R&D on it takes a median 130 minutes. No maker is slow enough to be punished.
+- **Share prices punish investment.** Price is (cash + its stock at cost + 8 × its smoothed hourly profit) / 100. R&D funding, components and freight all count as that hour's loss, so a launch is followed by a fall, not a surge.
+  - Of 40 launches that made the maker the top seller of its kind, the price fell in the next 2 hours in 19 of the 27 with prices on both sides (median −33%). Other launches: median −55%.
+  - The third of makers that launched most ended with the lowest prices (67 against 137 for those that launched none) and the least cash (1,846 against 9,358).
+  - The top-selling third ended below the lowest sellers (78 against 109).
+- **Prices swing wildly:** the median hourly move is 17%, makers sit at the 1.0 floor 13% of the time, and boards replace a CEO 14 times a galaxy (two falling hours in a row).
