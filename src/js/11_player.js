@@ -207,7 +207,7 @@ function tryDock(){if(W&&W.docking){abortDocking('Docking aborted.');return fals
   if(ch&&ch.k==='frigate'){const F=ch.e;if(hyp(p.vx-F.vx,p.vy-F.vy,p.vz-F.vz)>140){flash('Match speed with the capital ship to dock (under 140 m/s relative).');return false}return startDocking(F,'frigate')}
   if(ch&&ch.k==='land')return landOn(ch.e);
   const E=ch&&ch.e;if(!E){flash('Nothing to dock with nearby.');return false}
-  if(!canDock(E)){flash(E.type==='station'?'Hostile station. Docking refused.':E.o.owner?'This outpost is not yours or your faction\'s.':'Unclaimed outpost. Hold its ring with a Claim Beacon to claim it.',true);return false}
+  if(!canDock(E)){flash(E.type==='station'?'Hostile station. Docking refused.':E.o.owner?'This outpost is not yours or your faction\'s.':'Unclaimed outpost. Hold its ring with a Control Marker to claim it.',true);return false}
   if(hyp(p.vx,p.vy,p.vz)>180){flash('Too fast to dock. Slow below 180 m/s.');return false}
   return startDocking(E,E.type);
 }

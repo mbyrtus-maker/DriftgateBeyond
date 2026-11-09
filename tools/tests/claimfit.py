@@ -1,4 +1,4 @@
-# Beyond: Claim Beacons are fitted parts. Bought for a power at a freeport (the Market tiles list them, in the power's colour);
+# Beyond: Control Markers are fitted parts. Bought for a power at a freeport (the Market tiles list them, in the power's colour);
 # fitted in a utility slot from the Loadout (only beacons you have; the Jobs board's Buy & fit buys one); refused on a miner; in the hold they don't claim,
 # fitted they do; the claim uses the fitted beacon up and empties the slot; no grades; the ledger stays exact
 import asyncio,json,os
@@ -12,11 +12,11 @@ async def main():
     await pg.goto(GAME+'?name=Tester',wait_until='domcontentloaded');await pg.wait_for_function('window.__dg&&__dg.ev("MDL.ready")',timeout=60000)
     await pg.evaluate("document.getElementById('mpName').value='Tester'");await pg.evaluate("document.getElementById('bLaunch').click()");await pg.wait_for_timeout(1500)
     ev=lambda c:pg.evaluate('c=>__dg.ev(c)',c)
-    print('tiles',await ev("(()=>{transfer('halcyon','player',5000);$('dock').hidden=false;dockTab='market';mkFilter='bcn';renderDock();const t=$('dBody').innerText;const i=t.indexOf('CLAIM BEACONS');return t.slice(i,i+200).replace(/\\n/g,' | ')})()"))
+    print('tiles',await ev("(()=>{transfer('halcyon','player',5000);$('dock').hidden=false;dockTab='market';mkFilter='bcn';renderDock();const t=$('dBody').innerText;const i=t.indexOf('CONTROL MARKERS');return t.slice(i,i+200).replace(/\\n/g,' | ')})()"))
     print('icon colour',await ev("JSON.stringify([giKind('bc_varkesh'),giCol('bc_varkesh'),FACTIONS.varkesh.col])"))
     print('buy',await ev("(()=>{mkFilter='bcn';renderDock();document.querySelector('[data-act=buyfb][data-arg=varkesh]').click();return $('dErr').textContent.slice(0,80)+' | hold '+(S.player.cargo.bc_varkesh||0)})()"))
     print('hold only',await ev("(()=>{const o={owner:null};return String(fbHeld(S.player,o))})()"))
-    print('loadout',await ev("(()=>{dockTab='upg';ldSel='u:0';renderDock();const t=$('dBody').innerText;return JSON.stringify({fitRow:/Claim Beacon \\(Varkesh\\)/.test(t),buyFit:(t.match(/Buy & fit/gi)||[]).length})})()"))
+    print('loadout',await ev("(()=>{dockTab='upg';ldSel='u:0';renderDock();const t=$('dBody').innerText;return JSON.stringify({fitRow:/Control Marker \\(Varkesh\\)/.test(t),buyFit:(t.match(/Buy & fit/gi)||[]).length})})()"))
     print('fit',await ev("(()=>{dockAction('fit','u:0:bc_varkesh');const F=fitOf(S.player);return dockErr.slice(0,90)+' | '+JSON.stringify({u:F.u,ui:F.ui,hold:S.player.cargo.bc_varkesh||0,pup:pupQuote(dockCtx(),S.player,'u:0')})})()"))
     print('buy & fit',await ev("(()=>{const c0=S.player.credits;dockAction('fit','u:0:bc_ostrova');const refused=dockErr.slice(0,40);dockAction('cbfit','ostrova:0');const F=fitOf(S.player);return 'loadout: '+refused+' · board: '+dockErr.slice(0,60)+' | '+JSON.stringify({ui:F.ui,paid:c0-S.player.credits,vault:S.player.vault.bc_varkesh||0})})()"))
     print('refit varkesh',await ev("(()=>{dockAction('fit','u:0:bc_varkesh');return dockErr.slice(0,70)+' | '+JSON.stringify(fitOf(S.player).ui)})()"))

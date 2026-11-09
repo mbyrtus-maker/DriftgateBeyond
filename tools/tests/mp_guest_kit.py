@@ -3,7 +3,7 @@
 # went): the Loadout (a graded maker part bought on the market and fitted, Rating-gated with the message; an upgrade in
 # place refused; a system installed through the Loadout's real Install button; Rearm), the helm of each capital (an
 # escort, a carrier and a frigate: board, take the helm, set throttle and a move point, the frigate jumps with the guest
-# aboard, step off), and a Claim Beacon (the Jobs board's Buy & fit, then holding it in an unclaimed outpost's ring claims
+# aboard, step off), and a Control Marker (the Jobs board's Buy & fit, then holding it in an unclaimed outpost's ring claims
 # the outpost). Every step is checked on the host; the ledger stays exact.
 import json
 from mpkit import run,HP,LED
@@ -62,7 +62,7 @@ async def body(K):
   lj=json.loads(lo)
   check('the Loadout renders on the guest, with no upgrade buttons',lj['len']>200 and lj['plus']==0,lo)
   await K.ledger('after the Loadout')
-  # ================= the Claim Beacon: the Jobs board's Buy & fit
+  # ================= the Control Marker: the Jobs board's Buy & fit
   tg=json.loads(await Hh("""(()=>{const P=%s,c=runAs('clipid1',()=>dockCtx()),L=runAs('clipid1',()=>fbSold(c,P));let best=null;
     for(const f of L)for(const x of claimTargets(f,P))if(!x.o.owner&&(!best||x.h<best.h))best={f,o:x.o.id,sec:x.o.sector,h:x.h,name:x.o.name};return JSON.stringify(best)})()"""%HP))
   print('claim target:',tg)

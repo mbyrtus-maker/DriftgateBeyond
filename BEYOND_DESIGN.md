@@ -3093,3 +3093,8 @@ The user: "Put contractor rating on the allegiance screen as a graphic and just 
 The user: "Default the jobs to the hull type the pilot is currently in so filter fight/escort when in a fighter, mining when in a miner, haul when in a hauler. All still an option."
 - The board opens filtered to the hull's kind of work: Fight (escorts are fight jobs) in a fighter or bomber, Mine in a miner, Haul in a hauler, Scout in a scout. The special hulls use their first kind: the Vesper Scout, the Bombard Mine, the Gannet Haul.
 - All and the other kinds stay one click away. The default comes back each time you dock or change hull; a pick you make holds until then.
+
+### The Claim Beacon is now the Control Marker (user, 8 Nov 2026)
+The user: "Beacon a scout has to flip and a claim beacon are too confusing. Can we rename Claim beacon to something else?" Chosen: **Control Marker**.
+- **Renamed everywhere the player reads it:** the item (Control Marker (Halcyon) and so on), the utility part, the Market and Jobs board lines ("Buy & fit a Varkesh Control Marker"), the intel and help text.
+- **Unchanged:** the beacons scouts flip in each system keep their name. Internal ids (`beacon`, `bc_<power>`, the part `claim`) are unchanged, so saves carry over.

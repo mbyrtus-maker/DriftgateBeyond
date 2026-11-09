@@ -10,7 +10,7 @@
 // here instead: the powers' and freeports' freighters, traders and miners in this system, with the cargo scanner's
 // reading, biggest haul first; picking one targets it. Guests use the messages the board and Comms already send
 // (job, plan, cvesc), so the host keeps the ledger.
-const CJ={per:4,dockOnly:['bmr','find','dpw','bmo'],hint:{k:'deliver at the dock',pj:'deliver at the dock',b:'deliver at the dock',r:'deliver at the dock',s:'land on its deck',ce:'fly with it',cv:'kill the freighter',op:'join the fight',bm:'hold the beacon',cl:'fire a Claim Beacon',dp:'shoot him down'}};
+const CJ={per:4,dockOnly:['bmr','find','dpw','bmo'],hint:{k:'deliver at the dock',pj:'deliver at the dock',b:'deliver at the dock',r:'deliver at the dock',s:'land on its deck',ce:'fly with it',cv:'kill the freighter',op:'join the fight',bm:'hold the beacon',cl:'fire a Control Marker',dp:'shoot him down'}};
 function cjTxt(s){return String(s||'').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>')}
 // the board you'd hail from here
 function cjCtx(P){const sid=P.sector,R=S.stations[sid];
@@ -69,7 +69,7 @@ function cjPick(o){const P=S.player;
     flash(`Job selected: ${cjTxt(j.title)}.`);return}
   if(pre==='dp'){const D=typeof dpOf==='function'&&dpOf(),e=D&&W.ents.find(x=>x.alive&&x.dreadOf);if(e)cjTarget(e,`Targeted ${shipLabel(e)}.`);else flash(`${cjTxt(j.title)}: he's somewhere in this system.`);return}
   if(pre==='pj'){flash('Dock here to deliver it from the Jobs board.');return}
-  if(pre==='cl'){flash(`${cjTxt(j.title)}: fly to it, break its defences and fire your Claim Beacon there.`);return}
+  if(pre==='cl'){flash(`${cjTxt(j.title)}: fly to it, break its defences and fire your Control Marker there.`);return}
   flash(cjTxt(j.title))}
 // ---- the wiring
 {const o=cycleFriendly;cycleFriendly=function(){if(cjOn()&&commsOpen()&&W.ftgt===W.player&&!W.cmJobs){W.cmJobs=1;cjPg=0;cjOpen();return}if(W)W.cmJobs=0;try{$('comms').classList.remove('cj')}catch(e){}return o.apply(this,arguments)}}

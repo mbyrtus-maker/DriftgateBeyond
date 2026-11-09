@@ -1,4 +1,4 @@
-# Beyond stage 5: Claim Beacons for any power, claim jobs, and intel work for contractors. Beacons sold by power at a
+# Beyond stage 5: Control Markers for any power, claim jobs, and intel work for contractors. Beacons sold by power at a
 # freeport; a claim in the ring with a power's beacon claims for that power, pays its fee and moves standing (ledger exact);
 # claim and intel jobs listed; "Intel work for" routes beacon flips and limpets; scanners see anomalies; anomalies sit out
 # beyond the gates; a minute of flight with no simulation errors
@@ -17,7 +17,7 @@ async def main():
     ev=lambda c:pg.evaluate('c=>__dg.ev(c)',c)
     print('sold here',await ev("(()=>{const c=dockCtx();return JSON.stringify({dock:c.name,powers:fbSold(c,S.player)})})()"))
     print('buy',await ev("""(()=>{const c=dockCtx(),P=S.player,c0=P.credits,t0=S.econ.treasury[c.wallet];dockAction('buyfb','halcyon');return JSON.stringify({msg:dockErr,paid:c0-P.credits,toTreasury:S.econ.treasury[c.wallet]-t0,hold:P.cargo.bc_halcyon||0,vault:P.vault.bc_halcyon||0})})()"""))
-    print('market section',await ev("(()=>{dockTab='market';renderDock();const t=document.querySelector('#dBody').innerText;const i=t.indexOf('CLAIM BEACONS')>=0?t.indexOf('CLAIM BEACONS'):t.indexOf('Claim Beacons');return i>=0?t.slice(i,i+160).replace(/\\n/g,' | '):'missing'})()"))
+    print('market section',await ev("(()=>{dockTab='market';renderDock();const t=document.querySelector('#dBody').innerText;const i=t.indexOf('CONTROL MARKERS')>=0?t.indexOf('CONTROL MARKERS'):t.indexOf('Control Markers');return i>=0?t.slice(i,i+160).replace(/\\n/g,' | '):'missing'})()"))
     print('ledger',await ev(LED))
     print('claim jobs',await ev("(()=>{dockTab='jobs';renderDock();const L=JOBS_LAST.filter(j=>String(j.id).startsWith('cl:'));return JSON.stringify({n:L.length,first:L.slice(0,3).map(j=>j.title+' · '+j.pay+' · '+j.where)})})()"))
     # a claim completed with a Halcyon beacon (the claim fee from Halcyon's treasury, standing up, the outpost Halcyon's)
