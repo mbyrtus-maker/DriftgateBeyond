@@ -51,7 +51,7 @@ for gi,g in enumerate(d):
 def f(x):return 'n/a' if x is None else f"{100*x:+.0f}%"
 print(f"{len(d)} galaxies x {len(d[0]['rows'])} h; makers' lives {len(lifes)}")
 print(f"failures: {len(fails)}  ({len(fails)/len(d):.2f} a galaxy)")
-for gi,e in fails:print(f"  g{gi} {e['m']} at {e['T']//60}h{e['T']%60:02d}: cash {e['cash']}, running costs {e['up']} cr/h, last share prices {e['pxH']}, R&D {e['rd']}")
+for gi,e in fails:print(f"  g{gi} {e['m']} ({e.get('why','cash')}) at {e['T']//60}h{e['T']%60:02d}: cash {e['cash']}, running costs {e['up']} cr/h, last share prices {e['pxH']}, R&D {e['rd']}")
 print(f"failed trials: {sum(1 for g in d for r in g['rows'] for e in r['ev'] if e['k']=='trialfail')}");print(f"R&D launches: {len(durs)} ({len(durs)/len(d):.1f} a galaxy); project length median {st.median(durs)} min, 90th pct {sorted(durs)[int(.9*len(durs))]} min")
 print(f"reaction: first tweak of a line -> R&D on it: median {st.median(react) if react else 'n/a'} min (n={len(react)})")
 print(f"share price: hourly change median {f(st.median(allch))}, |change| median {100*st.median([abs(x) for x in allch]):.0f}%; at the floor (1.0) {100*pxone/max(1,pxn):.0f}% of maker-hours; CEO replacements {ceo} ({ceo/len(d):.1f} a galaxy)")

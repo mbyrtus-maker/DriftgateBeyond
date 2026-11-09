@@ -58,7 +58,7 @@ async def main():
     l=await ev(LED);check('ledger exact after R&D',l=='exact',l)
     # the launch window's roll: a failed trial sends the project back to a redesign (the prototype's components to the maker's
     # store); a success launches; R&D spending counts in the share price (the test gives the prototype, booked into the ledger)
-    r=json.loads(await ev("""(()=>{const m='tcy',id=MK_LINE[m].find(x=>ITEMS[x]&&ITEMS[x].part&&!ITEMS[x].sys);const c=ceOf(m);c.rd=null;S.econ.treasury[ceW(m)]+=20000;S.econ.treasury.halcyon-=20000;
+    r=json.loads(await ev("""(()=>{const m='tcy',id=MK_LINE[m].find(x=>ITEMS[x]&&ITEMS[x].part&&!ITEMS[x].sys);const c=ceOf(m);c.rd=null;c.ceo=CE.ceos.find(x=>x!=='Innovator');S.econ.treasury[ceW(m)]+=20000;S.econ.treasury.halcyon-=20000;
       const g0=rdLineG(m,id),iv0=c.iv||0,ok=rdStart(m,id,'test'),ivUp=(c.iv||0)-iv0,P=c.rd,rc=ITEMS[rdGid(id,P.g)].recipe;const prep=()=>{P.stage='trials';P.got=1;P.ivm=1;P.proto={...rc};const v=invVec(rc);for(const e of RAWS)S.ledger0.tot[e]+=v[e]};
       prep();const st0={...ceStore(m)},R0=Math.random;Math.random=()=>.999;rdLaunch(m);Math.random=R0;const back=Object.keys(rc).every(k=>(ceStore(m)[k]||0)-(st0[k]||0)===rc[k]);
       const failed={stage:P.stage,fails:P.fails,grade:rdLineG(m,id),back,chance:Math.round(100*rdWinChance(m,P))};prep();Math.random=()=>0;rdLaunch(m);Math.random=R0;
@@ -67,6 +67,14 @@ async def main():
     check('a failed trial: back to a redesign, the prototype\'s components to the maker\'s store, the next roll 10% better',r['failed']['stage']=='design' and r['failed']['fails']==1 and r['failed']['grade']==1 and r['failed']['back'] and r['failed']['chance']==85,r)
     check('a successful roll launches the line',r['launched'],r)
     l=await ev(LED);check('ledger exact after the rolls',l=='exact',l)
+    # liquidation: three hours with the shares under 60% of the market's median price and the company is wound up (the test
+    # holds the company's price at 1 at each valuation) (its cash to its
+    # shareholders), and a new company opens in its works
+    r=json.loads(await ev("""(()=>{const m='qs',c=ceOf(m);const o0=ceFloor;ceFloor=function(){if(ceAlive(m))c.px=1;return o0.apply(this,arguments)};const h0=S.ceHr;let i=0,liq=false,cash=0;const home0=S.econ.treasury[ceHomeWallet(m)]||0;
+      while(i<2600&&!(liq&&!c.dead)){S.T+=10;strategicTick();updateEvents();if(!liq&&c.dead){liq=true;cash=ceT(m)}i++}ceFloor=o0;
+      return JSON.stringify({liq,leftCash:cash,reborn:liq&&!c.dead,gen:c.gen,mins:Math.round(i/6)})})()"""))
+    check('3 hours on the floor: the company is liquidated and a new one opens in its works',r['liq'] and r['leftCash']==0 and r['reborn'] and r['gen']>=2,r)
+    l=await ev(LED);check('ledger exact after the liquidation',l=='exact',l)
     check('no errors',not errs,errs[:3])
     print('ALL OK' if not bad else 'FAILED: '+', '.join(bad))
     await b.close()

@@ -9,7 +9,7 @@ PROBE=r"""(()=>{window._et={ev:[],sales:{}};const E=(k,o)=>_et.ev.push(Object.as
  {const o=rdStart;rdStart=function(m,id,why){const r=o.apply(this,arguments);if(r)E('rdstart',{m,id,why,g:ceOf(m).rd&&ceOf(m).rd.g});return r}}
  {const o=rdLaunch;rdLaunch=function(m){const P=ceOf(m).rd;const x=P?{id:P.id,g:P.g,t0:Math.round(P.t0/60)}:{};const r=o.apply(this,arguments);E(ceOf(m).rd?'trialfail':'launch',Object.assign({m},x));return r}}
  {const o=rdFlyLost;rdFlyLost=function(t,sid){E('flylost',{m:t.test&&t.test.m});return o.apply(this,arguments)}}
- {const o=ceFail;ceFail=function(m){const c=ceOf(m);E('fail',{m,cash:Math.round(ceT(m)),up:Math.round(ceUpkeep(m)),pxH:(c.pxH||[]).slice(-4),rd:c.rd?c.rd.stage:null});return o.apply(this,arguments)}}
+ {const o=ceFail;ceFail=function(m,why){const c=ceOf(m);E('fail',{m,why:why||'cash',cash:Math.round(ceT(m)),up:Math.round(ceUpkeep(m)),pxH:(c.pxH||[]).slice(-4),rd:c.rd?c.rd.stage:null});return o.apply(this,arguments)}}
  {const o=ceReborn;ceReborn=function(m){const r=o.apply(this,arguments);if(!ceOf(m).dead)E('reborn',{m});return r}}
  window._etSnap=function(){const o={T:Math.round(S.T/3600),m:{}};for(const m in MAKERS){const c=ceOf(m);if(!c)continue;o.m[m]={dead:!!c.dead,gen:c.gen,cash:Math.round(ceT(m)),px:Math.round((c.px||0)*10)/10,E:Math.round(c.E||0),ceo:c.ceo,str:!!c.str,g:Object.values(c.g||{}).reduce((a,b)=>Math.max(a,b),1),rd:c.rd?c.rd.stage:null}}
    o.sales=_et.sales;_et.sales={};o.ev=_et.ev;_et.ev=[];return JSON.stringify(o)};return 1})()"""

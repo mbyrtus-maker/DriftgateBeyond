@@ -3054,3 +3054,19 @@ The user, after the economy test: "Add an R&D random roll for success in each la
   - failures 0.1 → 0.5 a galaxy, all Archive Dynamics, a heavy R&D spender, for want of cash.
 - **Checks:** quick suite all pass (71). War check (300 galaxies, 16 h): Brood 26%, Halcyon 24%, Varkesh 24%, Ostrova 24%, unfinished 2%. The powers are even; the Brood is 3 points above the 23% measured at grazing 1.3, within the noise of 300 galaxies.
 - **Still not as the user described:** makers that never launch end with the highest prices (157), because they sit on their starting cash. Nothing makes a company fail when its share price collapses; only running out of cash does.
+
+### Liquidation when the shares sit on the floor (user, 8 Nov 2026)
+The user: "Yes if a company stock is on the floor long enough it's liquidated and a new maker created."
+- **The floor:** a share price under 60% of the median of the live makers' prices. Prices no longer reach the old 1.0 floor, so the floor is the bottom of the market.
+- **Three hourly valuations there in a row** (not counting a company's first two) and it is liquidated:
+  - its cash goes to its shareholders as dividends do (60% its home, 40% the Compact);
+  - its R&D project is scrapped (the prototype's components go to the works' store);
+  - its works close and what it made stays on sale, as for a failure;
+  - 30 to 60 minutes later a new company opens in its works.
+  News: "… has been liquidated after 3 hours with its shares on the floor". The Corporations view shows "shares on the floor (N h)" as a warning.
+- **Sizing** (`tools/ecotrace`, 8 AI galaxies × 12 h, before the two-hour grace):
+  - under 60% of the median for 3 h gives 4 liquidations and 2 cash failures: 0.75 a galaxy, against 0.5 before;
+  - the liquidated were makers whose lines kept losing despite their R&D (all in the third that launched most);
+  - launches that took the lead: price 2 h later median +6% (rose in 21 of 34); other launches −7%;
+  - top sellers end at 165 against 131 for the lowest sellers.
+  Tried and dropped: a floor at 60% of the company's own opening price liquidated 1.5 a galaxy, many of them makers simply investing their starting cash.

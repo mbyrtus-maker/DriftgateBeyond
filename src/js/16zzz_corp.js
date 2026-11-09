@@ -32,7 +32,7 @@
 //   - Struggling below 2 hours of running costs (News); failing when it can't pay them: its works close, its stock stays on
 //     sale. 30 to 60 minutes later a new company opens at the same home, capitalised by the home, making the same kinds of
 //     part under a new name, with a new CEO and small fresh traits.
-const CE={markup:1.5,shut:7200,start:8000,dues:.15,floor:1.15,base:60,lineF:.5,lineMin:10,shelf:1,cap:4,struggleH:2,reborn:[1800,3600],review:900,window:2700,twCool:1800,twMax:3,twStep:[.02,.04],trCap:.25,magCap:2,
+const CE={floor0:.6,floorH:3,markup:1.5,shut:7200,start:8000,dues:.15,floor:1.15,base:60,lineF:.5,lineMin:10,shelf:1,cap:4,struggleH:2,reborn:[1800,3600],review:900,window:2700,twCool:1800,twMax:3,twStep:[.02,.04],trCap:.25,magCap:2,
   refit:{peace:12,tension:16,war:24,every:300,keep:3000,away:.35},wear:.5,div:.4,divHome:.6,grace:7200,
   ceos:['Penny-pincher','Premium','Innovator','Expansionist','Cautious','Generous','Discounter','Restless']};
 const CE_KSTAT={gun:['dmg','ammo'],laser:['dmg','e'],missile:['mag','lock'],torpedo:['mag','lock'],charge:['mag'],mlaser:['ml','e'],cargo:['cargo'],scanner:['scan'],dronec:['dh','dd']};
@@ -110,11 +110,11 @@ function ceMinute(){const T=S.T;for(const m in MAKERS){const c=ceOf(m);if(!c)con
     const due=ceUpkeep(m)/60,paid=transfer(ceW(m),ceHostWallet(m),Math.max(1,Math.round(due)));c.cost+=paid;c.up=(c.up||0)+paid;
     if(paid<Math.round(due)||ceT(m)<=0){ceFail(m);continue}
     const str=ceT(m)<CE.struggleH*ceUpkeep(m);if(str&&!c.str){c.str=1;ceNews(m,`is in trouble: under ${CE.struggleH} hours of running costs left (${fmt(ceT(m))} cr).`)}else if(!str&&c.str&&ceT(m)>CE.struggleH*1.5*ceUpkeep(m))c.str=0}}
-function ceFail(m){const c=ceOf(m);c.dead=1;c.str=0;c.reborn=S.T+rnd(...CE.reborn);const left=ceT(m);if(left>0)transfer(ceW(m),ceHostWallet(m),left);
-  ceNews(m,`has failed. Its works are closed; what it made stays on sale, and its shares are worthless.`,true)}
+function ceFail(m,why){const c=ceOf(m);if(c.rd){if(c.rd.proto)inv.addAll(ceStore(m),c.rd.proto);c.rd=null}c.dead=1;c.str=0;c.floorH=0;c.vals=0;c.px0=0;c.reborn=S.T+rnd(...CE.reborn);const left=ceT(m);if(left>0)transfer(ceW(m),ceHostWallet(m),left);
+  ceNews(m,why==='floor'?`has been liquidated after ${CE.floorH} hours with its shares on the floor. Its works are closed and what it made stays on sale; a new company will take them over.`:`has failed. Its works are closed; what it made stays on sale, and its shares are worthless.`,true)}
 function ceReborn(m){const c=ceOf(m),home=ceHomeWallet(m);if((S.econ.treasury[home]||0)<CE.start){c.reborn=S.T+300;return}const old=MAKERS[m].name;
   let nm,sh,i=0;do{sh=pick(CE_NAMES[0]);nm=`${sh} ${pick(CE_NAMES[1])}`;i++}while(i<20&&Object.values(MAKERS).some(x=>x.short===sh));
-  c.name=nm;c.short=sh;c.dead=0;c.gen=(c.gen||1)+1;c.logo=ceNewLogo(m);c.ceo=pick(CE.ceos);c.ceoT=S.T;c.ln={};c.tr={};c.sales=[];c.E=0;c.iv=0;c.mar=0;c.up=0;c.pxH=[];c.inc=0;c.cost=0;
+  c.name=nm;c.short=sh;c.dead=0;c.gen=(c.gen||1)+1;c.logo=ceNewLogo(m);c.ceo=pick(CE.ceos);c.ceoT=S.T;c.ln={};c.tr={};c.sales=[];c.E=0;c.iv=0;c.mar=0;c.up=0;c.px0=0;c.floorH=0;c.pxH=[];c.inc=0;c.cost=0;
   for(const id of ceTrLines(m)){const ks=CE_KSTAT[ITEMS[id].part];if(!ks)continue;const s=ks[0],tr={};tr[s]=s==='mag'?1:(CE_BAD[s]?-1:1)*Math.round(rnd(.04,.08)*100)/100;ceBalance(tr,ITEMS[id].part);c.tr[id]=tr}
   transfer(home,ceW(m),CE.start);ceApply();ceNews(m,`opens at ${DEF[mkHomeSid(m)].name} in the works ${old} left, under CEO trait ${c.ceo}. Its new mark: ${MK_LOGO[c.logo].n}.`,true)}
 // ---- tweaks
@@ -146,7 +146,14 @@ function ceHour(){const LEAD=ceLeads();for(const m in MAKERS){const c=ceOf(m);if
     let sv=0;for(const sid in S.stations){const R=S.stations[sid];if(!R)continue;let st;try{st=mkStock(R)}catch(e){continue}for(const id of MK_LINE[m])for(let g=1;g<=5;g++){const gid=g>1?`${id}_g${g}`:id;if(st[gid])sv+=st[gid]*ceComp(mkHomeSid(m),gid)}}
     const px=Math.max(1,(ceT(m)+sv+(c.iv||0)+8*c.E)/100*(1+Math.min(.45,.15*c.lead)));c.px=px;c.pxH.push(Math.round(px*10)/10);if(c.pxH.length>48)c.pxH.shift();
     if(p>0&&!c.str){const k=c.ceo==='Generous'?1.5:c.ceo==='Cautious'?.6:1,d=Math.floor(p*CE.div*k);if(d>0){const a=transfer(ceW(m),ceHomeWallet(m),Math.floor(d*CE.divHome)),b=transfer(ceW(m),'neutral',d-Math.floor(d*CE.divHome));c.div+=a+b}}
-    const H=c.pxH,n=H.length;if(n>=3&&S.T-c.ceoT>=CE.grace&&H[n-1]<H[n-2]*.95&&H[n-2]<H[n-3]*.95){const old=c.ceo;c.ceo=pick(CE.ceos.filter(x=>x!==old));c.ceoT=S.T;ceNews(m,`'s board has replaced its CEO after two hours of shares falling 5% or more: out goes a ${old}, in comes a ${c.ceo}.`)}}}
+    const H=c.pxH,n=H.length;if(n>=3&&S.T-c.ceoT>=CE.grace&&H[n-1]<H[n-2]*.95&&H[n-2]<H[n-3]*.95){const old=c.ceo;c.ceo=pick(CE.ceos.filter(x=>x!==old));c.ceoT=S.T;ceNews(m,`'s board has replaced its CEO after two hours of shares falling 5% or more: out goes a ${old}, in comes a ${c.ceo}.`)}}
+  ceFloor()}
+// (user, 8 Nov 2026) "if a company's stock is on the floor long enough it's liquidated and a new maker created". The floor is
+// the bottom of the market: a share price under 60% of the median of the live makers' prices. Three hourly valuations
+// there in a row (not counting a company's first two) and the company is wound up: its cash goes to its shareholders (as dividends: 60% its home, 40% the Compact),
+// then it closes as a failed company does, and a new company opens in its works 30 to 60 minutes later.
+function ceFloor(){const L=Object.keys(MAKERS).filter(m=>ceAlive(m)&&ceOf(m).px>0);if(L.length<4)return;const ps=L.map(m=>ceOf(m).px).sort((a,b)=>a-b),med=ps[Math.floor(ps.length/2)];
+  for(const m of L){const c=ceOf(m);c.vals=(c.vals||0)+1;c.floorH=c.vals>2&&c.px<CE.floor0*med?(c.floorH||0)+1:0;if(c.floorH>=CE.floorH){const left=ceT(m);transfer(ceW(m),ceHomeWallet(m),Math.floor(left*CE.divHome));transfer(ceW(m),'neutral',ceT(m));ceFail(m,'floor')}}}
 // ---- the powers refit their fleets from the markets
 function ceRefitRate(f){let w=false,t=false;for(const g of FAC_IDS){if(g===f)continue;try{if(warWith(f,g))w=true;else if(S.rel&&relOf&&relOf(f,g)<=-25)t=true}catch(e){}}return w?CE.refit.war:t?CE.refit.tension:CE.refit.peace}
 function ceRefit(){for(const f of FAC_IDS){const st=S.econ.stock[f];if(!st)continue;const pool=(S.corpFit=S.corpFit||{})[f]=S.corpFit[f]||{};
@@ -165,7 +172,7 @@ function ceTick(){if(NET.cl||!S||S.training||!S.corp)return;const T=S.T;
   if(T>=(S.ceMin||0)){S.ceMin=T+60;ceMinute()}if(T>=(S.ceRef||0)){S.ceRef=T+CE.refit.every;ceRefit()}ceReview();if(T>=(S.ceHr||3600)){S.ceHr=T+3600;ceHour()}}
 {const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{ceTick()}catch(e){console.error(e)}return r}}
 // ---- the Company screen: Economy → Corporations
-function ceState(m){const c=ceOf(m);if(!c)return['var(--dim)','—'];if(c.dead)return['#ff5d4f','failed'];if(c.str)return['#ff9a4f','struggling'];const h=c.hist.slice(-2);const p=h.length?h[h.length-1][1]:0;return p>150?['#7ad9a7','thriving']:p<0?['#f0b24a','losing money']:['var(--dim)','steady']}
+function ceState(m){const c=ceOf(m);if(!c)return['var(--dim)','—'];if(c.dead)return['#ff5d4f','failed'];if(c.str)return['#ff9a4f','struggling'];if(c.floorH)return['#ff9a4f',`shares on the floor (${c.floorH} h)`];const h=c.hist.slice(-2);const p=h.length?h[h.length-1][1]:0;return p>150?['#7ad9a7','thriving']:p<0?['#f0b24a','losing money']:['var(--dim)','steady']}
 function ceSpark(H){const L=H.slice(-12);if(!L.length)return'';const lo=Math.min(...L),hi=Math.max(...L),r=Math.max(.01,hi-lo);return`<span class="cospark">${L.map(x=>`<i style="height:${Math.max(2,Math.round((x-lo)/r*20))}px;background:#5fa8ff"></i>`).join('')}</span>`}
 function ceHtml(P){let h=coViews('economy',[['hour','Hour'],['3h','3 hours'],['corps','Corporations']]);if(!S.corp)return h+'<div class="empty">The corporations\' books open with a new galaxy.</div>';
   const ms=Object.keys(MAKERS);if(!coPk.economy||!String(coPk.economy).startsWith('corp:'))coPk.economy='corp:'+ms[0];const sel=String(coPk.economy).slice(5);
