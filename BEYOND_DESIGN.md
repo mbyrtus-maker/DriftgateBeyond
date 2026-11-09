@@ -3193,3 +3193,8 @@ The user: "All non-standard parts should have a weakness and a strength."
 | Mirrorwater | | | | | | | | −6% reload time, −2% thrust |
 
   The Market's comparison shows a system's trait beside what its grade gives.
+
+### Jobs → Black market (user, 8 Nov 2026)
+The user: "Blackmarket jobs should have their own tab under jobs."
+- At a freeport and at the Rusty Tankard, the fixers' runs (and the Tankard's rumours) move off the main Jobs board onto **Jobs → Black market**: the same rows and detail panel, with no kind filter (they are all hauls).
+- The Company screen's Black Market tab still lists every offer galaxy-wide.

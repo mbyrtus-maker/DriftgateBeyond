@@ -10,10 +10,14 @@ function jbIssuer(j){return j.by?(j.by==='neutral'?'Freeport Compact':j.by==='pi
 // (user, 8 Nov 2026) the board opens on the jobs your hull is for: Fight (escorts are fight jobs) in a fighter or bomber, Mine
 // in a miner, Haul in a hauler, Scout in a scout; All and the other kinds are a click away. It defaults again each time you
 // dock or change hull; a pick you make holds until then.
-let jbDefKey=null,jbDockN=0;
+let jbDefKey=null,jbDockN=0,JB_BM=false;
+// (user, 8 Nov 2026) "Blackmarket jobs should have their own tab under jobs": at a freeport (and at the Rusty Tankard) the
+// fixers' runs are on Jobs → Black market, not on the main board; same rows and panel, no kind filter (they are all hauls)
+function jbBmHtml(c,P,srcs){const f=jobFilter;JB_BM=true;jobFilter='all';let h='';try{h=jbBoard(c,P,srcs,false,false).replace(/<div class="coviews">[\s\S]*?<\/div>/,'')}finally{JB_BM=false;jobFilter=f}
+  return`<p class="note" style="margin:0 0 10px">A fixer's goods, loaded into your hold here and carried into a power's station past its customs. Each run pays by the heat it risks if you're caught. The Company screen's Black Market tab has every offer your contacts have, galaxy-wide.</p>`+(/class="cowrap/.test(h)?h:`<div class="empty">No black-market runs on offer here right now.</div>`)}
 {const o=openDock;openDock=function(){jbDockN++;return o.apply(this,arguments)}}
-function jbBoard(c,P,srcs,hasOrders,hasMis){const dk=P.cls+'|'+jbDockN;if(jbDefKey!==dk){jbDefKey=dk;const f=(typeof jobFit==='function'?jobFit(P.cls):[])[0];jobFilter=f&&JOB_TY[f]?f:'all';jobSel=null}
-const all=jobsList(c,P,srcs,hasOrders,hasMis),cnt=t=>t==='all'?all.length:all.filter(j=>j.ty===t).length;
+function jbBoard(c,P,srcs,hasOrders,hasMis){const dk=P.cls+'|'+jbDockN;if(!JB_BM&&jbDefKey!==dk){jbDefKey=dk;const f=(typeof jobFit==='function'?jobFit(P.cls):[])[0];jobFilter=f&&JOB_TY[f]?f:'all';jobSel=null}
+const all=jobsList(c,P,srcs,hasOrders,hasMis).filter(j=>JB_BM===String(j.id).startsWith('bmr:')),cnt=t=>t==='all'?all.length:all.filter(j=>j.ty===t).length;
   if(jobFilter!=='all'&&!JOB_TY[jobFilter])jobFilter='all';
   const L=all.filter(j=>jobFilter==='all'||j.ty===jobFilter).sort((a,b)=>(jobRank(a,P)-jobRank(b,P))||(b.pin||0)-(a.pin||0)||(!!a.need-!!b.need)||(jobSort==='dist'?(a.hops-b.hops)||(b.payN-a.payN):((b.ok?1:0)-(a.ok?1:0))||(b.payN-a.payN)));
   JOBS_LAST=all;for(const j of L)jobOpenBtns(j);
