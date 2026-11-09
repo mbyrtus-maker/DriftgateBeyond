@@ -222,6 +222,20 @@ for _k,_f in BASE_MODELS.items():MODELS[_k]=('base',(lambda f:lambda:f().out())(
 # and by_d<N>_core, N = 2..6, in the same units as the standard set; each carries its turret seats as 'tp'
 import beyond_base_designs as _BD
 for _k,(_f,_tp) in _BD.models().items():MODELS[_k]=('base',(lambda f:lambda:f().out())(_f));MOUNTS[_k]=_tp
+# (9 Nov 2026) the makers' R&D stations (tools/rdstation.py, from the approved tools/previews/beyond_corp.py): a tower per home
+# style (rds_halcyon/varkesh/ostrova/free), a lab per style and grade (rdl_<style>_g2..g5, in its socket's frame) and an empty
+# socket's marker (rdp_<style>). Kind 'base' keeps each part's centre and half-extent so the game puts the labs back in the
+# tower's sockets; a tower's entry carries its turret seats (tp), sub-system points (sub: cc, bay, sock, lab, logo) and, as
+# they are, its sockets' and boards' turns and scales (sk, lg), its bay's facing (bd) and its radius with four labs (rr).
+import rdstation as _RD
+EXTRA={}
+def _rdpart(f,name):
+    def g():
+        M,info=f()
+        if info:MOUNTS[name]=info['tp'];SUBS[name]=info['sub'];EXTRA[name]=info['extra']
+        return M.out()
+    return g
+for _k,_f in _RD.models().items():MODELS[_k]=('base',_rdpart(_f,_k))
 for _k,_v in WORKS.items():MODELS[_k]=('struct',_v[0] if len(_v)>2 else (lambda f:lambda:comp_model(f))(_v[0]))
 FIT={'rockbase':230,'station':150,'depot':105,'forge':120,'relay':120,'yard':120,**{k:v[1] for k,v in WORKS.items()}}
 FIT.update({'by_st_halcyon':170,'by_st_varkesh':170,'by_st_ostrova':170,'by_dp_halcyon':105,'by_dp_varkesh':105,'by_dp_ostrova':105,'by_freeport':210,'by_freeport_cw':210,'by_freeport_ew':210,'by_haven':240})   # world half-size: docking ports scale by it
@@ -262,7 +276,7 @@ def pack():
         tp=[[round(float(x),3) for x in (np.array(m)-c)/half] for m in MOUNTS.get(name,[])]
         pt=[[round(float(x),3) for x in (np.array(m)-c)/half] for m in PTS.get(name,[])]
         sb={k:[[round(float(x),3) for x in (np.array(m)-c)/half] for m in v] for k,v in SUBS.get(name,{}).items()}
-        idx[name]={**({'c':[round(float(x),4) for x in c],'h':round(float(half),4)} if kind=='base' else {}),'o':off,'n':len(T),'k':kind,'s':FIT.get(name,1),'e':eng,'tp':tp,'top':round(float(T[:,:,1].max()),3),**({'pt':pt} if pt else {}),**({'sub':sb} if sb else {})}
+        idx[name]={**({'c':[round(float(x),4) for x in c],'h':round(float(half),4)} if kind=='base' else {}),'o':off,'n':len(T),'k':kind,'s':FIT.get(name,1),'e':eng,'tp':tp,'top':round(float(T[:,:,1].max()),3),**({'pt':pt} if pt else {}),**({'sub':sb} if sb else {}),**EXTRA.get(name,{})}
         print(name.ljust(12),kind,len(T),'tris',('eng %d'%len(eng)) if eng else '',('lifted %d'%zl) if zl else '')
     return idx,bytes(blob)
 idx,blob=pack()
