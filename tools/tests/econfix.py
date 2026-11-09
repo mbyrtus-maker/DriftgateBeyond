@@ -90,7 +90,8 @@ async def main():
     if l!='exact': bad.append('ledger after the merchant: '+l)
     # (8) the share price counts graded stock on the shelves
     r=json.loads(await ev("""(()=>{const m=Object.keys(MAKERS).find(x=>ceAlive(x)&&mkAtHome(x));const id=MK_LINE[m].find(i=>ITEMS[rdGid(i,2)]),gid=rdGid(id,2),c=ceOf(m),st=mkStock(mkAtHome(m));const keep=JSON.stringify(c),cc=JSON.parse(keep);
-      const run=()=>{Object.assign(c,JSON.parse(keep));for(const x in MAKERS){const o=ceOf(x);if(o){o.inc=0;o.cost=0}}ceHour();return c.px};const a=run();devLedger(()=>inv.add(st,gid,1));const b2=run();devLedger(()=>inv.take(st,gid,1));Object.assign(c,cc);
+      const tr=JSON.stringify(S.econ.treasury),keepAll=JSON.stringify(Object.fromEntries(Object.keys(MAKERS).map(x=>[x,ceOf(x)])));const reset=()=>{Object.assign(S.econ.treasury,JSON.parse(tr));const K=JSON.parse(keepAll);for(const x in K)if(ceOf(x))Object.assign(ceOf(x),K[x])};
+      const run=()=>{reset();for(const x in MAKERS){const o=ceOf(x);if(o){o.inc=0;o.cost=0}}ceHour();const v=c.px;reset();return v};const a=run();devLedger(()=>inv.add(st,gid,1));const b2=run();devLedger(()=>inv.take(st,gid,1));Object.assign(c,cc);
       return JSON.stringify({m,gid,diff:Math.round((b2-a)*100)/100,want:Math.round(ceComp(mkHomeSid(m),gid)/100*100)/100})})()"""))
     print('shares',json.dumps(r))
     if abs(r['diff']-r['want'])>.05: bad.append(f"share price doesn't count graded stock: {r}")
