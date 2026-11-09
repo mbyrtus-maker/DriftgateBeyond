@@ -3220,3 +3220,8 @@ The user, on the first proposal: "4 Components are there to add flexibility; may
   - Coldwater Refit, the budget maker, stays on standard components.
 - **R&D grades lean on Vantium and Aurorite:** each grade above 1 of a maker's line swaps one plate for Vantium Plating (structural kinds) or one coil for an Aurorite Cell (energy kinds), so invention draws on the two ores the galaxy has least use for.
 - **Saves:** a maker's items already in a galaxy keep their old make-up; the ledger books the change once on load.
+
+### Comms frees the cursor by itself (user, 8 Nov 2026)
+The user: "Esc to close comms when it's what's used to get a cursor, probably not a great experience." In flight, Esc both freed the cursor and closed comms, so reaching for the mouse to click a comms option closed the menu.
+- Opening comms in flight now frees the cursor by itself, so the options can be clicked at once.
+- Closing comms (Esc, the comms key again, or picking an option) gives mouse steering back, if comms was what freed it.
