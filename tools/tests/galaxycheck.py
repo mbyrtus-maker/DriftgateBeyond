@@ -24,7 +24,7 @@ STEP="""(()=>{const C=window.__gc;const seen=window.__gs=window.__gs||{oq:new Se
   let sold=0;for(const m in MAKERS){const c=ceOf(m);if(c)sold+=(c.sales||[]).filter(x=>x[0]>S.T-3600).reduce((a,x)=>a+x[2],0)}
   const rd={};for(const m in MAKERS){const c=ceOf(m);if(c&&c.rd)rd[c.rd.stage]=(rd[c.rd.stage]||0)+1}
   // kits: dock at every market for a moment
-  let kitOK=0,kitN=0;for(const R of mkStations()){kitN++;const P=S.player,sv=P.sector;P.sector=R.sid;P.docked='station';kitTick();const st=storeOf(R);if(KIT_IDS.every(k=>(st[k]||0)>=1))kitOK++;P.docked=null;kitTick();P.sector=sv}P.docked='station';
+  let kitOK=0,kitN=0;for(const R of mkStations()){kitN++;const P=S.player,sv=P.sector;P.sector=R.sid;P.docked='station';kitTick();const st=storeOf(R);if(KIT_IDS.every(k=>(st[k]||0)>=1))kitOK++;P.docked=null;kitTick();P.sector=sv}S.player.docked='station';
   const dead=Object.keys(MAKERS).filter(m=>{const c=ceOf(m);return!c||c.dead}).length;
   return JSON.stringify({h:Math.round(S.T/3600*10)/10,shelf,kinds:kinds.size,g2,sold1h:sold,rd,launch:C.launch,trial:C.trial,fail:C.fail,dead,fjPost:C.fjPost,npcFreighters:seen.npc.size,fjLand:C.fjLand,kits:kitOK+'/'+kitN,oreq:seen.oq.size,oreqOpen:oreqAll().length,rsj:seen.rs.size,rsjOpen:rsjAll().length,hires:seen.hire.size,ceoFlights:C.ceo,contracts:[...seen.bk].reduce((o,x)=>{const k=x.split(':')[0];o[k]=(o[k]||0)+1;return o},{}),drift:Object.fromEntries(RAWS.map(e=>[e,Math.round(S.drift[e]||0)]))})})()"""
 async def main():
