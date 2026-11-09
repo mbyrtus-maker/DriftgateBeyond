@@ -3198,3 +3198,25 @@ The user: "All non-standard parts should have a weakness and a strength."
 The user: "Blackmarket jobs should have their own tab under jobs."
 - At a freeport and at the Rusty Tankard, the fixers' runs (and the Tankard's rumours) move off the main Jobs board onto **Jobs → Black market**: the same rows and detail panel, with no kind filter (they are all hauls).
 - The Company screen's Black Market tab still lists every offer galaxy-wide.
+
+### Proposal, revised: four components as alternatives (user, 8 Nov 2026; not built)
+The user, on the first proposal: "4 Components are there to add flexibility; maybe not all armor just needs alloy plates, maybe some use Vantium plating instead. Trying to add variety while still maintaining current economies. Also Vantium and Aurorite should be considered in R&D items or upgraded maker items."
+- **Standard parts, standard systems and the AI fleets' kits keep today's recipes.** The economy the balance rests on doesn't move.
+- **The four components** (made like plate and conduit: at the powers' works, depots with production and freeports, and by Fabricate):
+
+| Component | Recipe |
+|---|---|
+| Vantium Plating | 2 Vantium + 1 Ferrite |
+| Aurorite Cell | 1 Aurorite + 2 Cuprite |
+| Optic Array | 1 Xenocrystal + 2 Cuprite |
+| Thrust Vane | 1 Iridium + 2 Ferrite |
+
+- **Makers' lines use them in place of a standard component, one for one,** by the maker's character, so the same kind of part draws on different ores from maker to maker:
+  - Hold Foundry and Quicksilver armour, cargo and charges: Vantium Plating for a plate;
+  - Brightline and Archive lasers, and Spirewright mining lasers: Aurorite Cell for a coil or conduit;
+  - Spirewright scanners and Mirrorwater and Marchgun launchers: Optic Array for a conduit;
+  - Wakefire launchers and Ember drives: Thrust Vane for a plate;
+  - systems likewise by slot: drives Thrust Vane, reactors and shields Aurorite Cell, weapons systems Optic Array, armour, cargo and blast rigs Vantium Plating, payload bays Thrust Vane.
+  - Coldwater Refit, the budget maker, stays on standard components.
+- **R&D grades lean on Vantium and Aurorite:** each grade above 1 of a maker's line swaps one plate for Vantium Plating (structural kinds) or one coil for an Aurorite Cell (energy kinds), so invention draws on the two ores the galaxy has least use for.
+- **Saves:** a maker's items already in a galaxy keep their old make-up; the ledger books the change once on load.
