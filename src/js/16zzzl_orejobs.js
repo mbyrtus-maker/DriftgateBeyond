@@ -15,7 +15,7 @@
 //     as Riftstone. Riftstone is Light heat everywhere if a scan catches it (user: "Rift stone causes light heat everywhere").
 // Host only; goods and credits only move, so the ledger stays exact.
 const OREQ={ores:['au','nu'],keep:60,low:40,k:1.5,life:1800,near:3,every:60};
-const RSJ={low:50,n:20,k:2.2,life:1800,every:60,wait:600};
+const RSJ={low:50,n:20,k:3.3,life:1800,every:60,wait:600};
 ITEMS.rift.legal=[];
 {const o=contraFor;contraFor=function(){const L=o.apply(this,arguments);for(const x of L)if(x.k==='rift'&&x.why==='cash')x.why='Light';return L}}
 function oreqAll(){return S.oreq=S.oreq||[]}
@@ -42,7 +42,7 @@ function rsjDeliver(P,id){const j=rsjAll().find(x=>String(x.id)===String(id));if
   const per=Math.max(1,j.unit),w=j.by,can=Math.floor((S.econ.treasury[w]||0)/per);let d=Math.min(j.n-j.got,P.cargo.rift||0,can);if(d<=0)return(P.cargo.rift||0)?'The buyer can\'t pay for more just now.':'No Riftstone in your hold.';
   const st=rsjStoreOf(j);if(!st)return'The buyer has nowhere to put it.';S.drift=S.drift||{};const rc=comp('rift');let stood=0;
   for(let i=0;i<d;i++){inv.take(P.cargo,'rift',1);if((S.drift[j.ore]||0)>=1){S.drift[j.ore]-=1;for(const e of RAWS)S.drift[e]=(S.drift[e]||0)+rc[e];inv.add(st,j.ore,1);stood++}else inv.add(st,'rift',1)}
-  const got=transfer(w,'player',d*per);j.got+=d;if(j.got>=j.n)rsjAll().splice(rsjAll().indexOf(j),1);
+  const got=transfer(w,'player',d*per);bmoHeat(P,S.stations[j.sid]&&S.stations[j.sid].owner,'Light','a Riftstone sale');j.got+=d;if(j.got>=j.n)rsjAll().splice(rsjAll().indexOf(j),1);
   return`✓ ${d} Riftstone to ${rsjBuyerName(j.by)}'s buyer: +${fmt(got)} cr. ${stood?`${stood} stood in for ${ITEMS[j.ore].name}`:'The rift had nothing to pull'}${stood<d&&stood?`; ${d-stood} kept as Riftstone`:''}.`}
 {const o=dockAction;dockAction=function(act,arg){if(act==='oreqdel'){if(NET.cl)return o.apply(this,arguments);dockErr=oreqDeliver(S.player,arg);return}if(act==='rsjdel'){if(NET.cl)return o.apply(this,arguments);dockErr=rsjDeliver(S.player,arg);return}return o.apply(this,arguments)}}
 // ---- the Jobs board
@@ -52,7 +52,7 @@ function rsjDeliver(P,id){const j=rsjAll().find(x=>String(x.id)===String(id));if
       btn:here&&have?['oreqdel',j.id,`Deliver ${Math.min(have,left)}`]:!here?['croute',j.to,'Set course']:null,need:here&&!have?`No ${ITEMS[j.ore].name} in your hold.`:'',
       detail:()=>`<p class="note" style="margin:0">${esc(MAKERS[j.m].name)} needs ${esc(ITEMS[j.ore].name)} for the components ${esc(R.owner==='neutral'?'the Compact':FACTIONS[R.owner].short)} makes for it, and pays ${fmt(j.unit)} cr a unit for up to ${left}, delivered at its works at ${esc(R.name)} (part loads welcome). ${esc(ITEMS[j.ore].name)} is in the rock of ${esc(Object.keys(DEF).filter(s=>(DEF[s].ores||{})[j.ore]).slice(0,4).map(s=>DEF[s].name).join(', '))}${Object.keys(DEF).filter(s=>(DEF[s].ores||{})[j.ore]).length>4?' and more':''}.</p>`})}
   for(const j of rsjAll()){const h=hop(j.sid);if(h>3)continue;const here=P.sector===j.sid,have=P.cargo.rift||0,left=j.n-j.got,R=S.stations[j.sid];if(!R)continue;
-    out.push({id:'rs:'+j.id,bm:1,by:j.by,sid:j.sid,ty:'haul',title:`Riftstone for ${esc(rsjBuyerName(j.by))}: ${left} to ${esc(R.name)}`,sub:`short of ${esc(ITEMS[j.ore].name)} · Light heat if caught · ${fmt(j.unit)} cr a unit`,hops:h,where:far(h),payN:j.unit*left,pay:`${fmt(j.unit*left)} cr`,
+    out.push({id:'rs:'+j.id,bm:1,by:j.by,sid:j.sid,ty:'haul',title:`Riftstone for ${esc(rsjBuyerName(j.by))}: ${left} to ${esc(R.name)}`,sub:`short of ${esc(ITEMS[j.ore].name)} · Light heat · ${fmt(j.unit)} cr a unit`,hops:h,where:far(h),payN:j.unit*left,pay:`${fmt(j.unit*left)} cr`,
       btn:here&&have?['rsjdel',j.id,`Deliver ${Math.min(have,left)}`]:!here?['croute',j.sid,'Set course']:null,need:here&&!have?'No Riftstone in your hold.':'',
-      detail:()=>`<p class="note" style="margin:0">A quiet buyer for ${esc(rsjBuyerName(j.by))} wants Riftstone: they're short of ${esc(ITEMS[j.ore].name)}, and a Riftstone stands in for one unit of any ore (the rift pulls it out of the outer drift). Cut it from a rift rock (they discharge: keep your shields up) and bring it here. Riftstone is contraband everywhere: Light heat if a patrol scans it in your hold.</p>`})}}catch(err){console.error(err)}return out}}
+      detail:()=>`<p class="note" style="margin:0">A quiet buyer for ${esc(rsjBuyerName(j.by))} wants Riftstone: they're short of ${esc(ITEMS[j.ore].name)}, and a Riftstone stands in for one unit of any ore (the rift pulls it out of the outer drift). Cut it from a rift rock (they discharge: keep your shields up) and bring it here. Riftstone is contraband everywhere: the sale brings Light heat with ${esc(R.owner==='neutral'?'the Compact (its standing)':FACTIONS[R.owner].short)}, and a patrol that scans it in your hold adds more.</p>`})}}catch(err){console.error(err)}return out}}
 {const o=jbIssuer;jbIssuer=function(j){if(j&&j.bm&&String(j.id).startsWith('rs:'))return`A quiet buyer (${rsjBuyerName(j.by)})`;return o.apply(this,arguments)}}

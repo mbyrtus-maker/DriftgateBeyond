@@ -15,7 +15,7 @@
 //   Black market: spying (a limpet on a rival's R&D station: the client's next trial +20%, user 9 Nov 2026) and sabotage
 //   (disable the lab of a rival's current project) are posted by a rival while a maker runs a project (16zzzm_bmops.js).
 // Host only for damage and effects; every page builds the entities from S.rds. Credits only move: the ledger stays exact.
-const RDS_G={dist:4500,hp:{cc:1600,lab:700,tur:450},labDelay:600,offT:600,ceoT:7200,secN:3,secCls:'interceptor',secCool:300,aggro:60,tur:{range:1800,cool:.9,dmg:9,spd:900},spy:.2,pay:{spy:2000,sab:2500},hitR:{cc:12,lab:11,tur:7}};
+const RDS_G={dist:4500,hp:{cc:1600,lab:700,tur:450},labDelay:600,offT:600,ceoT:7200,secN:3,secCls:'interceptor',secCool:300,aggro:60,tur:{range:1800,cool:.9,dmg:9,spd:900},spy:.2,pay:{spy:3000,sab:4000},hitR:{cc:12,lab:11,tur:7}};
 function rdsAll(){return S.rds=S.rds||{}}
 function rdsOf(m){return rdsAll()[m]||null}
 function rdsHost(m){return S.stations[mkHomeSid(m)]||null}
@@ -57,7 +57,7 @@ function rdsSecurity(e,side){const n=RDS_G.secN;for(let i=0;i<n;i++){const s=mak
 // a system goes down
 function rdsDown(m,k,i,by){const D=rdsOf(m),c=ceOf(m);if(!D||!c)return;
   if(k==='lab'){const L=rdsLabs(m),id=L.ids[i];D.labDown=D.labDown||{};D.labDown[i]=1;if(c.rd&&id===c.rd.id&&c.rd.until<1e9){c.rd.until+=RDS_G.labDelay;ceNews(m,`'s R&D station was attacked: the ${rdsName(m,k,i)} is down, and the project loses ${Math.round(RDS_G.labDelay/60)} minutes.`)}
-    for(const x of bmoAll())if(x.k==='sab'&&x.tgt===m&&x.taker&&by&&(x.taker===by||(isMe(x.taker)&&isMe(by)))&&c.rd&&id===c.rd.id){const P=xPilotOfKey(by);const got=bmoPay(x,by,P);const hs=rdsHostSide(m);if(FAC_IDS.includes(hs)&&P)smHeat(P,hs,SM.heat.Heavy,'sabotage');keyFeed(by,`🧨 Sabotage done: ${bmoClientName(x.by)} pays +${fmt(got)} cr.`,'good');break}}
+    for(const x of bmoAll())if(x.k==='sab'&&x.tgt===m&&x.taker&&by&&(x.taker===by||(isMe(x.taker)&&isMe(by)))&&c.rd&&id===c.rd.id){const P=xPilotOfKey(by);const got=bmoPay(x,by,P);bmoHeat(P,rdsHostSide(m),'Heavy','sabotage');keyFeed(by,`🧨 Sabotage done: ${bmoClientName(x.by)} pays +${fmt(got)} cr.`,'good');break}}
   if(k==='cc'){if(!rdsOffline(m)){D.offStart=D.offStart&&S.T-D.off<60?D.offStart:S.T}D.off=S.T+RDS_G.offT;ceNews(m,`'s R&D station is offline: its control centre was knocked out. Its sales are held in escrow until it comes back.`,true)}}
 // ---- the host: turrets, repairs, coming back online, the escrow, a CEO lost to a long outage
 function rdsLive(dt){if(!W)return;for(const e of W.ents){if(e.type!=='rds')continue;const D=rdsOf(e.m);if(!D)continue;e.tc=(e.tc||0)-dt;if(e.tc>0)continue;e.tc=RDS_G.tur.cool;
@@ -88,14 +88,14 @@ function rdsTgtHtml(e,dist){const m=e.m,D=rdsOf(m);if(!D)return'';const rows=rds
 {const o=limpetTarget;limpetTarget=function(){const r=o.apply(this,arguments);if(r)return r;try{const t=W&&W.tgt;if(!t||t.kind!=='rds'||!isScoutCls(S.player.cls))return null;const e=t.ref,me=pkeyOf(S.player);
     if(!bmoAll().some(x=>x.k==='spy'&&x.tgt===e.m&&x.taker&&(x.taker===me||(isMe(x.taker)&&isMe(me)))))return null;return e}catch(err){return null}}}
 {const o=limpetPlant;limpetPlant=function(E,f,by,at){if(!E||E.type!=='rds')return o.apply(this,arguments);const m=E.m,x=bmoAll().find(y=>y.k==='spy'&&y.tgt===m&&y.taker&&by&&(y.taker===by||(isMe(y.taker)&&isMe(by))));if(!x)return false;
-  const P=xPilotOfKey(by),cm=x.by.slice(5),cc=ceOf(cm);if(cc)cc.spy=(cc.spy||0)+RDS_G.spy;const got=bmoPay(x,by,P);const hs=rdsHostSide(m);if(FAC_IDS.includes(hs)&&P)smHeat(P,hs,SM.heat.Light,'spying');
+  const P=xPilotOfKey(by),cm=x.by.slice(5),cc=ceOf(cm);if(cc)cc.spy=(cc.spy||0)+RDS_G.spy;const got=bmoPay(x,by,P);bmoHeat(P,rdsHostSide(m),'Light','spying');
   keyFeed(by,`🧲 Limpet on ${E.name}: ${MAKERS[cm].short} reads ${MAKERS[m].short}'s R&D (its next trial +${Math.round(RDS_G.spy*100)}%). +${fmt(got)} cr.`,'good');ceNews(m,`found a spy limpet on its R&D station.`);return true}}
 {const o=rdWinChance;rdWinChance=function(m,P){return Math.min(.95,o.apply(this,arguments)+((ceOf(m)||{}).spy||0))}}
 {const o=rdLaunch;rdLaunch=function(m){const c=ceOf(m);const r=o.apply(this,arguments);if(c&&c.spy&&!NET.cl)c.spy=0;return r}}
 // ---- the black market: spying and sabotage contracts (a rival posts them while a maker runs a project)
 {const o=bmoTick;bmoTick=function(){const due=!NET.cl&&S&&!S.training&&!S.unb&&S.econ&&S.T>=(S.bmoT||0);const r=o.apply(this,arguments);try{if(!due)return r;const L=bmoAll(),T=S.T;
     for(let i=L.length-1;i>=0;i--){const x=L[i];if((x.k==='spy'||x.k==='sab')&&(!ceAlive(x.tgt)||!(ceOf(x.tgt)||{}).rd||!rdsOf(x.tgt)))L.splice(i,1)}
-    for(const m in MAKERS){const c=ceOf(m);if(!ceAlive(m)||!c.rd||!rdsOf(m))continue;for(const k of['spy','sab']){if(L.some(x=>x.k===k&&x.tgt===m))continue;const rv=bmoRival(m);if(!rv||ceT(rv)<RDS_G.pay[k]*1.5)continue;
+    for(const m in MAKERS){const c=ceOf(m);if(!ceAlive(m)||!c.rd||!rdsOf(m))continue;for(const k of['spy','sab']){if(L.some(x=>x.k===k&&x.tgt===m))continue;const rv=bmoRival(m);if(!rv||ceT(rv)<RDS_G.pay[k])continue;
       L.push({id:S.nextId++,k,by:'corp_'+rv,tgt:m,pay:RDS_G.pay[k],T0:T,until:T+BMO.life,taker:null})}}}catch(e){console.error(e)}return r}}
 {const o=bmoTake;bmoTake=function(P,id){const x=bmoAll().find(y=>String(y.id)===String(id));if(!x||(x.k!=='spy'&&x.k!=='sab'))return o.apply(this,arguments);if(x.taker&&!bmoKeyOk(x.taker,P))return'Someone else has taken it.';x.taker=pkeyOf(P);
   const D=rdsOf(x.tgt);if(D&&D.sid!==P.sector)P.route=D.sid;return x.k==='spy'?`✓ Contract taken: plant a limpet on ${MAKERS[x.tgt].name}'s R&D station in ${DEF[D.sid].name} (a scout: target it, hold the limpet key within 600 m). ${bmoClientName(x.by)} pays ${fmt(x.pay)} cr.`:`✓ Contract taken: knock out the lab of ${MAKERS[x.tgt].name}'s current project at its R&D station in ${DEF[D.sid].name}. ${bmoClientName(x.by)} pays ${fmt(x.pay)} cr. Its security and ${sideName(rdsHostSide(x.tgt))}'s garrison will come for you.`}}

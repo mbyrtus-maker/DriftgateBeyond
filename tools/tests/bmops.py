@@ -32,11 +32,11 @@ async def main():
     r=json.loads(await ev(f"""(()=>{{const P=S.player,m={json.dumps(m)},t=ceoShuttle(m),c=ceOf(m),ceo0=c.ceo;exitSector();W=null;P.sector=t.sector;P.docked=null;enterSector(t.sector);running=false;
       let e=W.ents.find(x=>x.alive&&x.tradeT===t);if(!e){{t.live=false;e=spawnTrader(t,false)}}const c0=P.credits,cl0=ceT(Object.keys(MAKERS).find(x=>bmoAll().some(y=>y.k==='ceo'&&y.by==='corp_'+x))||m);killShip(e,'player',{{src:W.player}});
       return JSON.stringify({{paid:P.credits-c0,newCeo:c.ceo!==ceo0,hit:!!c.ceoHit,gone:!ceoShuttle(m),left:bmoAll().filter(y=>y.k==='ceo').length}})}})()"""))
-    check('shooting the shuttle down pays the contract, and the maker gets a new CEO',r['paid']>=3000 and r['newCeo'] and r['hit'] and r['gone'] and r['left']==0,r)
+    check('shooting the shuttle down pays the contract, and the maker gets a new CEO',r['paid']>=5000 and r['newCeo'] and r['hit'] and r['gone'] and r['left']==0,r)
     r=json.loads(await ev("""(()=>{const P=S.player,b='varkesh',x=bmoAll().find(y=>y.k==='kill'&&y.tgt===b);dockAction('bmotake',x.id);const Lb=leaderOf(b);Lb.ship.sid=W.sid;Lb.ship.alive=true;Lb.ship.live=0;leaderSpawn(b,W);
       const e=leaderEnt(b);if(!e)return JSON.stringify({spawned:false});const c0=P.credits,h0=heatOf(b,P);killShip(e,'player',{src:W.player});
       return JSON.stringify({spawned:true,paid:P.credits-c0,heat:heatOf(b,P)-h0,left:bmoAll().filter(y=>y.k==='kill'&&y.tgt===b).length})})()"""))
-    check('the enemy leader shot down: the contract pays (on top of any bounty) and brings Severe heat',r.get('spawned') and r['paid']>=4000 and r['heat']>=40 and r['left']==0,r)
+    check('the enemy leader shot down: the contract pays (on top of any bounty) and brings Severe heat',r.get('spawned') and r['paid']>=8000 and r['heat']>=40 and r['left']==0,r)
     l=await ev(LED);check('ledger exact',l=='exact',l)
     check('no errors',not errs,errs[:3])
     print('ALL OK' if not bad else 'FAILED: '+', '.join(bad))

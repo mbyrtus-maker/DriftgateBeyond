@@ -35,12 +35,12 @@ async def main():
       const E=W.ents.find(y=>y.type==='rds'&&y.m===m);dockAction('bmotake',x.id);W.tgt={{kind:'rds',ref:E}};const p=W.player;p.x=E.x+300;p.y=E.y;p.z=E.z;const lt=limpetTarget()===E;const cr0=P.credits;const ok=limpetPlant(E,intelFor(P),pkeyOf(P),p);
       return JSON.stringify({{posted:true,lt,ok,paid:P.credits-cr0,boost:(ceOf(cm).spy||0)-c0,gone:!bmoAll().includes(x)}})}})()"""))
     check('a rival posts spying and sabotage contracts while the project runs',r.get('posted'),r)
-    check('spying: a scout\'s limpet on the R&D station pays and gives the client\'s next trial +20%',r.get('lt') and r.get('ok') and r.get('paid',0)>=2000 and abs(r.get('boost',0)-0.2)<1e-9 and r.get('gone'),r)
+    check('spying: a scout\'s limpet on the R&D station pays and gives the client\'s next trial +20%',r.get('lt') and r.get('ok') and r.get('paid',0)>=3000 and abs(r.get('boost',0)-0.2)<1e-9 and r.get('gone'),r)
     # sabotage: the project's lab knocked out
     r=json.loads(await ev(f"""(()=>{{const m={json.dumps(m)},P=S.player,E=W.ents.find(y=>y.type==='rds'&&y.m===m),c=ceOf(m);const x=bmoAll().find(y=>y.k==='sab'&&y.tgt===m);dockAction('bmotake',x.id);
       const L=rdsLabs(m),i=L.ids.indexOf(c.rd.id),s=rdsSubPts(E).find(q=>q.k==='lab'&&q.i===i);const u0=c.rd.until,cr0=P.credits,n0=W.ents.filter(y=>y.home==='rdsec:'+m).length;rdsDamage(E,s,99999,'player',W.player);
       const hs=rdsHostSide(m);return JSON.stringify({{i,delay:c.rd.until-u0,paid:P.credits-cr0,sec:W.ents.filter(y=>y.home==='rdsec:'+m).length-n0,aggro:hs==='neutral'||((P.aggro||{{}})[hs]||0)>S.T,gone:!bmoAll().includes(x),down:rdsHp(rdsOf(m),'lab',i)<=0}})}})()"""))
-    check('sabotage: the lab is knocked out, the project loses 10 minutes, the contract pays',r['down'] and r['delay']>=599 and r['paid']>=2500 and r['gone'],r)
+    check('sabotage: the lab is knocked out, the project loses 10 minutes, the contract pays',r['down'] and r['delay']>=599 and r['paid']>=4000 and r['gone'],r)
     check('the maker\'s security launches and the host\'s ships turn on the attacker',r['sec']>=3 and r['aggro'],r)
     # a shot hits the system it passes through
     r=json.loads(await ev(f"""(()=>{{const m={json.dumps(m)},E=W.ents.find(y=>y.type==='rds'&&y.m===m),D=rdsOf(m),s=rdsSubPts(E).find(q=>q.k==='tur');const sum=()=>rdsKeys(m).reduce((a,q)=>a+rdsHp(D,q.k,q.i),0),h0=sum();

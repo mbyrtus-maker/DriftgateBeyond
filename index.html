@@ -15798,7 +15798,7 @@ function coProfHtml(P){const F=coFormOf(P),col=coHueCol(F.hue),clash=coHueClash(
 //     as Riftstone. Riftstone is Light heat everywhere if a scan catches it (user: "Rift stone causes light heat everywhere").
 // Host only; goods and credits only move, so the ledger stays exact.
 const OREQ={ores:['au','nu'],keep:60,low:40,k:1.5,life:1800,near:3,every:60};
-const RSJ={low:50,n:20,k:2.2,life:1800,every:60,wait:600};
+const RSJ={low:50,n:20,k:3.3,life:1800,every:60,wait:600};
 ITEMS.rift.legal=[];
 {const o=contraFor;contraFor=function(){const L=o.apply(this,arguments);for(const x of L)if(x.k==='rift'&&x.why==='cash')x.why='Light';return L}}
 function oreqAll(){return S.oreq=S.oreq||[]}
@@ -15825,7 +15825,7 @@ function rsjDeliver(P,id){const j=rsjAll().find(x=>String(x.id)===String(id));if
   const per=Math.max(1,j.unit),w=j.by,can=Math.floor((S.econ.treasury[w]||0)/per);let d=Math.min(j.n-j.got,P.cargo.rift||0,can);if(d<=0)return(P.cargo.rift||0)?'The buyer can\'t pay for more just now.':'No Riftstone in your hold.';
   const st=rsjStoreOf(j);if(!st)return'The buyer has nowhere to put it.';S.drift=S.drift||{};const rc=comp('rift');let stood=0;
   for(let i=0;i<d;i++){inv.take(P.cargo,'rift',1);if((S.drift[j.ore]||0)>=1){S.drift[j.ore]-=1;for(const e of RAWS)S.drift[e]=(S.drift[e]||0)+rc[e];inv.add(st,j.ore,1);stood++}else inv.add(st,'rift',1)}
-  const got=transfer(w,'player',d*per);j.got+=d;if(j.got>=j.n)rsjAll().splice(rsjAll().indexOf(j),1);
+  const got=transfer(w,'player',d*per);bmoHeat(P,S.stations[j.sid]&&S.stations[j.sid].owner,'Light','a Riftstone sale');j.got+=d;if(j.got>=j.n)rsjAll().splice(rsjAll().indexOf(j),1);
   return`✓ ${d} Riftstone to ${rsjBuyerName(j.by)}'s buyer: +${fmt(got)} cr. ${stood?`${stood} stood in for ${ITEMS[j.ore].name}`:'The rift had nothing to pull'}${stood<d&&stood?`; ${d-stood} kept as Riftstone`:''}.`}
 {const o=dockAction;dockAction=function(act,arg){if(act==='oreqdel'){if(NET.cl)return o.apply(this,arguments);dockErr=oreqDeliver(S.player,arg);return}if(act==='rsjdel'){if(NET.cl)return o.apply(this,arguments);dockErr=rsjDeliver(S.player,arg);return}return o.apply(this,arguments)}}
 // ---- the Jobs board
@@ -15835,9 +15835,9 @@ function rsjDeliver(P,id){const j=rsjAll().find(x=>String(x.id)===String(id));if
       btn:here&&have?['oreqdel',j.id,`Deliver ${Math.min(have,left)}`]:!here?['croute',j.to,'Set course']:null,need:here&&!have?`No ${ITEMS[j.ore].name} in your hold.`:'',
       detail:()=>`<p class="note" style="margin:0">${esc(MAKERS[j.m].name)} needs ${esc(ITEMS[j.ore].name)} for the components ${esc(R.owner==='neutral'?'the Compact':FACTIONS[R.owner].short)} makes for it, and pays ${fmt(j.unit)} cr a unit for up to ${left}, delivered at its works at ${esc(R.name)} (part loads welcome). ${esc(ITEMS[j.ore].name)} is in the rock of ${esc(Object.keys(DEF).filter(s=>(DEF[s].ores||{})[j.ore]).slice(0,4).map(s=>DEF[s].name).join(', '))}${Object.keys(DEF).filter(s=>(DEF[s].ores||{})[j.ore]).length>4?' and more':''}.</p>`})}
   for(const j of rsjAll()){const h=hop(j.sid);if(h>3)continue;const here=P.sector===j.sid,have=P.cargo.rift||0,left=j.n-j.got,R=S.stations[j.sid];if(!R)continue;
-    out.push({id:'rs:'+j.id,bm:1,by:j.by,sid:j.sid,ty:'haul',title:`Riftstone for ${esc(rsjBuyerName(j.by))}: ${left} to ${esc(R.name)}`,sub:`short of ${esc(ITEMS[j.ore].name)} · Light heat if caught · ${fmt(j.unit)} cr a unit`,hops:h,where:far(h),payN:j.unit*left,pay:`${fmt(j.unit*left)} cr`,
+    out.push({id:'rs:'+j.id,bm:1,by:j.by,sid:j.sid,ty:'haul',title:`Riftstone for ${esc(rsjBuyerName(j.by))}: ${left} to ${esc(R.name)}`,sub:`short of ${esc(ITEMS[j.ore].name)} · Light heat · ${fmt(j.unit)} cr a unit`,hops:h,where:far(h),payN:j.unit*left,pay:`${fmt(j.unit*left)} cr`,
       btn:here&&have?['rsjdel',j.id,`Deliver ${Math.min(have,left)}`]:!here?['croute',j.sid,'Set course']:null,need:here&&!have?'No Riftstone in your hold.':'',
-      detail:()=>`<p class="note" style="margin:0">A quiet buyer for ${esc(rsjBuyerName(j.by))} wants Riftstone: they're short of ${esc(ITEMS[j.ore].name)}, and a Riftstone stands in for one unit of any ore (the rift pulls it out of the outer drift). Cut it from a rift rock (they discharge: keep your shields up) and bring it here. Riftstone is contraband everywhere: Light heat if a patrol scans it in your hold.</p>`})}}catch(err){console.error(err)}return out}}
+      detail:()=>`<p class="note" style="margin:0">A quiet buyer for ${esc(rsjBuyerName(j.by))} wants Riftstone: they're short of ${esc(ITEMS[j.ore].name)}, and a Riftstone stands in for one unit of any ore (the rift pulls it out of the outer drift). Cut it from a rift rock (they discharge: keep your shields up) and bring it here. Riftstone is contraband everywhere: the sale brings Light heat with ${esc(R.owner==='neutral'?'the Compact (its standing)':FACTIONS[R.owner].short)}, and a patrol that scans it in your hold adds more.</p>`})}}catch(err){console.error(err)}return out}}
 {const o=jbIssuer;jbIssuer=function(j){if(j&&j.bm&&String(j.id).startsWith('rs:'))return`A quiet buyer (${rsjBuyerName(j.by)})`;return o.apply(this,arguments)}}
 
 //@src 16zzzm_bmops.js
@@ -15851,7 +15851,8 @@ function rsjDeliver(P,id){const j=rsjAll().find(x=>String(x.id)===String(id));if
 //     BMO.ceo; the maker gets a new CEO, and its share price takes a 10% knock for the next hour's valuation.
 //   (The Dread Pirate's hunt is on the black market too: 16zc_dread.js, marked bm.)
 // Host only; credits only move between wallets, so the ledger stays exact.
-const BMO={kill:4000,ceo:3000,every:60,ceoEvery:[1800,3600],ceoCls:'courier',life:2400};
+// (user, 9 Nov 2026) "All black market jobs should pay well and cause heat except the ones affecting the Unbound."
+const BMO={kill:8000,ceo:5000,every:60,ceoEvery:[1800,3600],ceoCls:'courier',life:2400};
 function bmoAll(){return S.bmo=S.bmo||[]}
 function bmoKeyOk(k,P){return P&&k&&(k===pkeyOf(P)||(isMe(k)&&P===S.player))}
 function bmoClientName(by){return by.startsWith('corp_')?(MAKERS[by.slice(5)]||{}).name||'a maker':FACTIONS[by]?FACTIONS[by].name:sideName(by)}
@@ -15869,10 +15870,10 @@ function bmoTick(){if(NET.cl||!S||S.training||S.unb||!S.econ)return;const T=S.T;
   for(let i=L.length-1;i>=0;i--){const x=L[i];let gone=T>x.until;if(x.k==='kill'){const Ld=leaderOf(x.tgt);if(!Ld||!Ld.ship||!Ld.ship.alive||!warWith(x.by,x.tgt))gone=true}if(x.k==='ceo'&&!(S.traders||[]).some(t=>t.id===x.tid))gone=true;if(gone)L.splice(i,1)}
   // leaders: a power at war posts on its enemy's leader
   if(S.leaders)for(const f of FAC_IDS)for(const g of FAC_IDS){if(f===g||!warWith(f,g))continue;const Ld=leaderOf(g);if(!Ld||!Ld.ship||!Ld.ship.alive||L.some(x=>x.k==='kill'&&x.tgt===g))continue;
-    if((S.econ.treasury[f]||0)<BMO.kill*2)continue;L.push({id:S.nextId++,k:'kill',by:f,tgt:g,pay:BMO.kill,T0:T,until:T+BMO.life,taker:null})}
+    if((S.econ.treasury[f]||0)<BMO.kill)continue;L.push({id:S.nextId++,k:'kill',by:f,tgt:g,pay:BMO.kill,T0:T,until:T+BMO.life,taker:null})}
   // CEOs: a shuttle now and then; a rival posts on it while it flies
   S.ceoT=S.ceoT||{};if(S.corp)for(const m in MAKERS){if(!ceAlive(m)||!mkAtHome(m))continue;if(S.ceoT[m]==null)S.ceoT[m]=T+rnd(...BMO.ceoEvery);if(T<S.ceoT[m]||ceoShuttle(m))continue;S.ceoT[m]=T+rnd(...BMO.ceoEvery);
-    const t=ceoLaunch(m);if(!t)continue;const r=bmoRival(m);if(r&&ceT(r)>=BMO.ceo*1.5)L.push({id:S.nextId++,k:'ceo',by:'corp_'+r,tgt:m,tid:t.id,pay:BMO.ceo,T0:T,until:T+BMO.life,taker:null})}}
+    const t=ceoLaunch(m);if(!t)continue;const r=bmoRival(m);if(r&&ceT(r)>=BMO.ceo)L.push({id:S.nextId++,k:'ceo',by:'corp_'+r,tgt:m,tid:t.id,pay:BMO.ceo,T0:T,until:T+BMO.life,taker:null})}}
 {const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{bmoTick()}catch(e){console.error(e)}return r}}
 // the shuttle's label, and it is no convoy for the powers' escorts (nor a maker's escort job)
 {const o=shipLabel;shipLabel=function(e){const t=e&&e.tradeT;if(t&&t.ceo&&MAKERS[t.ceo.m])return`${MAKERS[t.ceo.m].short} CEO ${t.ceo.name} · shuttle`;return o.apply(this,arguments)}}
@@ -15884,7 +15885,7 @@ function bmoKillerKey(src,at){const a=at&&at.src;if(a&&a.rp)return a.rp;if(a&&a.
   try{if(pre){const key=bmoKillerKey(src,at),P=key?xPilotOfKey(key):null;
     if(pre.k==='kill'){const x=bmoAll().find(y=>y.k==='kill'&&y.tgt===pre.f&&y.taker&&key&&(y.taker===key||(isMe(y.taker)&&isMe(key))));if(x&&P){const got=bmoPay(x,key,P);smHeat(P,pre.f,SM.heat.Severe,'an assassination');keyFeed(key,`🗡 Contract done: ${bmoClientName(x.by)} pays +${fmt(got)} cr. ${FACTIONS[pre.f].short} will not forget it (Severe heat).`,'good')}}
     if(pre.k==='ceo'){const t=pre.t,m=t.ceo.m,c=ceOf(m);if(c&&!c.dead){const old=c.ceo;c.ceo=pick(CE.ceos.filter(z=>z!==old));c.ceoT=S.T;c.ceoHit=S.T+3600;ceNews(m,`'s CEO ${t.ceo.name} was killed when the company shuttle was shot down. The board names a new CEO (${c.ceo}).`,true)}
-      const x=bmoAll().find(y=>y.k==='ceo'&&y.tid===t.id);if(x&&x.taker&&key&&(x.taker===key||(isMe(x.taker)&&isMe(key)))&&P){const got=bmoPay(x,key,P);const sd=sideNorm(t.side);if(FAC_IDS.includes(sd))smHeat(P,sd,SM.heat.Heavy,'a killing in its space');keyFeed(key,`🗡 Contract done: ${bmoClientName(x.by)} pays +${fmt(got)} cr.`,'good')}}}}catch(err){console.error(err)}return r}}
+      const x=bmoAll().find(y=>y.k==='ceo'&&y.tid===t.id);if(x&&x.taker&&key&&(x.taker===key||(isMe(x.taker)&&isMe(key)))&&P){const got=bmoPay(x,key,P);bmoHeat(P,MAKERS[m].home,'Heavy','a CEO killed');keyFeed(key,`🗡 Contract done: ${bmoClientName(x.by)} pays +${fmt(got)} cr.`,'good')}}}}catch(err){console.error(err)}return r}}
 // the knock to the share price at the next valuation
 {const o=ceHour;ceHour=function(){const r=o.apply(this,arguments);try{for(const m in MAKERS){const c=ceOf(m);if(c&&!c.dead&&c.ceoHit&&S.T<=c.ceoHit){c.px*=.9;if(c.pxH&&c.pxH.length)c.pxH[c.pxH.length-1]=Math.round(c.px*10)/10;c.ceoHit=0}}}catch(e){console.error(e)}return r}}
 // ---- taking a contract
@@ -15899,13 +15900,16 @@ function bmoTake(P,id){const x=bmoAll().find(y=>String(y.id)===String(id));if(!x
   for(const x of bmoAll()){const mine=x.taker&&bmoKeyOk(x.taker,P);if(x.taker&&!mine)continue;let sid=null,title='',sub='',det='';
     if(x.k==='kill'){const Ld=leaderOf(x.tgt);sid=Ld&&Ld.ship&&Ld.ship.sid;title=`Assassinate ${esc(lName(x.tgt))} of ${esc(FACTIONS[x.tgt].short)}`;sub=`for ${esc(bmoClientName(x.by))} · flagship in ${sid?esc(DEF[sid].name):'?'} · Severe heat with ${esc(FACTIONS[x.tgt].short)}`;
       det=`${esc(bmoClientName(x.by))} is at war with ${esc(FACTIONS[x.tgt].name)} and wants its leader dead. The flagship flies with an ace escort. Shoot it down after taking the contract: ${fmt(x.pay)} cr from the client, on top of any bounty. ${esc(FACTIONS[x.tgt].short)} will hunt you for it.`}
-    else{const t=(S.traders||[]).find(z=>z.id===x.tid);if(!t)continue;sid=t.sector;title=`Assassinate ${esc(MAKERS[x.tgt].short)}'s CEO ${esc(t.ceo.name)}`;sub=`for ${esc(bmoClientName(x.by))} · shuttle now in ${esc(DEF[sid].name)}, bound for ${esc(DEF[t.ceo.fp].name)} and back`;
+    else{const t=(S.traders||[]).find(z=>z.id===x.tid);if(!t)continue;sid=t.sector;title=`Assassinate ${esc(MAKERS[x.tgt].short)}'s CEO ${esc(t.ceo.name)}`;sub=`for ${esc(bmoClientName(x.by))} · shuttle now in ${esc(DEF[sid].name)}, bound for ${esc(DEF[t.ceo.fp].name)} and back · Heavy heat with ${esc(FACTIONS[MAKERS[x.tgt].home]?FACTIONS[MAKERS[x.tgt].home].short:'the Compact')}`;
       det=`${esc(bmoClientName(x.by))} wants its rival's CEO gone. The CEO flies a light shuttle from the works at ${esc(DEF[t.from].name)} to ${esc(DEF[t.ceo.fp].name)} and back. Shoot it down after taking the contract: ${fmt(x.pay)} cr. The maker gets a new CEO and its shares take a knock.`}
     const h=hop(sid);out.push({id:'bk:'+x.id,bm:1,by:x.by,sid,ty:'fight',title,sub:mine?`your contract · ${sub}`:sub,hops:h,where:sid?far(h):'?',payN:x.pay,pay:`${fmt(x.pay)} cr`,btn:mine?(sid&&sid!==P.sector?['croute',sid,'Set course']:null):['bmotake',x.id,'Take the contract'],detail:()=>`<p class="note" style="margin:0">${det}</p>`})}}catch(err){console.error(err)}return out}}
 // a shuttle lost is no supply convoy (no convoy news, no spilled cargo: it carries none)
 {const o=traderLost;traderLost=function(e){try{const id=e&&e.home&&e.home.split(':')[1],t=(S.traders||[]).find(x=>String(x.id)===id);if(t&&t.ceo){S.traders=S.traders.filter(x=>x!==t);return}}catch(err){console.error(err)}return o.apply(this,arguments)}}
 // (the caller takes it off the trader list)
 {const o=haulLost;haulLost=function(t){if(t&&t.ceo){t.load={};return}return o.apply(this,arguments)}}
+// black-market work brings heat with the power it touches (a freeport's: the Compact's standing falls instead), except
+// work against the Unbound
+function bmoHeat(P,side,rating,why){if(!P||!side||side==='pirate')return;if(FAC_IDS.includes(side)){smHeat(P,side,SM.heat[rating]||15,why);return}if(side==='neutral')standAdd('neutral',-(SM.heat[rating]||15)/5,why,P)}
 
 //@src 16zzzn_rdsdraw.js
 // ============================================================ the makers' R&D stations drawn (Beyond, built 9 Nov 2026)
@@ -15981,7 +15985,7 @@ function rdsDraw(){if(!W||!W.ents||!rdsReady())return;for(const e of W.ents){if(
 //   Black market: spying (a limpet on a rival's R&D station: the client's next trial +20%, user 9 Nov 2026) and sabotage
 //   (disable the lab of a rival's current project) are posted by a rival while a maker runs a project (16zzzm_bmops.js).
 // Host only for damage and effects; every page builds the entities from S.rds. Credits only move: the ledger stays exact.
-const RDS_G={dist:4500,hp:{cc:1600,lab:700,tur:450},labDelay:600,offT:600,ceoT:7200,secN:3,secCls:'interceptor',secCool:300,aggro:60,tur:{range:1800,cool:.9,dmg:9,spd:900},spy:.2,pay:{spy:2000,sab:2500},hitR:{cc:12,lab:11,tur:7}};
+const RDS_G={dist:4500,hp:{cc:1600,lab:700,tur:450},labDelay:600,offT:600,ceoT:7200,secN:3,secCls:'interceptor',secCool:300,aggro:60,tur:{range:1800,cool:.9,dmg:9,spd:900},spy:.2,pay:{spy:3000,sab:4000},hitR:{cc:12,lab:11,tur:7}};
 function rdsAll(){return S.rds=S.rds||{}}
 function rdsOf(m){return rdsAll()[m]||null}
 function rdsHost(m){return S.stations[mkHomeSid(m)]||null}
@@ -16023,7 +16027,7 @@ function rdsSecurity(e,side){const n=RDS_G.secN;for(let i=0;i<n;i++){const s=mak
 // a system goes down
 function rdsDown(m,k,i,by){const D=rdsOf(m),c=ceOf(m);if(!D||!c)return;
   if(k==='lab'){const L=rdsLabs(m),id=L.ids[i];D.labDown=D.labDown||{};D.labDown[i]=1;if(c.rd&&id===c.rd.id&&c.rd.until<1e9){c.rd.until+=RDS_G.labDelay;ceNews(m,`'s R&D station was attacked: the ${rdsName(m,k,i)} is down, and the project loses ${Math.round(RDS_G.labDelay/60)} minutes.`)}
-    for(const x of bmoAll())if(x.k==='sab'&&x.tgt===m&&x.taker&&by&&(x.taker===by||(isMe(x.taker)&&isMe(by)))&&c.rd&&id===c.rd.id){const P=xPilotOfKey(by);const got=bmoPay(x,by,P);const hs=rdsHostSide(m);if(FAC_IDS.includes(hs)&&P)smHeat(P,hs,SM.heat.Heavy,'sabotage');keyFeed(by,`🧨 Sabotage done: ${bmoClientName(x.by)} pays +${fmt(got)} cr.`,'good');break}}
+    for(const x of bmoAll())if(x.k==='sab'&&x.tgt===m&&x.taker&&by&&(x.taker===by||(isMe(x.taker)&&isMe(by)))&&c.rd&&id===c.rd.id){const P=xPilotOfKey(by);const got=bmoPay(x,by,P);bmoHeat(P,rdsHostSide(m),'Heavy','sabotage');keyFeed(by,`🧨 Sabotage done: ${bmoClientName(x.by)} pays +${fmt(got)} cr.`,'good');break}}
   if(k==='cc'){if(!rdsOffline(m)){D.offStart=D.offStart&&S.T-D.off<60?D.offStart:S.T}D.off=S.T+RDS_G.offT;ceNews(m,`'s R&D station is offline: its control centre was knocked out. Its sales are held in escrow until it comes back.`,true)}}
 // ---- the host: turrets, repairs, coming back online, the escrow, a CEO lost to a long outage
 function rdsLive(dt){if(!W)return;for(const e of W.ents){if(e.type!=='rds')continue;const D=rdsOf(e.m);if(!D)continue;e.tc=(e.tc||0)-dt;if(e.tc>0)continue;e.tc=RDS_G.tur.cool;
@@ -16054,14 +16058,14 @@ function rdsTgtHtml(e,dist){const m=e.m,D=rdsOf(m);if(!D)return'';const rows=rds
 {const o=limpetTarget;limpetTarget=function(){const r=o.apply(this,arguments);if(r)return r;try{const t=W&&W.tgt;if(!t||t.kind!=='rds'||!isScoutCls(S.player.cls))return null;const e=t.ref,me=pkeyOf(S.player);
     if(!bmoAll().some(x=>x.k==='spy'&&x.tgt===e.m&&x.taker&&(x.taker===me||(isMe(x.taker)&&isMe(me)))))return null;return e}catch(err){return null}}}
 {const o=limpetPlant;limpetPlant=function(E,f,by,at){if(!E||E.type!=='rds')return o.apply(this,arguments);const m=E.m,x=bmoAll().find(y=>y.k==='spy'&&y.tgt===m&&y.taker&&by&&(y.taker===by||(isMe(y.taker)&&isMe(by))));if(!x)return false;
-  const P=xPilotOfKey(by),cm=x.by.slice(5),cc=ceOf(cm);if(cc)cc.spy=(cc.spy||0)+RDS_G.spy;const got=bmoPay(x,by,P);const hs=rdsHostSide(m);if(FAC_IDS.includes(hs)&&P)smHeat(P,hs,SM.heat.Light,'spying');
+  const P=xPilotOfKey(by),cm=x.by.slice(5),cc=ceOf(cm);if(cc)cc.spy=(cc.spy||0)+RDS_G.spy;const got=bmoPay(x,by,P);bmoHeat(P,rdsHostSide(m),'Light','spying');
   keyFeed(by,`🧲 Limpet on ${E.name}: ${MAKERS[cm].short} reads ${MAKERS[m].short}'s R&D (its next trial +${Math.round(RDS_G.spy*100)}%). +${fmt(got)} cr.`,'good');ceNews(m,`found a spy limpet on its R&D station.`);return true}}
 {const o=rdWinChance;rdWinChance=function(m,P){return Math.min(.95,o.apply(this,arguments)+((ceOf(m)||{}).spy||0))}}
 {const o=rdLaunch;rdLaunch=function(m){const c=ceOf(m);const r=o.apply(this,arguments);if(c&&c.spy&&!NET.cl)c.spy=0;return r}}
 // ---- the black market: spying and sabotage contracts (a rival posts them while a maker runs a project)
 {const o=bmoTick;bmoTick=function(){const due=!NET.cl&&S&&!S.training&&!S.unb&&S.econ&&S.T>=(S.bmoT||0);const r=o.apply(this,arguments);try{if(!due)return r;const L=bmoAll(),T=S.T;
     for(let i=L.length-1;i>=0;i--){const x=L[i];if((x.k==='spy'||x.k==='sab')&&(!ceAlive(x.tgt)||!(ceOf(x.tgt)||{}).rd||!rdsOf(x.tgt)))L.splice(i,1)}
-    for(const m in MAKERS){const c=ceOf(m);if(!ceAlive(m)||!c.rd||!rdsOf(m))continue;for(const k of['spy','sab']){if(L.some(x=>x.k===k&&x.tgt===m))continue;const rv=bmoRival(m);if(!rv||ceT(rv)<RDS_G.pay[k]*1.5)continue;
+    for(const m in MAKERS){const c=ceOf(m);if(!ceAlive(m)||!c.rd||!rdsOf(m))continue;for(const k of['spy','sab']){if(L.some(x=>x.k===k&&x.tgt===m))continue;const rv=bmoRival(m);if(!rv||ceT(rv)<RDS_G.pay[k])continue;
       L.push({id:S.nextId++,k,by:'corp_'+rv,tgt:m,pay:RDS_G.pay[k],T0:T,until:T+BMO.life,taker:null})}}}catch(e){console.error(e)}return r}}
 {const o=bmoTake;bmoTake=function(P,id){const x=bmoAll().find(y=>String(y.id)===String(id));if(!x||(x.k!=='spy'&&x.k!=='sab'))return o.apply(this,arguments);if(x.taker&&!bmoKeyOk(x.taker,P))return'Someone else has taken it.';x.taker=pkeyOf(P);
   const D=rdsOf(x.tgt);if(D&&D.sid!==P.sector)P.route=D.sid;return x.k==='spy'?`✓ Contract taken: plant a limpet on ${MAKERS[x.tgt].name}'s R&D station in ${DEF[D.sid].name} (a scout: target it, hold the limpet key within 600 m). ${bmoClientName(x.by)} pays ${fmt(x.pay)} cr.`:`✓ Contract taken: knock out the lab of ${MAKERS[x.tgt].name}'s current project at its R&D station in ${DEF[D.sid].name}. ${bmoClientName(x.by)} pays ${fmt(x.pay)} cr. Its security and ${sideName(rdsHostSide(x.tgt))}'s garrison will come for you.`}}
