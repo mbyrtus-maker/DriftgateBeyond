@@ -25,7 +25,7 @@ function rsjBuyerName(by){return by==='neutral'?'the Freeport Compact':FACTIONS[
 function rsjStoreOf(j){const R=S.stations[j.sid];return j.by==='neutral'?(R?storeOf(R):null):S.econ.stock[j.by]}
 function rsjRating(){return'Light'}
 function oreqTick(){if(NET.cl||!S||S.training||S.unb||!S.econ)return;const T=S.T;if(T<(S.oreqT||0))return;S.oreqT=T+OREQ.every;
-  const L=oreqAll();for(let i=L.length-1;i>=0;i--){const j=L[i];if(T>j.until||j.got>=j.n||!ceAlive(j.m))L.splice(i,1)}
+  const L=oreqAll();for(let i=L.length-1;i>=0;i--){const j=L[i];if(T>j.until||j.got>=j.n||!ceAlive(j.m)){L.splice(i,1);continue}if(j.ind){const I=indById(j.ind);if(!I||I.st==='down'||!I.run||I.run.c!=='oq'+j.id)j.ind=null}}
   for(const m in MAKERS){if(!ceAlive(m))continue;const R=mkAtHome(m);if(!R)continue;const st=storeOf(R);if(!st)continue;
     for(const e of OREQ.ores){const have=st[e]||0;if(have>=OREQ.low||L.some(j=>j.to===R.sid&&j.ore===e))continue;L.push({id:S.nextId++,m,ore:e,n:OREQ.keep-have,got:0,to:R.sid,unit:Math.round(baseValue(e)*OREQ.k),T0:T,until:T+OREQ.life})}}
   const Q=rsjAll();for(let i=Q.length-1;i>=0;i--){const j=Q[i];if(T>j.until||j.got>=j.n)Q.splice(i,1)}
@@ -59,3 +59,17 @@ function rsjDeliver(P,id){const j=rsjAll().find(x=>String(x.id)===String(id));if
 // (9 Nov 2026) where a pilot can cut Riftstone: the systems with Riftstone rocks left, nearest first
 function riftNear(from,n){const L=[];for(const id in S.sectors){const s=S.sectors[id];const k=s.ast.filter(a=>a.rift&&(a.ore.xc||0)>0).length;if(!k)continue;const h=HOP[from]&&HOP[from][id]!=null?HOP[from][id]:99;L.push({id,h,k})}return L.sort((a,b)=>a.h-b.h).slice(0,n||3)}
 function riftNearTxt(from){const L=riftNear(from,3);return L.length?L.map(x=>`${DEF[x.id].name} (${x.h?x.h+' jump'+(x.h>1?'s':''):'here'})`).join(', '):'none left'}
+// (9 Nov 2026) independent miners fill the makers' ore requests too, so the galaxy needs no pilot to feed the new components:
+// a request open OREQ.aiAge with nobody on it is taken by a miner who can reach that ore within its usual range; it mines the
+// ore, delivers it at the works (into the host's store) and the maker pays its purse the unit price. A pilot's delivery
+// still counts first; the miner delivers what is still wanted when it arrives.
+OREQ.aiAge=480;
+{const o=indBoardOre;indBoardOre=function(I){const best=o.apply(this,arguments);if(best)return best;try{if(!S.oreq)return null;let b=null;
+    for(const j of S.oreq){if(j.ind||j.got>=j.n||S.T-j.T0<OREQ.aiAge||!ceAlive(j.m)||S.T>j.until-600)continue;const R=S.stations[j.to];if(!R)continue;if(FAC_IDS.includes(R.owner)&&(I.stand[R.owner]||0)<=STAND.dock)continue;
+      const at=indMineSys(I,j.ore);if(!at)continue;const rw=j.unit*(j.n-j.got);if(!b||rw>b.rw)b={j,at,rw}}
+    if(!b)return null;return{c:{id:'oq'+b.j.id,item:b.j.ore,reward:b.rw,set ind(v){b.j.ind=v}},at:b.at}}catch(e){console.error(e);return null}}}
+{const o=indMineDone;indMineDone=function(I){const r=I.run;if(r&&typeof r.c==='string'&&r.c.startsWith('oq')){const j=oreqAll().find(x=>'oq'+x.id===r.c);
+    if(j&&(I.hold[j.ore]||0)>0){I.res={[j.ore]:I.hold[j.ore]};indGo(I,'board',j.to,{c:r.c,item:j.ore,ore:1});return}if(j)j.ind=null}return o.apply(this,arguments)}}
+{const o=indArrive;indArrive=function(I){const r=I&&I.run;if(r&&r.k==='board'&&typeof r.c==='string'&&r.c.startsWith('oq')){const j=oreqAll().find(x=>'oq'+x.id===r.c);
+    try{if(j&&I.sector===j.to){const d=Math.min(j.n-j.got,I.hold[j.ore]||0,Math.floor(ceT(j.m)/Math.max(1,j.unit)));if(d>0){inv.take(I.hold,j.ore,d);inv.add(oreqHost(j.m)||storeOf(S.stations[j.to]),j.ore,d);transfer(ceW(j.m),indW(I),d*j.unit);j.got+=d}j.ind=null;if(j.got>=j.n)oreqAll().splice(oreqAll().indexOf(j),1)}}catch(e){console.error(e)}
+    r.c=null}return o.apply(this,arguments)}}
