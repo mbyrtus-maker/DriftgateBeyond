@@ -426,7 +426,7 @@ function dockAction(act,arg){const c=dockCtx(),P=S.player,p=W.player,srcs=[P.car
       dockErr=done?`✓ Contract complete${d<k.n0?` (you brought the last ${d} of ${k.n0})`:''}. +${fmt(got)} cr.`:`✓ Delivered ${d} ${nm}: +${fmt(got)} cr. ${k.n} more still wanted.`;feed(done?`Contract delivered: +${fmt(got)} cr.`:`Part delivery: ${d} ${nm}, +${fmt(got)} cr (${k.n} still wanted).`,'good')}}
   else if(act==='cvesc'){const t=(S.traders||[]).find(x=>String(x.id)===String(arg)&&x.kind==='haul');if(!t||!escortOK(P,t.side)||t.esc||cvLeft(t)<1){dockErr='That convoy no longer needs an escort.';return}
     const k=P.pid||'me';for(const x of S.traders)if(x.esc&&x.esc.k===k)x.esc=null;const E=cvSign(t,k,P.name);if(t.sector!==P.sector)P.route=t.sector;
-    dockErr=`✓ Escort contract: the convoy is in ${DEF[t.sector].name}, bound for ${DEF[t.to].name}. Stay with it for ${E.need} jump${E.need>1?'s':''}.${t.sector!==P.sector?' Course set: launch and press J.':''}`}
+    dockErr=`✓ Escort contract: the convoy is in ${DEF[t.sector].name}, bound for ${DEF[t.to].name}. Stay with it for ${E.need} jump${E.need>1?'s':''}.${t.sector!==P.sector?' Course set: launch and press J.':''} Target it and press ${kb('autopilot')} to fly in formation.`}
   else if(act==='fort'){const o=c.o,r=fortRecipe(o.level+1);if(takeFrom(r,srcs)){const v=invVec(r);for(const e2 of RAWS)o.fort[e2]+=v[e2];o.level++;const os=oStats(o);o.shield=os.sMax;o.hull=os.hMax;dockErr=`✓ ${o.name} fortified to level ${o.level}.`}}
 }
 
@@ -541,6 +541,7 @@ function keysNow(){const P=S.player,p=W&&W.player;if(!p||P.docked||W.bridge||W.g
   if(T&&(T.kind==='ship'||T.kind==='station')&&subRecOf(T.ref)&&hostile('player',T.kind==='station'?T.ref.fac:T.ref.side)){const sel=W.tsub&&W.tsub.E===T.ref;k.push(['Shift+'+kb('tgtH'),!subOpen(T.ref)?'systems (shield up)':sel?'next system':'pick a system'])}
   if(W.missiles.some(m=>m.tgt===p&&m.kind!=='swarm'))k.unshift([kb('flare'),'flares']);
   if(T&&(T.kind==='gate'||T.kind==='station'||T.kind==='ast'||T.kind==='outpost'))k.push([kb('autopilot'),'autopilot']);
+  if(T&&T.kind==='ship'&&S.player.fmE!=null&&String(T.ref.id)===String(S.player.fmE))k.push([kb('autopilot'),apOn&&W.fmn?'formation on':'formation']);
   if(p.hull<p.st.hull*.35)k.push([kb('distress'),'distress']);
   if(!T)k.push([kb('tgtH'),'nearest hostile'],[kb('cycle'),'cycle targets']);
   return k.slice(0,6)}

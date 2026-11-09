@@ -1916,7 +1916,7 @@ function haulWhat(t){const ks=Object.keys(t.load||{}).filter(k=>t.load[k]>0);ret
 // ---- convoy escort contract. A pilot signs on to a friendly convoy from the Jobs tab. Each jump the convoy makes with
 // its escort in the system it leaves or the one it enters counts. Raiders sent to intercept an escorted convoy fight it out in
 // the open (the escort's system is live). If the escort was there for enough of the trip when the convoy docks, the faction pays.
-const ESC_CV={need:.6,base:60,hop:45,val:.04,we:2};
+const ESC_CV={need:.6,base:60,hop:150,val:.04,we:2};
 function cvLeft(t){return Math.max(0,t.path.length-1-t.leg)}
 function cvPay(t,hops){return Math.round((ESC_CV.base+ESC_CV.hop*hops+invValue(t.load||{})*ESC_CV.val)/10)*10}
 function cvSign(t,k,name){const n=cvLeft(t);t.esc={k,name,hops:0,need:Math.max(1,Math.ceil(n*ESC_CV.need))};return t.esc}
@@ -4703,7 +4703,7 @@ function cmWing(k,T,tg){if(!S.player.sworn||sideNorm(T.side)!==S.player.sworn||(
   feed(`${k==='launch'?(T.tok?T.tok.name:shipLabel(T))+': '+use.length+' fighters':shipLabel(use[0])+(use.length>1?` and ${use.length-1} more`:'')}: copy, ${k==='form'?'forming up on you':'attacking '+shipLabel(tg)}.`,'good');return use.length}
 // sign on as a convoy's escort from the cockpit, the same contract as Jobs → Convoy escort
 function cvTake(t){const P=S.player;if(!t||!escortOK(P,t.side)||t.esc||cvLeft(t)<1){feed('That convoy no longer needs an escort.','warn');return false}const k=P.pid||'me';for(const x of S.traders||[])if(x.esc&&x.esc.k===k)x.esc=null;const E=cvSign(t,k,P.name);
-  feed(`✓ Escort contract: the convoy is bound for ${DEF[t.to].name}. Stay with it for ${E.need} jump${E.need>1?'s':''}; Command pays when it docks.`,'good');return true}
+  feed(`✓ Escort contract: the convoy is bound for ${DEF[t.to].name}. Stay with it for ${E.need} jump${E.need>1?'s':''}; Command pays when it docks. Target it and press ${kb('autopilot')} to fly in formation.`,'good');return true}
 // who answers: the closest friendly combat ships of your faction (not frigates, drones or civilians), up to four, within 3.5 km of the ship to protect
 function issueOrder(k,T){const fac=S.player.sworn||'player',me=T===W.player||T.rp===S.player||(T.isPlayer&&!T.rp),cand=[];
   for(const e of W.ents){if(e.type!=='ship'||!e.alive||!e.npc||e===T||e.side!==fac)continue;if(!['patrol','escort','screen','strike','raider'].includes(e.role))continue;if(e.cvy||e.capt||e.hire||(e.order&&e.order.by&&e.order.by!==(curPid()||'me')))continue;if(isBmb(e.cls)&&e.role==='strike')continue;const d=d3(e,T);if(d<3500)cand.push([e,d])}
@@ -7066,7 +7066,7 @@ function dockAction(act,arg){const c=dockCtx(),P=S.player,p=W.player,srcs=[P.car
       dockErr=done?`✓ Contract complete${d<k.n0?` (you brought the last ${d} of ${k.n0})`:''}. +${fmt(got)} cr.`:`✓ Delivered ${d} ${nm}: +${fmt(got)} cr. ${k.n} more still wanted.`;feed(done?`Contract delivered: +${fmt(got)} cr.`:`Part delivery: ${d} ${nm}, +${fmt(got)} cr (${k.n} still wanted).`,'good')}}
   else if(act==='cvesc'){const t=(S.traders||[]).find(x=>String(x.id)===String(arg)&&x.kind==='haul');if(!t||!escortOK(P,t.side)||t.esc||cvLeft(t)<1){dockErr='That convoy no longer needs an escort.';return}
     const k=P.pid||'me';for(const x of S.traders)if(x.esc&&x.esc.k===k)x.esc=null;const E=cvSign(t,k,P.name);if(t.sector!==P.sector)P.route=t.sector;
-    dockErr=`✓ Escort contract: the convoy is in ${DEF[t.sector].name}, bound for ${DEF[t.to].name}. Stay with it for ${E.need} jump${E.need>1?'s':''}.${t.sector!==P.sector?' Course set: launch and press J.':''}`}
+    dockErr=`✓ Escort contract: the convoy is in ${DEF[t.sector].name}, bound for ${DEF[t.to].name}. Stay with it for ${E.need} jump${E.need>1?'s':''}.${t.sector!==P.sector?' Course set: launch and press J.':''} Target it and press ${kb('autopilot')} to fly in formation.`}
   else if(act==='fort'){const o=c.o,r=fortRecipe(o.level+1);if(takeFrom(r,srcs)){const v=invVec(r);for(const e2 of RAWS)o.fort[e2]+=v[e2];o.level++;const os=oStats(o);o.shield=os.sMax;o.hull=os.hMax;dockErr=`✓ ${o.name} fortified to level ${o.level}.`}}
 }
 
@@ -7181,6 +7181,7 @@ function keysNow(){const P=S.player,p=W&&W.player;if(!p||P.docked||W.bridge||W.g
   if(T&&(T.kind==='ship'||T.kind==='station')&&subRecOf(T.ref)&&hostile('player',T.kind==='station'?T.ref.fac:T.ref.side)){const sel=W.tsub&&W.tsub.E===T.ref;k.push(['Shift+'+kb('tgtH'),!subOpen(T.ref)?'systems (shield up)':sel?'next system':'pick a system'])}
   if(W.missiles.some(m=>m.tgt===p&&m.kind!=='swarm'))k.unshift([kb('flare'),'flares']);
   if(T&&(T.kind==='gate'||T.kind==='station'||T.kind==='ast'||T.kind==='outpost'))k.push([kb('autopilot'),'autopilot']);
+  if(T&&T.kind==='ship'&&S.player.fmE!=null&&String(T.ref.id)===String(S.player.fmE))k.push([kb('autopilot'),apOn&&W.fmn?'formation on':'formation']);
   if(p.hull<p.st.hull*.35)k.push([kb('distress'),'distress']);
   if(!T)k.push([kb('tgtH'),'nearest hostile'],[kb('cycle'),'cycle targets']);
   return k.slice(0,6)}
@@ -15366,7 +15367,7 @@ function mfEscPay(t,hops){return Math.round(cvPay(t,hops)*SYF.esc/10)*10}
 function mfEscOK(P,t){return!(P.sworn&&t.side!=='neutral'&&hostile(P.sworn,t.side))}
 function mfEsc(P,id){const t=(S.traders||[]).find(x=>String(x.id)===String(id)&&(x.syf||x.test));if(!t||!mfEscOK(P,t)||t.esc||cvLeft(t)<1)return'That flight no longer needs an escort.';
   const k=pkeyOf(P);for(const x of S.traders)if(x.esc&&x.esc.k===k)x.esc=null;const E=cvSign(t,k,P.name);if(t.sector!==P.sector)P.route=t.sector;
-  return`✓ Signed on to escort the ${MAKERS[(t.syf||t.test).m].short} ${t.test?'test flight':'freighter'}: be with it for ${E.need} of its jumps.`}
+  return`✓ Signed on to escort the ${MAKERS[(t.syf||t.test).m].short} ${t.test?'test flight':'freighter'}: be with it for ${E.need} of its jumps. Target it and press ${kb('autopilot')} to fly in formation.`}
 {const o=dockAction;dockAction=function(act,arg){if(act==='mftake'||act==='mfdel'||act==='mfesc'){if(NET.cl)return o.apply(this,arguments);const P=S.player;dockErr=act==='mftake'?mfjTake(P,arg):act==='mfdel'?mfjDeliver(P,arg):mfEsc(P,arg);return}return o.apply(this,arguments)}}
 // ---- the Jobs board: freight jobs at their source, Deliver at the destination, escorts within 3 jumps
 {const o=jobsList;jobsList=function(c,P,srcs){const out=o.apply(this,arguments);try{if(S.unb||!c||c.kind!=='station'||!S.mfj&&!(S.traders||[]).some(t=>t.syf||t.test))return out;const me=pkeyOf(P),hop=sid=>HOP[P.sector]&&HOP[P.sector][sid]!=null?HOP[P.sector][sid]:0,far=n=>n?`${n} jump${n>1?'s':''}`:'here';
@@ -15459,6 +15460,121 @@ function sysTrSum(P,key){let s=0;const M=P&&P.sysm;if(!M)return 0;for(const sl i
     for(const k of['maxSpd','thrust','turn','eCap','eRegen','sCap','hull','dmg','shotCost','drill','reload']){const v=sysTrSum(P,k);if(v&&typeof B[k]==='number')B[k]*=1+v}
     const c=sysTrSum(P,'cargo');if(c&&B.cargo)B.cargo=Math.round(B.cargo*(1+c))}catch(e){}return B}}
 {const o=vK;vK=function(P,key){const v=o.apply(this,arguments);if(key==='lockK'&&P&&P.sysm&&!S.training){const t=sysTrSum(P,'lockT');if(t)return v*(1+t)}return v}}
+
+//@src 16zzzi_escort.js
+// ============================================================ Beyond: formation flying, and miners hiring guards (user, 8 Nov 2026)
+// "When targeting the ship you're escorting there should be an autopilot that puts you in formation with that craft so that
+// you both jump simultaneously and move across a sector together. Only breaking when there's enemy fighters or another
+// mission you'd rather take." And: "All miner pilots should be able to hire a guard/escort especially if they are going into
+// deep space or unfriendly space", paid in time while it mines (a miner may not jump).
+//   Formation: the host marks, for each pilot, the ship it is escorting or guarding in that pilot's system (P.fmE, its entity
+//     id; it reaches a guest in the pilot record). Target that ship and press J (autopilot): you hold a slot off its side and
+//     match its speed. When it jumps (it reaches its gate, or vanishes there) and you are within 1.6 km, you jump with it, and
+//     on arrival you fall back in on it. Steering or thrust breaks off; so do hostile fighters within 2.5 km of you or it
+//     (they are targeted for you). Press J on it again to fall back in.
+//   The escorted freighter jumps when it reaches its gate if its escort is within 1.6 km (no wait for the galaxy's clock), so
+//     the two arrive together.
+//   Guard jobs: an independent miner setting off to mine in, or through, deep space, Brood or pirate borders, or a power's
+//     space where it isn't welcome, hires a guard if it can afford one (at least 400 cr above its reserve). The job (Jobs,
+//     within 3 jumps) pays 150 cr for each jump it makes with you in the system it leaves or enters and 50 cr for each minute
+//     you are within 2.5 km while it mines, paid as you go from its purse, up to the sum it set aside (the trip's estimate).
+//     With a pilot within 3 jumps it waits at its freeport 90 s for a taker, and up to 4 minutes for a guard who signed on.
+//     The job ends when it docks again (or is shot down).
+const IGD={jump:150,min:50,wait:90,waitG:240,minCap:400,near:3,reach:2500};
+const FMN={side:150,up:35,back:110,far:900,jump:1600,gate:700,hostR:2500,after:25000};
+const FM_V={f:{x:0,y:0,z:0},r:{x:0,y:0,z:0},u:{x:0,y:0,z:0}};
+let IG_GO=false,FM_AFTER=0,FM_HT=0;
+function igOn(){return!!(S&&!S.training&&!S.unb&&S.ind)}
+function sameK(a,b){return a===b||(isMe(a)&&isMe(b))}
+// ---- guard jobs: when a miner hires
+function igWhy(I,to){const p=indPath(I,I.sector,to);let deep=0,bad=0,unf=0;
+  for(const s of p){if(DEF[s]&&DEF[s].kind==='deep')deep=1;if(indDanger(s)>0)bad=1;const o=sectorOwner(s);if(o==='pirate'||o==='brood'||(FAC_IDS.includes(o)&&(I.stand[o]||0)<=STAND.dock))unf=1}
+  return bad?'past the Brood or a pirate den':unf?'through unfriendly space':deep?'into deep space':''}
+function igMins(I){return Math.ceil(indCargo(I)*IND.fill/(IND.mineT[I.cls]||3))}
+function igCap(I,to){const h=indHops(I.sector,to),est=2*Math.max(1,h)*IGD.jump+igMins(I)*IGD.min;return Math.max(0,Math.min(est,Math.floor(indPurse(I)-IND.reserve)))}
+function igNear(sid){return allPilots().some(P=>P&&P.sector&&HOP[P.sector]&&HOP[P.sector][sid]!=null&&HOP[P.sector][sid]<=IGD.near)}
+{const o=indGo;indGo=function(I,k,to,extra){
+  if(!IG_GO&&k==='mine'&&I&&I.role==='miner'&&igOn()&&!NET.cl&&!I.hire){const why=igWhy(I,to),cap=why?igCap(I,to):0;
+    if(why&&cap>=IGD.minCap){const wait=igNear(I.sector);I.hire={to,x:extra||{},why,cap,T:S.T,st:wait?'wait':'out'};
+      for(const P of allPilots()){const h=HOP[P.sector]&&HOP[P.sector][I.sector];if(h!=null&&h<=IGD.near)keyFeed(pkeyOf(P),`📋 ${I.name}, an independent miner in ${DEF[I.sector].name}, is hiring a guard for a trip ${why} (Jobs).`,'info')}
+      if(wait){I.st='dock';return}}}
+  return o.apply(this,arguments)}}
+// a miner waiting for its guard makes no other plans
+{const o=indPlan;indPlan=function(I){if(I&&I.hire&&I.hire.st==='wait')return;return o.apply(this,arguments)}}
+function igDepart(I){const H=I.hire;H.st='out';IG_GO=true;try{indGo(I,'mine',H.to,H.x)}finally{IG_GO=false}}
+function igEnd(I,why){const G=I.guard;if(G){if(why)keyFeed(G.k,why,'bad');else keyFeed(G.k,`✔ Guard job done: ${I.name} is docked at ${DEF[I.sector].name}. You were paid ${fmt(G.paid)} cr in all.`,'good')}I.guard=null;I.hire=null}
+function igStep(I){const H=I.hire;if(!H)return;const G=I.guard;
+  if(I.st==='down'){igEnd(I,`✖ ${I.name}, the miner you were guarding, was shot down.${G&&G.paid?` You were paid ${fmt(G.paid)} cr.`:''}`);return}
+  if(H.st==='wait'){if(I.st!=='dock'){igEnd(I,`${I.name} changed its plans: the guard job is off.`);return}
+    if((G&&pSect(G.k)===I.sector)||S.T-H.T>=(G?IGD.waitG:IGD.wait))igDepart(I)}}
+{const o=indTick;indTick=function(){const r=o.apply(this,arguments);try{if(igOn()&&!NET.cl)for(const I of indAll())igStep(I)}catch(e){console.error(e)}return r}}
+// home again (or delivered its ore): the trip, and the job, are over
+{const o=indArrive;indArrive=function(I){const H=I&&I.hire,k=I&&I.run&&I.run.k;const r=o.apply(this,arguments);try{if(H&&H.st==='out'&&k&&k!=='mine')igEnd(I)}catch(e){console.error(e)}return r}}
+function igPay(I,n,what){const G=I.guard,H=I.hire;if(!G||!H)return;const amt=Math.min(n,H.cap-G.paid,Math.floor(indPurse(I)-IND.reserve/2));
+  if(amt<=0){if(!G.capped){G.capped=1;keyFeed(G.k,`${I.name} has paid all it set aside for a guard (${fmt(G.paid)} cr).`,'warn')}return}
+  const got=payKey(G.k,indW(I),amt);G.paid+=got;if(got>0)keyFeed(G.k,`🛡 +${fmt(got)} cr from ${I.name} (${what}).`,'good')}
+function igTake(P,id){const I=indById(id);if(!I||!I.hire||I.st==='down')return'That miner no longer needs a guard.';if(I.guard)return`${I.name} already has a guard.`;
+  const k=pkeyOf(P);fmClear(k);I.guard={k,name:P.name||'a pilot',paid:0,acc:0,ls:I.sector,T0:S.T};if(I.sector!==P.sector)P.route=I.sector;
+  return`✓ You're guarding ${I.name}: ${IGD.jump} cr for each jump with it and ${IGD.min} cr a minute while it mines, up to ${fmt(I.hire.cap)} cr.${I.hire.st==='wait'?` It waits for you at ${DEF[I.sector].name}.`:''} Target it and press ${kb('autopilot')} to fly in formation.`}
+function fmClear(k){for(const t of S.traders||[])if(t.esc&&sameK(t.esc.k,k))t.esc=null;for(const I of indAll())if(I.guard&&sameK(I.guard.k,k))I.guard=null}
+// signing on to escort a convoy or a maker's flight ends a guard job
+{const o=cvSign;cvSign=function(t,k){try{for(const I of indAll())if(I.guard&&sameK(I.guard.k,k))I.guard=null}catch(e){}return o.apply(this,arguments)}}
+{const o=dockAction;dockAction=function(act,arg){if(act==='igtake'){if(NET.cl)return o.apply(this,arguments);dockErr=igTake(S.player,arg);return}return o.apply(this,arguments)}}
+// the Jobs board: guard jobs for miners within 3 jumps
+{const o=jobsList;jobsList=function(c,P,srcs){const out=o.apply(this,arguments);try{if(!igOn()||!c||c.kind!=='station')return out;const me=pkeyOf(P),hop=sid=>HOP[P.sector]&&HOP[P.sector][sid]!=null?HOP[P.sector][sid]:0,far=n=>n?`${n} jump${n>1?'s':''}`:'here';
+  for(const I of indAll()){const H=I.hire;if(!H||I.st==='down')continue;const G=I.guard,mine=G&&sameK(G.k,me);if(G&&!mine)continue;const j=hop(I.sector);if(j>IGD.near)continue;
+    const where=H.st==='wait'?`waiting at ${esc(DEF[I.sector].name)}`:I.st==='work'?`mining in ${esc(DEF[I.sector].name)}`:`now in ${esc(DEF[I.sector].name)}`,left=Math.max(0,H.cap-(G?G.paid:0));
+    out.push({id:'igd:'+I.id,by:'ind_'+I.id,sid:I.sector,ty:'fight',title:`Guard: ${esc(I.name)}'s ${esc(CLASSES[I.cls].name)}, mining ${esc(DEF[H.to].name)}`,
+      sub:mine?`your job · paid ${fmt(G.paid)} of up to ${fmt(H.cap)} cr · ${where}`:`going ${esc(H.why)} · ${where} · up to ${fmt(H.cap)} cr`,hops:j,where:far(j),payN:left,pay:`${IGD.jump} cr a jump · ${IGD.min} cr a min`,
+      btn:mine?(I.sector!==P.sector?['croute',I.sector,'Set course']:null):['igtake',I.id,'Take the job'],
+      detail:()=>`<p class="note" style="margin:0">${esc(I.name)}, an independent miner, is going ${esc(H.why)} to mine ${esc(DEF[H.to].name)} and is hiring a guard. Fly with it: ${IGD.jump} cr for each jump it makes with you in the system it leaves or enters, and ${IGD.min} cr for each minute you stay within ${(IGD.reach/1000).toFixed(1)} km while it mines, paid as you go from its own purse, up to ${fmt(H.cap)} cr. Target it and press ${kb('autopilot')} to fly in formation: you jump when it jumps.${H.st==='wait'?` It waits at ${esc(DEF[I.sector].name)} a few minutes for its guard.`:''}</p>`})}}catch(e){console.error(e)}return out}}
+{const o=jbIssuer;jbIssuer=function(j){if(j&&typeof j.by==='string'&&j.by.startsWith('ind_')){const I=indById(j.by.slice(4));return I?`${I.name} (independent)`:'An independent'}return o.apply(this,arguments)}}
+{const o=sideCol;sideCol=function(s){if(typeof s==='string'&&s.startsWith('ind_'))return'#c9b98f';return o.apply(this,arguments)}}
+// ---- the host, every frame: which ship each pilot is escorting (P.fmE), guard pay, and freighters that jump with their escort
+function fmEntOf(k,sid){const w=WORLDS[sid];if(!w)return null;
+  for(const t of S.traders||[])if(t.esc&&sameK(t.esc.k,k)&&t.sector===sid){const h=`trader:${t.id}:${t.side}`;return w.ents.find(x=>x.alive&&x.home===h)||null}
+  for(const I of indAll())if(I.guard&&sameK(I.guard.k,k)&&I.sector===sid)return w.ents.find(x=>x.alive&&x.indId===I.id)||null;return null}
+function fmHost(dt){if(NET.cl||!S||!S.player)return;FM_HT-=dt;const slow=FM_HT<=0;if(slow)FM_HT=.25;
+  if(slow)for(const P of allPilots()){if(!P)continue;const e=P.docked?null:fmEntOf(pkeyOf(P),P.sector),id=e?e.id:null;if(P.fmE!==id)P.fmE=id}
+  if(!igOn())return;
+  for(const I of indAll()){const G=I.guard;if(!G||!I.hire)continue;
+    if(G.ls!==I.sector){const ps=pSect(G.k);if(G.ls&&(ps===G.ls||ps===I.sector))igPay(I,IGD.jump,'a jump guarded');G.ls=I.sector}
+    if(I.st==='work'&&I.live){const w=WORLDS[I.sector],GP=xPilotOfKey(G.k),me=w&&GP&&!GP.docked&&pilotEntIn(w,G.k),e=me&&w.ents.find(x=>x.alive&&x.indId===I.id);
+      if(e&&d3(me,e)<IGD.reach){G.acc=(G.acc||0)+dt;if(G.acc>=60){G.acc-=60;igPay(I,IGD.min,'a minute guarding')}}}}}
+{const o=step;step=function(dt){const r=o.apply(this,arguments);try{fmHost(dt)}catch(e){console.error(e)}return r}}
+function trHopNow(t,e){returnHome(e);despawn(e);t.live=false;if(t.leg>=t.path.length-1)return;const prev=t.sector;t.leg++;t.sector=t.path[t.leg];t.next=S.T+TRADER_HOP;
+  if(t.kind==='haul'){cvStep(t,prev);if(raidMeet(t,prev)){const i=S.traders.indexOf(t);if(i>=0)S.traders.splice(i,1);return}}
+  if(WORLDS[t.sector])inW(WORLDS[t.sector],()=>spawnTrader(t,true))}
+{const o=traderThink;traderThink=function(e,dt){const was=!!(e.ai&&e.ai.arrived);const r=o.apply(this,arguments);
+  try{if(!was&&!NET.cl&&e.ai.arrived&&e.ai.dest&&e.ai.dest.type==='gate'){const t=e.tradeT;if(t&&t.esc&&(S.traders||[]).includes(t)){const pe=pilotEntIn(W,t.esc.k);if(pe&&d3(pe,e)<FMN.jump)trHopNow(t,e)}}}catch(err){console.error(err)}return r}}
+// ---- the pilot's side (host and guest alike): formation flight
+function fmEnt(){const id=S.player&&S.player.fmE;if(id==null||!W)return null;return W.ents.find(e=>e.alive&&e.type==='ship'&&String(e.id)===String(id))||null}
+function fmName(E){let n='';try{n=E.pname||shipLabel(E)}catch(e){}return n||'your charge'}
+function fmStart(E,quiet){W.fmn={ref:E,lx:E.x,ly:E.y,lz:E.z,name:fmName(E)};W.tgt={kind:'ship',ref:E};W.apSet=W.tgt;apOn=true;
+  if(!quiet)flash(`Formation on ${W.fmn.name}: you'll jump when it jumps. Steer or thrust to break off.`)}
+function fmMan(){return keys.KeyW||keys.KeyS||keys.KeyA||keys.KeyD||keys.ArrowLeft||keys.ArrowRight||keys.ArrowUp||keys.ArrowDown||touch.on||(mouse.in&&mouse.aim&&!mouse.free&&hyp(mouse.x-VW/2,mouse.y-VH/2)>Math.min(VW,VH)*.42*.25)}
+function fmHostile(p,R){let b=null,bd=1e9;for(const o of W.ents){if(o.type!=='ship'||!o.alive||o.isPlayer||o===R||o.masked)continue;if(o.role==='miner'||o.role==='hauler'||o.role==='trader'||o.role==='builder')continue;if(!hostile('player',o.side))continue;
+    const d=Math.min(d3(o,p),d3(o,R));if(d<FMN.hostR&&d<bd){bd=d;b=o}}return b}
+function fmGate(F){let b=null,bd=FMN.gate;for(const g of GATES[W.sid]||[]){const d=hyp(g.x-F.lx,g.y-F.ly,g.z-F.lz);if(d<bd){bd=d;b=g}}return b}
+function fmGone(p,F){W.fmn=null;apOn=false;const g=fmGate(F),d=hyp(F.lx-p.x,F.ly-p.y,F.lz-p.z);
+  if(g&&d<FMN.jump&&!gateLocked(p)&&!S.gateDown[gateKey(W.sid,g.to)]){W.gc=null;W.gate=null;W.jump={to:g.to,t:0,g};p.inJump=true;W.tgt=null;SFX.jump();FM_AFTER=performance.now()+FMN.after;flash(`Jumping with ${F.name} to ${DEF[g.to].name}.`);return}
+  flash(g?`${F.name} jumped out: you were too far behind to follow.`:`${F.name} has docked or gone. Formation off.`)}
+function fmFly(p,dt){const F=W.fmn,R=F.ref;
+  if(!R.alive||!W.ents.includes(R)||(R.ai&&R.ai.arrived&&R.ai.dest&&R.ai.dest.type==='gate')){fmGone(p,F);return false}
+  F.lx=R.x;F.ly=R.y;F.lz=R.z;
+  const H=fmHostile(p,R);if(H){W.fmn=null;apOn=false;W.tgt={kind:'ship',ref:H};flash(`Hostiles near ${F.name}: formation broken, ${fmName(H)} targeted. Target your charge and press ${kb('autopilot')} to fall back in.`,true);return false}
+  qRot(R.q,0,0,1,FM_V.f);qRot(R.q,1,0,0,FM_V.r);qRot(R.q,0,1,0,FM_V.u);const f=FM_V.f,r=FM_V.r,u=FM_V.u;
+  const sx=R.x+r.x*FMN.side+u.x*FMN.up-f.x*FMN.back,sy=R.y+r.y*FMN.side+u.y*FMN.up-f.y*FMN.back,sz=R.z+r.z*FMN.side+u.z*FMN.up-f.z*FMN.back,ex=sx-p.x,ey=sy-p.y,ez=sz-p.z,d=hyp(ex,ey,ez);
+  if(d>FMN.far){const err=faceDir(p,ex,ey,ez,dt);if(err<.6)steer(p,sx,sy,sz,dt,false,1);else brake(p,dt*.4);p.thrusting=err<.6;return true}
+  const cm=Math.min(d*.9,140)/(d||1);let vx=(R.vx||0)+ex*cm,vy=(R.vy||0)+ey*cm,vz=(R.vz||0)+ez*cm;const vm=hyp(vx,vy,vz),cap=p.st.maxSpd*1.15;if(vm>cap){vx*=cap/vm;vy*=cap/vm;vz*=cap/vm}
+  const dvx=vx-p.vx,dvy=vy-p.vy,dvz=vz-p.vz,dv=hyp(dvx,dvy,dvz)||1,acc=Math.min(p.st.thrust*1.2,dv/dt);p.vx+=dvx/dv*acc*dt;p.vy+=dvy/dv*acc*dt;p.vz+=dvz/dv*acc*dt;p.thrusting=dv>25;
+  if(d<300)faceDir(p,f.x,f.y,f.z,dt);else faceDir(p,ex,ey,ez,dt);return true}
+{const o=autopilot;autopilot=function(p,dt){if(W&&W.fmn)return fmFly(p,dt);return o.apply(this,arguments)}}
+{const o=toggleAutopilot;toggleAutopilot=function(){if(!apOn&&W&&!S.player.docked&&!W.dead&&W.tgt&&W.tgt.kind==='ship'&&!(W.player&&W.player.landed)){const E=fmEnt();if(E&&W.tgt.ref===E){fmStart(E);return}}
+  if(apOn&&W)W.fmn=null;return o.apply(this,arguments)}}
+// after a jump together: fall back in on it when it appears (unless you take the stick first)
+{const o=playerUpdate;playerUpdate=function(dt){const r=o.apply(this,arguments);try{if(W&&W.fmn&&!apOn)W.fmn=null;
+  if(FM_AFTER){if(performance.now()>FM_AFTER||fmMan()||S.player.docked)FM_AFTER=0;else if(!apOn&&W&&!W.jump&&!W.dead){const E=fmEnt();if(E){FM_AFTER=0;fmStart(E,true);flash(`Back in formation on ${W.fmn.name}.`)}}}}catch(e){console.error(e)}return r}}
 
 //@src 17_main.js
 // ============================================================ main loop

@@ -151,7 +151,7 @@ function mfEscPay(t,hops){return Math.round(cvPay(t,hops)*SYF.esc/10)*10}
 function mfEscOK(P,t){return!(P.sworn&&t.side!=='neutral'&&hostile(P.sworn,t.side))}
 function mfEsc(P,id){const t=(S.traders||[]).find(x=>String(x.id)===String(id)&&(x.syf||x.test));if(!t||!mfEscOK(P,t)||t.esc||cvLeft(t)<1)return'That flight no longer needs an escort.';
   const k=pkeyOf(P);for(const x of S.traders)if(x.esc&&x.esc.k===k)x.esc=null;const E=cvSign(t,k,P.name);if(t.sector!==P.sector)P.route=t.sector;
-  return`✓ Signed on to escort the ${MAKERS[(t.syf||t.test).m].short} ${t.test?'test flight':'freighter'}: be with it for ${E.need} of its jumps.`}
+  return`✓ Signed on to escort the ${MAKERS[(t.syf||t.test).m].short} ${t.test?'test flight':'freighter'}: be with it for ${E.need} of its jumps. Target it and press ${kb('autopilot')} to fly in formation.`}
 {const o=dockAction;dockAction=function(act,arg){if(act==='mftake'||act==='mfdel'||act==='mfesc'){if(NET.cl)return o.apply(this,arguments);const P=S.player;dockErr=act==='mftake'?mfjTake(P,arg):act==='mfdel'?mfjDeliver(P,arg):mfEsc(P,arg);return}return o.apply(this,arguments)}}
 // ---- the Jobs board: freight jobs at their source, Deliver at the destination, escorts within 3 jumps
 {const o=jobsList;jobsList=function(c,P,srcs){const out=o.apply(this,arguments);try{if(S.unb||!c||c.kind!=='station'||!S.mfj&&!(S.traders||[]).some(t=>t.syf||t.test))return out;const me=pkeyOf(P),hop=sid=>HOP[P.sector]&&HOP[P.sector][sid]!=null?HOP[P.sector][sid]:0,far=n=>n?`${n} jump${n>1?'s':''}`:'here';

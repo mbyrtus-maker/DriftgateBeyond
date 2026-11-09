@@ -147,7 +147,7 @@ function haulWhat(t){const ks=Object.keys(t.load||{}).filter(k=>t.load[k]>0);ret
 // ---- convoy escort contract. A pilot signs on to a friendly convoy from the Jobs tab. Each jump the convoy makes with
 // its escort in the system it leaves or the one it enters counts. Raiders sent to intercept an escorted convoy fight it out in
 // the open (the escort's system is live). If the escort was there for enough of the trip when the convoy docks, the faction pays.
-const ESC_CV={need:.6,base:60,hop:45,val:.04,we:2};
+const ESC_CV={need:.6,base:60,hop:150,val:.04,we:2};
 function cvLeft(t){return Math.max(0,t.path.length-1-t.leg)}
 function cvPay(t,hops){return Math.round((ESC_CV.base+ESC_CV.hop*hops+invValue(t.load||{})*ESC_CV.val)/10)*10}
 function cvSign(t,k,name){const n=cvLeft(t);t.esc={k,name,hops:0,need:Math.max(1,Math.ceil(n*ESC_CV.need))};return t.esc}
