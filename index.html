@@ -15785,40 +15785,44 @@ function coProfHtml(P){const F=coFormOf(P),col=coHueCol(F.hue),clash=coHueClash(
 // "Makers need to request it be mined. Job creation." (whenever they're short; no recipe change) and "If a power or maker is
 // short an ore, Riftstone black market missions should go live since it's a wild card ore and can make anything" (a
 // delivered Riftstone "stands in for one ore unit").
-//   Ore requests (Jobs, mining): each maker keeps OREQ.keep of Aurorite and Vantium in its store; under OREQ.low it posts a
-//     job for the gap at stations within 3 jumps of its works; delivered at the works (part loads too) for OREQ.k × the
+//   (user, 9 Nov 2026: "Makers don't store those ores; they go to the powers to make the new components that makers need.")
+//   Ore requests (Jobs, mining): a maker whose host (the power whose station holds its works, or the Compact at a freeport)
+//     has under OREQ.low of Aurorite or Vantium posts a job to bring it up to OREQ.keep, one maker per host and ore at a time,
+//     at stations within 3 jumps of the works. Delivered at the works (part loads too) into the host's store, for OREQ.k × the
 //     ore's base value a unit from the maker's purse; open OREQ.life, then posted again while still short.
-//   Riftstone (Jobs → Black market): a power whose warehouse holds under RSJ.low of an ore, or a maker short of Aurorite or
-//     Vantium whose ore request has gone unfilled for RSJ.wait, has a quiet buyer at its station ask for Riftstone. Each delivered Riftstone stands in for one unit of the
-//     short ore: the rift pulls that unit out of the outer drift (S.drift) into the buyer's store, and the Riftstone's own
-//     makings go into the drift. One the drift can't cover goes into the buyer's store as Riftstone. Heat on the card: None
-//     where Riftstone is legal (Ostrova), Light at a freeport, Heavy at a power's station, Severe at a core.
+//   Riftstone (Jobs → Black market): a power whose warehouse holds under RSJ.low of an ore, or a freeport hosting makers whose
+//     ore request has gone unfilled for RSJ.wait, has a quiet buyer at its station ask for Riftstone. Each delivered
+//     Riftstone stands in for one unit of the short ore: the rift pulls that unit out of the outer drift (S.drift) into the
+//     buyer's store, and the Riftstone's own makings go into the drift. One the drift can't cover goes into the buyer's store
+//     as Riftstone. Riftstone is Light heat everywhere if a scan catches it (user: "Rift stone causes light heat everywhere").
 // Host only; goods and credits only move, so the ledger stays exact.
-const OREQ={ores:['au','nu'],keep:40,low:20,k:1.5,life:1800,near:3,every:60};
+const OREQ={ores:['au','nu'],keep:60,low:40,k:1.5,life:1800,near:3,every:60};
 const RSJ={low:50,n:20,k:2.2,life:1800,every:60,wait:600};
+ITEMS.rift.legal=[];
+{const o=contraFor;contraFor=function(){const L=o.apply(this,arguments);for(const x of L)if(x.k==='rift'&&x.why==='cash')x.why='Light';return L}}
 function oreqAll(){return S.oreq=S.oreq||[]}
 function rsjAll(){return S.rsj=S.rsj||[]}
-function rsjBuyerName(by){return by.startsWith('corp_')?(MAKERS[by.slice(5)]||{}).name||'a maker':FACTIONS[by]?FACTIONS[by].name:sideName(by)}
-function rsjStore(by){return by.startsWith('corp_')?ceStore(by.slice(5)):S.econ.stock[by]}
-function rsjWallet(by){return by.startsWith('corp_')?ceW(by.slice(5)):by}
-function rsjRating(sid){const R=S.stations[sid];if(!R)return'Light';if((ITEMS.rift.legal||[]).includes(R.owner))return'None';if(R.owner==='neutral')return'Light';return R.kind==='core'?'Severe':'Heavy'}
+function oreqHost(m){const R=mkAtHome(m);return R?storeOf(R):null}
+function rsjBuyerName(by){return by==='neutral'?'the Freeport Compact':FACTIONS[by]?FACTIONS[by].name:sideName(by)}
+function rsjStoreOf(j){const R=S.stations[j.sid];return j.by==='neutral'?(R?storeOf(R):null):S.econ.stock[j.by]}
+function rsjRating(){return'Light'}
 function oreqTick(){if(NET.cl||!S||S.training||S.unb||!S.econ)return;const T=S.T;if(T<(S.oreqT||0))return;S.oreqT=T+OREQ.every;
   const L=oreqAll();for(let i=L.length-1;i>=0;i--){const j=L[i];if(T>j.until||j.got>=j.n||!ceAlive(j.m))L.splice(i,1)}
-  for(const m in MAKERS){if(!ceAlive(m))continue;const R=mkAtHome(m);if(!R)continue;const st=ceStore(m);
-    for(const e of OREQ.ores){const have=st[e]||0;if(have>=OREQ.low||L.some(j=>j.m===m&&j.ore===e))continue;L.push({id:S.nextId++,m,ore:e,n:OREQ.keep-have,got:0,to:R.sid,unit:Math.round(baseValue(e)*OREQ.k),T0:T,until:T+OREQ.life})}}
+  for(const m in MAKERS){if(!ceAlive(m))continue;const R=mkAtHome(m);if(!R)continue;const st=storeOf(R);if(!st)continue;
+    for(const e of OREQ.ores){const have=st[e]||0;if(have>=OREQ.low||L.some(j=>j.to===R.sid&&j.ore===e))continue;L.push({id:S.nextId++,m,ore:e,n:OREQ.keep-have,got:0,to:R.sid,unit:Math.round(baseValue(e)*OREQ.k),T0:T,until:T+OREQ.life})}}
   const Q=rsjAll();for(let i=Q.length-1;i>=0;i--){const j=Q[i];if(T>j.until||j.got>=j.n)Q.splice(i,1)}
   const want=[];for(const f of FAC_IDS){const R=S.stations[FAC_HOME(f)];if(!R||R.owner!==f)continue;const st=S.econ.stock[f]||{};for(const e of RAWS)if((st[e]||0)<RSJ.low)want.push({by:f,ore:e,sid:R.sid,n:RSJ.n})}
-  for(const m in MAKERS){if(!ceAlive(m))continue;const R=mkAtHome(m);if(!R)continue;const st=ceStore(m);for(const e of OREQ.ores)if((st[e]||0)<OREQ.low&&L.some(j=>j.m===m&&j.ore===e&&T-j.T0>=RSJ.wait))want.push({by:'corp_'+m,ore:e,sid:R.sid,n:Math.max(4,OREQ.keep-(st[e]||0))})}
-  for(const w of want){if(Q.some(j=>j.by===w.by&&j.ore===w.ore))continue;const rating=rsjRating(w.sid);Q.push({id:S.nextId++,...w,got:0,rating,unit:Math.round(baseValue('rift')*RSJ.k*(1+(BM_RATE[rating]||0))),T0:T,until:T+RSJ.life})}}
+  for(const j of L){const R=S.stations[j.to];if(!R||R.owner!=='neutral'||T-j.T0<RSJ.wait)continue;if(!want.some(w=>w.by==='neutral'&&w.sid===R.sid&&w.ore===j.ore))want.push({by:'neutral',ore:j.ore,sid:R.sid,n:Math.max(4,j.n-j.got)})}
+  for(const w of want){if(Q.some(j=>j.by===w.by&&j.sid===w.sid&&j.ore===w.ore))continue;const rating=rsjRating();Q.push({id:S.nextId++,...w,got:0,rating,unit:Math.round(baseValue('rift')*RSJ.k*(1+(BM_RATE[rating]||0))),T0:T,until:T+RSJ.life})}}
 {const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{oreqTick()}catch(e){console.error(e)}return r}}
 // ---- delivering
 function oreqDeliver(P,id){const j=oreqAll().find(x=>String(x.id)===String(id));if(!j)return'That request is over.';if(P.sector!==j.to||P.docked!=='station')return`Deliver at ${S.stations[j.to].name}.`;
   const per=Math.max(1,j.unit),can=Math.floor(ceT(j.m)/per);let d=Math.min(j.n-j.got,P.cargo[j.ore]||0,can);if(d<=0)return(P.cargo[j.ore]||0)?`${MAKERS[j.m].short} can't pay for more just now.`:`No ${ITEMS[j.ore].name} in your hold.`;
-  inv.take(P.cargo,j.ore,d);inv.add(ceStore(j.m),j.ore,d);const got=transfer(ceW(j.m),'player',d*per);j.got+=d;if(j.got>=j.n)oreqAll().splice(oreqAll().indexOf(j),1);
-  return`✓ Delivered ${d} ${ITEMS[j.ore].name} to ${MAKERS[j.m].name}: +${fmt(got)} cr.${j.got<j.n?` ${j.n-j.got} more wanted.`:''}`}
+  inv.take(P.cargo,j.ore,d);inv.add(oreqHost(j.m)||storeOf(S.stations[j.to]),j.ore,d);const got=transfer(ceW(j.m),'player',d*per);j.got+=d;if(j.got>=j.n)oreqAll().splice(oreqAll().indexOf(j),1);
+  return`✓ Delivered ${d} ${ITEMS[j.ore].name} for ${MAKERS[j.m].name} to ${S.stations[j.to].name}'s works: +${fmt(got)} cr.${j.got<j.n?` ${j.n-j.got} more wanted.`:''}`}
 function rsjDeliver(P,id){const j=rsjAll().find(x=>String(x.id)===String(id));if(!j)return'That buyer has gone quiet.';if(P.sector!==j.sid||P.docked!=='station')return`The buyer is at ${S.stations[j.sid].name}.`;
-  const per=Math.max(1,j.unit),w=rsjWallet(j.by),can=Math.floor((S.econ.treasury[w]||0)/per);let d=Math.min(j.n-j.got,P.cargo.rift||0,can);if(d<=0)return(P.cargo.rift||0)?'The buyer can\'t pay for more just now.':'No Riftstone in your hold.';
-  const st=rsjStore(j.by);if(!st)return'The buyer has nowhere to put it.';S.drift=S.drift||{};const rc=comp('rift');let stood=0;
+  const per=Math.max(1,j.unit),w=j.by,can=Math.floor((S.econ.treasury[w]||0)/per);let d=Math.min(j.n-j.got,P.cargo.rift||0,can);if(d<=0)return(P.cargo.rift||0)?'The buyer can\'t pay for more just now.':'No Riftstone in your hold.';
+  const st=rsjStoreOf(j);if(!st)return'The buyer has nowhere to put it.';S.drift=S.drift||{};const rc=comp('rift');let stood=0;
   for(let i=0;i<d;i++){inv.take(P.cargo,'rift',1);if((S.drift[j.ore]||0)>=1){S.drift[j.ore]-=1;for(const e of RAWS)S.drift[e]=(S.drift[e]||0)+rc[e];inv.add(st,j.ore,1);stood++}else inv.add(st,'rift',1)}
   const got=transfer(w,'player',d*per);j.got+=d;if(j.got>=j.n)rsjAll().splice(rsjAll().indexOf(j),1);
   return`✓ ${d} Riftstone to ${rsjBuyerName(j.by)}'s buyer: +${fmt(got)} cr. ${stood?`${stood} stood in for ${ITEMS[j.ore].name}`:'The rift had nothing to pull'}${stood<d&&stood?`; ${d-stood} kept as Riftstone`:''}.`}
@@ -15828,12 +15832,79 @@ function rsjDeliver(P,id){const j=rsjAll().find(x=>String(x.id)===String(id));if
   for(const j of oreqAll()){const h=hop(j.to);if(h>OREQ.near)continue;const here=P.sector===j.to,have=P.cargo[j.ore]||0,left=j.n-j.got,R=S.stations[j.to];if(!R)continue;
     out.push({id:'oq:'+j.id,by:'corp_'+j.m,sid:j.to,ty:'mine',title:`Mine ${left} ${esc(ITEMS[j.ore].name)} for ${esc(MAKERS[j.m].short)}`,sub:`deliver at ${esc(R.name)} · ${fmt(j.unit)} cr a unit · ${Math.max(0,Math.round((j.until-S.T)/60))} min left`,hops:h,where:far(h),payN:j.unit*left,pay:`${fmt(j.unit*left)} cr`,
       btn:here&&have?['oreqdel',j.id,`Deliver ${Math.min(have,left)}`]:!here?['croute',j.to,'Set course']:null,need:here&&!have?`No ${ITEMS[j.ore].name} in your hold.`:'',
-      detail:()=>`<p class="note" style="margin:0">${esc(MAKERS[j.m].name)} is short of ${esc(ITEMS[j.ore].name)} and pays ${fmt(j.unit)} cr a unit for up to ${left}, delivered at its works at ${esc(R.name)} (part loads welcome). ${esc(ITEMS[j.ore].name)} is in the rock of ${esc(Object.keys(DEF).filter(s=>(DEF[s].ores||{})[j.ore]).slice(0,4).map(s=>DEF[s].name).join(', '))}${Object.keys(DEF).filter(s=>(DEF[s].ores||{})[j.ore]).length>4?' and more':''}.</p>`})}
+      detail:()=>`<p class="note" style="margin:0">${esc(MAKERS[j.m].name)} needs ${esc(ITEMS[j.ore].name)} for the components ${esc(R.owner==='neutral'?'the Compact':FACTIONS[R.owner].short)} makes for it, and pays ${fmt(j.unit)} cr a unit for up to ${left}, delivered at its works at ${esc(R.name)} (part loads welcome). ${esc(ITEMS[j.ore].name)} is in the rock of ${esc(Object.keys(DEF).filter(s=>(DEF[s].ores||{})[j.ore]).slice(0,4).map(s=>DEF[s].name).join(', '))}${Object.keys(DEF).filter(s=>(DEF[s].ores||{})[j.ore]).length>4?' and more':''}.</p>`})}
   for(const j of rsjAll()){const h=hop(j.sid);if(h>3)continue;const here=P.sector===j.sid,have=P.cargo.rift||0,left=j.n-j.got,R=S.stations[j.sid];if(!R)continue;
-    out.push({id:'rs:'+j.id,bm:1,by:j.by,sid:j.sid,ty:'haul',title:`Riftstone for ${esc(rsjBuyerName(j.by))}: ${left} to ${esc(R.name)}`,sub:`short of ${esc(ITEMS[j.ore].name)} · ${j.rating} heat if caught · ${fmt(j.unit)} cr a unit`,hops:h,where:far(h),payN:j.unit*left,pay:`${fmt(j.unit*left)} cr`,
+    out.push({id:'rs:'+j.id,bm:1,by:j.by,sid:j.sid,ty:'haul',title:`Riftstone for ${esc(rsjBuyerName(j.by))}: ${left} to ${esc(R.name)}`,sub:`short of ${esc(ITEMS[j.ore].name)} · Light heat if caught · ${fmt(j.unit)} cr a unit`,hops:h,where:far(h),payN:j.unit*left,pay:`${fmt(j.unit*left)} cr`,
       btn:here&&have?['rsjdel',j.id,`Deliver ${Math.min(have,left)}`]:!here?['croute',j.sid,'Set course']:null,need:here&&!have?'No Riftstone in your hold.':'',
-      detail:()=>`<p class="note" style="margin:0">A quiet buyer for ${esc(rsjBuyerName(j.by))} wants Riftstone: they're short of ${esc(ITEMS[j.ore].name)}, and a Riftstone stands in for one unit of any ore (the rift pulls it out of the outer drift). Cut it from a rift rock (they discharge: keep your shields up) and bring it here. ${j.rating==='None'?'Riftstone is legal here.':`It is contraband here: ${j.rating} heat if a patrol scans it in your hold.`}</p>`})}}catch(err){console.error(err)}return out}}
+      detail:()=>`<p class="note" style="margin:0">A quiet buyer for ${esc(rsjBuyerName(j.by))} wants Riftstone: they're short of ${esc(ITEMS[j.ore].name)}, and a Riftstone stands in for one unit of any ore (the rift pulls it out of the outer drift). Cut it from a rift rock (they discharge: keep your shields up) and bring it here. Riftstone is contraband everywhere: Light heat if a patrol scans it in your hold.</p>`})}}catch(err){console.error(err)}return out}}
 {const o=jbIssuer;jbIssuer=function(j){if(j&&j.bm&&String(j.id).startsWith('rs:'))return`A quiet buyer (${rsjBuyerName(j.by)})`;return o.apply(this,arguments)}}
+
+//@src 16zzzm_bmops.js
+// ============================================================ Beyond: the black market's assassinations, spying and sabotage (user, 9 Nov 2026)
+// Jobs → Black market. Each contract is taken by one pilot and paid by its client when the work is done.
+//   Assassination of a power leader: a power at war with another posts a contract on the enemy leader's flagship (where it is
+//     flying is on the card). Shot down by the taker: the client pays BMO.kill (on top of the bounty that killing a leader
+//     already brings), Severe heat with the dead leader's power; the usual succession follows.
+//   Assassination of a maker's CEO: every so often a maker's CEO flies a shuttle from the works to a freeport and back (a
+//     named courier, like a test pilot); a rival maker posts a contract on it. Shot down by the taker: the client pays
+//     BMO.ceo; the maker gets a new CEO, and its share price takes a 10% knock for the next hour's valuation.
+//   (The Dread Pirate's hunt is on the black market too: 16zc_dread.js, marked bm.)
+// Host only; credits only move between wallets, so the ledger stays exact.
+const BMO={kill:4000,ceo:3000,every:60,ceoEvery:[1800,3600],ceoCls:'courier',life:2400};
+function bmoAll(){return S.bmo=S.bmo||[]}
+function bmoKeyOk(k,P){return P&&k&&(k===pkeyOf(P)||(isMe(k)&&P===S.player))}
+function bmoClientName(by){return by.startsWith('corp_')?(MAKERS[by.slice(5)]||{}).name||'a maker':FACTIONS[by]?FACTIONS[by].name:sideName(by)}
+function bmoClientW(by){return by.startsWith('corp_')?ceW(by.slice(5)):by}
+// ---- CEOs and their shuttles
+function ceoName(m){const c=ceOf(m);if(!c)return'the CEO';if(!c.ceoName||c.ceoNameT!==c.ceoT){c.ceoName=pick(IND_FIRST)+' '+pick(IND_LAST);c.ceoNameT=c.ceoT}return c.ceoName}
+function ceoShuttle(m){return(S.traders||[]).find(t=>t.ceo&&t.ceo.m===m)||null}
+function ceoLaunch(m){const R0=mkAtHome(m);if(!R0)return null;const fps=FREEPORTS.map(f=>f.sid).filter(s=>S.stations[s]&&s!==R0.sid&&HOP[R0.sid][s]!=null).sort((a,b)=>HOP[R0.sid][a]-HOP[R0.sid][b]);if(!fps.length)return null;
+  const to=fps[0],path=trPath(R0.sid,to).concat(trPath(to,R0.sid).slice(1));if(path.length<3)return null;const name=ceoName(m);
+  const t={id:S.nextId++,side:syfSide(R0),kind:'haul',key:'ceo:'+m,why:`${MAKERS[m].short} CEO`,car:null,item:null,n:0,from:R0.sid,to:R0.sid,path,leg:0,sector:R0.sid,next:S.T+TRADER_HOP*.5,load:{},cls:BMO.ceoCls,T0:S.T,ceo:{m,name,fp:to}};
+  (S.traders=S.traders||[]).push(t);if(WORLDS[t.sector])inW(WORLDS[t.sector],()=>spawnTrader(t,false));return t}
+// a rival: the maker selling most in the same kinds of part, else any other
+function bmoRival(m){let best=null,bv=-1;const mine=new Set((MK_LINE[m]||[]).map(ceKind));for(const x in MAKERS){if(x===m||!ceAlive(x))continue;let v=0;for(const id of MK_LINE[x]||[])if(mine.has(ceKind(id)))v++;v+=Math.random()*.5;if(v>bv){bv=v;best=x}}return best}
+function bmoTick(){if(NET.cl||!S||S.training||S.unb||!S.econ)return;const T=S.T;if(T<(S.bmoT||0))return;S.bmoT=T+BMO.every;const L=bmoAll();
+  for(let i=L.length-1;i>=0;i--){const x=L[i];let gone=T>x.until;if(x.k==='kill'){const Ld=leaderOf(x.tgt);if(!Ld||!Ld.ship||!Ld.ship.alive||!warWith(x.by,x.tgt))gone=true}if(x.k==='ceo'&&!(S.traders||[]).some(t=>t.id===x.tid))gone=true;if(gone)L.splice(i,1)}
+  // leaders: a power at war posts on its enemy's leader
+  if(S.leaders)for(const f of FAC_IDS)for(const g of FAC_IDS){if(f===g||!warWith(f,g))continue;const Ld=leaderOf(g);if(!Ld||!Ld.ship||!Ld.ship.alive||L.some(x=>x.k==='kill'&&x.tgt===g))continue;
+    if((S.econ.treasury[f]||0)<BMO.kill*2)continue;L.push({id:S.nextId++,k:'kill',by:f,tgt:g,pay:BMO.kill,T0:T,until:T+BMO.life,taker:null})}
+  // CEOs: a shuttle now and then; a rival posts on it while it flies
+  S.ceoT=S.ceoT||{};if(S.corp)for(const m in MAKERS){if(!ceAlive(m)||!mkAtHome(m))continue;if(S.ceoT[m]==null)S.ceoT[m]=T+rnd(...BMO.ceoEvery);if(T<S.ceoT[m]||ceoShuttle(m))continue;S.ceoT[m]=T+rnd(...BMO.ceoEvery);
+    const t=ceoLaunch(m);if(!t)continue;const r=bmoRival(m);if(r&&ceT(r)>=BMO.ceo*1.5)L.push({id:S.nextId++,k:'ceo',by:'corp_'+r,tgt:m,tid:t.id,pay:BMO.ceo,T0:T,until:T+BMO.life,taker:null})}}
+{const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{bmoTick()}catch(e){console.error(e)}return r}}
+// the shuttle's label, and it is no convoy for the powers' escorts (nor a maker's escort job)
+{const o=shipLabel;shipLabel=function(e){const t=e&&e.tradeT;if(t&&t.ceo&&MAKERS[t.ceo.m])return`${MAKERS[t.ceo.m].short} CEO ${t.ceo.name} · shuttle`;return o.apply(this,arguments)}}
+// ---- the work done
+function bmoPay(x,k,P){const w=bmoClientW(x.by),got=payKey(k,w,x.pay);bmoAll().splice(bmoAll().indexOf(x),1);return got}
+function bmoKillerKey(src,at){const a=at&&at.src;if(a&&a.rp)return a.rp;if(a&&a.isPlayer)return pkeyOf(S.player);if(src==='player')return pkeyOf(S.player);return null}
+{const o=killShip;killShip=function(e,src,at){let pre=null;try{if(e&&!NET.cl){if(e.leaderOf)pre={k:'kill',f:e.leaderOf};else if(e.tradeT&&e.tradeT.ceo)pre={k:'ceo',t:e.tradeT}}}catch(err){}
+  const r=o.apply(this,arguments);
+  try{if(pre){const key=bmoKillerKey(src,at),P=key?xPilotOfKey(key):null;
+    if(pre.k==='kill'){const x=bmoAll().find(y=>y.k==='kill'&&y.tgt===pre.f&&y.taker&&key&&(y.taker===key||(isMe(y.taker)&&isMe(key))));if(x&&P){const got=bmoPay(x,key,P);smHeat(P,pre.f,SM.heat.Severe,'an assassination');keyFeed(key,`🗡 Contract done: ${bmoClientName(x.by)} pays +${fmt(got)} cr. ${FACTIONS[pre.f].short} will not forget it (Severe heat).`,'good')}}
+    if(pre.k==='ceo'){const t=pre.t,m=t.ceo.m,c=ceOf(m);if(c&&!c.dead){const old=c.ceo;c.ceo=pick(CE.ceos.filter(z=>z!==old));c.ceoT=S.T;c.ceoHit=S.T+3600;ceNews(m,`'s CEO ${t.ceo.name} was killed when the company shuttle was shot down. The board names a new CEO (${c.ceo}).`,true)}
+      const x=bmoAll().find(y=>y.k==='ceo'&&y.tid===t.id);if(x&&x.taker&&key&&(x.taker===key||(isMe(x.taker)&&isMe(key)))&&P){const got=bmoPay(x,key,P);const sd=sideNorm(t.side);if(FAC_IDS.includes(sd))smHeat(P,sd,SM.heat.Heavy,'a killing in its space');keyFeed(key,`🗡 Contract done: ${bmoClientName(x.by)} pays +${fmt(got)} cr.`,'good')}}}}catch(err){console.error(err)}return r}}
+// the knock to the share price at the next valuation
+{const o=ceHour;ceHour=function(){const r=o.apply(this,arguments);try{for(const m in MAKERS){const c=ceOf(m);if(c&&!c.dead&&c.ceoHit&&S.T<=c.ceoHit){c.px*=.9;if(c.pxH&&c.pxH.length)c.pxH[c.pxH.length-1]=Math.round(c.px*10)/10;c.ceoHit=0}}}catch(e){console.error(e)}return r}}
+// ---- taking a contract
+function bmoTake(P,id){const x=bmoAll().find(y=>String(y.id)===String(id));if(!x)return'That contract is gone.';if(x.taker&&!bmoKeyOk(x.taker,P))return'Someone else has taken it.';x.taker=pkeyOf(P);
+  if(x.k==='kill'){const Ld=leaderOf(x.tgt);if(Ld&&Ld.ship&&Ld.ship.sid&&Ld.ship.sid!==P.sector)P.route=Ld.ship.sid;return`✓ Contract taken: ${lName(x.tgt)} of ${FACTIONS[x.tgt].short}. ${bmoClientName(x.by)} pays ${fmt(x.pay)} cr when the flagship goes down to your guns.`}
+  const t=(S.traders||[]).find(z=>z.id===x.tid);if(t&&t.sector!==P.sector)P.route=t.sector;return`✓ Contract taken: ${MAKERS[x.tgt].short}'s CEO ${t?t.ceo.name:''}. ${bmoClientName(x.by)} pays ${fmt(x.pay)} cr when the shuttle goes down to your guns.`}
+{const o=dockAction;dockAction=function(act,arg){if(act==='bmotake'){if(NET.cl)return o.apply(this,arguments);dockErr=bmoTake(S.player,arg);return}return o.apply(this,arguments)}}
+// ---- the board (Jobs → Black market)
+{const o=jobsList;jobsList=function(c,P,srcs){const out=o.apply(this,arguments);try{if(S.unb||!c||c.kind!=='station')return out;const me=pkeyOf(P),hop=sid=>sid&&HOP[P.sector]&&HOP[P.sector][sid]!=null?HOP[P.sector][sid]:0,far=n=>n?`${n} jump${n>1?'s':''}`:'here';
+  // CEO shuttles are no one's convoy to escort
+  for(let i=out.length-1;i>=0;i--){const id=String(out[i].id);if(id.startsWith('ce:')||id.startsWith('mfe:')){const tid=id.split(':')[1],t=(S.traders||[]).find(z=>String(z.id)===tid);if(t&&t.ceo)out.splice(i,1)}}
+  for(const x of bmoAll()){const mine=x.taker&&bmoKeyOk(x.taker,P);if(x.taker&&!mine)continue;let sid=null,title='',sub='',det='';
+    if(x.k==='kill'){const Ld=leaderOf(x.tgt);sid=Ld&&Ld.ship&&Ld.ship.sid;title=`Assassinate ${esc(lName(x.tgt))} of ${esc(FACTIONS[x.tgt].short)}`;sub=`for ${esc(bmoClientName(x.by))} · flagship in ${sid?esc(DEF[sid].name):'?'} · Severe heat with ${esc(FACTIONS[x.tgt].short)}`;
+      det=`${esc(bmoClientName(x.by))} is at war with ${esc(FACTIONS[x.tgt].name)} and wants its leader dead. The flagship flies with an ace escort. Shoot it down after taking the contract: ${fmt(x.pay)} cr from the client, on top of any bounty. ${esc(FACTIONS[x.tgt].short)} will hunt you for it.`}
+    else{const t=(S.traders||[]).find(z=>z.id===x.tid);if(!t)continue;sid=t.sector;title=`Assassinate ${esc(MAKERS[x.tgt].short)}'s CEO ${esc(t.ceo.name)}`;sub=`for ${esc(bmoClientName(x.by))} · shuttle now in ${esc(DEF[sid].name)}, bound for ${esc(DEF[t.ceo.fp].name)} and back`;
+      det=`${esc(bmoClientName(x.by))} wants its rival's CEO gone. The CEO flies a light shuttle from the works at ${esc(DEF[t.from].name)} to ${esc(DEF[t.ceo.fp].name)} and back. Shoot it down after taking the contract: ${fmt(x.pay)} cr. The maker gets a new CEO and its shares take a knock.`}
+    const h=hop(sid);out.push({id:'bk:'+x.id,bm:1,by:x.by,sid,ty:'fight',title,sub:mine?`your contract · ${sub}`:sub,hops:h,where:sid?far(h):'?',payN:x.pay,pay:`${fmt(x.pay)} cr`,btn:mine?(sid&&sid!==P.sector?['croute',sid,'Set course']:null):['bmotake',x.id,'Take the contract'],detail:()=>`<p class="note" style="margin:0">${det}</p>`})}}catch(err){console.error(err)}return out}}
+// a shuttle lost is no supply convoy (no convoy news, no spilled cargo: it carries none)
+{const o=traderLost;traderLost=function(e){try{const id=e&&e.home&&e.home.split(':')[1],t=(S.traders||[]).find(x=>String(x.id)===id);if(t&&t.ceo){S.traders=S.traders.filter(x=>x!==t);return}}catch(err){console.error(err)}return o.apply(this,arguments)}}
+// (the caller takes it off the trader list)
+{const o=haulLost;haulLost=function(t){if(t&&t.ceo){t.load={};return}return o.apply(this,arguments)}}
 
 //@src 17_main.js
 // ============================================================ main loop
