@@ -6,8 +6,10 @@
 // Buy and Sell, Load and Store against your hangar, and the best places to sell from your scans. "Table" shows the old list
 // (every button it had, Claim Beacons included); the makers' works and salvage sales stay underneath.
 let mkSel=null,mkFilter='none',mkView='tiles',mkQty=1;
-function mkGroup(k){const g=giKind(k);return g==='msl'||g==='chg'||g==='rnd'?'pay':g==='con'?'ore':g}
-const MK_GN={ore:'Ore',comp:'Components',wpn:'Weapons',util:'Utility parts',bcn:'Beacons',pay:'Payload'};
+// (user, 8 Nov 2026) systems are parts now: each system slot is its own filter under Parts (they used to fall under Components)
+const MK_SYS=['engine','power','shield','weapon','armor','cargo','payload','drill'];
+function mkGroup(k){const I=ITEMS[k];if(I&&I.sys)return'sys_'+I.sys;const g=giKind(k);return g==='msl'||g==='chg'||g==='rnd'?'pay':g==='con'?'ore':g}
+const MK_GN={parts:'Parts',ore:'Ore',comp:'Components',wpn:'Weapons',util:'Utility parts',bcn:'Beacons',pay:'Payload',sys_engine:'Drives',sys_power:'Reactors',sys_shield:'Shield emitters',sys_weapon:'Fire control',sys_armor:'Armour',sys_cargo:'Cargo holds',sys_payload:'Payload bays',sys_drill:'Blast rigs'};
 // prices seen here, while docked (a minute apart, 30 readings)
 function mkWatch(){const P=S.player;if(!P||!P.docked||S.unb)return;let c;try{c=dockCtx()}catch(e){return}if(!c||!c.market)return;const key=P.sector;P.pxh=P.pxh||{};const H=P.pxh[key]=P.pxh[key]||{T:0,p:{}};if(S.T-H.T<60)return;H.T=S.T;
   for(const k of Object.keys(c.market)){if(!(c.market[k]>0)||!ITEMS[k])continue;const a=H.p[k]=H.p[k]||[];a.push(mSell(c,k));if(a.length>30)a.shift()}}
@@ -19,17 +21,25 @@ function mkHtml(c,P){const st=c.market,srcs=[P.cargo,c.storage],p=W.player,cap=p
   let bar='';for(const k of Object.keys(P.cargo)){const m=(P.cargo[k]||0)*mass(k);if(m>0)bar+=`<i title="${esc(ITEMS[k].name)} ${P.cargo[k]}" style="display:block;height:100%;width:${m/cap*100}%;background:${giCol(k)};margin-right:1px"></i>`}
   let h=`<div class="mkbar"><span class="lab">Hold</span><span class="mkhold">${bar}</span><span class="note" style="margin:0">${used} / ${cap} t</span><span style="flex:1"></span>`;
   // (user, 3 Nov 2026) first pick a category (Ore, Components, Weapons, Utility parts, Beacons; Payload when stocked), then its goods
-  const cnt=g=>g==='bcn'?((typeof fbSold==='function'?fbSold(c,P).length:0)+(claimSold(c,P)?1:0)):items.filter(k=>mkGroup(k)===g).length,CATS=['ore','comp','wpn','util','bcn','pay'].filter(g=>g!=='pay'||cnt(g));
+  // (user, 8 Nov 2026) the main menu is Ore, Components, Parts; Parts opens a second row of filters: each system slot, then
+  // Weapons, Utility parts, Payload and Beacons
+  const cnt0=g=>g==='bcn'?((typeof fbSold==='function'?fbSold(c,P).length:0)+(claimSold(c,P)?1:0)):items.filter(k=>mkGroup(k)===g).length,PARTS=[...MK_SYS.map(sl=>'sys_'+sl),'wpn','util','pay','bcn'],
+    cnt=g=>g==='parts'?PARTS.reduce((a,x)=>a+cnt0(x),0):cnt0(g),CATS=['ore','comp','parts'];
+  if(mkFilter==='parts'){mkFilter=PARTS.find(g=>cnt0(g))||'parts'}const inParts=mkFilter==='parts'||PARTS.includes(mkFilter);
   if(mkFilter==='all')mkFilter='none';
   h+=`<button class="mkf" type="button" data-act="mkview" data-arg="table" style="margin-left:14px">Table</button></div>`;
   // (user) the categories stay across the top as orange boxes, the picked one filled, so you can move between them
-  h+=`<div class="obox-row">${CATS.map(g=>`<button class="obox${mkFilter===g?' on':''}" type="button" data-act="mkf" data-arg="${g}" ${cnt(g)?'':'disabled'} aria-pressed="${mkFilter===g}">${MK_GN[g]} <span>${cnt(g)}</span></button>`).join('')}</div>`;
+  h+=`<div class="obox-row">${CATS.map(g=>{const on=g==='parts'?inParts:mkFilter===g;return`<button class="obox${on?' on':''}" type="button" data-act="mkf" data-arg="${g}" ${cnt(g)?'':'disabled'} aria-pressed="${on}">${MK_GN[g]} <span>${cnt(g)}</span></button>`}).join('')}</div>`;
+  // the second row, under Parts: one box for each system slot, then Weapons, Utility parts, Payload and Beacons (every one shown, dimmed
+  // when none is on sale here)
+  if(inParts)h+=`<div class="obox-row obox-sys">${PARTS.map(g=>`<button class="obox${mkFilter===g?' on':''}" type="button" data-act="mkf" data-arg="${g}" ${cnt0(g)?'':'disabled'} aria-pressed="${mkFilter===g}">${MK_GN[g]} <span>${cnt0(g)}</span></button>`).join('')}</div>`;
+  if(mkFilter==='parts'){h+=`<div class="note" style="margin:10px 0 0">No parts on sale here.</div>`;return h}
   if(mkFilter==='none'){h+=`<div class="note" style="margin:10px 0 0">Pick a category to see what this market has.</div>`;return h}
   if(mkFilter!=='bcn'&&!items.some(k=>mkGroup(k)===mkFilter)){mkFilter='none';return mkHtml(c,P)}
   if(mkSel&&mkFilter!=='bcn'&&mkGroup(mkSel)!==mkFilter)mkSel=items.find(k=>mkGroup(k)===mkFilter)||null;
   if(mkFilter==='bcn')mkSel=null;
   h+=`<div class="mkwrap"><div class="mktiles">`;
-  for(const g of['ore','comp','wpn','util','pay']){if(mkFilter!=='all'&&mkFilter!==g)continue;const L=items.filter(k=>mkGroup(k)===g);if(!L.length)continue;
+  for(const g of['ore','comp','wpn','util','pay',...MK_SYS.map(sl=>'sys_'+sl)]){if(mkFilter!=='all'&&mkFilter!==g)continue;const L=items.filter(k=>mkGroup(k)===g);if(!L.length)continue;
     h+=`<div class="mkgrp"><div class="lab">${MK_GN[g]}</div><div class="mkrow">`;
     for(const k of L){const dm=demandOf(mR(c),k),stk=st[k]||0,on=k===mkSel,tgt=Math.max(1,stockTarget(k)),r=stk/tgt;
       h+=`<button class="mkt${on?' on':''}" type="button" data-act="mksel" data-arg="${k}"><span class="mktt">${gIcon(k,22)}<span><b>${esc(ITEMS[k].name)}</b><br><span class="mono amber">${fmt(mBuy(c,k))}</span>${dm==='high'?' <span style="color:#7ad9a7">▲</span>':dm==='low'?' <span style="color:#ff9a4a">▼</span>':''}</span></span>

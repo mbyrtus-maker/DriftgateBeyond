@@ -3071,3 +3071,10 @@ The user: "Yes if a company stock is on the floor long enough it's liquidated an
   - top sellers end at 165 against 131 for the lowest sellers.
 - **Checks:** quick suite all pass (71), the guest sweep passes. War check (300 galaxies, 16 h): Ostrova 28%, Varkesh 25%, Halcyon 23%, Brood 21%, unfinished 4%.
   Tried and dropped: a floor at 60% of the company's own opening price liquidated 1.5 a galaxy, many of them makers simply investing their starting cash.
+
+### The Market: Ore, Components, Parts (user, 8 Nov 2026)
+The user: "The market screen does not show all the new slots that can be filled", then "the main menu is Ore Components Parts". Systems used to fall under Components.
+- **The Market's main menu:** Ore, Components, Parts.
+- **Parts opens a second row of filters:** Drives, Reactors, Shield emitters, Fire control, Armour, Cargo holds, Payload bays, Blast rigs, then Weapons, Utility parts, Payload (missiles, torpedoes, rounds, charges) and Beacons.
+- **Every filter is shown,** dimmed when nothing of it is on sale there.
+- **Picking Parts** opens the first filter with stock.
