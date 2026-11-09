@@ -3069,4 +3069,5 @@ The user: "Yes if a company stock is on the floor long enough it's liquidated an
   - the liquidated were makers whose lines kept losing despite their R&D (all in the third that launched most);
   - launches that took the lead: price 2 h later median +6% (rose in 21 of 34); other launches −7%;
   - top sellers end at 165 against 131 for the lowest sellers.
+- **Checks:** quick suite all pass (71), the guest sweep passes. War check (300 galaxies, 16 h): Ostrova 28%, Varkesh 25%, Halcyon 23%, Brood 21%, unfinished 4%.
   Tried and dropped: a floor at 60% of the company's own opening price liquidated 1.5 a galaxy, many of them makers simply investing their starting cash.
