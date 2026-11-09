@@ -299,7 +299,9 @@ function hMissile(pid,m){const e=MP.rp[pid],P=S.pilots[pid];if(!e)return;inW(wor
 function poseFrom(P,m){for(const k of['x','y','z','vx','vy','vz'])if(typeof m[k]==='number'&&isFinite(m[k]))P[k]=m[k];if(Array.isArray(m.q)&&m.q.length===4)P.q=m.q}
 function hJump(pid,m){const P=S.pilots[pid],from=P.sector,to=String(m.to);if(S.gateDown&&S.gateDown[gateKey(from,to)])return;if(P.docked||!GATES[from]||!GATES[from].some(g=>g.to===to))return;if(P.convoy&&MP.rp[pid])runAs(pid,()=>convoyJump());
   despawnRP(pid);P.sector=to;poseFrom(P,m);delete MP.inp[pid];if(!WORLDS[to])openWorld(to);if(!P.docked)spawnRP(pid);netRoster()}
-function hDock(c,m){const pid=c.pid,P=S.pilots[pid],e=MP.rp[pid];if(!e)return;const w=worldOf(e);let ok=false;
+// (9 Nov 2026) a dock order carries where the guest's ship is: the host's copy lags a moment behind (a Lair dock moved it onto
+// the Lair before the host had heard), so the host takes a reported position within 2.5 km of its copy
+function hDock(c,m){const pid=c.pid,P=S.pilots[pid],e=MP.rp[pid];if(!e){send(c.L,{t:'nodock'});return}if(m&&isFinite(+m.x)&&isFinite(+m.y)&&isFinite(+m.z)&&hyp(e.x-m.x,e.y-m.y,e.z-m.z)<2500){e.x=+m.x;e.y=+m.y;e.z=+m.z}const w=worldOf(e);let ok=false;
   inW(w,()=>{if(m.d==='lair'){const L=(S.lairs||[]).find(x=>x.id===+m.id&&x.pid===pid&&x.sid===P.sector&&x.hull>0);ok=!!L&&d3(L,e)<320;if(ok)P.lairId=L.id}else if(m.d==='station'){const SE=W.stationEnt;ok=!!SE&&((!!P.sworn&&SE.fac===P.sworn)||(!S.unb&&tradeOK(P,SE.fac))||(S.unb&&SE.fac==='neutral'&&runAs(pid,()=>unbFreeportOK())))&&d3(SE,e)<520}else{const OE=W.outpostEnt;ok=!!OE&&OE.o.id===m.d&&!OE.o.breached&&!!P.sworn&&OE.o.owner===P.sworn&&d3(OE,e)<520}});
   if(!ok){send(c.L,{t:'nodock'});return}
   despawnRP(pid,true);P.docked=m.d;P.vx=P.vy=P.vz=0;P.limpetUsed=false;delete MP.inp[pid];if(S.unb){P.sortie={};P.fixUsed=0;if(m.d==='lair'){const st=shipStats(P.faction,P.cls,P.tiers,P.tune);P.hull=st.hull;P.shield=st.sCap}}if(MP.hook)delete MP.hook[pid];if(P.convoy&&P.sector===P.convoy.dest)runAs(pid,()=>convoyEnd(true));netRoster()}

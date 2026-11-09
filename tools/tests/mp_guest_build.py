@@ -21,7 +21,15 @@ async def body(K):
   # ================= a Lair
   await G("""(()=>{const a=S.sectors[S.player.sector].ast.filter(r=>oreTotal(r)>=LAIR_B.rockMin+20&&!r.rift&&!r.comet)[0],p=W.player;p.x=a.x+astR(a)+150;p.y=a.y;p.z=a.z;p.vx=p.vy=p.vz=0;return 1})()""");await K.wait(2000)
   why=await G("JSON.stringify(lairSpot(S.player).why||'ok')")
-  m=await G("lairBuildB()");await K.wait(2500)
+  # (9 Nov 2026) the guest's copy of its hold lags the host's gift: wait until it shows, and give the host time to answer
+  for i in range(10):
+    if await G("(S.player.cargo.frame||0)>=1&&(S.player.cargo.plate||0)>=6"):break
+    await K.wait(500)
+  m=await G("lairBuildB()")
+  for i in range(16):
+    await K.wait(500)
+    if await Hh("lairsOf(%s).length>0"%HP):break
+  print('  host after the order:',await Hh("(()=>{const P=%s,e=MP.rp&&MP.rp[Object.keys(S.pilots).find(k=>S.pilots[k]===P)];const a=S.sectors[P.sector].ast.filter(r=>oreTotal(r)>=LAIR_B.rockMin&&!r.rift&&!r.comet);let bd=1e9;for(const r of a){const d=hyp(r.x-(e?e.x:P.x),r.y-(e?e.y:P.y),r.z-(e?e.z:P.z))-astR(r);if(d<bd)bd=d}return JSON.stringify({sector:P.sector,ent:!!e,near:Math.round(bd),lairs:(S.lairs||[]).length,cargo:P.cargo})})()"%HP),'| guest feed:',await G("JSON.stringify((typeof FEED!=='undefined'?FEED:[]).slice(-3).map(f=>f.msg||f))"))
   L=json.loads(await Hh("(()=>{const L=lairsOf(%s)[0];return JSON.stringify(L?{id:L.id,sid:L.sid,build:Math.round(L.build-S.T),cargo:%s.cargo}:null)})()"%(HP,HP)))
   check('Lair built (host)',L and L['sid']==sid,'spot %s · %s · %s'%(why,m,L))
   if not L:return
@@ -32,7 +40,10 @@ async def body(K):
     if await G("(()=>{const L=(S.lairs||[]).find(x=>x.id===%d);return !!L&&!(L.build>S.T)})()"%L['id']):break
     await K.wait(1000)
   await K.wait(2500)
-  await G("(()=>{const L=S.lairs.find(x=>x.id===%d);lairDock(L);return 1})()"%L['id']);await K.wait(2500)
+  await G("(()=>{const L=S.lairs.find(x=>x.id===%d);lairDock(L);return 1})()"%L['id'])
+  for i in range(16):
+    await K.wait(500)
+    if await Hh("%s.docked"%HP)=='lair':break
   check('docked at the Lair (host)',await Hh("%s.docked"%HP)=='lair',await Hh("%s.docked"%HP))
   check('the Lair\'s dock screen on the guest',await G("(()=>{renderDock();return document.getElementById('dBody').innerText.length})()")>100)
   # ================= a Depot from the Lair
