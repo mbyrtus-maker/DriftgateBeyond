@@ -7,7 +7,7 @@ PROBE=r"""(()=>{window._et={ev:[],sales:{}};const E=(k,o)=>_et.ev.push(Object.as
  {const o=ceSale;ceSale=function(m,id,n,paid,wallet,sid){const c=ceOf(m),alive=c&&!c.dead;const r=o.apply(this,arguments);if(alive&&paid>0){const k=ceKind(ITEMS[id].base||id),key=m+'|'+k;const s=_et.sales[key]=_et.sales[key]||[0,0];s[0]+=n;s[1]+=paid}return r}}
  {const o=ceTweak;ceTweak=function(m,id,why){const r=o.apply(this,arguments);if(r!==false)E('tweak',{m,id,why});return r}}
  {const o=rdStart;rdStart=function(m,id,why){const r=o.apply(this,arguments);if(r)E('rdstart',{m,id,why,g:ceOf(m).rd&&ceOf(m).rd.g});return r}}
- {const o=rdLaunch;rdLaunch=function(m){const P=ceOf(m).rd;const x=P?{id:P.id,g:P.g,t0:Math.round(P.t0/60)}:{};const r=o.apply(this,arguments);E('launch',Object.assign({m},x));return r}}
+ {const o=rdLaunch;rdLaunch=function(m){const P=ceOf(m).rd;const x=P?{id:P.id,g:P.g,t0:Math.round(P.t0/60)}:{};const r=o.apply(this,arguments);E(ceOf(m).rd?'trialfail':'launch',Object.assign({m},x));return r}}
  {const o=rdFlyLost;rdFlyLost=function(t,sid){E('flylost',{m:t.test&&t.test.m});return o.apply(this,arguments)}}
  {const o=ceFail;ceFail=function(m){const c=ceOf(m);E('fail',{m,cash:Math.round(ceT(m)),up:Math.round(ceUpkeep(m)),pxH:(c.pxH||[]).slice(-4),rd:c.rd?c.rd.stage:null});return o.apply(this,arguments)}}
  {const o=ceReborn;ceReborn=function(m){const r=o.apply(this,arguments);if(!ceOf(m).dead)E('reborn',{m});return r}}

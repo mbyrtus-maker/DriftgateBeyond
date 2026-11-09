@@ -57,16 +57,16 @@ function mfjReady(j){const R=S.stations[j.from];if(!syfOk(R))return false;const 
 function mfjCost(j){const R=S.stations[j.from];let c=0;if(j.buy)for(const k in j.load)c+=Math.ceil(stPrice(R,k)*j.load[k]);return c}
 // take the goods off the source's shelf (buying them for the maker if it must); returns the load or null
 function mfjLift(j,extra){const R=S.stations[j.from];if(!mfjReady(j))return null;const cost=mfjCost(j);if(cost+(extra||0)>0&&ceT(j.m)<cost+(extra||0))return null;
-  const st=mkStock(R),load={};for(const k in j.load){const q=inv.take(st,k,j.load[k]);if(q>0)load[k]=q}if(cost){const paid=transfer(ceW(j.m),syfSide(R),cost);ceOf(j.m).cost+=paid}return load}
+  const st=mkStock(R),load={};for(const k in j.load){const q=inv.take(st,k,j.load[k]);if(q>0)load[k]=q}if(cost){const paid=transfer(ceW(j.m),syfSide(R),cost);ceOf(j.m).cost+=paid;if(j.k==='mat')ceOf(j.m).iv=(ceOf(j.m).iv||0)+paid}return load}
 // where a delivered load goes: an out shipment onto the destination's market; supplies into the maker's own store (8 Nov 2026:
 // they used to land on the home market, which for a power's maker is the power's warehouse); materials into the prototype
-function mfjLand(m,k,to,load,rid){const c=ceOf(m);if(k==='mat'&&c&&c.rd&&c.rd.mj===rid){inv.addAll(c.rd.proto,load);c.rd.got=1;c.rd.mj=null;c.rd.stage='trials';c.rd.until=S.T+1e7;return}
+function mfjLand(m,k,to,load,rid){const c=ceOf(m);if(k==='mat'&&c&&c.rd&&c.rd.mj===rid){inv.addAll(c.rd.proto,load);c.rd.got=1;c.rd.ivm=1;c.rd.mj=null;c.rd.stage='trials';c.rd.until=S.T+1e7;return}
   if(k==='in'&&c&&!c.dead){inv.addAll(ceStore(m),load);return}
   const R=S.stations[to];let into=syfOk(R)?mkStock(R):null;if(!into){const H=mkAtHome(m);into=H?mkStock(H):(S.econ.stock.neutral||S.econ.stock.pirate)}inv.addAll(into,load)}
 // a job untaken for 5 minutes goes by the maker's own freighter
 function mfjNpc(j){const R=S.stations[j.from],R0=mkAtHome(j.m);if(!R||!R0)return false;const fee=mfjPay(j);if(ceT(j.m)<fee+mfjCost(j))return false;
   const load=mfjLift(j,fee);if(!load||!Object.keys(load).length)return false;const t=haulSend(syfSide(R0),j.from,j.to,load,'syf:'+j.m,j.k==='out'?`${MAKERS[j.m].short} parts`:j.k==='mat'?`${MAKERS[j.m].short} R&D materials`:`${MAKERS[j.m].short} supplies`,null);
-  if(!t){inv.addAll(mkStock(R),load);return false}t.syf={m:j.m,k:j.k,rid:j.rid||null};const paid=transfer(ceW(j.m),syfSide(R0),fee);ceOf(j.m).cost+=paid;return true}
+  if(!t){inv.addAll(mkStock(R),load);return false}t.syf={m:j.m,k:j.k,rid:j.rid||null};const paid=transfer(ceW(j.m),syfSide(R0),fee);ceOf(j.m).cost+=paid;if(j.k==='mat')ceOf(j.m).iv=(ceOf(j.m).iv||0)+paid;return true}
 function mfjTick(){for(const j of mfjAll().slice()){
   if(j.st==='open'&&S.T>=j.T0+SYF.wait){if(!ceAlive(j.m)||!mfjReady(j)){mfjFailed(j);mfjDrop(j);continue}if(mfjNpc(j))mfjDrop(j);continue}
   if(j.st==='taken'&&S.T>j.due){const P=xPilotOfKey(j.pk),paid=transfer(mfjW(j),ceW(j.m),S.econ.treasury[mfjW(j)]||0);
@@ -82,7 +82,7 @@ function mfjTake(P,id){const j=mfjAll().find(x=>String(x.id)===String(id));if(!j
 function mfjDeliver(P,id){const j=mfjAll().find(x=>String(x.id)===String(id));if(!j||j.st!=='taken'||j.pk!==pkeyOf(P))return'That job is gone.';if(P.docked!=='station'||P.sector!==j.to)return'Dock at its destination.';
   let tot=0,have=0;const got={};for(const k in j.load){tot+=j.load[k];const q=Math.min(j.load[k],P.cargo[k]||0);if(q>0){got[k]=q;have+=q}}if(!have)return'You carry none of its goods.';
   for(const k in got)inv.take(P.cargo,k,got[k]);mfjLand(j.m,j.k,j.to,got,j.id);const fr=have/tot,w=mfjW(j),esc=S.econ.treasury[w]||0,back=Math.min(esc,Math.round(j.coll*fr));
-  const pay=transfer(ceW(j.m),'player',Math.round(j.pay*fr)),ret=transfer(w,'player',back);transfer(w,ceW(j.m),S.econ.treasury[w]||0);P.mfj=null;mfjDrop(j);
+  const pay=transfer(ceW(j.m),'player',Math.round(j.pay*fr));if(j.k==='mat'){const c0=ceOf(j.m);if(c0)c0.iv=(c0.iv||0)+pay}const ret=transfer(w,'player',back);transfer(w,ceW(j.m),S.econ.treasury[w]||0);P.mfj=null;mfjDrop(j);
   try{rpAdd(P,RATING.k*(1+j.hops),'a freight job')}catch(e){}
   return`✓ Delivered ${have} of ${tot}. ${MAKERS[j.m].short} pays ${fmt(pay)} cr; ${fmt(ret)} cr collateral back.`}
 // ---- planning: what to ship, buy or move

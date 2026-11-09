@@ -98,5 +98,6 @@ js/16zzzb_aipilots.js
 js/16zzzc_indep.js
 js/16zzzd_ptraits.js
 js/16zzzf_sysfreight.js
+js/16zzzg_rdroll.js
 js/17_main.js
 end.html

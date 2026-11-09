@@ -3034,3 +3034,22 @@ The user asked for a test: "Companies that do not react to the market fast enoug
   - The third of makers that launched most ended with the lowest prices (67 against 137 for those that launched none) and the least cash (1,846 against 9,358).
   - The top-selling third ended below the lowest sellers (78 against 109).
 - **Prices swing wildly:** the median hourly move is 17%, makers sit at the 1.0 floor 13% of the time, and boards replace a CEO 14 times a galaxy (two falling hours in a row).
+
+### R&D can fail its trials; R&D is investment; the leader's premium (user, 8 Nov 2026)
+The user, after the economy test: "Add an R&D random roll for success in each launch window. And then we need to fix investment vs product launch." Built (`16zzzg_rdroll.js`, `ceHour` in `16zzz_corp.js`):
+- **The roll in the launch window.** When a project's trials end, it succeeds on 75% at grade 2, 65% at 3, 55% at 4 and 45% at 5. An Innovator CEO adds 10%, and each failed trial before adds 10% (the lab learns).
+  - Failure: the prototype is broken back into its components (into the maker's own store) and the project goes back to a redesign (half the grade's design time), then new materials and another test flight. News: "… prototype failed its trials".
+- **The lab costs money while a project runs:** 60 cr an hour at grade 2, 150 at 3, 300 at 4 and 600 at 5, paid to the host station's owner. A slow or unlucky project drains cash.
+- **Investment, not loss.** The share price is now cash + stock at cost + the R&D put in + 8 × the smoothed *operating* profit (the margin on what sold, less running costs), all over 100.
+  - Components bought for stock, R&D funding, the lab, prototype materials and their freight no longer read as losses.
+  - The R&D put in fades 20% an hour after the project ends, or 5% while the maker leads a kind.
+- **The leader's premium:** each kind of part a maker outsold every rival in over the last hour (2 or more sold) adds 15% to its price, up to 45%.
+- **A CEO is replaced** after two hours of shares falling 5% or more each hour (it was any fall: 25 replacements a galaxy once prices steadied).
+- **The test again** (`tools/ecotrace`, 8 AI galaxies × 12 h; before → after):
+  - launches that took the lead of their kind: price 2 h later median −33% → +5% (rose in 23 of 44);
+  - other launches: −55% → −14%;
+  - top-selling third of makers ends at price 162 against 130 for the lowest sellers (was 78 against 109);
+  - median hourly price move 17% → 12%; makers at the 1.0 floor 13% → 0%; CEO replacements 14 → 11 a galaxy;
+  - failed trials 88 against 250 launches;
+  - failures 0.1 → 0.5 a galaxy, all Archive Dynamics, a heavy R&D spender, for want of cash.
+- **Still not as the user described:** makers that never launch end with the highest prices (157), because they sit on their starting cash. Nothing makes a company fail when its share price collapses; only running out of cash does.

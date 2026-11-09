@@ -14359,7 +14359,7 @@ function ceComp(sid,id){const R=S.stations[sid],rc=ITEMS[id]&&ITEMS[id].recipe;i
   const cc=ceComp(R.sid,id);return Math.max(v*k,cc*CE.markup*k,cc*CE.floor/(1-CE.dues))}catch(e){return v}}}
 // ---- a sale: the maker's share to its treasury, the station's dues stay with its owner
 function ceSale(m,id,n,paid,wallet,sid){if(!S.corp||!(paid>0))return;const c=ceOf(m);if(!c)return;if(c.dead){return}const net=Math.floor(paid*(1-CE.dues));const got=transfer(wallet,ceW(m),net);
-  const home=mkHomeSid(m),mar=got-ceComp(home,id)*n;c.sales.push([S.T,ITEMS[id].base||id,n,mar,sid]);c.inc+=got}
+  const home=mkHomeSid(m),mar=got-ceComp(home,id)*n;c.sales.push([S.T,ITEMS[id].base||id,n,mar,sid]);c.inc+=got;c.mar=(c.mar||0)+mar}
 {const o=dockAction;dockAction=function(act,arg){if(act!=='buy'||!S||!S.corp||NET.cl)return o.apply(this,arguments);const k=String(arg).split(':')[0],I=ITEMS[k];if(!I||!I.maker)return o.apply(this,arguments);
   const c=dockCtx();if(!c||!c.market||c.wallet==='player'||c.owner==='player')return o.apply(this,arguments);const P=S.player,c0=P.credits,n0=c.market[k]||0,wl=c.wallet;const r=o.apply(this,arguments);
   try{const spent=c0-P.credits,n=n0-(c.market[k]||0);if(spent>0&&n>0)ceSale(I.maker,k,n,spent,wl,P.sector)}catch(e){console.error(e)}return r}}
@@ -14381,14 +14381,14 @@ function ceUpkeep(m){if(CE_FAIR.t!==S.T){CE_FAIR={t:S.T,f:ceFair()}}const c=ceOf
 function ceMinute(){const T=S.T;for(const m in MAKERS){const c=ceOf(m);if(!c)continue;
     if(c.dead){if(T>=c.reborn)ceReborn(m);continue}
     c.sales=c.sales.filter(x=>x[0]>T-Math.max(CE.window,CE.shut,3600));
-    const due=ceUpkeep(m)/60,paid=transfer(ceW(m),ceHostWallet(m),Math.max(1,Math.round(due)));c.cost+=paid;
+    const due=ceUpkeep(m)/60,paid=transfer(ceW(m),ceHostWallet(m),Math.max(1,Math.round(due)));c.cost+=paid;c.up=(c.up||0)+paid;
     if(paid<Math.round(due)||ceT(m)<=0){ceFail(m);continue}
     const str=ceT(m)<CE.struggleH*ceUpkeep(m);if(str&&!c.str){c.str=1;ceNews(m,`is in trouble: under ${CE.struggleH} hours of running costs left (${fmt(ceT(m))} cr).`)}else if(!str&&c.str&&ceT(m)>CE.struggleH*1.5*ceUpkeep(m))c.str=0}}
 function ceFail(m){const c=ceOf(m);c.dead=1;c.str=0;c.reborn=S.T+rnd(...CE.reborn);const left=ceT(m);if(left>0)transfer(ceW(m),ceHostWallet(m),left);
   ceNews(m,`has failed. Its works are closed; what it made stays on sale, and its shares are worthless.`,true)}
 function ceReborn(m){const c=ceOf(m),home=ceHomeWallet(m);if((S.econ.treasury[home]||0)<CE.start){c.reborn=S.T+300;return}const old=MAKERS[m].name;
   let nm,sh,i=0;do{sh=pick(CE_NAMES[0]);nm=`${sh} ${pick(CE_NAMES[1])}`;i++}while(i<20&&Object.values(MAKERS).some(x=>x.short===sh));
-  c.name=nm;c.short=sh;c.dead=0;c.gen=(c.gen||1)+1;c.logo=ceNewLogo(m);c.ceo=pick(CE.ceos);c.ceoT=S.T;c.ln={};c.tr={};c.sales=[];c.E=0;c.pxH=[];c.inc=0;c.cost=0;
+  c.name=nm;c.short=sh;c.dead=0;c.gen=(c.gen||1)+1;c.logo=ceNewLogo(m);c.ceo=pick(CE.ceos);c.ceoT=S.T;c.ln={};c.tr={};c.sales=[];c.E=0;c.iv=0;c.mar=0;c.up=0;c.pxH=[];c.inc=0;c.cost=0;
   for(const id of ceTrLines(m)){const ks=CE_KSTAT[ITEMS[id].part];if(!ks)continue;const s=ks[0],tr={};tr[s]=s==='mag'?1:(CE_BAD[s]?-1:1)*Math.round(rnd(.04,.08)*100)/100;ceBalance(tr,ITEMS[id].part);c.tr[id]=tr}
   transfer(home,ceW(m),CE.start);ceApply();ceNews(m,`opens at ${DEF[mkHomeSid(m)].name} in the works ${old} left, under CEO trait ${c.ceo}. Its new mark: ${MK_LOGO[c.logo].n}.`,true)}
 // ---- tweaks
@@ -14408,11 +14408,19 @@ function ceReview(){const T=S.T,sold={},byKind={};for(const m in MAKERS){const c
       if(rival&&sold[rival[1]]>=2*mine&&sold[rival[1]]>=mine+3)ceTweak(m,id,`outsold by ${MAKERS[rival[0]].short}`);
       else if(fair>=1&&mine<fair*.5)ceTweak(m,id,'buyers passing it by')}}}
 // ---- the hour: profit, shares, dividends, the board
-function ceHour(){for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;const p=c.inc-c.cost;c.inc=0;c.cost=0;c.E=c.E?c.E*.6+p*.4:p;c.hist.push([S.T,p,ceT(m)]);if(c.hist.length>48)c.hist.shift();
+// (user, 8 Nov 2026: "fix investment vs product launch") the share price rides on the operating profit (the margin on what
+// sold, less running costs), not on cash flow: components bought for stock, R&D and freight are investments. Stock counts at
+// cost and the R&D a maker has put in counts while its project runs, then fades 20% an hour after it ends.
+// The market leader's premium: each kind of part a maker outsold every rival in over the last hour (2 or more sold) adds 15%
+// to its price, up to 45%; a launch that takes the lead lifts the price, losing it drops it. While a maker leads a kind, the
+// R&D it put in fades 5% an hour instead of 20% (investors keep valuing a product that leads).
+function ceLeads(){const u={};for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;for(const x of c.sales){if(x[0]<=S.T-3600)continue;const k=ceKind(x[1]);(u[k]=u[k]||{})[m]=(u[k][m]||0)+x[2]}}
+  const n={};for(const k in u){let b=null,bv=0,sec=0;for(const m in u[k]){const v=u[k][m];if(v>bv){sec=bv;bv=v;b=m}else if(v>sec)sec=v}if(b&&bv>=2&&bv>sec)n[b]=(n[b]||0)+1}return n}
+function ceHour(){const LEAD=ceLeads();for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;c.lead=LEAD[m]||0;const cf=c.inc-c.cost,p=(c.mar||0)-(c.up||0);c.inc=0;c.cost=0;c.mar=0;c.up=0;c.E=c.E?c.E*.6+p*.4:p;if(!c.rd)c.iv=Math.round((c.iv||0)*(c.lead?.95:.8));c.hist.push([S.T,p,ceT(m)]);if(c.hist.length>48)c.hist.shift();
     let sv=0;for(const sid in S.stations){const R=S.stations[sid];if(!R)continue;let st;try{st=mkStock(R)}catch(e){continue}for(const id of MK_LINE[m])for(let g=1;g<=5;g++){const gid=g>1?`${id}_g${g}`:id;if(st[gid])sv+=st[gid]*ceComp(mkHomeSid(m),gid)}}
-    const px=Math.max(1,(ceT(m)+sv+8*c.E)/100);c.px=px;c.pxH.push(Math.round(px*10)/10);if(c.pxH.length>48)c.pxH.shift();
+    const px=Math.max(1,(ceT(m)+sv+(c.iv||0)+8*c.E)/100*(1+Math.min(.45,.15*c.lead)));c.px=px;c.pxH.push(Math.round(px*10)/10);if(c.pxH.length>48)c.pxH.shift();
     if(p>0&&!c.str){const k=c.ceo==='Generous'?1.5:c.ceo==='Cautious'?.6:1,d=Math.floor(p*CE.div*k);if(d>0){const a=transfer(ceW(m),ceHomeWallet(m),Math.floor(d*CE.divHome)),b=transfer(ceW(m),'neutral',d-Math.floor(d*CE.divHome));c.div+=a+b}}
-    const H=c.pxH,n=H.length;if(n>=3&&S.T-c.ceoT>=CE.grace&&H[n-1]<H[n-2]&&H[n-2]<H[n-3]){const old=c.ceo;c.ceo=pick(CE.ceos.filter(x=>x!==old));c.ceoT=S.T;ceNews(m,`'s board has replaced its CEO after two hours of falling shares: out goes a ${old}, in comes a ${c.ceo}.`)}}}
+    const H=c.pxH,n=H.length;if(n>=3&&S.T-c.ceoT>=CE.grace&&H[n-1]<H[n-2]*.95&&H[n-2]<H[n-3]*.95){const old=c.ceo;c.ceo=pick(CE.ceos.filter(x=>x!==old));c.ceoT=S.T;ceNews(m,`'s board has replaced its CEO after two hours of shares falling 5% or more: out goes a ${old}, in comes a ${c.ceo}.`)}}}
 // ---- the powers refit their fleets from the markets
 function ceRefitRate(f){let w=false,t=false;for(const g of FAC_IDS){if(g===f)continue;try{if(warWith(f,g))w=true;else if(S.rel&&relOf&&relOf(f,g)<=-25)t=true}catch(e){}}return w?CE.refit.war:t?CE.refit.tension:CE.refit.peace}
 function ceRefit(){for(const f of FAC_IDS){const st=S.econ.stock[f];if(!st)continue;const pool=(S.corpFit=S.corpFit||{})[f]=S.corpFit[f]||{};
@@ -14607,7 +14615,7 @@ function rdSysHtml(c,P,sl){const t=P.tiers[sl]||1,m=(P.sysm||{})[sl],cur=ITEMS[r
 // ---- the Corporations view shows each line's grade and the R&D project
 {const o=ceHtml;ceHtml=function(P){let h=o.apply(this,arguments);try{const m=String(coPk.economy||'').slice(5),c=ceOf(m);if(!c)return h;
   for(const id of MK_LINE[m]||[]){const g=rdLineG(m,id);if(g>1)h=h.replace(`${esc(ITEMS[id].name)} <span class="mass">`,`${esc(ITEMS[rdGid(id,g)].name)} <span class="mass">`)}
-  const P2=c.rd;const stx=P2?`${esc(ITEMS[rdGid(P2.id,P2.g)].name)}: ${P2.stage==='design'?'design':P2.stage==='materials'?'materials':'trials'}, ${fmtT(Math.max(0,P2.until-S.T))} left in this stage`:'none running';
+  const P2=c.rd;const stx=P2?`${esc(ITEMS[rdGid(P2.id,P2.g)].name)}: ${P2.stage==='design'?(P2.fails?'redesign':'design'):P2.stage==='materials'?'materials':'trials'}, ${P2.until-S.T>1e6?(P2.stage==='materials'?'waiting on its materials run':P2.pilot?`test pilot ${esc(P2.pilot)} flying it`:'under way'):fmtT(Math.max(0,P2.until-S.T))+' left in this stage'}${P2.fails?` · ${P2.fails} failed trial${P2.fails>1?'s':''}`:''}`:'none running';
   const labs=Object.entries(c.labs||{}).map(([id,g])=>`${esc(ITEMS[id].name.replace(MAKERS[m].short+' ',''))} G${g}`).join(', ');
   h=h.replace('<div class="lab" style="margin-top:12px">Its lines</div>',`<div class="lab" style="margin-top:12px">R&D</div><div class="note" style="margin:2px 0 8px">${stx}${labs?` · labs: ${labs}`:''}</div><div class="lab" style="margin-top:12px">Its lines</div>`)}catch(e){}return h}}
 // ---- a new galaxy's markets carry systems too (user, 7 Nov 2026), seeded like the parts: each lot three times as likely to be
@@ -15180,16 +15188,16 @@ function mfjReady(j){const R=S.stations[j.from];if(!syfOk(R))return false;const 
 function mfjCost(j){const R=S.stations[j.from];let c=0;if(j.buy)for(const k in j.load)c+=Math.ceil(stPrice(R,k)*j.load[k]);return c}
 // take the goods off the source's shelf (buying them for the maker if it must); returns the load or null
 function mfjLift(j,extra){const R=S.stations[j.from];if(!mfjReady(j))return null;const cost=mfjCost(j);if(cost+(extra||0)>0&&ceT(j.m)<cost+(extra||0))return null;
-  const st=mkStock(R),load={};for(const k in j.load){const q=inv.take(st,k,j.load[k]);if(q>0)load[k]=q}if(cost){const paid=transfer(ceW(j.m),syfSide(R),cost);ceOf(j.m).cost+=paid}return load}
+  const st=mkStock(R),load={};for(const k in j.load){const q=inv.take(st,k,j.load[k]);if(q>0)load[k]=q}if(cost){const paid=transfer(ceW(j.m),syfSide(R),cost);ceOf(j.m).cost+=paid;if(j.k==='mat')ceOf(j.m).iv=(ceOf(j.m).iv||0)+paid}return load}
 // where a delivered load goes: an out shipment onto the destination's market; supplies into the maker's own store (8 Nov 2026:
 // they used to land on the home market, which for a power's maker is the power's warehouse); materials into the prototype
-function mfjLand(m,k,to,load,rid){const c=ceOf(m);if(k==='mat'&&c&&c.rd&&c.rd.mj===rid){inv.addAll(c.rd.proto,load);c.rd.got=1;c.rd.mj=null;c.rd.stage='trials';c.rd.until=S.T+1e7;return}
+function mfjLand(m,k,to,load,rid){const c=ceOf(m);if(k==='mat'&&c&&c.rd&&c.rd.mj===rid){inv.addAll(c.rd.proto,load);c.rd.got=1;c.rd.ivm=1;c.rd.mj=null;c.rd.stage='trials';c.rd.until=S.T+1e7;return}
   if(k==='in'&&c&&!c.dead){inv.addAll(ceStore(m),load);return}
   const R=S.stations[to];let into=syfOk(R)?mkStock(R):null;if(!into){const H=mkAtHome(m);into=H?mkStock(H):(S.econ.stock.neutral||S.econ.stock.pirate)}inv.addAll(into,load)}
 // a job untaken for 5 minutes goes by the maker's own freighter
 function mfjNpc(j){const R=S.stations[j.from],R0=mkAtHome(j.m);if(!R||!R0)return false;const fee=mfjPay(j);if(ceT(j.m)<fee+mfjCost(j))return false;
   const load=mfjLift(j,fee);if(!load||!Object.keys(load).length)return false;const t=haulSend(syfSide(R0),j.from,j.to,load,'syf:'+j.m,j.k==='out'?`${MAKERS[j.m].short} parts`:j.k==='mat'?`${MAKERS[j.m].short} R&D materials`:`${MAKERS[j.m].short} supplies`,null);
-  if(!t){inv.addAll(mkStock(R),load);return false}t.syf={m:j.m,k:j.k,rid:j.rid||null};const paid=transfer(ceW(j.m),syfSide(R0),fee);ceOf(j.m).cost+=paid;return true}
+  if(!t){inv.addAll(mkStock(R),load);return false}t.syf={m:j.m,k:j.k,rid:j.rid||null};const paid=transfer(ceW(j.m),syfSide(R0),fee);ceOf(j.m).cost+=paid;if(j.k==='mat')ceOf(j.m).iv=(ceOf(j.m).iv||0)+paid;return true}
 function mfjTick(){for(const j of mfjAll().slice()){
   if(j.st==='open'&&S.T>=j.T0+SYF.wait){if(!ceAlive(j.m)||!mfjReady(j)){mfjFailed(j);mfjDrop(j);continue}if(mfjNpc(j))mfjDrop(j);continue}
   if(j.st==='taken'&&S.T>j.due){const P=xPilotOfKey(j.pk),paid=transfer(mfjW(j),ceW(j.m),S.econ.treasury[mfjW(j)]||0);
@@ -15205,7 +15213,7 @@ function mfjTake(P,id){const j=mfjAll().find(x=>String(x.id)===String(id));if(!j
 function mfjDeliver(P,id){const j=mfjAll().find(x=>String(x.id)===String(id));if(!j||j.st!=='taken'||j.pk!==pkeyOf(P))return'That job is gone.';if(P.docked!=='station'||P.sector!==j.to)return'Dock at its destination.';
   let tot=0,have=0;const got={};for(const k in j.load){tot+=j.load[k];const q=Math.min(j.load[k],P.cargo[k]||0);if(q>0){got[k]=q;have+=q}}if(!have)return'You carry none of its goods.';
   for(const k in got)inv.take(P.cargo,k,got[k]);mfjLand(j.m,j.k,j.to,got,j.id);const fr=have/tot,w=mfjW(j),esc=S.econ.treasury[w]||0,back=Math.min(esc,Math.round(j.coll*fr));
-  const pay=transfer(ceW(j.m),'player',Math.round(j.pay*fr)),ret=transfer(w,'player',back);transfer(w,ceW(j.m),S.econ.treasury[w]||0);P.mfj=null;mfjDrop(j);
+  const pay=transfer(ceW(j.m),'player',Math.round(j.pay*fr));if(j.k==='mat'){const c0=ceOf(j.m);if(c0)c0.iv=(c0.iv||0)+pay}const ret=transfer(w,'player',back);transfer(w,ceW(j.m),S.econ.treasury[w]||0);P.mfj=null;mfjDrop(j);
   try{rpAdd(P,RATING.k*(1+j.hops),'a freight job')}catch(e){}
   return`✓ Delivered ${have} of ${tot}. ${MAKERS[j.m].short} pays ${fmt(pay)} cr; ${fmt(ret)} cr collateral back.`}
 // ---- planning: what to ship, buy or move
@@ -15296,6 +15304,41 @@ function mfEsc(P,id){const t=(S.traders||[]).find(x=>String(x.id)===String(id)&&
 // the labels of a maker's freighter and test pilot
 {const o=shipLabel;shipLabel=function(e){const t=e&&e.tradeT;if(t&&t.test&&MAKERS[t.test.m])return`Test pilot ${t.test.name} · ${MAKERS[t.test.m].short} prototype`;if(t&&t.syf&&MAKERS[t.syf.m])return`${MAKERS[t.syf.m].short} freighter`;return o.apply(this,arguments)}}
 // the escrow is counted in the ledger as a treasury wallet; a pilot's job record survives in the save
+
+//@src 16zzzg_rdroll.js
+// ============================================================ Beyond: R&D can fail its trials; R&D is investment (user, 8 Nov 2026)
+// The economy test (BEYOND_DESIGN.md, "Economy test: do slow makers fail and leaders' shares climb?") found R&D quick and
+// certain and share prices falling after every launch. The user: "Add an R&D random roll for success in each launch window.
+// And then we need to fix investment vs product launch."
+//   - The roll: when a project's trials end (its test pilot home, or the trials timer where no flight could go), it succeeds
+//     on 75% at grade 2, 65% at 3, 55% at 4, 45% at 5 (an Innovator CEO +10%), and each failed trial before adds 10% (the lab
+//     learns). Success launches the line as before. Failure: the prototype is broken back into its components (into the
+//     maker's own store), and the project goes back to a redesign (half the grade's design time), then new materials and
+//     another test flight.
+//   - The lab costs money while a project runs: 60 cr an hour at grade 2, 150 at 3, 300 at 4, 600 at 5, paid to the host
+//     station's owner. A slow or unlucky project drains cash.
+//   - Investment: what a maker spends on R&D (funding, the lab's running costs, prototype materials and their freight) is
+//     counted in its share price while the project runs, and fades 20% an hour after it ends. The price rides on operating
+//     profit (the margin on what sold, less running costs; 16zzz_corp.js, ceHour), so spending on R&D or stock no longer
+//     reads as a loss, and a launch that sells lifts the price.
+// Host only. The ledger stays exact: a failed prototype's components only move into the maker's store.
+const RD_WIN={2:.75,3:.65,4:.55,5:.45},RD_LAB={2:60,3:150,4:300,5:600},RD_LEARN=.1;
+function rdWinChance(m,P){const c=ceOf(m);return Math.min(.95,(RD_WIN[P.g]||.5)+(c&&c.ceo==='Innovator'?.1:0)+RD_LEARN*(P.fails||0))}
+// the roll in the launch window
+{const o=rdLaunch;rdLaunch=function(m){const c=ceOf(m),P=c&&c.rd;if(!P||NET.cl)return o.apply(this,arguments);
+  if(Math.random()<rdWinChance(m,P))return o.apply(this,arguments);
+  P.fails=(P.fails||0)+1;inv.addAll(ceStore(m),P.proto);P.proto={};P.got=0;P.ivm=0;P.fly=null;P.pilot=null;P.mj=null;P.mjT=0;P.stage='design';P.until=S.T+Math.round(RD.design[P.g]*.5);
+  ceNews(m,`'s ${ITEMS[rdGid(P.id,P.g)].name} prototype failed its trials${P.fails>1?` (${P.fails} failures so far)`:''}. Back to the drawing board: a redesign, new materials and another test flight.`)}}
+// funding is investment
+{const o=rdStart;rdStart=function(m,id,why){const r=o.apply(this,arguments);if(r){const c=ceOf(m);if(c&&c.rd)c.iv=(c.iv||0)+(RD.cost[c.rd.g]||0)}return r}}
+// the lab's running costs while a project runs (each minute, with the works' running costs)
+{const o=ceMinute;ceMinute=function(){const r=o.apply(this,arguments);try{if(!NET.cl)for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead||!c.rd)continue;
+    const due=Math.round((RD_LAB[c.rd.g]||0)/60);if(due<=0)continue;const paid=transfer(ceW(m),ceHostWallet(m),due);c.cost+=paid;c.iv=(c.iv||0)+paid}}catch(e){console.error(e)}return r}}
+// prototype materials bought at home (no materials job) are investment too
+{const o=rdTick;rdTick=function(){const r=o.apply(this,arguments);try{if(rdOn()&&!NET.cl)for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead||!c.rd)continue;const P=c.rd;
+    if(P.got&&!P.ivm){P.ivm=1;const R=mkAtHome(m);c.iv=(c.iv||0)+Math.ceil(R?ceComp(R.sid,rdGid(P.id,P.g)):invValue(P.proto))}}}catch(e){console.error(e)}return r}}
+// a company that fails loses what it had put in
+{const o=ceFail;ceFail=function(m){const c=ceOf(m);if(c)c.iv=0;return o.apply(this,arguments)}}
 
 //@src 17_main.js
 // ============================================================ main loop

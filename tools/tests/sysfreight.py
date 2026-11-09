@@ -56,6 +56,17 @@ async def main():
     check('shot down, the project goes back to materials',r['lost'] and r['backTo']=='materials',r)
     check('home again, the line launches at grade 2',r['launched'] and r['grade']==2,r)
     l=await ev(LED);check('ledger exact after R&D',l=='exact',l)
+    # the launch window's roll: a failed trial sends the project back to a redesign (the prototype's components to the maker's
+    # store); a success launches; R&D spending counts in the share price (the test gives the prototype, booked into the ledger)
+    r=json.loads(await ev("""(()=>{const m='tcy',id=MK_LINE[m].find(x=>ITEMS[x]&&ITEMS[x].part&&!ITEMS[x].sys);const c=ceOf(m);c.rd=null;S.econ.treasury[ceW(m)]+=20000;S.econ.treasury.halcyon-=20000;
+      const g0=rdLineG(m,id),iv0=c.iv||0,ok=rdStart(m,id,'test'),ivUp=(c.iv||0)-iv0,P=c.rd,rc=ITEMS[rdGid(id,P.g)].recipe;const prep=()=>{P.stage='trials';P.got=1;P.ivm=1;P.proto={...rc};const v=invVec(rc);for(const e of RAWS)S.ledger0.tot[e]+=v[e]};
+      prep();const st0={...ceStore(m)},R0=Math.random;Math.random=()=>.999;rdLaunch(m);Math.random=R0;const back=Object.keys(rc).every(k=>(ceStore(m)[k]||0)-(st0[k]||0)===rc[k]);
+      const failed={stage:P.stage,fails:P.fails,grade:rdLineG(m,id),back,chance:Math.round(100*rdWinChance(m,P))};prep();Math.random=()=>0;rdLaunch(m);Math.random=R0;
+      return JSON.stringify({ok,ivUp,failed,launched:rdLineG(m,id)===g0+1&&!c.rd,ivAfter:c.iv||0})})()"""))
+    check('R&D funding counts as investment in the share price',r['ok'] and r['ivUp']>0,r)
+    check('a failed trial: back to a redesign, the prototype\'s components to the maker\'s store, the next roll 10% better',r['failed']['stage']=='design' and r['failed']['fails']==1 and r['failed']['grade']==1 and r['failed']['back'] and r['failed']['chance']==85,r)
+    check('a successful roll launches the line',r['launched'],r)
+    l=await ev(LED);check('ledger exact after the rolls',l=='exact',l)
     check('no errors',not errs,errs[:3])
     print('ALL OK' if not bad else 'FAILED: '+', '.join(bad))
     await b.close()

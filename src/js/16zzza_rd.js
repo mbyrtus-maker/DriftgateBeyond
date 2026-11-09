@@ -149,7 +149,7 @@ function rdSysHtml(c,P,sl){const t=P.tiers[sl]||1,m=(P.sysm||{})[sl],cur=ITEMS[r
 // ---- the Corporations view shows each line's grade and the R&D project
 {const o=ceHtml;ceHtml=function(P){let h=o.apply(this,arguments);try{const m=String(coPk.economy||'').slice(5),c=ceOf(m);if(!c)return h;
   for(const id of MK_LINE[m]||[]){const g=rdLineG(m,id);if(g>1)h=h.replace(`${esc(ITEMS[id].name)} <span class="mass">`,`${esc(ITEMS[rdGid(id,g)].name)} <span class="mass">`)}
-  const P2=c.rd;const stx=P2?`${esc(ITEMS[rdGid(P2.id,P2.g)].name)}: ${P2.stage==='design'?'design':P2.stage==='materials'?'materials':'trials'}, ${fmtT(Math.max(0,P2.until-S.T))} left in this stage`:'none running';
+  const P2=c.rd;const stx=P2?`${esc(ITEMS[rdGid(P2.id,P2.g)].name)}: ${P2.stage==='design'?(P2.fails?'redesign':'design'):P2.stage==='materials'?'materials':'trials'}, ${P2.until-S.T>1e6?(P2.stage==='materials'?'waiting on its materials run':P2.pilot?`test pilot ${esc(P2.pilot)} flying it`:'under way'):fmtT(Math.max(0,P2.until-S.T))+' left in this stage'}${P2.fails?` · ${P2.fails} failed trial${P2.fails>1?'s':''}`:''}`:'none running';
   const labs=Object.entries(c.labs||{}).map(([id,g])=>`${esc(ITEMS[id].name.replace(MAKERS[m].short+' ',''))} G${g}`).join(', ');
   h=h.replace('<div class="lab" style="margin-top:12px">Its lines</div>',`<div class="lab" style="margin-top:12px">R&D</div><div class="note" style="margin:2px 0 8px">${stx}${labs?` · labs: ${labs}`:''}</div><div class="lab" style="margin-top:12px">Its lines</div>`)}catch(e){}return h}}
 // ---- a new galaxy's markets carry systems too (user, 7 Nov 2026), seeded like the parts: each lot three times as likely to be

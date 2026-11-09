@@ -85,7 +85,7 @@ function ceComp(sid,id){const R=S.stations[sid],rc=ITEMS[id]&&ITEMS[id].recipe;i
   const cc=ceComp(R.sid,id);return Math.max(v*k,cc*CE.markup*k,cc*CE.floor/(1-CE.dues))}catch(e){return v}}}
 // ---- a sale: the maker's share to its treasury, the station's dues stay with its owner
 function ceSale(m,id,n,paid,wallet,sid){if(!S.corp||!(paid>0))return;const c=ceOf(m);if(!c)return;if(c.dead){return}const net=Math.floor(paid*(1-CE.dues));const got=transfer(wallet,ceW(m),net);
-  const home=mkHomeSid(m),mar=got-ceComp(home,id)*n;c.sales.push([S.T,ITEMS[id].base||id,n,mar,sid]);c.inc+=got}
+  const home=mkHomeSid(m),mar=got-ceComp(home,id)*n;c.sales.push([S.T,ITEMS[id].base||id,n,mar,sid]);c.inc+=got;c.mar=(c.mar||0)+mar}
 {const o=dockAction;dockAction=function(act,arg){if(act!=='buy'||!S||!S.corp||NET.cl)return o.apply(this,arguments);const k=String(arg).split(':')[0],I=ITEMS[k];if(!I||!I.maker)return o.apply(this,arguments);
   const c=dockCtx();if(!c||!c.market||c.wallet==='player'||c.owner==='player')return o.apply(this,arguments);const P=S.player,c0=P.credits,n0=c.market[k]||0,wl=c.wallet;const r=o.apply(this,arguments);
   try{const spent=c0-P.credits,n=n0-(c.market[k]||0);if(spent>0&&n>0)ceSale(I.maker,k,n,spent,wl,P.sector)}catch(e){console.error(e)}return r}}
@@ -107,14 +107,14 @@ function ceUpkeep(m){if(CE_FAIR.t!==S.T){CE_FAIR={t:S.T,f:ceFair()}}const c=ceOf
 function ceMinute(){const T=S.T;for(const m in MAKERS){const c=ceOf(m);if(!c)continue;
     if(c.dead){if(T>=c.reborn)ceReborn(m);continue}
     c.sales=c.sales.filter(x=>x[0]>T-Math.max(CE.window,CE.shut,3600));
-    const due=ceUpkeep(m)/60,paid=transfer(ceW(m),ceHostWallet(m),Math.max(1,Math.round(due)));c.cost+=paid;
+    const due=ceUpkeep(m)/60,paid=transfer(ceW(m),ceHostWallet(m),Math.max(1,Math.round(due)));c.cost+=paid;c.up=(c.up||0)+paid;
     if(paid<Math.round(due)||ceT(m)<=0){ceFail(m);continue}
     const str=ceT(m)<CE.struggleH*ceUpkeep(m);if(str&&!c.str){c.str=1;ceNews(m,`is in trouble: under ${CE.struggleH} hours of running costs left (${fmt(ceT(m))} cr).`)}else if(!str&&c.str&&ceT(m)>CE.struggleH*1.5*ceUpkeep(m))c.str=0}}
 function ceFail(m){const c=ceOf(m);c.dead=1;c.str=0;c.reborn=S.T+rnd(...CE.reborn);const left=ceT(m);if(left>0)transfer(ceW(m),ceHostWallet(m),left);
   ceNews(m,`has failed. Its works are closed; what it made stays on sale, and its shares are worthless.`,true)}
 function ceReborn(m){const c=ceOf(m),home=ceHomeWallet(m);if((S.econ.treasury[home]||0)<CE.start){c.reborn=S.T+300;return}const old=MAKERS[m].name;
   let nm,sh,i=0;do{sh=pick(CE_NAMES[0]);nm=`${sh} ${pick(CE_NAMES[1])}`;i++}while(i<20&&Object.values(MAKERS).some(x=>x.short===sh));
-  c.name=nm;c.short=sh;c.dead=0;c.gen=(c.gen||1)+1;c.logo=ceNewLogo(m);c.ceo=pick(CE.ceos);c.ceoT=S.T;c.ln={};c.tr={};c.sales=[];c.E=0;c.pxH=[];c.inc=0;c.cost=0;
+  c.name=nm;c.short=sh;c.dead=0;c.gen=(c.gen||1)+1;c.logo=ceNewLogo(m);c.ceo=pick(CE.ceos);c.ceoT=S.T;c.ln={};c.tr={};c.sales=[];c.E=0;c.iv=0;c.mar=0;c.up=0;c.pxH=[];c.inc=0;c.cost=0;
   for(const id of ceTrLines(m)){const ks=CE_KSTAT[ITEMS[id].part];if(!ks)continue;const s=ks[0],tr={};tr[s]=s==='mag'?1:(CE_BAD[s]?-1:1)*Math.round(rnd(.04,.08)*100)/100;ceBalance(tr,ITEMS[id].part);c.tr[id]=tr}
   transfer(home,ceW(m),CE.start);ceApply();ceNews(m,`opens at ${DEF[mkHomeSid(m)].name} in the works ${old} left, under CEO trait ${c.ceo}. Its new mark: ${MK_LOGO[c.logo].n}.`,true)}
 // ---- tweaks
@@ -134,11 +134,19 @@ function ceReview(){const T=S.T,sold={},byKind={};for(const m in MAKERS){const c
       if(rival&&sold[rival[1]]>=2*mine&&sold[rival[1]]>=mine+3)ceTweak(m,id,`outsold by ${MAKERS[rival[0]].short}`);
       else if(fair>=1&&mine<fair*.5)ceTweak(m,id,'buyers passing it by')}}}
 // ---- the hour: profit, shares, dividends, the board
-function ceHour(){for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;const p=c.inc-c.cost;c.inc=0;c.cost=0;c.E=c.E?c.E*.6+p*.4:p;c.hist.push([S.T,p,ceT(m)]);if(c.hist.length>48)c.hist.shift();
+// (user, 8 Nov 2026: "fix investment vs product launch") the share price rides on the operating profit (the margin on what
+// sold, less running costs), not on cash flow: components bought for stock, R&D and freight are investments. Stock counts at
+// cost and the R&D a maker has put in counts while its project runs, then fades 20% an hour after it ends.
+// The market leader's premium: each kind of part a maker outsold every rival in over the last hour (2 or more sold) adds 15%
+// to its price, up to 45%; a launch that takes the lead lifts the price, losing it drops it. While a maker leads a kind, the
+// R&D it put in fades 5% an hour instead of 20% (investors keep valuing a product that leads).
+function ceLeads(){const u={};for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;for(const x of c.sales){if(x[0]<=S.T-3600)continue;const k=ceKind(x[1]);(u[k]=u[k]||{})[m]=(u[k][m]||0)+x[2]}}
+  const n={};for(const k in u){let b=null,bv=0,sec=0;for(const m in u[k]){const v=u[k][m];if(v>bv){sec=bv;bv=v;b=m}else if(v>sec)sec=v}if(b&&bv>=2&&bv>sec)n[b]=(n[b]||0)+1}return n}
+function ceHour(){const LEAD=ceLeads();for(const m in MAKERS){const c=ceOf(m);if(!c||c.dead)continue;c.lead=LEAD[m]||0;const cf=c.inc-c.cost,p=(c.mar||0)-(c.up||0);c.inc=0;c.cost=0;c.mar=0;c.up=0;c.E=c.E?c.E*.6+p*.4:p;if(!c.rd)c.iv=Math.round((c.iv||0)*(c.lead?.95:.8));c.hist.push([S.T,p,ceT(m)]);if(c.hist.length>48)c.hist.shift();
     let sv=0;for(const sid in S.stations){const R=S.stations[sid];if(!R)continue;let st;try{st=mkStock(R)}catch(e){continue}for(const id of MK_LINE[m])for(let g=1;g<=5;g++){const gid=g>1?`${id}_g${g}`:id;if(st[gid])sv+=st[gid]*ceComp(mkHomeSid(m),gid)}}
-    const px=Math.max(1,(ceT(m)+sv+8*c.E)/100);c.px=px;c.pxH.push(Math.round(px*10)/10);if(c.pxH.length>48)c.pxH.shift();
+    const px=Math.max(1,(ceT(m)+sv+(c.iv||0)+8*c.E)/100*(1+Math.min(.45,.15*c.lead)));c.px=px;c.pxH.push(Math.round(px*10)/10);if(c.pxH.length>48)c.pxH.shift();
     if(p>0&&!c.str){const k=c.ceo==='Generous'?1.5:c.ceo==='Cautious'?.6:1,d=Math.floor(p*CE.div*k);if(d>0){const a=transfer(ceW(m),ceHomeWallet(m),Math.floor(d*CE.divHome)),b=transfer(ceW(m),'neutral',d-Math.floor(d*CE.divHome));c.div+=a+b}}
-    const H=c.pxH,n=H.length;if(n>=3&&S.T-c.ceoT>=CE.grace&&H[n-1]<H[n-2]&&H[n-2]<H[n-3]){const old=c.ceo;c.ceo=pick(CE.ceos.filter(x=>x!==old));c.ceoT=S.T;ceNews(m,`'s board has replaced its CEO after two hours of falling shares: out goes a ${old}, in comes a ${c.ceo}.`)}}}
+    const H=c.pxH,n=H.length;if(n>=3&&S.T-c.ceoT>=CE.grace&&H[n-1]<H[n-2]*.95&&H[n-2]<H[n-3]*.95){const old=c.ceo;c.ceo=pick(CE.ceos.filter(x=>x!==old));c.ceoT=S.T;ceNews(m,`'s board has replaced its CEO after two hours of shares falling 5% or more: out goes a ${old}, in comes a ${c.ceo}.`)}}}
 // ---- the powers refit their fleets from the markets
 function ceRefitRate(f){let w=false,t=false;for(const g of FAC_IDS){if(g===f)continue;try{if(warWith(f,g))w=true;else if(S.rel&&relOf&&relOf(f,g)<=-25)t=true}catch(e){}}return w?CE.refit.war:t?CE.refit.tension:CE.refit.peace}
 function ceRefit(){for(const f of FAC_IDS){const st=S.econ.stock[f];if(!st)continue;const pool=(S.corpFit=S.corpFit||{})[f]=S.corpFit[f]||{};
