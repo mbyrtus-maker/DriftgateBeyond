@@ -3107,3 +3107,55 @@ The user: "my thruster isn't using any energy". Found: the afterburner burns 30 
 The user: "the parts don't show their strengths and weaknesses over a standard part … in the market."
 - **A maker's part:** the detail panel has an "Against the standard machine gun" box. Each trait is a line: strengths in green (▲ +12% damage), weaknesses in red (▼ −15% rounds). A graded part adds what its grade gives ("grade 3: +10% damage a grade over grade 1").
 - **A system:** the box compares it with a standard grade 1 system on the hull you're flying: drives give thrust, top speed and turning; reactors energy capacity and recharge; shields shield strength; armour hull and damage resisted; cargo the hold; blast rigs drilling; payload bays reload time; the weapons system gun and laser damage, laser energy per shot, missiles carried and lock time. Makers' systems carry no traits yet, so a grade 1 system says it is the same as the standard one.
+
+### Proposal: four new components (user, 8 Nov 2026; not built)
+The user: "Add 4 more components. This allows more flexibility with builds. Different parts require different components, different components require different ores. The goal is to add deeper economics."
+**Today:** everything a pilot fits is made of Alloy Plate (Ferrite), Conduit (Cuprite) and Flux Coil (Conduit + Iridium), with Crystal Lattice and Resonance Core at grades 4 and 5. Aurorite and Vantium have almost no use (Aurora Tuning; Capital Keels), which is part of why the powers' warehouses fill with them.
+
+**Proposed: one component per family of parts, each putting a neglected ore to work.**
+
+| Component | Recipe | Family |
+|---|---|---|
+| Vantium Plating | 2 Vantium + 1 Alloy Plate | armour and mass: armour, cargo, guns, charges |
+| Aurorite Cell | 1 Aurorite + 1 Conduit | energy: reactors, shields, lasers, mining lasers |
+| Optic Array | 1 Xenocrystal + 1 Conduit | targeting and sensing: weapons system, launchers, scanners |
+| Thrust Vane | 2 Iridium + 1 Alloy Plate | propulsion: drives, payload bays, landing kits |
+
+**Parts (proposed recipes):**
+
+| Part | Recipe |
+|---|---|
+| Machine gun | Plate 1, Conduit 1, Vantium Plating 1 |
+| Laser | Conduit 1, Coil 1, Aurorite Cell 1 |
+| Missile launcher | Plate 2, Optic Array 1 |
+| Torpedo launcher | Plate 2, Coil 1, Optic Array 1 |
+| Mining laser | Plate 1, Coil 1, Aurorite Cell 1 |
+| Charge launcher | Plate 1, Conduit 1, Vantium Plating 1 |
+| Landing kit | Plate 1, Thrust Vane 1 |
+| Cargo pod | Plate 2, Vantium Plating 1 |
+| Scanner | Conduit 1, Optic Array 1 |
+| Drone controller | Conduit 1, Optic Array 1, Aurorite Cell 1 |
+
+**Systems** (grade 1, and each grade's upgrade adds 2 of the slot's component on top of today's plate, conduit, coil, lattice and core):
+
+| System | Component |
+|---|---|
+| Drive | Thrust Vane |
+| Reactor | Aurorite Cell |
+| Shield emitter | Aurorite Cell |
+| Weapons system | Optic Array |
+| Armour | Vantium Plating |
+| Cargo hold | Vantium Plating |
+| Blast rig | Vantium Plating |
+| Payload bay | Thrust Vane |
+
+**Who makes them:**
+- the powers' home works, depots with production and the freeports, from ore, as they make plate and conduit;
+- makers' works, from their station's ore;
+- pilots, by Fabricate at a dock.
+
+They are sold on markets under Components.
+
+**Saves:** parts and systems already in a galaxy keep counting exactly. The ledger books the recipe change once on load.
+
+**Checks:** ledger exact, economy trace, war check (the powers' ore now feeds more kinds of goods).
