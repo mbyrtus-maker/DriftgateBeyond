@@ -19,6 +19,9 @@ const COP={deposit:100000,gap:25,sat:.72,lit:.58,logos:12};
 const CO_DESIGN_FALLBACK=['Company standard','Wheel','Spire','Cluster','Disc','Asteroid'];
 function coReady(P){return!!(P&&P.co&&P.co.ok)}
 function coWal(P){return P&&P.co&&P.co.w}
+// a profile made by coDefault (a Legend start, the dev tools, tests) has no treasury yet: its business runs on the pilot's own
+// credits until the treasury is opened from the Profile tab
+function coFunded(P){return!!(P&&P.co&&P.co.ok&&P.co.fund)}
 function coNeedTxt(){return'Set up your company first: Company → Profile (name, logo, base design, colour, fees and a 100,000 cr treasury).'}
 function coDesigns(){try{if(typeof BM_DESIGNS!=='undefined'&&BM_DESIGNS.length)return BM_DESIGNS.map(d=>d.name)}catch(e){}return CO_DESIGN_FALLBACK}
 function coLogoCount(){try{if(typeof CO_LOGO!=='undefined'&&CO_LOGO.length)return CO_LOGO.length}catch(e){}return COP.logos}
@@ -38,11 +41,11 @@ function coSave(P,arg){const q={};for(const kv of String(arg||'').split(';')){co
   const clash=coHueClash(hue);const N=brSlot(P,true);if(N==null)return'No company slot free in this galaxy.';const B=S.brands[N],col=coHueCol(hue);
   if(P.decl&&B.col&&B.col!==col)return'Your colour is fixed now that you have declared a faction.';if(clash&&B.col!==col)return`That colour is too close to ${clash}'s. Pick another hue.`;
   const fees={};for(const k of['sell','buy','svc','dock']){const D=FEE[k];if(q[k]==null||q[k]==='')continue;const v=clamp(+q[k],D.min,D.max);if(isFinite(v))fees[k]=k==='dock'?Math.round(v):Math.round(v*100)/100}
-  let first=false;if(!coReady(P)){if(P.credits<COP.deposit)return`Opening your company's treasury takes a ${fmt(COP.deposit)} cr deposit. You have ${fmt(P.credits)} cr.`;first=true}
-  const k=pkeyOf(P);P.co=Object.assign(P.co||{},{ok:1,w:(P.co&&P.co.w)||'co_'+k,logo,design,fees,T:(P.co&&P.co.T)||S.T});if(first)transfer('player',P.co.w,COP.deposit);
+  let first=false;if(!coFunded(P)){if(P.credits<COP.deposit)return`Opening your company's treasury takes a ${fmt(COP.deposit)} cr deposit. You have ${fmt(P.credits)} cr.`;first=true}
+  const k=pkeyOf(P);P.co=Object.assign(P.co||{},{ok:1,fund:1,w:(P.co&&P.co.w)||'co_'+k,logo,design,fees,T:(P.co&&P.co.T)||S.T});if(first)transfer('player',P.co.w,COP.deposit);
   if(!P.decl)B.name=name;B.col=col;for(const R of myDepots(P))R.design=design;try{for(const key of Object.keys(MESH))if(key.startsWith('bm'))delete MESH[key]}catch(e){}
   return first?`✓ ${name} is set up. Its treasury opens with ${fmt(COP.deposit)} cr: your bases' business runs through it now.`:`✓ ${name}'s profile is saved.`}
-function coTreas(P,arg){if(!coReady(P))return coNeedTxt();const[d,n0]=String(arg).split(':'),w=P.co.w;const n=n0==='all'?(d==='in'?P.credits:S.econ.treasury[w]||0):Math.floor(+n0);if(!(n>0))return'Nothing to move.';
+function coTreas(P,arg){if(!coFunded(P))return coNeedTxt();const[d,n0]=String(arg).split(':'),w=P.co.w;const n=n0==='all'?(d==='in'?P.credits:S.econ.treasury[w]||0):Math.floor(+n0);if(!(n>0))return'Nothing to move.';
   const got=d==='in'?transfer('player',w,n):transfer(w,'player',n);return got?`✓ ${d==='in'?'Deposited':'Withdrew'} ${fmt(got)} cr. The treasury holds ${fmt(S.econ.treasury[w]||0)} cr.`:d==='in'?'Not enough credits.':'The treasury is empty.'}
 function coFeesAll(P){if(!coReady(P))return coNeedTxt();const L=myDepots(P);for(const R of L)R.fees={...(P.co.fees||{})};return`✓ Your default fees now apply at ${L.length} base${L.length===1?'':'s'}.`}
 {const o=dockAction;dockAction=function(act,arg){if(act==='coprof'){dockErr=coSave(S.player,arg);return}if(act==='cotr'){dockErr=coTreas(S.player,arg);return}if(act==='cofeeall'){dockErr=coFeesAll(S.player);return}return o.apply(this,arguments)}}
@@ -58,7 +61,7 @@ if(typeof bmDesignOf==='function'){const o=bmDesignOf;bmDesignOf=function(R){if(
 {const o=dockAction;dockAction=function(act,arg){if(act==='buy'&&!NET.cl){const k=String(arg).split(':')[0];if((k==='kit_depot'||k==='kit_station')&&!coReady(S.player)){coTab='profile';dockErr=`A ${ITEMS[k].name} is sold to companies only. ${coNeedTxt()}`;return}}return o.apply(this,arguments)}}
 // ---- the treasury runs the base business: swap each profiled pilot's credits with their treasury while it runs
 let CO_SW=0;
-function coRun(fn){if(CO_SW||!S)return fn();const L=[];for(const P of allPilots()){if(!coReady(P))continue;L.push([P,P.credits]);P.credits=S.econ.treasury[P.co.w]||0}CO_SW=1;
+function coRun(fn){if(CO_SW||!S)return fn();const L=[];for(const P of allPilots()){if(!coFunded(P))continue;L.push([P,P.credits]);P.credits=S.econ.treasury[P.co.w]||0}CO_SW=1;
   try{return fn()}finally{CO_SW=0;for(const[P,c]of L){S.econ.treasury[P.co.w]=P.credits;P.credits=c}}}
 {const o=depTradeTick;depTradeTick=function(){const a=arguments,t=this;return coRun(()=>o.apply(t,a))}}
 {const o=crewHire;crewHire=function(){const a=arguments,t=this;return coRun(()=>o.apply(t,a))}}
@@ -82,7 +85,7 @@ function coFormOf(P){if(coForm)return coForm;const N=brSlot(P),B=N!=null&&S.bran
   const f={...feeOfDef(),...((P.co&&P.co.fees)||{})};return coForm={name:(B&&B.name)||`${P.name||'Pilot'}'s Works`,logo:P.co?P.co.logo:0,design:P.co?P.co.design:1,hue:hue%360,fees:f}}
 function feeOfDef(){const o={};for(const k of['sell','buy','svc','dock'])o[k]=FEE[k].def;return o}
 function coArg(F){return[`name=${encodeURIComponent(F.name)}`,`logo=${F.logo}`,`design=${F.design}`,`hue=${F.hue}`,...['sell','buy','svc','dock'].map(k=>`${k}=${F.fees[k]}`)].join(';')}
-function coProfHtml(P){const F=coFormOf(P),col=coHueCol(F.hue),clash=coHueClash(F.hue),ready=coReady(P),w=ready?P.co.w:null,D=coDesigns();
+function coProfHtml(P){const F=coFormOf(P),col=coHueCol(F.hue),clash=coHueClash(F.hue),ready=coFunded(P),w=ready?P.co.w:null,D=coDesigns();
   let h=`<p class="note" style="margin:0 0 12px">${ready?'Your company. Change anything here and Save; the deposit is paid once.':`Before you build a Depot or a Station, or buy their kits, set up your company. Saving opens its treasury with a ${fmt(COP.deposit)} cr deposit from your credits; your bases' business runs through it from then on.`}</p>`;
   h+=`<div class="lab">Name</div><input id="coNm" type="text" maxlength="32" value="${esc(F.name)}" ${P.decl?'disabled':''} style="width:min(360px,100%);margin:4px 0 12px" aria-label="Company name">`;
   h+=`<div class="lab">Logo</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px">${Array.from({length:coLogoCount()},(_,i)=>`<button class="btn sm" type="button" data-co="cof" data-arg="logo:${i}" aria-pressed="${F.logo===i}" style="padding:4px;border-color:${F.logo===i?col:'var(--line)'}">${coLogoHtml(i,30,F.logo===i?col:'#9aa4b8')}</button>`).join('')}</div>`;
@@ -98,7 +101,7 @@ function coProfHtml(P){const F=coFormOf(P),col=coHueCol(F.hue),clash=coHueClash(
 {const o=coTabs;coTabs=function(){const L=o.apply(this,arguments);return S&&S.unb?L:[['profile','Profile'],...L]}}
 {const o=renderCompany;renderCompany=function(){const r=o.apply(this,arguments);try{if(coTab==='profile'&&S&&!S.unb){$('coBody').innerHTML=coProfHtml(S.player);const P=S.player;
     const nm=$('coNm');if(nm)nm.addEventListener('input',e=>{coFormOf(P).name=e.target.value});const hu=$('coHue');if(hu){hu.addEventListener('change',e=>{coFormOf(P).hue=+e.target.value;renderCompany()});hu.addEventListener('input',e=>{const sw=hu.previousElementSibling;if(sw)sw.style.background=coHueCol(+e.target.value)})}}
-  if(S&&S.player&&coReady(S.player)){const t=S.econ.treasury[S.player.co.w]||0,sub=$('coSub');if(sub&&!/treasury/.test(sub.textContent))sub.textContent+=` · treasury ${fmt(t)} cr`}}catch(e){console.error(e)}return r}}
+  if(S&&S.player&&coFunded(S.player)){const t=S.econ.treasury[S.player.co.w]||0,sub=$('coSub');if(sub&&!/treasury/.test(sub.textContent))sub.textContent+=` · treasury ${fmt(t)} cr`}}catch(e){console.error(e)}return r}}
 {const o=coClick;coClick=function(act,arg){const P=S.player;
   if(act==='cof'){const F=coFormOf(P),[k,v,d]=String(arg).split(':');if(k==='logo')F.logo=+v;else if(k==='design')F.design=+v;else if(k==='fee'){const D=FEE[v];F.fees[v]=Math.round(clamp(F.fees[v]+(+d)*D.step,D.min,D.max)/D.step)*D.step;if(v!=='dock')F.fees[v]=Math.round(F.fees[v]*100)/100}renderCompany();return}
   if(act==='cosave'||act==='cotr'||act==='cofeeall'){const a=act==='cosave'?'coprof':act,g=act==='cosave'?coArg(coFormOf(P)):arg;if(NET.cl){netSend({t:'act',act:a,arg:g});coErr='Working…';renderCompany();return}dockAction(a,g);coErr=dockErr;if(a==='coprof'&&dockErr.startsWith('✓'))coForm=null;renderCompany();return}
