@@ -10146,19 +10146,22 @@ const WORK_MDL={halcyon:{skiff:'dz_wren',prospector:'dz_plover',dredger:'dz_hero
 // Trait keys: dmg (gun or laser damage), e (laser or mining-laser energy draw), ammo (machine-gun rounds), mag (missiles,
 // torpedoes or charges per launcher), lock (lock time), ml (mining-laser rate), cargo (cargo-module hold), scan (scanner reach),
 // speed (the whole ship's top speed); maxG: the top grade its parts take.
+// (user, 8 Nov 2026) "All non-standard parts should have a weakness and a strength": every maker's line has at least one of
+// each (a landing kit has nothing to vary, and the makers' "standard" lines are standard by name). Lines that had only one
+// gained the other; the Mirrorwater laser, missile and torpedo and the Coldwater Refit missile gained both.
 const MAKERS={
-  tcy:{name:'Teal & Corvane Yards',short:'Corvane',home:'halcyon',parts:{cargo:{cargo:.06,speed:-.01},dronec:{dh:.2}}},
+  tcy:{name:'Teal & Corvane Yards',short:'Corvane',home:'halcyon',parts:{cargo:{cargo:.06,speed:-.01},dronec:{dh:.2,dd:-.1}}},
   bl:{name:'Brightline Emitters',short:'Brightline',home:'halcyon',parts:{laser:{dmg:.1,e:.1}}},
   hf:{name:'Hold Foundry',short:'Foundry',home:'varkesh',parts:{charge:{mag:1,speed:-.01}}},
   mg:{name:'Marchgun Ordnance',short:'Marchgun',home:'varkesh',parts:{gun:{dmg:.12,ammo:-.15},missile:{mag:1,lock:.1}}},
-  sw:{name:'Spirewright',short:'Spirewright',home:'ostrova',parts:{scanner:{scan:.25},mlaser:{ml:.1,e:.15}}},
+  sw:{name:'Spirewright',short:'Spirewright',home:'ostrova',parts:{scanner:{scan:.25,speed:-.01},mlaser:{ml:.1,e:.15}}},
   ad:{name:'Archive Dynamics',short:'Archive',home:'ostrova',parts:{laser:{e:-.15,dmg:-.04}}},
-  mwa:{name:'Mirrorwater Arms',short:'Mirrorwater',home:'mw',parts:{gun:{ammo:.1},laser:{},missile:{},torpedo:{}}},
-  qs:{name:'Quicksilver Hullworks',short:'Quicksilver',home:'mw',parts:{cargo:{cargo:.03},land:{}}},
-  cr:{name:'Coldwater Refit',short:'Refit',home:'cw',maxG:3,parts:{gun:{dmg:-.05},laser:{dmg:-.05},missile:{}}},
-  cp:{name:'Coldwater Prospecting',short:'Prospecting',home:'cw',parts:{mlaser:{ml:.12},charge:{mag:1},scanner:{scan:.1},dronec:{dd:.15}}},
+  mwa:{name:'Mirrorwater Arms',short:'Mirrorwater',home:'mw',parts:{gun:{ammo:.1,dmg:-.04},laser:{e:-.08,dmg:-.03},missile:{lock:-.12,speed:-.01},torpedo:{lock:-.1,speed:-.01}}},
+  qs:{name:'Quicksilver Hullworks',short:'Quicksilver',home:'mw',parts:{cargo:{cargo:.03,speed:-.01},land:{}}},
+  cr:{name:'Coldwater Refit',short:'Refit',home:'cw',maxG:3,parts:{gun:{dmg:-.05,ammo:.15},laser:{dmg:-.05,e:-.12},missile:{mag:1,lock:.15}}},
+  cp:{name:'Coldwater Prospecting',short:'Prospecting',home:'cw',parts:{mlaser:{ml:.12,e:.08},charge:{mag:1,speed:-.01},scanner:{scan:.1,speed:-.01},dronec:{dd:.15,dh:-.08}}},
   ewd:{name:'Ember Wake Drives',short:'Ember',home:'ew',parts:{cargo:{cargo:.08,speed:-.02}}},
-  wf:{name:'Wakefire Munitions',short:'Wakefire',home:'ew',parts:{missile:{mag:1},torpedo:{mag:1}}}};
+  wf:{name:'Wakefire Munitions',short:'Wakefire',home:'ew',parts:{missile:{mag:1,lock:.1},torpedo:{mag:1,lock:.1}}}};
 const MK_WORKS={every:90,cap:4,seed:2};
 const TR_TXT={dmg:'damage',e:'energy draw',ammo:'rounds',mag:'per launcher',lock:'lock time',ml:'cutting rate',cargo:'hold',scan:'scanner reach',speed:'top speed',dh:'drone hull',dd:'drone damage'};
 function trText(tr){return Object.keys(tr).map(k=>k==='mag'?`${tr[k]>0?'+':''}${tr[k]} ${TR_TXT[k]}`:`${tr[k]>0?'+':'−'}${Math.round(Math.abs(tr[k])*100)}% ${TR_TXT[k]}`).join(', ')}
@@ -11992,9 +11995,10 @@ function mkVsStd(k,P){try{const I=ITEMS[k];if(!I)return'';const B=I.base&&ITEMS[
   if(I.sys){const sl=I.sys,T0={...P.tiers,[sl]:1},T1={...P.tiers,[sl]:g},a=shipStats(P.faction,P.cls,T0),b=shipStats(P.faction,P.cls,T1);
     for(const key in MK_ST){const A=a[key],Bv=b[key];if(typeof A!=='number'||typeof Bv!=='number'||Math.abs(Bv-A)<1e-9)continue;const[n,dir,u]=MK_ST[key];
       const d=u==='pt'?`${Bv>A?'+':'−'}${Math.round(Math.abs(Bv-A)*100)} pts ${n}`:`${Bv>A?'+':'−'}${Math.round(Math.abs(Bv/A-1)*100)}% ${n}`;rows.push(mkVsRow(d,(Bv>A)===(dir>0)))}
+    for(const t in I.tr||{}){const v=I.tr[t];if(!v||!TR_TXT[t])continue;rows.push(mkVsRow(`${v>0?'+':'−'}${Math.round(Math.abs(v)*100)}% ${TR_TXT[t]} (its maker's trait)`,(v>0)===((TR_GOOD[t]||1)>0)))}
     if(sl==='weapon'){const r0=rackCapC(P.cls,1),r1=rackCapC(P.cls,g);if(r1>r0)rows.push(mkVsRow(`+${r1-r0} ${CLASSES[P.cls].torp?'torpedoes':'missiles'} carried`,true));if(g>1)rows.push(mkVsRow(`−${Math.round((1-(1-.07*(g-1)))*100)}% lock time`,true))}
     const nm=(FAC(P.faction)||{hulls:{}}).hulls[P.cls]||CLASSES[P.cls].name;
-    return`<div class="mkvs"><div class="lab">Against a standard grade 1 system · on your ${esc(nm)}</div>${rows.length?rows.join(''):'<div class="note" style="margin:0">The same as a standard system: makers\' systems carry no traits yet, and this is grade 1.</div>'}</div>`}
+    return`<div class="mkvs"><div class="lab">Against a standard grade 1 system · on your ${esc(nm)}</div>${rows.length?rows.join(''):'<div class="note" style="margin:0">The same as a standard system.</div>'}</div>`}
   const kind=I.part||B.part;if(!kind)return'';const tr=I.tr||B.tr||{};
   for(const t in tr){const v=tr[t];if(!v||!TR_TXT[t])continue;const txt=t==='mag'?`${v>0?'+':''}${v} ${TR_TXT[t]}`:`${v>0?'+':'−'}${Math.round(Math.abs(v)*100)}% ${TR_TXT[t]}`;rows.push(mkVsRow(txt,(v>0)===((TR_GOOD[t]||1)>0)))}
   if(g>1&&typeof LD_EFF!=='undefined'&&LD_EFF[kind])rows.push(mkVsRow(`grade ${g}: ${LD_EFF[kind]} over grade 1`,true));
@@ -15410,6 +15414,42 @@ function rdWinChance(m,P){const c=ceOf(m);return Math.min(.95,(RD_WIN[P.g]||.5)+
     if(P.got&&!P.ivm){P.ivm=1;const R=mkAtHome(m);c.iv=(c.iv||0)+Math.ceil(R?ceComp(R.sid,rdGid(P.id,P.g)):invValue(P.proto))}}}catch(e){console.error(e)}return r}}
 // a company that fails loses what it had put in
 {const o=ceFail;ceFail=function(m){const c=ceOf(m);if(c)c.iv=0;return o.apply(this,arguments)}}
+
+//@src 16zzzh_systraits.js
+// ============================================================ Beyond: makers' systems have a strength and a weakness (user, 8 Nov 2026)
+// "All non-standard parts should have a weakness and a strength." A maker's system (drive, reactor, shield emitter, weapons
+// system, armour, cargo hold, blast rig, payload bay) now carries a trait: one stat up, another down, on top of what its grade
+// gives. The unbranded systems a ship comes with stay standard. The traits act on the pilot whose ship has the system
+// installed (P.sysm records whose it is); AI ships' systems are unbranded.
+//   key: maxSpd top speed, thrust, turn turning, eCap energy capacity, eRegen recharge, sCap shields, hull, dmg gun and laser
+//   damage, shotCost laser energy a shot, lockT lock time, cargo hold, drill drilling, reload reload time
+const SYS_TR={
+  tcy:{engine:{thrust:.08,maxSpd:-.03},armor:{hull:.08,maxSpd:-.03}},
+  ewd:{engine:{maxSpd:.08,turn:-.04},power:{eRegen:.1,eCap:-.06}},
+  cr:{engine:{turn:.06,thrust:-.03},shield:{sCap:.05,eCap:-.03}},
+  ad:{power:{eCap:.08,eRegen:-.04},shield:{sCap:.08,eRegen:-.04}},
+  sw:{power:{eRegen:.06,eCap:-.03},weapon:{dmg:.06,shotCost:.08}},
+  bl:{shield:{sCap:.12,maxSpd:-.02}},
+  wf:{weapon:{lockT:-.12,dmg:-.03},payload:{reload:-.1,cargo:-.03}},
+  mg:{weapon:{dmg:.08,lockT:.08}},
+  hf:{armor:{hull:.12,turn:-.05},cargo:{cargo:.1,maxSpd:-.04},drill:{drill:.12,eRegen:-.04}},
+  qs:{armor:{hull:.06,thrust:-.03},cargo:{cargo:.06,turn:-.03}},
+  cp:{cargo:{cargo:.08,thrust:-.04},drill:{drill:.08,maxSpd:-.02}},
+  mwa:{payload:{reload:-.06,thrust:-.02}}};
+Object.assign(TR_TXT,{maxSpd:'top speed',thrust:'thrust',turn:'turning',eCap:'energy capacity',eRegen:'recharge',sCap:'shields',hull:'hull',shotCost:'laser energy a shot',lockT:'lock time',drill:'drilling',reload:'reload time'});
+Object.assign(TR_GOOD,{maxSpd:1,thrust:1,turn:1,eCap:1,eRegen:1,sCap:1,hull:1,shotCost:-1,lockT:-1,drill:1,reload:-1});
+function sysTr(m,sl){return(SYS_TR[m]&&SYS_TR[m][sl])||null}
+// the systems' items carry their trait (every grade), shown wherever the item is
+{const o=ceApply;ceApply=function(){o.apply(this,arguments);try{for(const m in MK_LINE)for(const id of MK_LINE[m]){const B=ITEMS[id];if(!B||!B.sys)continue;const tr=sysTr(m,B.sys)||{};
+    for(let g=1;g<=5;g++){const G=g>1?ITEMS[rdGid(id,g)]:B;if(!G)continue;G.tr={...tr};G.trTxt=`${MAKERS[m].name}: ${RD_SYSN[B.sys]}, grade ${g}${Object.keys(tr).length?' · '+trText(tr):''}.`}}}catch(e){console.error(e)}}}
+// whose ship a stats call is for: the pilot record behind its tune object
+const SYS_P=new WeakMap();
+{const o=fitOf;fitOf=function(P){const F=o.apply(this,arguments);try{if(P&&P.tune&&typeof P.tune==='object')SYS_P.set(P.tune,P)}catch(e){}return F}}
+function sysTrSum(P,key){let s=0;const M=P&&P.sysm;if(!M)return 0;for(const sl in M){const t=sysTr(M[sl],sl);if(t&&t[key])s+=t[key]}return s}
+{const o=shipStats;shipStats=function(fac,cls,T,U){const B=o.apply(this,arguments);try{const P=U&&typeof U==='object'?SYS_P.get(U):null;if(!P||!P.sysm||S.training)return B;
+    for(const k of['maxSpd','thrust','turn','eCap','eRegen','sCap','hull','dmg','shotCost','drill','reload']){const v=sysTrSum(P,k);if(v&&typeof B[k]==='number')B[k]*=1+v}
+    const c=sysTrSum(P,'cargo');if(c&&B.cargo)B.cargo=Math.round(B.cargo*(1+c))}catch(e){}return B}}
+{const o=vK;vK=function(P,key){const v=o.apply(this,arguments);if(key==='lockK'&&P&&P.sysm&&!S.training){const t=sysTrSum(P,'lockT');if(t)return v*(1+t)}return v}}
 
 //@src 17_main.js
 // ============================================================ main loop

@@ -3159,3 +3159,37 @@ They are sold on markets under Components.
 **Saves:** parts and systems already in a galaxy keep counting exactly. The ledger books the recipe change once on load.
 
 **Checks:** ledger exact, economy trace, war check (the powers' ore now feeds more kinds of goods).
+
+### Every maker's part and system has a strength and a weakness (user, 8 Nov 2026)
+The user: "All non-standard parts should have a weakness and a strength."
+- **Parts given the missing half:**
+  - Corvane drone controller −10% drone damage;
+  - Spirewright scanner −1% top speed;
+  - Mirrorwater machine gun −4% damage;
+  - Quicksilver cargo pod −1% top speed;
+  - Coldwater Refit machine gun +15% rounds, laser −12% energy draw;
+  - Prospecting mining laser +8% energy draw, charge launcher and scanner −1% top speed, drone controller −8% drone hull;
+  - Wakefire missile and torpedo launchers +10% lock time.
+- **Parts given both:**
+  - Mirrorwater laser −8% energy draw, −3% damage;
+  - Mirrorwater missile and torpedo launchers −12% and −10% lock time, each −1% top speed;
+  - Coldwater Refit missile launcher +1 a launcher, +15% lock time.
+  Landing kits have nothing to vary, and the makers' "standard" lines are standard by name.
+- **Makers' systems carry a trait** (`16zzzh_systraits.js`, `SYS_TR`), acting on the pilot whose ship has the system installed:
+
+| Maker | Drive | Reactor | Shield emitter | Weapons system | Armour | Cargo hold | Blast rig | Payload bay |
+|---|---|---|---|---|---|---|---|---|
+| Teal & Corvane | +8% thrust, −3% top speed | | | | +8% hull, −3% top speed | | | |
+| Ember Wake Drives | +8% top speed, −4% turning | +10% recharge, −6% energy capacity | | | | | | |
+| Coldwater Refit | +6% turning, −3% thrust | | +5% shields, −3% energy capacity | | | | | |
+| Archive Dynamics | | +8% energy capacity, −4% recharge | +8% shields, −4% recharge | | | | | |
+| Spirewright | | +6% recharge, −3% energy capacity | | +6% gun and laser damage, +8% laser energy a shot | | | | |
+| Brightline | | | +12% shields, −2% top speed | | | | | |
+| Wakefire | | | | −12% lock time, −3% damage | | | | −10% reload time, −3% hold |
+| Marchgun | | | | +8% damage, +8% lock time | | | | |
+| Hold Foundry | | | | | +12% hull, −5% turning | +10% hold, −4% top speed | +12% drilling, −4% recharge | |
+| Quicksilver | | | | | +6% hull, −3% thrust | +6% hold, −3% turning | | |
+| Prospecting | | | | | | +8% hold, −4% thrust | +8% drilling, −2% top speed | |
+| Mirrorwater | | | | | | | | −6% reload time, −2% thrust |
+
+  The Market's comparison shows a system's trait beside what its grade gives.

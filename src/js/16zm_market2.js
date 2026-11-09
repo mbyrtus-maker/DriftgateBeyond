@@ -85,9 +85,10 @@ function mkVsStd(k,P){try{const I=ITEMS[k];if(!I)return'';const B=I.base&&ITEMS[
   if(I.sys){const sl=I.sys,T0={...P.tiers,[sl]:1},T1={...P.tiers,[sl]:g},a=shipStats(P.faction,P.cls,T0),b=shipStats(P.faction,P.cls,T1);
     for(const key in MK_ST){const A=a[key],Bv=b[key];if(typeof A!=='number'||typeof Bv!=='number'||Math.abs(Bv-A)<1e-9)continue;const[n,dir,u]=MK_ST[key];
       const d=u==='pt'?`${Bv>A?'+':'−'}${Math.round(Math.abs(Bv-A)*100)} pts ${n}`:`${Bv>A?'+':'−'}${Math.round(Math.abs(Bv/A-1)*100)}% ${n}`;rows.push(mkVsRow(d,(Bv>A)===(dir>0)))}
+    for(const t in I.tr||{}){const v=I.tr[t];if(!v||!TR_TXT[t])continue;rows.push(mkVsRow(`${v>0?'+':'−'}${Math.round(Math.abs(v)*100)}% ${TR_TXT[t]} (its maker's trait)`,(v>0)===((TR_GOOD[t]||1)>0)))}
     if(sl==='weapon'){const r0=rackCapC(P.cls,1),r1=rackCapC(P.cls,g);if(r1>r0)rows.push(mkVsRow(`+${r1-r0} ${CLASSES[P.cls].torp?'torpedoes':'missiles'} carried`,true));if(g>1)rows.push(mkVsRow(`−${Math.round((1-(1-.07*(g-1)))*100)}% lock time`,true))}
     const nm=(FAC(P.faction)||{hulls:{}}).hulls[P.cls]||CLASSES[P.cls].name;
-    return`<div class="mkvs"><div class="lab">Against a standard grade 1 system · on your ${esc(nm)}</div>${rows.length?rows.join(''):'<div class="note" style="margin:0">The same as a standard system: makers\' systems carry no traits yet, and this is grade 1.</div>'}</div>`}
+    return`<div class="mkvs"><div class="lab">Against a standard grade 1 system · on your ${esc(nm)}</div>${rows.length?rows.join(''):'<div class="note" style="margin:0">The same as a standard system.</div>'}</div>`}
   const kind=I.part||B.part;if(!kind)return'';const tr=I.tr||B.tr||{};
   for(const t in tr){const v=tr[t];if(!v||!TR_TXT[t])continue;const txt=t==='mag'?`${v>0?'+':''}${v} ${TR_TXT[t]}`:`${v>0?'+':'−'}${Math.round(Math.abs(v)*100)}% ${TR_TXT[t]}`;rows.push(mkVsRow(txt,(v>0)===((TR_GOOD[t]||1)>0)))}
   if(g>1&&typeof LD_EFF!=='undefined'&&LD_EFF[kind])rows.push(mkVsRow(`grade ${g}: ${LD_EFF[kind]} over grade 1`,true));

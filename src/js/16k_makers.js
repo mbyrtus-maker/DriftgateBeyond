@@ -6,19 +6,22 @@
 // Trait keys: dmg (gun or laser damage), e (laser or mining-laser energy draw), ammo (machine-gun rounds), mag (missiles,
 // torpedoes or charges per launcher), lock (lock time), ml (mining-laser rate), cargo (cargo-module hold), scan (scanner reach),
 // speed (the whole ship's top speed); maxG: the top grade its parts take.
+// (user, 8 Nov 2026) "All non-standard parts should have a weakness and a strength": every maker's line has at least one of
+// each (a landing kit has nothing to vary, and the makers' "standard" lines are standard by name). Lines that had only one
+// gained the other; the Mirrorwater laser, missile and torpedo and the Coldwater Refit missile gained both.
 const MAKERS={
-  tcy:{name:'Teal & Corvane Yards',short:'Corvane',home:'halcyon',parts:{cargo:{cargo:.06,speed:-.01},dronec:{dh:.2}}},
+  tcy:{name:'Teal & Corvane Yards',short:'Corvane',home:'halcyon',parts:{cargo:{cargo:.06,speed:-.01},dronec:{dh:.2,dd:-.1}}},
   bl:{name:'Brightline Emitters',short:'Brightline',home:'halcyon',parts:{laser:{dmg:.1,e:.1}}},
   hf:{name:'Hold Foundry',short:'Foundry',home:'varkesh',parts:{charge:{mag:1,speed:-.01}}},
   mg:{name:'Marchgun Ordnance',short:'Marchgun',home:'varkesh',parts:{gun:{dmg:.12,ammo:-.15},missile:{mag:1,lock:.1}}},
-  sw:{name:'Spirewright',short:'Spirewright',home:'ostrova',parts:{scanner:{scan:.25},mlaser:{ml:.1,e:.15}}},
+  sw:{name:'Spirewright',short:'Spirewright',home:'ostrova',parts:{scanner:{scan:.25,speed:-.01},mlaser:{ml:.1,e:.15}}},
   ad:{name:'Archive Dynamics',short:'Archive',home:'ostrova',parts:{laser:{e:-.15,dmg:-.04}}},
-  mwa:{name:'Mirrorwater Arms',short:'Mirrorwater',home:'mw',parts:{gun:{ammo:.1},laser:{},missile:{},torpedo:{}}},
-  qs:{name:'Quicksilver Hullworks',short:'Quicksilver',home:'mw',parts:{cargo:{cargo:.03},land:{}}},
-  cr:{name:'Coldwater Refit',short:'Refit',home:'cw',maxG:3,parts:{gun:{dmg:-.05},laser:{dmg:-.05},missile:{}}},
-  cp:{name:'Coldwater Prospecting',short:'Prospecting',home:'cw',parts:{mlaser:{ml:.12},charge:{mag:1},scanner:{scan:.1},dronec:{dd:.15}}},
+  mwa:{name:'Mirrorwater Arms',short:'Mirrorwater',home:'mw',parts:{gun:{ammo:.1,dmg:-.04},laser:{e:-.08,dmg:-.03},missile:{lock:-.12,speed:-.01},torpedo:{lock:-.1,speed:-.01}}},
+  qs:{name:'Quicksilver Hullworks',short:'Quicksilver',home:'mw',parts:{cargo:{cargo:.03,speed:-.01},land:{}}},
+  cr:{name:'Coldwater Refit',short:'Refit',home:'cw',maxG:3,parts:{gun:{dmg:-.05,ammo:.15},laser:{dmg:-.05,e:-.12},missile:{mag:1,lock:.15}}},
+  cp:{name:'Coldwater Prospecting',short:'Prospecting',home:'cw',parts:{mlaser:{ml:.12,e:.08},charge:{mag:1,speed:-.01},scanner:{scan:.1,speed:-.01},dronec:{dd:.15,dh:-.08}}},
   ewd:{name:'Ember Wake Drives',short:'Ember',home:'ew',parts:{cargo:{cargo:.08,speed:-.02}}},
-  wf:{name:'Wakefire Munitions',short:'Wakefire',home:'ew',parts:{missile:{mag:1},torpedo:{mag:1}}}};
+  wf:{name:'Wakefire Munitions',short:'Wakefire',home:'ew',parts:{missile:{mag:1,lock:.1},torpedo:{mag:1,lock:.1}}}};
 const MK_WORKS={every:90,cap:4,seed:2};
 const TR_TXT={dmg:'damage',e:'energy draw',ammo:'rounds',mag:'per launcher',lock:'lock time',ml:'cutting rate',cargo:'hold',scan:'scanner reach',speed:'top speed',dh:'drone hull',dd:'drone damage'};
 function trText(tr){return Object.keys(tr).map(k=>k==='mag'?`${tr[k]>0?'+':''}${tr[k]} ${TR_TXT[k]}`:`${tr[k]>0?'+':'−'}${Math.round(Math.abs(tr[k])*100)}% ${TR_TXT[k]}`).join(', ')}
