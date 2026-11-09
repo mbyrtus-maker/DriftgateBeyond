@@ -28,5 +28,10 @@ function hullRatingOK(P,k){return S.unb||S.training||!!P.sworn||ratingOf(P)>=(HU
 {const o=pupQuote;pupQuote=function(c,P,arg){const q=o.apply(this,arguments);if(!q||S.training)return q;if(q.t>gradeCap(P))return null;
   const[g,i0]=String(arg).split(':'),F=fitOf(P),it=((g==='w'?F.wi:F.ui)||[])[+i0],m=it&&ITEMS[it]&&ITEMS[it].maker,h=m&&MAKERS[m].home;if(q.t>=4&&FAC_IDS.includes(h)&&standOf(h,P)<=25&&P.sworn!==h)return null;return q}}
 // ---- where it shows: the Overview's standing row and the Allegiance tab, and the hull cards' requirement
-function ratingHtml(P){const r=ratingOf(P),nx=ratingNext(P);return`<div class="kv"><span>Contractor Rating</span><b class="amber">${r}${nx?` <span class="mass" style="margin:0">${fmt(P.rp||0)} / ${fmt(nx)} points</span>`:' · top'}</b></div><p class="note" style="margin:2px 0 8px">Work done for the powers raises it, and it never falls. It opens bigger hulls (2: Medium hulls and the Scout; 4: Heavy Fighter, Bomber and Advanced Scout; 5: Heavy Miner and Hauler; 6: Heavy Bomber) and higher grades (2 at Rating 2, 3 at 4, 4 at 6, 5 at 8).</p>`}
+// (user, 8 Nov 2026) "Put contractor rating on the allegiance screen as a graphic and just reference higher rating = bigger
+// hulls": ten segments, the ones earned filled, the next one filling with the points toward it
+function ratingGfx(P){const r=ratingOf(P),nx=ratingNext(P),lo=RATING.need[r]||0,fr=nx?Math.max(0,Math.min(1,((P.rp||0)-lo)/(nx-lo))):1;let seg='';
+  for(let i=1;i<=10;i++){const w=i<=r?100:i===r+1?Math.round(fr*100):0;seg+=`<i class="rtseg${i<=r?' on':''}" title="Rating ${i}"><b style="width:${w}%"></b></i>`}
+  return`<span class="rtg"><span class="lab" style="margin:0">Contractor Rating</span><b class="rtn">${r}</b><span class="rtbar">${seg}</span><span class="note" style="margin:0">${nx?`${fmt(P.rp||0)} / ${fmt(nx)} to ${r+1} · `:'top · '}higher rating = bigger hulls</span></span>`}
+function ratingHtml(P){return`<div style="margin:0 0 12px">${ratingGfx(P)}</div>`}
 {const o=allegianceHtml;allegianceHtml=function(P){P=P||S.player;return(P.sworn||S.unb?'':ratingHtml(P))+o.apply(this,arguments)}}

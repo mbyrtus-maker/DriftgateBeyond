@@ -7,7 +7,7 @@
 // into S.news (the host's; guests get it with the rest of the state). The box shows the newest three, each under its
 // faction's colour and leader, for three minutes of game time, fading over the last thirty seconds. It shows whatever
 // power you serve: this is galactic news, not your own channel.
-const NEWS={max:3,life:180,fade:30};
+const NEWS={max:3,life:180,fade:30,log:60};
 function newsOf(msg,kind,who){if(!msg)return null;const m=String(msg);
   for(const f of FAC_IDS){const n=lName(f);if(n&&m.startsWith(n+' ')){const rest=m.slice(n.length+1);if(/^of /.test(rest))break;return{f,who:n,msg:rest.replace(/^./,c=>c.toUpperCase())}}}
   if(/^the Dread Pirate/i.test(m)){let n='';try{n=dpName()}catch(e){}if(n&&m.startsWith(n+' '))return{f:'pirate',who:n.replace(/^the /,''),msg:m.slice(n.length+1).replace(/^./,c=>c.toUpperCase())};return{f:'pirate',who:'The Unbound',msg:m.replace(/^the /,'The ')}}
@@ -19,7 +19,18 @@ function newsOf(msg,kind,who){if(!msg)return null;const m=String(msg);
 // copies of the same events are left out of both.
 let newsMute=0;
 function newsOK(){return!!(S&&!S.training&&!(typeof STRAT_SIM==='function'&&STRAT_SIM()))}
-function newsAdd(n,big){S.news=S.news||[];S.newsN=(S.newsN||0)+1;S.news.push({id:S.newsN,T:S.T,f:n.f,who:n.who,msg:n.msg,big:big?1:0});while(S.news.length>NEWS.max)S.news.shift()}
+function newsAdd(n,big){S.news=S.news||[];S.newsN=(S.newsN||0)+1;const x={id:S.newsN,T:S.T,f:n.f,who:n.who,msg:n.msg,big:big?1:0};S.news.push(x);while(S.news.length>NEWS.max)S.news.shift();
+  S.newsLog=S.newsLog||[];S.newsLog.push(x);while(S.newsLog.length>NEWS.log)S.newsLog.shift()}
+// (user, 8 Nov 2026) "A subtab in the overview should be the news report which shows all the recent galaxy news while docked":
+// Overview → News lists the last 60 stories that went into the news box (the leaders' declarations, the galaxy's turns, the
+// Dread Pirate's fortunes, the makers' launches, failures and liquidations), newest first, each under its side's colour,
+// with how long ago it ran. A galaxy saved before keeps what was in the box.
+function newsReportHtml(P){const L=(S.newsLog&&S.newsLog.length?S.newsLog:(S.news||[])).slice().reverse();
+  let h=`<div class="h3">Galaxy news</div><p class="note" style="margin:0 0 10px">The stories from the news box, newest first: the leaders' declarations, the galaxy's turns, the Unbound's and the makers' news.</p>`;
+  if(!L.length)return h+`<div class="empty">No news yet.</div>`;
+  h+=`<div class="nwrep">`+L.map(x=>{const col=sideCol(x.f),fac=x.f==='pirate'?'The Unbound':FAC(x.f)?FAC(x.f).short:sideName(x.f),ago=Math.max(0,S.T-x.T);
+    return`<div class="nwi${x.big?' big':''}" style="border-left-color:${col};opacity:1"><div class="nwh"><b style="color:${col}">${esc(fac)}</b> · ${esc(x.who||'')}<span class="mass" style="float:right;margin:0">${ago<60?'just now':fmtT(ago)+' ago'}</span></div><div class="nwm">${esc(x.msg)}</div></div>`}).join('')+`</div>`;
+  return h}
 {const o=feed;feed=function(){if(newsMute)return;return o.apply(this,arguments)}}
 {const o=chron;chron=function(msg,kind,who){let n=null;try{if(newsOK())n=newsOf(msg,kind,who)}catch(e){}
   if(!n)return o.apply(this,arguments);newsMute++;let r;try{r=o.apply(this,arguments)}finally{newsMute--}

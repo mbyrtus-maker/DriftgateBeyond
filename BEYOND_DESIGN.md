@@ -3078,3 +3078,8 @@ The user: "The market screen does not show all the new slots that can be filled"
 - **Parts opens a second row of filters:** Drives, Reactors, Shield emitters, Fire control, Armour, Cargo holds, Payload bays, Blast rigs, then Weapons, Utility parts, Payload (missiles, torpedoes, rounds, charges) and Beacons.
 - **Every filter is shown,** dimmed when nothing of it is on sale there.
 - **Picking Parts** opens the first filter with stock.
+
+### Contractor Rating as a graphic; Overview → News (user, 8 Nov 2026)
+The user: "Put contractor rating on the allegiance screen as a graphic and just reference higher rating = bigger hulls. A subtab in the overview should be the news report which shows all the recent galaxy news while docked."
+- **Contractor Rating on the Allegiance screens** (the Company's Allegiance tab and the dock's) is now a graphic: the rating, ten segments (earned ones filled, the next one filling with the points toward it), the points to the next rating, and "higher rating = bigger hulls". The list of which hull opens at which rating is gone from these screens; the hulls still say what rating they need where you buy them.
+- **Overview → News** (a subtab beside Overview at a dock) lists the last 60 stories that went into the news box, newest first, each under its side's colour with how long ago it ran: the leaders' declarations, the galaxy's turns, the Unbound's and the makers' news (launches, failed trials, revisions, failures and liquidations). A maker's story now opens with its name ("Mirrorwater's mining laser G2 prototype failed its trials"); it used to start "'s …".

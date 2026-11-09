@@ -85,7 +85,7 @@ function holdFree(p,P){return Math.max(0,((p&&p.st&&p.st.cargo)||0)-invMass(P.ca
 function csellQuote(P){const r=shipRec(P),parts={};shipStrip(JSON.parse(JSON.stringify(r)),parts);const hull=START_HULLS.includes(r.cls)?0:Math.floor(hullPrice(r.cls)*TRADE_IN),up=Math.floor(invValue(parts)*TRADE_IN);return{hull,up,tot:hull+up,parts,bare:shipBare(P)}}
 // the station screen: five task tabs on one row (keys 1–5, always the same tab for the same number), each with a few views.
 // Docking lands on Overview: what you can do right now. A tab with nothing at this dock is hidden; a dot marks one to act on.
-const DOCK_TOP=[['home','Overview',['home']],['trade','Trade',['market','fence','trade','storage']],['jobs','Jobs',['jobs','hire','marks','wanted']],['ship','Ship',['black','ship','bay','upg','refit']],['station','Station',['fab','works','patron','outpost']],['allegiance','Allegiance',['allegiance']]];
+const DOCK_TOP=[['home','Overview',['home','news']],['trade','Trade',['market','fence','trade','storage']],['jobs','Jobs',['jobs','hire','marks','wanted']],['ship','Ship',['black','ship','bay','upg','refit']],['station','Station',['fab','works','patron','outpost']],['allegiance','Allegiance',['allegiance']]];
 const dockTopOf=k=>(DOCK_TOP.find(g=>g[2].includes(k))||DOCK_TOP[0])[0];
 function dockTop(i){const T=DOCK_TOP[i];if(!T)return;const G=dockG.find(g=>g[0]===T[0]);if(!G)return;const m=dockSubMem[T[0]];dockTab=G[2].some(t=>t[0]===m)?m:G[2][0][0];dockErr='';renderDock()}
 // Claim Beacons sell for credits at your own faction's stations and depots (the treasury takes the money)
@@ -235,7 +235,7 @@ function renderDock(){
   $('dTitle').textContent=c.name;$('dTitle').style.color=sideCol(c.owner);$('dSub').textContent=c.sub;
   $('dMeta').innerHTML=`<div>Credits<b class="amber">${fmt(P.credits)}</b></div><div>Hold<b>${invMass(P.cargo)}/${p.st.cargo} t</b></div><div>${c.storageName}<b>${invMass(c.storage)} t</b></div>${c.wallet?`<div>${sideName(c.wallet)} treasury<b>${fmt(S.econ.treasury[c.wallet])}</b></div>`:''}`;
   const hasOrders=!S.unb&&c.contracts||(c.wallet&&!!P.sworn&&c.wallet===P.sworn&&S.plans&&S.plans[P.sworn]),hasMis=!!FACTIONS[P.sworn];
-  const tabs=[['home','Overview']];if(c.haven)tabs.push(['fence','Fence'],['black','Hulls'],['marks','Marks'],['wanted','Wanted'],['works','Works']);if(c.market)tabs.push(['market','Market']);if(c.rum)tabs.push(['bmk','Black market']);if(!c.haven)tabs.push(['trade','Best runs']);if(hasOrders||hasMis)tabs.push(['jobs','Jobs']);tabs.push(['fab','Fabricate'],['upg','Systems']);if(c.refit)tabs.push(['refit','Refits']);if(c.works)tabs.push(['works','Station works']);if(patOK(c,P))tabs.push(['patron','Patronage']);if(hireOK(c,P))tabs.push(['hire','Hire pilots']);if(c.fortify)tabs.push(['outpost','Outpost']);if(!c.haven&&!S.unb)tabs.push(['ship','Shipyard']);tabs.push(['storage',c.storageName]);if(c.lair){}else if(c.storage===P.vault&&!S.unb)tabs.push(['bay',`Hangar ${shipsCount(P)}/${BAY_MAX}`]);
+  const tabs=[['home','Overview']];if(!S.unb&&!S.training)tabs.push(['news','News']);if(c.haven)tabs.push(['fence','Fence'],['black','Hulls'],['marks','Marks'],['wanted','Wanted'],['works','Works']);if(c.market)tabs.push(['market','Market']);if(c.rum)tabs.push(['bmk','Black market']);if(!c.haven)tabs.push(['trade','Best runs']);if(hasOrders||hasMis)tabs.push(['jobs','Jobs']);tabs.push(['fab','Fabricate'],['upg','Systems']);if(c.refit)tabs.push(['refit','Refits']);if(c.works)tabs.push(['works','Station works']);if(patOK(c,P))tabs.push(['patron','Patronage']);if(hireOK(c,P))tabs.push(['hire','Hire pilots']);if(c.fortify)tabs.push(['outpost','Outpost']);if(!c.haven&&!S.unb)tabs.push(['ship','Shipyard']);tabs.push(['storage',c.storageName]);if(c.lair){}else if(c.storage===P.vault&&!S.unb)tabs.push(['bay',`Hangar ${shipsCount(P)}/${BAY_MAX}`]);
   if(!S.unb&&(!S.training||S.training.by))tabs.push(['allegiance','Allegiance']);
   if(dockTab==='orders'||dockTab==='missions')dockTab='jobs';
   if(!tabs.some(t=>t[0]===dockTab))dockTab=tabs[0][0];
@@ -244,6 +244,7 @@ function renderDock(){
   let h='';
   if(dockTab==='fence')h+=unbFenceHtml(c,P,srcs);else if(dockTab==='black')h+=unbBlackHtml(c,P);else if(dockTab==='marks')h+=unbMarksHtml(c,P);else if(dockTab==='wanted')h+=unbWantedHtml(c,P);else if(dockTab==='works'&&c.haven)h+=unbWorksHtml(c,P);
   if(dockTab==='home')h+=homeHtml(c,P,srcs,p);
+  else if(dockTab==='news')h+=newsReportHtml(P);
   else if(dockTab==='allegiance')h+=allegianceHtml(P);
   else if(dockTab==='market'){if(S.unb)h+=unbFixerHtml(c,P);
     const st=c.market;const items=ITEM_ORDER.filter(k=>k!=='beacon'&&!String(k).startsWith('bc_')&&!MUNITIONS.has(k)&&((st[k]||0)>0||countIn(k,srcs)>0)).sort(byName),salv=[...MUNITIONS].filter(k=>countIn(k,srcs)>0);

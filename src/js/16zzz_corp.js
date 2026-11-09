@@ -51,7 +51,7 @@ function ceHostWallet(m){const R=mkAtHome(m);if(!R)return ceHomeWallet(m);return
 function ceAlive(m){const c=ceOf(m);return!!c&&!c.dead}
 function ceTrLines(m){return(MK_LINE[m]||[]).filter(id=>id.startsWith('mp_'))}
 function ceGood(tr){let g=0;for(const k in tr){const v=k==='mag'?tr[k]*.1:tr[k];g+=CE_BAD[k]?-v:v}return g}
-function ceNews(m,msg,big){try{if(newsOK()){newsAdd({f:ceHomeWallet(m),who:MAKERS[m].name,msg},big);return}}catch(e){}allFeed(`${MAKERS[m].name}: ${msg}`,'news')}
+function ceNews(m,msg,big){try{if(newsOK()){newsAdd({f:ceHomeWallet(m),who:MAKERS[m].name,msg:MAKERS[m].short+(/^'s /.test(msg)?'':' ')+msg},big);return}}catch(e){}allFeed(`${MAKERS[m].name}: ${msg}`,'news')}
 // ---- names and traits: applied from S.corp (a loaded galaxy) or reset to the game's own (a new one)
 // ---- logos (7 Nov 2026): each maker shows its mark (MK_LOGO, 16zzz_logos.js) in its accent (MK_ACC). A reborn maker keeps the
 // accent (it still belongs to its home) and takes a spare mark no other maker shows, preferring one never used in the galaxy
