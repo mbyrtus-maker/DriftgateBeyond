@@ -1759,7 +1759,7 @@ The canvas's "Minimal pass" rows hold a minimal version of every screen; the ori
 ### Every item has a maker (3 Nov 2026)
 - **The user's ask:** every item except ore and parts you craft yourself should be tied to a corporation.
 - **The user's choices:**
-  - Markets sell only corporations' parts.
+  - Markets sell only corporations' parts. *Superseded: see "Standard parts and systems at every station" (9 Nov 2026).*
   - Components and payload carry a made-by label, with no traits.
 - **As built** (`16zy_corps.js`):
   - **Parts:**
@@ -3330,3 +3330,10 @@ Built as the revised proposal says (`16zzzq_components.js`, `tools/tests/compone
 ### War check and galaxy check after the four components (9 Nov 2026)
 - **War check** (600 galaxies, 16 h, `PPORT=mw`, neutral leaders, build `8de4169`): **Halcyon 28%, Varkesh 27%, Ostrova 25%, Brood 18%, unfinished 2%**. Ostrova back to 25 from 21 (escort check); the Brood 2 points under its 20% target, within the usual ±2. Not tuned.
 - **Galaxy check** (4 h, with independent miners filling ore requests, `e345d46`): R&D launches 17 (10 without the miners, 18 before the components), graded parts on the shelves 44, about 86 parts sold an hour, every market with all three kits, the ledger exact.
+
+### Standard parts and systems at every station (user, 9 Nov 2026)
+"I'm docked at Mirrorwater and standard parts aren't available. Standard parts should start at all stations with all systems with some stock." Simulation v6 (5 Nov) had settled that every station keeps the standard parts, but the corporations' conversion (`corpConvert`, after 3 Nov's "markets sell only corporations' parts") had turned them into makers' plain parts, so freeports such as Mirrorwater had none. Built in `16zzzr_stdparts.js`:
+- Every power's and freeport's market starts with 3 of each standard part and 2 of each standard grade 1 system (drive, reactor, shield emitter, weapons, armour, cargo hold, blast rig); a power's depot keeps 1 of each. The makers' parts stay beside them.
+- Every 10 minutes a station short of one builds it from its own store (turning its own ore into plate, conduit or coil when needed); a power's depot that can't falls back on its power's warehouse, which spends ore only above the 80 Ferrite and 80 Cuprite the powers keep. Depots built during the game start empty and fill as goods allow (about three quarters of the kinds on the shelf two hours in).
+- A save from before gets the starting stock once on load (the ledger is rebased then, as at a new galaxy's start). The ledger stays exact otherwise.
+- Test: `tools/tests/stdparts.py`.
