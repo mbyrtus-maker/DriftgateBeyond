@@ -220,7 +220,7 @@ function limpetHold(hold,dt){const F=W.lpF||(W.lpF={E:null,t:0,h:false}),P=S.pla
   if(F.E!==E){F.E=E;F.t=0}
   if(!(E&&hold&&!P.limpetUsed&&lpSurf(E,p)<=LIMPET_R&&!capPinged(lpRec(E),intelFor(P)))){F.t=Math.max(0,F.t-dt*.5);return}
   F.t+=dt;if(F.t<LIMPET_T)return;F.t=0;P.limpetUsed=true;
-  if(NET.cl)netSend({t:'limpet',k:E.type==='ship'?'cap':E.type,id:E.type==='ship'?E.tok.id:null,at:{x:p.x,y:p.y,z:p.z}});else limpetPlant(E,intelFor(P),pkey(),p);
+  if(NET.cl)netSend({t:'limpet',k:E.type==='ship'?'cap':E.type,id:E.type==='ship'?E.tok.id:null,m:E.type==='rds'?E.m:undefined,at:{x:p.x,y:p.y,z:p.z}});else limpetPlant(E,intelFor(P),pkey(),p);
   flash(`🧲 Limpet planted on ${lpName(E)}.`)}
 function limpetChip(){const P=S.player;if(!isScoutCls(P.cls)||P.docked||!W.player)return null;const E=limpetTarget();if(!E)return null;const R=lpRec(E),nm=lpName(E),F=W.lpF||{};
   if(capPinged(R,intelFor(P)))return[`🧲 Limpet on ${nm} · ${fmtT(R.pings[intelFor(P)].until-S.T)} · +${Math.round((LIMPET_DMG-1)*100)}% damage`,'good'];

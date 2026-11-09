@@ -21,7 +21,7 @@ function lairStash(L){return LAIR_B.stash[L&&L.lvl||1]||200}
 function lairSpot(P){if(!W||!W.player)return{why:'Launch first.'};const p=W.player;if(S.stations[W.sid])return{why:'A Lair needs a system with no station.'};if(lairHere())return{why:'You already have a Lair in this system.'};
   if(lairsOf(P).length>=LAIR_B.max)return{why:`You have ${LAIR_B.max} Lairs, the most one pilot can keep.`};let a=null,bd=LAIR_B.rockR;for(const r of S.sectors[W.sid].ast){if(r.comet||r.rift||oreTotal(r)<LAIR_B.rockMin)continue;const d=d3(r,p)-astR(r);if(d<bd){bd=d;a=r}}
   if(!a)return{why:`Fly within ${LAIR_B.rockR} m of a large asteroid.`};if(!haveIn(LAIR_B.cost,[P.cargo]))return{why:`You need ${lackText(LAIR_B.cost,P.cargo)} in your hold.`,a};return{a}}
-function lairBuildB(){const P=S.player,sp=lairSpot(P);if(!sp.a||sp.why){flash(sp.why||'No spot for a Lair here.',true);return sp.why||''}if(NET.cl){netSend({t:'lairb'});return'✓ Building…'}return lairMake(P,sp.a)}
+function lairBuildB(){const P=S.player,sp=lairSpot(P);if(!sp.a||sp.why){flash(sp.why||'No spot for a Lair here.',true);return sp.why||''}if(NET.cl){const p=W.player;netSend({t:'lairb',sid:W.sid,x:p.x,y:p.y,z:p.z});return'✓ Building…'}return lairMake(P,sp.a)}
 function lairMake(P,a){const force={};takeFrom(LAIR_B.cost,[P.cargo]);inv.addAll(force,LAIR_B.cost);const o=rdir(.3),R=astR(a)+120;
   const L={id:S.nextId++,pid:pkeyOf(P),sid:W.sid,x:Math.round(a.x+o.x*R),y:Math.round(a.y+o.y*R),z:Math.round(a.z+o.z*R),stash:{},fort:force,hull:LAIR_B.hull,seen:{},lvl:1,build:S.T+LAIR_B.build};(S.lairs=S.lairs||[]).push(L);
   const msg=`⛏ Building your Lair beside the rock (${LAIR_B.build} s). It's hidden from every power until one of their scouts finds it.`;keyFeed(L.pid,msg,'good');return msg}
@@ -48,7 +48,13 @@ function lairDrawB(){const k=curPid()||'me';for(const L of(S.lairs||[])){if(L.si
   if(act==='lairbuild'){dockErr=lairBuildB();return}return o.apply(this,arguments)}}
 // LAIR.stash is a const object field, so the wrapper above can lend it a level's capacity for the duration of a move
 // ---- guests: build a Lair (host side)
-function hLairBuild(pid){const P=S.pilots&&S.pilots[pid],e=MP.rp&&MP.rp[pid];if(!P||!e)return;inW(worldOf(e),()=>runAs(pid,()=>{const sp=lairSpot(P);if(sp.why||!sp.a){netMsg(pid,'flash',sp.why||'No spot for a Lair here.',true);return}lairMake(P,sp.a)}))}
+// (9 Nov 2026) a guest's order carries where its ship is: the host's copy of a guest who has just jumped in or moved can lag
+// (or its ship not be respawned yet), which used to drop the order without a word. The host trusts a reported position
+// within 2.5 km of its own copy, builds in the guest's system even with no ship copy yet, and always answers.
+function hLairBuild(pid,m){const P=S.pilots&&S.pilots[pid];if(!P)return;const e=MP.rp&&MP.rp[pid],w=e?worldOf(e):WORLDS[P.sector];
+  if(!w||(m&&m.sid&&m.sid!==P.sector)){netMsg(pid,'flash','The host has not caught up with your jump yet: try again in a moment.',true);return}
+  if(m&&isFinite(+m.x)&&isFinite(+m.y)&&isFinite(+m.z)){const near=!e||hyp(e.x-m.x,e.y-m.y,e.z-m.z)<2500;if(near){if(e){e.x=+m.x;e.y=+m.y;e.z=+m.z}P.x=+m.x;P.y=+m.y;P.z=+m.z}}
+  inW(w,()=>runAs(pid,()=>{const sp=lairSpot(P);if(sp.why||!sp.a){netMsg(pid,'flash',sp.why||'No spot for a Lair here.',true);return}const r=lairMake(P,sp.a);if(r)netMsg(pid,'flash',r)}))}
 // ============================================================ the Company screen
 let coTab='holdings';
 function coTabs(){return[['allegiance','Allegiance'],['holdings','Holdings']]}
