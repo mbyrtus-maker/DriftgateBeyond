@@ -3102,3 +3102,8 @@ The user: "Beacon a scout has to flip and a claim beacon are too confusing. Can 
 ### No recharge while the afterburner burns (user, 8 Nov 2026)
 The user: "my thruster isn't using any energy". Found: the afterburner burns 30 energy a second × the hull's factor (0.7 on the Interceptor: 21 a second), and a pilot's reactor recharges 22 a second at grade 1 (more with a better reactor or Ostrova's +12%). So on light hulls boosting never moved the energy bar. Plain thrust has never cost energy.
 **Decided (the user): no recharge while boosting.** A pilot's reactor (yours, or another player's) doesn't recharge while the afterburner is lit. On a light fighter, a full bar now gives about 5 seconds of boost; it recharges as soon as you let go. Plain thrust stays free, and AI ships are unchanged.
+
+### The Market compares a part with the standard one (user, 8 Nov 2026)
+The user: "the parts don't show their strengths and weaknesses over a standard part … in the market."
+- **A maker's part:** the detail panel has an "Against the standard machine gun" box. Each trait is a line: strengths in green (▲ +12% damage), weaknesses in red (▼ −15% rounds). A graded part adds what its grade gives ("grade 3: +10% damage a grade over grade 1").
+- **A system:** the box compares it with a standard grade 1 system on the hull you're flying: drives give thrust, top speed and turning; reactors energy capacity and recharge; shields shield strength; armour hull and damage resisted; cargo the hold; blast rigs drilling; payload bays reload time; the weapons system gun and laser damage, laser energy per shot, missiles carried and lock time. Makers' systems carry no traits yet, so a grade 1 system says it is the same as the standard one.

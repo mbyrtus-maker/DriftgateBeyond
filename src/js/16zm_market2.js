@@ -54,7 +54,7 @@ function mkHtml(c,P){const st=c.market,srcs=[P.cargo,c.storage],p=W.player,cap=p
     const H=(P.pxh&&P.pxh[P.sector]&&P.pxh[P.sector].p[k])||[];let spark='';if(H.length>1){const lo=Math.min(...H,avg||Infinity)*.95,hi=Math.max(...H,avg||0)*1.05,Y=v=>Math.round(48-(v-lo)/Math.max(1,hi-lo)*44);
       spark=`<svg width="320" height="52" viewBox="0 0 320 52" role="img" aria-label="Price here"><polyline points="${H.map((v,i)=>Math.round(i*320/(H.length-1))+','+Y(v)).join(' ')}" fill="none" stroke="#f0b24a" stroke-width="1.6"/>${avg?`<line x1="0" x2="320" y1="${Y(avg)}" y2="${Y(avg)}" stroke="#36435f" stroke-dasharray="3 4"/>`:''}</svg>`}
     const best=sc.filter(x=>x.sid!==P.sector).sort((a,b2)=>b2.s-a.s).slice(0,3);
-    h+=`<div class="ldname">${gIcon(k,30)}<b>${esc(ITEMS[k].name)}</b></div><div class="note" style="margin:0 0 10px">${mass(k)} t · ${stk} in stock · you carry ${hold}, ${hv} in your ${esc(c.storageName==='Vault'?'hangar':c.storageName.toLowerCase())}${ITEMS[k].trTxt?' · '+esc(ITEMS[k].trTxt):''}</div>
+    h+=`<div class="ldname">${gIcon(k,30)}<b>${esc(ITEMS[k].name)}</b></div><div class="note" style="margin:0 0 10px">${mass(k)} t · ${stk} in stock · you carry ${hold}, ${hv} in your ${esc(c.storageName==='Vault'?'hangar':c.storageName.toLowerCase())}${ITEMS[k].trTxt?' · '+esc(ITEMS[k].trTxt):''}</div>${mkVsStd(k,P)}
       <div class="mkpx"><span>Buy<b class="mono">${fmt(b)}</b></span><span>Sell<b class="mono">${fmt(s)}</b></span><span title="The average price you'd get selling this at the stations you've scanned">Galaxy sell<b class="mono" style="color:var(--dim)">${avg?fmt(avg):'—'}</b></span></div>
       ${spark?`${spark}<div class="note" style="margin:0 0 10px">Sell price here while you've watched${avg?' · dashed: the average sell price at the stations you\'ve scanned':''}</div>`:`<div class="note" style="margin:6px 0 10px">Stay docked a while to see how the price moves.</div>`}
       <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="lab">Quantity</span><b class="mono">${mkQty}</b></div>
@@ -75,3 +75,21 @@ function mkHtml(c,P){const st=c.market,srcs=[P.cargo,c.storage],p=W.player,cap=p
 {const o=dockClick;dockClick=function(act,arg){if(act==='fabk'){fabKind=arg||null;renderDock();return}if(act==='mksel'){mkSel=arg;mkQty=1;renderDock();return}if(act==='mkf'){mkFilter=arg;renderDock();return}if(act==='mkview'){mkView=arg;renderDock();return}return o.apply(this,arguments)}}
 // the table view gets a way back
 {const o=renderDock;renderDock=function(){const r=o.apply(this,arguments);try{if(dockTab==='market'&&!S.unb&&mkView==='table'){const B=$('dBody');if(B)B.insertAdjacentHTML('afterbegin',`<div class="act" style="margin-bottom:8px"><button class="btn sm" data-act="mkview" data-arg="tiles">Tiles view</button></div>`)}}catch(e){}return r}}
+// ---- (user, 8 Nov 2026: "the parts don't show their strengths and weaknesses over a standard part", in the market) the
+// Market's detail panel compares a part with the standard one: a maker's traits (strengths green, weaknesses red), what its
+// grade adds; for a system, the difference it makes to your current hull's stats against the standard grade 1 system.
+const TR_GOOD={dmg:1,e:-1,ammo:1,mag:1,lock:-1,ml:1,cargo:1,scan:1,speed:1,dh:1,dd:1};
+const MK_ST={thrust:['thrust',1],maxSpd:['top speed',1],turn:['turning',1],eCap:['energy capacity',1],eRegen:['recharge',1],sCap:['shields',1],hull:['hull',1],dr:['damage resisted',1,'pt'],dmg:['gun and laser damage',1],shotCost:['laser energy a shot',-1],drill:['drilling',1],cargo:['hold',1],reload:['reload time',-1]};
+function mkVsRow(txt,good){return`<div style="color:${good?'#7ad9a7':'#ff7a6a'}">${good?'▲':'▼'} ${esc(txt)}</div>`}
+function mkVsStd(k,P){try{const I=ITEMS[k];if(!I)return'';const B=I.base&&ITEMS[I.base]?ITEMS[I.base]:I,g=I.grade||1,rows=[];
+  if(I.sys){const sl=I.sys,T0={...P.tiers,[sl]:1},T1={...P.tiers,[sl]:g},a=shipStats(P.faction,P.cls,T0),b=shipStats(P.faction,P.cls,T1);
+    for(const key in MK_ST){const A=a[key],Bv=b[key];if(typeof A!=='number'||typeof Bv!=='number'||Math.abs(Bv-A)<1e-9)continue;const[n,dir,u]=MK_ST[key];
+      const d=u==='pt'?`${Bv>A?'+':'−'}${Math.round(Math.abs(Bv-A)*100)} pts ${n}`:`${Bv>A?'+':'−'}${Math.round(Math.abs(Bv/A-1)*100)}% ${n}`;rows.push(mkVsRow(d,(Bv>A)===(dir>0)))}
+    if(sl==='weapon'){const r0=rackCapC(P.cls,1),r1=rackCapC(P.cls,g);if(r1>r0)rows.push(mkVsRow(`+${r1-r0} ${CLASSES[P.cls].torp?'torpedoes':'missiles'} carried`,true));if(g>1)rows.push(mkVsRow(`−${Math.round((1-(1-.07*(g-1)))*100)}% lock time`,true))}
+    const nm=(FAC(P.faction)||{hulls:{}}).hulls[P.cls]||CLASSES[P.cls].name;
+    return`<div class="mkvs"><div class="lab">Against a standard grade 1 system · on your ${esc(nm)}</div>${rows.length?rows.join(''):'<div class="note" style="margin:0">The same as a standard system: makers\' systems carry no traits yet, and this is grade 1.</div>'}</div>`}
+  const kind=I.part||B.part;if(!kind)return'';const tr=I.tr||B.tr||{};
+  for(const t in tr){const v=tr[t];if(!v||!TR_TXT[t])continue;const txt=t==='mag'?`${v>0?'+':''}${v} ${TR_TXT[t]}`:`${v>0?'+':'−'}${Math.round(Math.abs(v)*100)}% ${TR_TXT[t]}`;rows.push(mkVsRow(txt,(v>0)===((TR_GOOD[t]||1)>0)))}
+  if(g>1&&typeof LD_EFF!=='undefined'&&LD_EFF[kind])rows.push(mkVsRow(`grade ${g}: ${LD_EFF[kind]} over grade 1`,true));
+  return`<div class="mkvs"><div class="lab">Against the standard ${esc((WPN[kind]||UTIL[kind]||{}).name||'part')}</div>${rows.length?rows.join(''):'<div class="note" style="margin:0">The same as the standard part.</div>'}</div>`}catch(e){return''}}
+
