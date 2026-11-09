@@ -5665,7 +5665,9 @@ function physics(e,dt){if(e.inJump)return;
   const v=hyp(e.vx,e.vy,e.vz);if(v>cap){const k=Math.min(1,(pl?(e.boosting?2:.75):3)*dt),f=1-k+k*cap/v;e.vx*=f;e.vy*=f;e.vz*=f}
   e.x+=e.vx*dt;e.y+=e.vy*dt;e.z+=e.vz*dt;
   const r=hyp(e.x,e.y,e.z);if(r>3300*SPACE){e.vx-=e.x/r*400*dt;e.vy-=e.y/r*400*dt;e.vz-=e.z/r*400*dt}
-  e.cool-=dt;if(!e.landed)e.energy=Math.min(e.st.eCap,e.energy+e.st.eRegen*dt*(e.boot&&W.t<e.boot?4:1)*(e.st.surge&&W.t-(e.lastFire||-9)<e.st.surge?(e.st.surgeK||0):1));
+  // (user, 8 Nov 2026) a pilot's reactor doesn't recharge while the afterburner is lit: on a light fighter the burn (21 a second)
+  // was below the recharge (22), so boosting never touched the energy bar
+  e.cool-=dt;if(!e.landed&&!(pl&&e.boosting))e.energy=Math.min(e.st.eCap,e.energy+e.st.eRegen*dt*(e.boot&&W.t<e.boot?4:1)*(e.st.surge&&W.t-(e.lastFire||-9)<e.st.surge?(e.st.surgeK||0):1));
   if(!(S.sectors[W.sid].storm>S.T)&&W.t-e.lastHit>(e.st.shDelay||2.5)&&!e.landed&&!e.stealth&&!(e.boot&&W.t<e.boot))e.shield=Math.min(e.st.sCap,e.shield+e.st.sCap*(e.cls==='frigate'||e.cls==='carrier'?.012*pmul(e.tok,'shd'):e.cls==='escort'?.025*pmul(e.tok,'shd'):.09*(e.st.shRegK||1))*dt*(W.haze&&e.side!=='brood'&&!e.st.hazeImm?.85:1));
   if(e.shDown&&e.shield>e.st.sCap*.2){e.shDown=false;e.shUpT=W.t}
   jamDrain(e,dt);if(e.spores&&e.spores.length&&e.side!=='brood'){e.spores=e.spores.filter(t=>t>W.t);if(e.spores.length&&e.hull>1)e.hull=Math.max(1,e.hull-.5*e.spores.length*dt)}
@@ -12731,8 +12733,15 @@ function newsAdd(n,big){S.news=S.news||[];S.newsN=(S.newsN||0)+1;const x={id:S.n
 // Overview → News lists the last 60 stories that went into the news box (the leaders' declarations, the galaxy's turns, the
 // Dread Pirate's fortunes, the makers' launches, failures and liquidations), newest first, each under its side's colour,
 // with how long ago it ran. A galaxy saved before keeps what was in the box.
-function newsReportHtml(P){const L=(S.newsLog&&S.newsLog.length?S.newsLog:(S.news||[])).slice().reverse();
-  let h=`<div class="h3">Galaxy news</div><p class="note" style="margin:0 0 10px">The stories from the news box, newest first: the leaders' declarations, the galaxy's turns, the Unbound's and the makers' news.</p>`;
+// (user, 8 Nov 2026: "Galaxy news is blank when docked") the report also carries the galaxy's chronicle (wars, ceasefires,
+// pacts, embargoes, successions: S.chron, which every galaxy has kept since it began), so an older save and a young galaxy
+// aren't empty; a chronicle line already in the news log isn't shown twice.
+function newsReportItems(){const N=(S.newsLog&&S.newsLog.length?S.newsLog:(S.news||[])).slice(),seen=new Set(N.map(x=>Math.round(x.T)+'|'+String(x.msg).slice(-40)));
+  for(const c of S.chron||[]){const n=(typeof newsOf==='function'?newsOf(c.msg,'big',c.who):null)||{f:(c.who&&c.who[0])||'neutral',who:'',msg:c.msg};const key=Math.round(c.T)+'|'+String(n.msg).slice(-40);if(seen.has(key))continue;seen.add(key);
+    N.push({T:c.T,f:n.f,who:n.who||(FAC(n.f)?FAC(n.f).name:''),msg:n.msg,big:0})}
+  return N.sort((a,b)=>b.T-a.T).slice(0,NEWS.log)}
+function newsReportHtml(P){const L=newsReportItems();
+  let h=`<div class="h3">Galaxy news</div><p class="note" style="margin:0 0 10px">Newest first: the leaders' declarations and the galaxy's chronicle, the Unbound's and the makers' news.</p>`;
   if(!L.length)return h+`<div class="empty">No news yet.</div>`;
   h+=`<div class="nwrep">`+L.map(x=>{const col=sideCol(x.f),fac=x.f==='pirate'?'The Unbound':FAC(x.f)?FAC(x.f).short:sideName(x.f),ago=Math.max(0,S.T-x.T);
     return`<div class="nwi${x.big?' big':''}" style="border-left-color:${col};opacity:1"><div class="nwh"><b style="color:${col}">${esc(fac)}</b> · ${esc(x.who||'')}<span class="mass" style="float:right;margin:0">${ago<60?'just now':fmtT(ago)+' ago'}</span></div><div class="nwm">${esc(x.msg)}</div></div>`}).join('')+`</div>`;

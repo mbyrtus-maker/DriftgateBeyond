@@ -25,8 +25,15 @@ function newsAdd(n,big){S.news=S.news||[];S.newsN=(S.newsN||0)+1;const x={id:S.n
 // Overview → News lists the last 60 stories that went into the news box (the leaders' declarations, the galaxy's turns, the
 // Dread Pirate's fortunes, the makers' launches, failures and liquidations), newest first, each under its side's colour,
 // with how long ago it ran. A galaxy saved before keeps what was in the box.
-function newsReportHtml(P){const L=(S.newsLog&&S.newsLog.length?S.newsLog:(S.news||[])).slice().reverse();
-  let h=`<div class="h3">Galaxy news</div><p class="note" style="margin:0 0 10px">The stories from the news box, newest first: the leaders' declarations, the galaxy's turns, the Unbound's and the makers' news.</p>`;
+// (user, 8 Nov 2026: "Galaxy news is blank when docked") the report also carries the galaxy's chronicle (wars, ceasefires,
+// pacts, embargoes, successions: S.chron, which every galaxy has kept since it began), so an older save and a young galaxy
+// aren't empty; a chronicle line already in the news log isn't shown twice.
+function newsReportItems(){const N=(S.newsLog&&S.newsLog.length?S.newsLog:(S.news||[])).slice(),seen=new Set(N.map(x=>Math.round(x.T)+'|'+String(x.msg).slice(-40)));
+  for(const c of S.chron||[]){const n=(typeof newsOf==='function'?newsOf(c.msg,'big',c.who):null)||{f:(c.who&&c.who[0])||'neutral',who:'',msg:c.msg};const key=Math.round(c.T)+'|'+String(n.msg).slice(-40);if(seen.has(key))continue;seen.add(key);
+    N.push({T:c.T,f:n.f,who:n.who||(FAC(n.f)?FAC(n.f).name:''),msg:n.msg,big:0})}
+  return N.sort((a,b)=>b.T-a.T).slice(0,NEWS.log)}
+function newsReportHtml(P){const L=newsReportItems();
+  let h=`<div class="h3">Galaxy news</div><p class="note" style="margin:0 0 10px">Newest first: the leaders' declarations and the galaxy's chronicle, the Unbound's and the makers' news.</p>`;
   if(!L.length)return h+`<div class="empty">No news yet.</div>`;
   h+=`<div class="nwrep">`+L.map(x=>{const col=sideCol(x.f),fac=x.f==='pirate'?'The Unbound':FAC(x.f)?FAC(x.f).short:sideName(x.f),ago=Math.max(0,S.T-x.T);
     return`<div class="nwi${x.big?' big':''}" style="border-left-color:${col};opacity:1"><div class="nwh"><b style="color:${col}">${esc(fac)}</b> · ${esc(x.who||'')}<span class="mass" style="float:right;margin:0">${ago<60?'just now':fmtT(ago)+' ago'}</span></div><div class="nwm">${esc(x.msg)}</div></div>`}).join('')+`</div>`;
