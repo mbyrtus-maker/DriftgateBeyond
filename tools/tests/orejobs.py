@@ -33,6 +33,11 @@ async def main():
       devLedger(()=>{S.drift[j.ore]=(S.drift[j.ore]||0)+2;inv.add(P.cargo,'rift',3)});const st=rsjStoreOf(j),o0=st[j.ore]||0,r0=st.rift||0,d0=S.drift[j.ore],x0=S.drift.xc||0,c0=P.credits;dockAction('rsjdel',j.id);
       return JSON.stringify({msg:dockErr,ore:(st[j.ore]||0)-o0,rift:(st.rift||0)-r0,drift:d0-S.drift[j.ore],xc:(S.drift.xc||0)-x0,paid:P.credits-c0,unit:j.unit,same:j.ore==='xc'})})()"""))
     check('3 Riftstone delivered: 2 stand in for the short ore from the drift, 1 kept as Riftstone',r['ore']==2 and r['rift']==1 and (r['same'] or (r['drift']==2 and r['xc']==2)) and r['paid']==3*r['unit'],r)
+    r=json.loads(await ev("""(()=>{const P=S.player,sid=Object.keys(S.sectors).find(id=>S.sectors[id].ast.some(a=>a.rift&&(a.ore.xc||0)>0));exitSector();W=null;P.sector=sid;P.docked=null;enterSector(sid);running=false;
+      const a=S.sectors[sid].ast.find(x=>x.rift&&(x.ore.xc||0)>0);W.tgt={kind:'ast',ref:a};hudUpdate();const txt=document.body.textContent;const sv=sxHtml(sid),near=riftNearTxt(sid);
+      const j=rsjAll()[0];let det='';if(j){const R=S.stations[j.sid];P.sector=j.sid;const L=jobsList({kind:'station',owner:R.owner},P,[P.cargo]);const row=L.find(x=>x.id==='rs:'+j.id);det=row?row.detail():''}P.sector=sid;
+      return JSON.stringify({panel:/Riftstone rock/.test(txt)&&/rift discharges/.test(txt),legend:/Pink: Riftstone/.test(sv),near,det:/Nearest:/.test(det)})})()"""))
+    check('a Riftstone rock says so when targeted, the map\'s sector view says what pink is, the buyer job names the nearest Riftstone',r['panel'] and r['legend'] and r['det'] and r['near'] and 'here' in r['near'],r)
     l=await ev(LED);check('ledger exact',l=='exact',l)
     r=json.loads(await ev("""(()=>{const P=S.player;devLedger(()=>inv.add(P.cargo,'rift',2));const out={};for(const f of FAC_IDS){const L=contraFor(P,f).filter(x=>x.k==='rift');out[f]=L.length?L[0].why:null}devLedger(()=>inv.take(P.cargo,'rift',2));return JSON.stringify(out)})()"""))
     check('Riftstone is Light-heat contraband in every power\'s space, Ostrova included',all(v=='Light' for v in r.values()),r)

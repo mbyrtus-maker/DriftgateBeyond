@@ -3305,3 +3305,10 @@ The user: "Is there a cargo hold part that makes your cargo size smaller but har
 ### A guest's Lair order, and a guest's spy limpet (9 Nov 2026)
 The guest build test failed now and then at "Lair built": the guest saw a good spot and sent the order, and the host dropped it without a word. The host checks the spot against its own copy of the guest's ship, which lags just after a jump or a move, and it ignored the order outright when the guest's ship hadn't been respawned on the host yet. Now the order carries the guest's system and position; the host takes a reported position within 2.5 km of its copy, builds in the guest's system even before its ship is respawned there, and always answers (the build, or why not, or "the host has not caught up with your jump yet"). A guest's spy limpet on a maker's R&D station now reaches the host too.
 - **Docking too:** the same test then failed now and then at "docked at the Lair": docking at a Lair moves the guest's ship onto it before the host hears, and the host checked the distance from its lagging copy. Dock orders now carry the guest's position too (taken within 2.5 km of the host's copy), and a dock order with no ship copy on the host is refused openly instead of ignored.
+
+### Finding Riftstone (user, 9 Nov 2026)
+"How does a pilot know if Riftstone exists in a sector?" It was only told by the rock's look (dark, pink rift light), its place out beyond the gates, and pink dots on the map's sector view with no key. Now:
+- **Targeted, a Riftstone rock says so:** "Riftstone rock" in pink, its content as Riftstone, and a warning (discharges, a flickering mining ring, chain reactions, contraband everywhere).
+- **The map's sector view** (M, click a system) has a key under it when the system has Riftstone: "Pink: Riftstone (n rocks, out beyond the gates)".
+- **The Riftstone buyer job** names the nearest three systems with Riftstone left, with their jumps.
+Every deep and quiet system has two Riftstone rocks (the two richest in Xenocrystal), as before.
