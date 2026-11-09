@@ -8,8 +8,9 @@
 //     Frames, 1 Compact Seal): 150, 180 and 220 t in the hold, and only a Heavy Hauler's hold takes one (bought by another
 //     hull, it goes to your hangar). Fabricated at a dock from the recipe like any component.
 //   Stocked: every power's and freeport's market has one of each while a pilot is docked there, assembled from that market's
-//     own store (from the recipe's components, or what they are made of); when no pilot is docked, unsold kits are broken
-//     back into exactly what they were made from. The ledger stays exact.
+//     own store (from the recipe's components, or what they are made of, with ore it lacks from the other markets' stores,
+//     the freeports first: user, "every station should always carry one of each kit"); when no pilot is docked, unsold kits
+//     are broken back into exactly what they were made from, where it came from. The ledger stays exact.
 //   Deploying: a kit in the hold (or the base's store, for an upgrade) stands in for the loose materials: Build a Lair, Build a
 //     Depot here (any hull, no Constructor), Upgrade a Lair to a Depot, Upgrade a Depot to a Station. It is unpacked into its
 //     components at that moment and used as they would be.
@@ -28,17 +29,24 @@ function kitUnpack(kid,srcs){for(const s of srcs)if(s&&(s[kid]||0)>0){inv.take(s
 // ---- the market: one of each kit on the shelf while a pilot is docked
 function kitKey(R){const s=storeOf(R);return S.econ.stock[R.owner]&&s===S.econ.stock[R.owner]?'w:'+R.owner:'s:'+R.sid}
 function kitMkOf(key){if(key.startsWith('w:'))return S.econ.stock[key.slice(2)]||null;const R=S.stations[key.slice(2)];return R?storeOf(R):null}
-// what one kit takes from a store: the recipe's components where it has them, else what they are made of (down to ore)
-function kitPlan(mk,k){const left={...mk},took={};
-  const need=(id,n)=>{const h=Math.min(left[id]||0,n);if(h>0){left[id]-=h;took[id]=(took[id]||0)+h;n-=h}if(n<=0)return true;if(RAWS.includes(id)||!ITEMS[id]||!ITEMS[id].recipe)return false;const r=ITEMS[id].recipe;for(const x in r)if(!need(x,r[x]*n))return false;return true};
-  const r=ITEMS[k].recipe;for(const x in r)if(!need(x,r[x]))return null;return took}
+// what one kit takes: the recipe's components from the market's own store where it has them, else what they are made of, down
+// to ore; ore its store lacks comes from the other markets' stores (the freeports first), so every market always has one.
+// Returns [[storeKey, goods], ...], or null when the whole galaxy can't make it.
+function kitPlan(key,k){const mk=kitMkOf(key);if(!mk)return null;const others=[...mkStations().filter(R=>R.owner==='neutral'),...mkStations().filter(R=>R.owner!=='neutral')].map(kitKey).filter((x,i,a)=>x!==key&&a.indexOf(x)===i);
+  const left={[key]:{...mk}},took={};const get=q=>left[q]||(left[q]={...(kitMkOf(q)||{})});const put=(q,id,n)=>{(took[q]=took[q]||{})[id]=(took[q][id]||0)+n;left[q][id]-=n};
+  const need=(id,n)=>{const L=left[key],h=Math.min(L[id]||0,n);if(h>0){put(key,id,h);n-=h}if(n<=0)return true;
+    if(RAWS.includes(id)||!ITEMS[id]||!ITEMS[id].recipe){if(!RAWS.includes(id))return false;for(const q of others){const O=get(q),g=Math.min(O[id]||0,n);if(g>0){put(q,id,g);n-=g}if(n<=0)return true}return false}
+    const r=ITEMS[id].recipe;for(const x in r)if(!need(x,r[x]*n))return false;return true};
+  const r=ITEMS[k].recipe;for(const x in r)if(!need(x,r[x]))return null;return Object.entries(took)}
+function kitTake(plan){for(const[q,g]of plan)takeFrom(g,[kitMkOf(q)])}
+function kitGive(plan){for(const[q,g]of plan){const s=kitMkOf(q);if(s)inv.addAll(s,g)}}
 function kitTick(){if(NET.cl||!S||!S.econ||S.training||S.unb)return;S.kitShelf=S.kitShelf||{};const want={},L=mkStations();
   for(const P of allPilots()){if(!P||P.docked!=='station')continue;const R=S.stations[P.sector];if(R&&L.includes(R))want[kitKey(R)]=R}
   for(const key in want){const mk=kitMkOf(key);if(!mk)continue;const rec=S.kitShelf[key]=S.kitShelf[key]||[];
     for(const k of KIT_IDS){const have=mk[k]||0;let mine=rec.filter(x=>x.k===k);while(mine.length>have){rec.splice(rec.indexOf(mine[0]),1);mine=mine.slice(1)}
-      if(have<1){const took=kitPlan(mk,k);if(took){takeFrom(took,[mk]);inv.add(mk,k,1);rec.push({k,took})}}}}
+      if(have<1){const plan=kitPlan(key,k);if(plan){kitTake(plan);inv.add(mk,k,1);rec.push({k,plan})}}}}
   for(const key of Object.keys(S.kitShelf)){if(want[key])continue;const mk=kitMkOf(key);
-    if(mk)for(const x of S.kitShelf[key])if((mk[x.k]||0)>0){inv.take(mk,x.k,1);inv.addAll(mk,x.took)}
+    if(mk)for(const x of S.kitShelf[key])if((mk[x.k]||0)>0){inv.take(mk,x.k,1);if(x.plan)kitGive(x.plan);else inv.addAll(mk,x.took||{})}
     delete S.kitShelf[key]}}
 {const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{kitTick()}catch(e){console.error(e)}return r}}
 // docking puts them on the shelf at once (the host; a guest's arrive with the next tick)

@@ -13,6 +13,7 @@ async def main():
     pg.on('console',lambda m:errs.append('console: '+m.text[:300]) if m.type=='error' and 'Failed to load resource' not in m.text else None)
     await pg.goto(GAME+'?name=Tester',wait_until='domcontentloaded');await pg.wait_for_function('window.__dg&&__dg.ev("MDL.ready")',timeout=60000)
     await pg.evaluate("document.getElementById('mpName').value='Tester'");await pg.evaluate("document.getElementById('bLaunch').click()");await pg.wait_for_timeout(1500)
+    await pg.wait_for_function('window.__dg&&__dg.ev("!!(S&&S.player)")',timeout=30000);await pg.evaluate("__dg.ev('coDefault(S.player)')")  # a company profile (8 Nov 2026: no Depot without one)
     ev=lambda c:pg.evaluate('c=>__dg.ev(c)',c)
     print('rules',await ev("JSON.stringify({need:VIC_NEED,minutes:WIN_TIME/60,deadline:TIE_T>1e9,holdable:SECTOR_DEFS.filter(d=>!FREEPORTS.some(f=>f.sid===d.id)&&d.id!=='wr').length,clock:document.getElementById('hClock').hidden})"))
     print('without a station',await ev("(()=>{dockAction('declare');return dockErr})()"))

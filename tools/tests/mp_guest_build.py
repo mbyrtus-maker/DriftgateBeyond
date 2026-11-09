@@ -15,7 +15,7 @@ async def body(K):
     return L.sort((a,b)=>HOP[%s][a]-HOP[%s][b])[0]})()"""%(J(sec),J(sec)))
   print('building in',sid,'(%s jumps)'%await Hh("HOP[%s][%s]"%(J(sec),J(sid))))
   # the host gives the guest the materials for each step (as if bought) and a Contractor Rating to match
-  await Hh("(()=>{const P=%s;P.rp=5000;devLedger(()=>{inv.add(P.cargo,'frame',3);inv.add(P.cargo,'plate',6)});return 1})()"%HP)
+  await Hh("(()=>{const P=%s;P.rp=5000;coDefault(P);devLedger(()=>{inv.add(P.cargo,'frame',3);inv.add(P.cargo,'plate',6)});return 1})()"%HP)  # coDefault: a company profile (8 Nov 2026: no Depot without one)
   await K.undock()
   check('flew to %s'%sid,await K.goto(sid),await G("S.player.sector"))
   # ================= a Lair

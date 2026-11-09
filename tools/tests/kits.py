@@ -23,14 +23,15 @@ async def main():
     r=json.loads(await ev("""(()=>{running=false;const P=S.player;const R=mkStations().find(x=>FAC_IDS.includes(x.owner)&&x.kind==='core');exitSector();W=null;P.sector=R.sid;enterSector(R.sid);running=false;P.docked='station';
       const mk=storeOf(R),c0={...mk};kitTick();const c=dockCtx(),on=['kit_lair','kit_depot','kit_station'].map(k=>c.market[k]||0);
       const grp=mkGroup('kit_depot'),v=invVec(c0),cv=comp('kit_station');return JSON.stringify({sid:R.sid,on,rec:(S.kitShelf[kitKey(R)]||[]).length,grp,short:RAWS.filter(e=>v[e]<cv[e]).map(e=>e+':'+Math.round(v[e])+'<'+cv[e]),raw:RAWS.map(e=>e+(c0[e]||0)).join(' ')})})()"""))
-    check('a docked pilot finds the kits its store can make on a power\'s market (Components)',r['on'][:2]==[1,1] and r['on'][2]==(0 if r['short'] else 1) and r['rec']==sum(r['on']) and r['grp']=='comp',r)
+    check('a docked pilot finds one of each kit on a power\'s market (Components), even short of Nullite',r['on']==[1,1,1] and r['rec']==3 and r['grp']=='comp',r)
     l=await ev(LED);check('ledger exact with kits on the shelf',l=='exact',l)
     # a Light Hauler buys a Depot Kit: it goes to the hangar and can't be loaded; a Heavy Hauler loads it
     r=json.loads(await ev("""(()=>{const P=S.player,c=dockCtx();transfer(c.wallet,'player',200000);{const l0=ledger();P.cls='courier';P.fit=fitNew('courier',null);const l1=ledger();for(const e of RAWS)S.ledger0.tot[e]+=l1.tot[e]-l0.tot[e]}
-      exitSector();enterSector(P.sector);running=false;P.docked='station';const c2=dockCtx();dockAction('buy','kit_depot:1');const bought=dockErr,inVault=c2.storage.kit_depot||0,inHold=P.cargo.kit_depot||0;dockAction('mv','kit_depot:out:1');const refused=dockErr;
+      exitSector();enterSector(P.sector);running=false;P.docked='station';const c2=dockCtx();dockAction('buy','kit_depot:1');const gate=dockErr,gated=!(c2.storage.kit_depot||0);coDefault(P);dockAction('buy','kit_depot:1');const bought=dockErr,inVault=c2.storage.kit_depot||0,inHold=P.cargo.kit_depot||0;dockAction('mv','kit_depot:out:1');const refused=dockErr;
       {const l0=ledger();P.cls='bulker';P.fit=fitNew('bulker',null);const l1=ledger();for(const e of RAWS)S.ledger0.tot[e]+=l1.tot[e]-l0.tot[e]}exitSector();enterSector(P.sector);running=false;P.docked='station';
       dockAction('mv','kit_depot:out:1');const loaded=P.cargo.kit_depot||0;kitTick();const restock=dockCtx().market.kit_depot||0;
-      return JSON.stringify({bought,inVault,inHold,refused,loaded,restock})})()"""))
+      return JSON.stringify({gate,gated,bought,inVault,inHold,refused,loaded,restock})})()"""))
+    check('a Depot Kit needs a company profile first',r['gated'] and 'Profile' in r['gate'],r)
     check('bought in a Light Hauler, a Depot Kit goes to the hangar and won\'t load',r['inVault']==1 and r['inHold']==0 and 'Heavy Hauler' in r['refused'],r)
     check('a Heavy Hauler loads it, and the market restocks another',r['loaded']==1 and r['restock']==1,r)
     # buy the Station Kit and the Lair Kit too, then leave: the unsold shelf is broken back into its store
@@ -41,7 +42,7 @@ async def main():
     # deploy: a Depot from the kit (no Constructor), then the Station Kit upgrades it
     r=json.loads(await ev("""(()=>{const P=S.player;const sid=Object.keys(DEF).find(s=>depCan(s)&&DEF[s].kind!=='hive'&&DEF[s].kind!=='den');exitSector();W=null;P.sector=sid;enterSector(sid);running=false;P.docked=null;
       const msg=depFresh(P),R=S.stations[sid];const dep=!!(R&&R.owner==='player'),kit=P.cargo.kit_depot||0;
-      const F=mkStations().find(x=>x.owner==='neutral'&&kitPlan(storeOf(x),'kit_station'));exitSector();W=null;P.sector=F.sid;enterSector(F.sid);running=false;P.docked='station';kitTick();dockAction('buy','kit_station:1');const inHold=P.cargo.kit_station||0;P.docked=null;kitTick();
+      const F=mkStations().find(x=>x.owner==='neutral');exitSector();W=null;P.sector=F.sid;enterSector(F.sid);running=false;P.docked='station';kitTick();dockAction('buy','kit_station:1');const inHold=P.cargo.kit_station||0;P.docked=null;kitTick();
       const up=staUp(P,R);return JSON.stringify({sid,msg,dep,kit,inHold,up,pst:!!(R&&R.pst),sk:P.cargo.kit_station||0})})()"""))
     check('a Depot Kit in a Heavy Hauler\'s hold builds a Depot (no Constructor)',r['dep'] and r['kit']==0,r)
     check('a Station Kit (220 t) bought at a freeport into the Heavy Hauler upgrades that Depot to a Station',r['inHold']==1 and r['pst'] and r['sk']==0,r)

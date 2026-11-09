@@ -13,6 +13,7 @@ async def main():
     pg.on('console',lambda m:errs.append('console: '+m.text[:300]) if m.type=='error' and 'Failed to load resource' not in m.text else None)
     await pg.goto(GAME+'?name=Tester',wait_until='domcontentloaded');await pg.wait_for_function('window.__dg&&__dg.ev("MDL.ready")',timeout=60000)
     await pg.evaluate("document.getElementById('mpName').value='Tester'");await pg.evaluate("document.getElementById('bLaunch').click()");await pg.wait_for_timeout(1500)
+    await pg.wait_for_function('window.__dg&&__dg.ev("!!(S&&S.player)")',timeout=30000);await pg.evaluate("__dg.ev('coDefault(S.player)')")  # a company profile (8 Nov 2026: no Depot without one)
     ev=lambda c:pg.evaluate('c=>__dg.ev(c)',c)
     click=lambda sel:ev(f"(()=>{{const b=document.querySelector('#company {sel}');if(!b)return 'MISSING {sel}';b.click();return ($('coErr').textContent||'ok').slice(0,140)}})()")
     print('setup',await ev("""(()=>{const P=S.player;undock();P.rp=5000;transfer('halcyon','player',20000);const ids=SECTOR_DEFS.map(d=>d.id).filter(id=>!S.stations[id]&&canBuildIn(id,'player')&&!OUT_BY_SECTOR[id]);const a=ids[0],c=ids[1];

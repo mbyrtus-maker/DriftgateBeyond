@@ -14,6 +14,7 @@ async def main():
     pg.on('console',lambda m:errs.append('console: '+m.text[:300]) if m.type=='error' and 'Failed to load resource' not in m.text else None)
     await pg.goto(GAME+'?name=Tester',wait_until='domcontentloaded');await pg.wait_for_function('window.__dg&&__dg.ev("MDL.ready")',timeout=60000)
     await pg.evaluate("document.getElementById('mpName').value='Tester'");await pg.evaluate("document.getElementById('bLaunch').click()");await pg.wait_for_timeout(1500)
+    await pg.wait_for_function('window.__dg&&__dg.ev("!!(S&&S.player)")',timeout=30000);await pg.evaluate("__dg.ev('coDefault(S.player)')")  # a company profile (8 Nov 2026: no Depot without one)
     ev=lambda c:pg.evaluate('c=>__dg.ev(c)',c)
     print('ai destroyer',await ev("""(()=>{relInit();S.T=Math.max(S.T,CAP_GATE+60);const f='halcyon',st=S.econ.stock[f];S.yards[f]=S.yards[f]||{sector:FAC_HOME(f),fort:{}};devLedger(()=>{inv.addAll(st,dstCost(f));inv.add(st,'plate',40);inv.add(st,'coil',20)});
       let n=0;while(!S.events.some(e=>e.type==='dstbuild'&&e.att===f)&&n++<200)dstTick();const ev=S.events.find(e=>e.type==='dstbuild'&&e.att===f);if(!ev)return 'not laid down';S.T=ev.until+1;dstTick();const t=facDst(f)[0];
