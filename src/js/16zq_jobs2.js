@@ -7,7 +7,13 @@
 // because your standing is too low. The intel bar above and the convoy section below stay.
 const JB_SH={haul:'5,5 25,5 25,25 5,25',mine:'15,2 26,9 27,21 16,28 4,22 3,9',fight:'15,2 24,26 15,20 6,26',scout:'15,3 28,26 2,26',camp:'15,2 27,7 25,20 15,28 5,20 3,7'};
 function jbIssuer(j){return j.by?(j.by==='neutral'?'Freeport Compact':j.by==='pirate'?'The Unbound':FACTIONS[j.by]?FACTIONS[j.by].name:sideName(j.by)):null}
-function jbBoard(c,P,srcs,hasOrders,hasMis){const all=jobsList(c,P,srcs,hasOrders,hasMis),cnt=t=>t==='all'?all.length:all.filter(j=>j.ty===t).length;
+// (user, 8 Nov 2026) the board opens on the jobs your hull is for: Fight (escorts are fight jobs) in a fighter or bomber, Mine
+// in a miner, Haul in a hauler, Scout in a scout; All and the other kinds are a click away. It defaults again each time you
+// dock or change hull; a pick you make holds until then.
+let jbDefKey=null,jbDockN=0;
+{const o=openDock;openDock=function(){jbDockN++;return o.apply(this,arguments)}}
+function jbBoard(c,P,srcs,hasOrders,hasMis){const dk=P.cls+'|'+jbDockN;if(jbDefKey!==dk){jbDefKey=dk;const f=(typeof jobFit==='function'?jobFit(P.cls):[])[0];jobFilter=f&&JOB_TY[f]?f:'all';jobSel=null}
+const all=jobsList(c,P,srcs,hasOrders,hasMis),cnt=t=>t==='all'?all.length:all.filter(j=>j.ty===t).length;
   if(jobFilter!=='all'&&!JOB_TY[jobFilter])jobFilter='all';
   const L=all.filter(j=>jobFilter==='all'||j.ty===jobFilter).sort((a,b)=>(jobRank(a,P)-jobRank(b,P))||(b.pin||0)-(a.pin||0)||(!!a.need-!!b.need)||(jobSort==='dist'?(a.hops-b.hops)||(b.payN-a.payN):((b.ok?1:0)-(a.ok?1:0))||(b.payN-a.payN)));
   JOBS_LAST=all;for(const j of L)jobOpenBtns(j);

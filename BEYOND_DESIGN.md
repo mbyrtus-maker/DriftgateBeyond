@@ -3075,7 +3075,12 @@ The user: "Yes if a company stock is on the floor long enough it's liquidated an
 ### The Market: Ore, Components, Parts (user, 8 Nov 2026)
 The user: "The market screen does not show all the new slots that can be filled", then "the main menu is Ore Components Parts". Systems used to fall under Components.
 - **The Market's main menu:** Ore, Components, Parts.
-- **Parts opens a second row of filters:** Drives, Reactors, Shield emitters, Fire control, Armour, Cargo holds, Payload bays, Blast rigs, then Weapons, Utility parts, Payload (missiles, torpedoes, rounds, charges) and Beacons.
+- *(Superseded the same evening by the user's final list:)* **Parts opens a second row of filters:** Drives, Reactors, Shield emitters, Fire control, Armour, Cargo holds, Payload bays, Blast rigs, then Weapons, Utility parts, Payload (missiles, torpedoes, rounds, charges) and Beacons.
+- **The user's final list of Parts filters: Drive, Reactors, Shields, Weapons, Armor, Cargo, Mining, Utility.**
+  - Weapons: guns, lasers, launchers, payload bays and ammo (missiles, torpedoes, rounds), and the weapon system (fire control) parts.
+  - Cargo: cargo holds and cargo pods.
+  - Mining: blast rigs, mining lasers, charge launchers and charges.
+  - Utility: every other utility part, and beacons.
 - **Every filter is shown,** dimmed when nothing of it is on sale there.
 - **Picking Parts** opens the first filter with stock.
 
@@ -3083,3 +3088,8 @@ The user: "The market screen does not show all the new slots that can be filled"
 The user: "Put contractor rating on the allegiance screen as a graphic and just reference higher rating = bigger hulls. A subtab in the overview should be the news report which shows all the recent galaxy news while docked."
 - **Contractor Rating on the Allegiance screens** (the Company's Allegiance tab and the dock's) is now a graphic: the rating, ten segments (earned ones filled, the next one filling with the points toward it), the points to the next rating, and "higher rating = bigger hulls". The list of which hull opens at which rating is gone from these screens; the hulls still say what rating they need where you buy them.
 - **Overview → News** (a subtab beside Overview at a dock) lists the last 60 stories that went into the news box, newest first, each under its side's colour with how long ago it ran: the leaders' declarations, the galaxy's turns, the Unbound's and the makers' news (launches, failed trials, revisions, failures and liquidations). A maker's story now opens with its name ("Mirrorwater's mining laser G2 prototype failed its trials"); it used to start "'s …".
+
+### The Jobs board opens on your hull's jobs (user, 8 Nov 2026)
+The user: "Default the jobs to the hull type the pilot is currently in so filter fight/escort when in a fighter, mining when in a miner, haul when in a hauler. All still an option."
+- The board opens filtered to the hull's kind of work: Fight (escorts are fight jobs) in a fighter or bomber, Mine in a miner, Haul in a hauler, Scout in a scout. The special hulls use their first kind: the Vesper Scout, the Bombard Mine, the Gannet Haul.
+- All and the other kinds stay one click away. The default comes back each time you dock or change hull; a pick you make holds until then.
