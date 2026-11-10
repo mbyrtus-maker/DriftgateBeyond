@@ -33,6 +33,9 @@ async def main():
     r=json.loads(await ev("""(()=>{const P=S.player;P.docked='station';const v0=(P.vault||{}).pt_bdev||0;dockAction('hull','interceptor');const F=fitOf(P);
       const ml=wpnOK(P.cls,'mlaser',0)||wpnOK(P.cls,'charge',0),fitBd=fitDo(dockCtx(),P,'u:0:pt_bdev');return JSON.stringify({cls:P.cls,u:F.u,vault:((P.vault||{}).pt_bdev||0)-v0,ml,fitBd})})()"""))
     check('back in a fighter the rig goes to the vault, not into its slots; rigs and mining tools won\'t fit it',r['cls']!='scout' and 'bdev' not in r['u'] and r['vault']==1 and not r['ml'] and 'scout' in r['fitBd'],r)
+    r=json.loads(await ev("""(()=>{const P=S.player;P.docked='station';devLedger(()=>{P.bay={}});const cls=Object.keys(CLASSES).find(k=>drnHull(k)&&HULL_RATING[k]<=ratingOf(P)&&YARD_IDS.includes(k)&&!blHull(k));dockAction('hull',cls);const F=fitOf(P);
+      const ctl=F.u.includes('dronec'),bay=(P.bay&&P.bay.drone)||0,cap=drnCap(P);devLedger(()=>{P.bay.drone=0});undock();const after=(P.bay&&P.bay.drone)||0;return JSON.stringify({cls,ctl,bay,cap,after,docked:P.docked})})()"""))
+    check('a hauler bought from a fighter comes with a Drone controller and a full drone bay; launching tops the bay up',r['ctl'] and r['cap']>0 and r['bay']==r['cap'] and r['after']==r['cap'],r)
     l=await ev(LED);check('ledger exact',l=='exact',l)
     check('no errors',not errs,errs[:3])
     print('ALL OK' if not bad else 'FAILED: '+', '.join(bad))

@@ -3450,3 +3450,15 @@ The user's answers to the proposal above: "1 should have their own category call
   - **Already true when fitting:** beacon rigs and limpet racks on scouts, mining lasers and charge launchers on mining hulls.
   - **The gap closed:** a new hull used to carry utility parts across into any empty slot, so a scout's rig could end up on a fighter. Now a new hull keeps only the utility parts that fit it (`utilOK`: rigs and racks on scouts, drone controllers on miners and haulers, Control Markers on fighters and bombers), and the rest go to the vault.
   - **Test:** `scoutrig.py`.
+
+### Haulers and miners never launch without drones (user, 9 Nov 2026)
+"My hauler launched without drones, that shouldn't happen."
+- **Causes:**
+  - A new hull carried across only the parts the old ship had, so a hauler or miner bought from a fighter had an empty Drone controller slot. No controller means no drones.
+  - The drone bay refills at the automatic rearm when you dock, which runs before a hull bought, or a controller fitted, at that same dock.
+- **Fixes** (`16zzzw_scoutrig.js`):
+  - Every miner and hauler comes with a Drone controller, the way scouts come with a beacon rig: from your vault if you keep one, else from the station's shelf with the hull. This happens once per hull taken up.
+  - The bay is filled straight away when a hull is taken or a controller fitted.
+  - Launching tops up a bay that isn't full (host, single player, and a guest's launch on the host), on the same terms as the rearm: your own drones from hold or vault first, then drones the station builds, at their price.
+  - If the station can't build them, you're told the bay is short.
+- **Test:** `scoutrig.py`.
