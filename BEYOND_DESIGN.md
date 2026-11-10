@@ -3632,3 +3632,6 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 - **What it does:** undocks you if docked, then puts you in that system at once: 500 m from its station if it has one, else just inside a gate.
 - **Multiplayer:** a guest teleports on its own screen and the host moves its ship there.
 - **Code:** `16zzzzc_devhulls.js`.
+
+### Why a base is "under threat" (user, 9 Nov 2026)
+"Why is my depot considered under threat?" On the Company screen a base reads "under threat" when a power's, the Brood's or the Unbound's strike is aimed at it (an offensive event against its station), or "damaged" when its hull is under 60%. The label now says which: "under threat: Varkesh strike inbound (lands in 1:10)" or "…attacking", or "damaged (hull under 60%)".
