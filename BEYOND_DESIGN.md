@@ -3473,3 +3473,15 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 - Backspace still drops a selected job.
 - The training courses keep the keys.
 - Code: `16zzzx_contractor.js`.
+
+### O builds Lairs, Depots and Stations for a contractor (user, 9 Nov 2026)
+"I need O to work for establishing lairs, depots and stations. The comms command isn't working." *Supersedes the O part of "A contractor's O and P keys" above.*
+- **Why the Comms command didn't work:** Comms' Command page offered a contractor the distress call only, so the build order shown to sworn pilots never appeared.
+- **What O does now:** for a pilot who neither flies for a power nor has declared a faction, O opens that Command page in flight. It lists:
+  - Build a Lair here;
+  - Build a Depot here (Depot Kit or 2 Depot Frames in your hold);
+  - Upgrade your Depot here to a Station (Station Kit in your hold or its stock);
+  - the distress call.
+- **When it can't be done yet,** each entry says why: too far from a big rock, a system with a station or in a power's home space, no kit. A Depot or Station without a company profile asks you to fill it out first.
+- **The quick keys** show "O: Build here: Lair, Depot, Station". P still says orders are for sworn or declared pilots.
+- **Code and test:** `16zzzx_contractor.js`, test `ctrbuild.py`.
