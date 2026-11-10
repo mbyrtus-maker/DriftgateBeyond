@@ -38,11 +38,20 @@ function bmLair(lvl,fac){const key='bml'+lvl+fac;if(MESH[key])return MESH[key];c
 function bmOwned(R){return!!R&&R.owner==='player'&&R.kind==='depot'}
 {const o=stationMesh;stationMesh=function(fac,kind){const SE=W&&W.stationEnt,R=SE&&SE.rec;if(fac==='player'&&kind==='depot'&&bmOwned(R)&&bmReady())return bmBase(R,fac);return o.apply(this,arguments)}}
 // turrets sit on the model: a Depot's on its dome rim, keel and docking arm; a Station's round its habitat ring and crown.
-// The other designs carry their seats in the pack (tp, in the model's packed frame: unpacked with its centre and half-extent).
-function bmTurrets(R){const D=bmDesign(R);if(D.id!==1){const M=MDL.i[bmModel(R)],K=R.pst?BM.K.station:BM.K.depot;if(M&&M.tp&&M.tp.length){const c=M.c||[0,0,0],h=M.h||1;return M.tp.map(p=>[(p[0]*h+c[0])*K,(p[1]*h+c[1])*K,(p[2]*h+c[2])*K])}}
+// (10 Nov 2026) Every design's models carry their seats in the pack: tp, the top of a turret plinth (in the model's packed frame,
+// unpacked with its centre and half-extent), and tn, the hull's outward normal there. The live turret stands on the plinth
+// along the normal: its origin (where the head pitches) sits BM.tuLift above the plinth, so the turntable rests on it. Before,
+// the turret's origin sat on the seat (its turntable sunk 15 m into the hull) and its mount faced straight out from the base's
+// centre (on a flat Disc deck it lay on its side), and the Depot 3 models had guns of their own on the same seats.
+BM.tuS=1.15;BM.tuLift=13.2*BM.tuS
+function bmSeats(R){const M=MDL.i[bmModel(R)],K=R.pst?BM.K.station:BM.K.depot;if(!M||!M.tp||!M.tp.length)return null;const c=M.c||[0,0,0],h=M.h||1;
+  return M.tp.map((p,i)=>{const n=M.tn&&M.tn[i]||(()=>{const v=[p[0]*h+c[0],p[1]*h+c[1],p[2]*h+c[2]],l=Math.hypot(...v)||1;return v.map(x=>x/l)})();
+    return{p:[(p[0]*h+c[0])*K+n[0]*BM.tuLift,(p[1]*h+c[1])*K+n[1]*BM.tuLift,(p[2]*h+c[2])*K+n[2]*BM.tuLift],n:n.slice()}})}
+function bmTurrets(R){const T=bmSeats(R);if(T)return T.map(t=>t.p);
   if(R.pst){const K=BM.K.station,out=[];for(let i=0;i<6;i++){const a=i/6*TAU+.3;out.push([Math.cos(a)*3.1*K,.45*K,Math.sin(a)*3.1*K])}out.push([0,2.75*K,0],[0,-3.3*K,0]);return out}
   const K=BM.K.depot;return[...[Math.PI/4,-Math.PI/4,Math.PI*.6].map(a=>[Math.cos(a)*.45*K,1.2*K,Math.sin(a)*.45*K]),[0,-1.65*K,0],[1.4*K,.4*K,0],[-.2*K,.25*K,-1.35*K]]}
-{const o=mdlStationTurrets;mdlStationTurrets=function(SE){const R=SE&&SE.rec;if(!SE._mt&&bmOwned(R)&&bmReady()){SE._mt=1;devEnt(SE);const T=bmTurrets(R);SE.turrets.filter(t=>!t.mod).forEach((tu,i)=>{tu.p=T[i%T.length].slice()});SE._bmShape=bmShape(R);return}return o.apply(this,arguments)}}
+{const o=mdlStationTurrets;mdlStationTurrets=function(SE){const R=SE&&SE.rec;if(!SE._mt&&bmOwned(R)&&bmReady()){SE._mt=1;devEnt(SE);const T=bmSeats(R),P=T?T.map(t=>t.p):bmTurrets(R);
+  SE.turrets.filter(t=>!t.mod).forEach((tu,i)=>{tu.p=P[i%P.length].slice();if(T)tu.n=T[i%T.length].n.slice();else delete tu.n});SE._bmShape=bmShape(R);SE._subL=null;return}return o.apply(this,arguments)}}
 // a base that changes shape (a new level or building, or a new design) re-seats its turrets
 {const o=worldUpdate;worldUpdate=function(dt){const r=o.apply(this,arguments);try{const SE=W&&W.stationEnt,R=SE&&SE.rec;if(SE&&SE._bmShape&&bmOwned(R)){const sh=bmShape(R);if(sh!==SE._bmShape)SE._mt=0}}catch(err){}return r}}
 // Lairs: the rock with the hangar cut into it, and its beacon above

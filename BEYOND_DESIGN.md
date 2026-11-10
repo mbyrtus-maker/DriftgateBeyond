@@ -3755,3 +3755,22 @@ same as the corps."
 - Guests can start R&D for their own brand while undocked (`brrd` is in `CO_REMOTE`).
 - The screen shows the running project across the top, and each part's researched grade in the list.
 - Code: 16zzzzd_brand2.js (`brRdStart`, `brRdTick`, `brResG`). Test: brand2.py.
+### Your bases' turrets sit on the hull (visuals bot, 10 Nov 2026)
+The user: "the turrets are out of position, at least on the Disc station I just created." Three causes, on every design:
+the live turret's origin (where its head pitches) sat on the seat, so its turntable (13 units below the origin, 15 m at the
+1.15 scale) was sunk into the hull; its mount faced straight out from the base's centre rather than along the hull there
+(on the Disc's flat deck it lay on its side, up to 76° off); and the Depot 3 models carried guns of their own on the same
+seats, so two turrets stood in one place. Some seats also cut into parts (the Disc's deck seats into its containers, the
+Spire's balcony seats under its level-3 ring, the Truss cluster's into its frames; tools/previews/base_seats_check.py).
+- Every base model (all six designs, by_depot1-3 and by_core included) now carries no guns; each seat is (point, outward
+  normal) in tools/previews/beyond_base_designs.py, snapped onto the hull in the pack, with a turret plinth there (a drum whose
+  skirt reaches the hull all round, a dark deck, an amber edge, four marker lamps) on the four live seats. The pack keeps the
+  plinth top as `tp` and the normal as `tn`.
+- The game (16x_bases.js `bmSeats`) stands each live turret on its plinth: origin `BM.tuLift` (13.2 x 1.15) up the normal,
+  `tu.n` the normal, and draw3D turns the mount along `tu.n` (12_render.js; other stations still face out from the centre).
+  Hits on turrets (subLocal) use `tu.p`, so they match what's drawn; a re-seat clears the cached sub-system points.
+- Seats moved: the standard Depot's to the dome's shoulders, the hub's flank and the tank top; the Disc's between its
+  containers and the Station's on the lens deck over each hardpoint; the Truss cluster Station's two on its deck, two under.
+  The Spire Depot 3's life-support ring is raised from 2.0 to 2.2 to clear its balcony guns.
+- Check: base_seats_check.py, every live seat on every design, Depot 1-3 and the Station with every building on every
+  hardpoint: 0 out of place (was 80). Preview: tools/previews/base_turrets_game.py (in game, three angles). Test: basedesigns.py.

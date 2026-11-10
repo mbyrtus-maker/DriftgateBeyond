@@ -215,13 +215,21 @@ MODELS['dz_assault']=('ship',lambda:_BA.assault().out());GLOW_N['dz_assault']=0
 # six buildings. Kind 'base': no stern glow, and dark trusses stay dark. The pack keeps each one's centre and half-extent so the
 # game can put a Station's buildings back on its hardpoints at the right size.
 import beyond_stations as _BS
-BASE_MODELS={'by_lair1':lambda:_BS.lair(1),'by_lair2':lambda:_BS.lair(2),'by_depot1':lambda:_BS.depot(1),'by_depot2':lambda:_BS.depot(2),'by_depot3':lambda:_BS.depot(3),'by_core':lambda:_BS.station_core('standard',True),
+BASE_MODELS={'by_lair1':lambda:_BS.lair(1),'by_lair2':lambda:_BS.lair(2),   # by_depot1-3 and by_core come from beyond_base_designs below (10 Nov 2026)
   'by_yard':_BS.shipyard,'by_storage':_BS.ext_storage,'by_defence':_BS.defence_platform,'by_hangar':_BS.hangar,'by_forge':_BS.forge,'by_market':_BS.market_wing}
 for _k,_f in BASE_MODELS.items():MODELS[_k]=('base',(lambda f:lambda:f().out())(_f))
 # (8 Nov 2026) the five other base designs a player company can pick (tools/previews/beyond_base_designs.py): by_d<N>_depot1-3
 # and by_d<N>_core, N = 2..6, in the same units as the standard set; each carries its turret seats as 'tp'
+# (10 Nov 2026) every design's Depots and core, the standard set's too, carry no guns of their own: the game draws its live
+# turrets on their seats, each on a plinth. The pack keeps each seat's plinth top as 'tp' and its outward normal as 'tn'.
 import beyond_base_designs as _BD
-for _k,(_f,_tp) in _BD.models().items():MODELS[_k]=('base',(lambda f:lambda:f().out())(_f));MOUNTS[_k]=_tp
+TNORM={}
+def _bdpart(f,name):
+    def g():
+        M,S=f();MOUNTS[name]=[p for p,_ in S];TNORM[name]=[[round(float(v),3) for v in n] for _,n in S]
+        return M.out()
+    return g
+for _k,_f in _BD.models().items():MODELS[_k]=('base',_bdpart(_f,_k))
 # (9 Nov 2026) the makers' R&D stations (tools/rdstation.py, from the approved tools/previews/beyond_corp.py): a tower per home
 # style (rds_halcyon/varkesh/ostrova/free), a lab per style and grade (rdl_<style>_g2..g5, in its socket's frame) and an empty
 # socket's marker (rdp_<style>). Kind 'base' keeps each part's centre and half-extent so the game puts the labs back in the
@@ -276,7 +284,7 @@ def pack():
         tp=[[round(float(x),3) for x in (np.array(m)-c)/half] for m in MOUNTS.get(name,[])]
         pt=[[round(float(x),3) for x in (np.array(m)-c)/half] for m in PTS.get(name,[])]
         sb={k:[[round(float(x),3) for x in (np.array(m)-c)/half] for m in v] for k,v in SUBS.get(name,{}).items()}
-        idx[name]={**({'c':[round(float(x),4) for x in c],'h':round(float(half),4)} if kind=='base' else {}),'o':off,'n':len(T),'k':kind,'s':FIT.get(name,1),'e':eng,'tp':tp,'top':round(float(T[:,:,1].max()),3),**({'pt':pt} if pt else {}),**({'sub':sb} if sb else {}),**EXTRA.get(name,{})}
+        idx[name]={**({'c':[round(float(x),4) for x in c],'h':round(float(half),4)} if kind=='base' else {}),'o':off,'n':len(T),'k':kind,'s':FIT.get(name,1),'e':eng,'tp':tp,'top':round(float(T[:,:,1].max()),3),**({'pt':pt} if pt else {}),**({'tn':TNORM[name]} if name in TNORM else {}),**({'sub':sb} if sb else {}),**EXTRA.get(name,{})}
         print(name.ljust(12),kind,len(T),'tris',('eng %d'%len(eng)) if eng else '',('lifted %d'%zl) if zl else '')
     return idx,bytes(blob)
 idx,blob=pack()

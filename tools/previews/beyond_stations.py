@@ -176,9 +176,10 @@ def lair(level=1):
     return M
 
 # ------------------------------------------------------------------ DEPOT
-def depot(level=1):
+def depot(level=1,guns=True):
     # an open hub on a vertical drum, a docking arm with a collar, a market beacon. Level 1 storage; level 2 production and a hangar;
-    # level 3 defence turrets, armour plates and a life-support ring
+    # level 3 defence turrets, armour plates and a life-support ring. guns=False leaves the turrets off: the game's player bases
+    # draw live turrets on seats instead (beyond_base_designs.depot_model, 10 Nov 2026)
     M=Mesh(210+level)
     drum(M,(0,-1.0,0),(0,1.0,0),.62,MID,16,bands=(.15,.85))                                                # hub drum
     M.blob((0,1.0,0),.62,LIGHT,sub=2,squash=(1,.45,1),noise=0)                                            # dome
@@ -200,7 +201,8 @@ def depot(level=1):
         B=Mesh();box(B,(0,0,0),(1.3,.7,1.0),MID);mouth(B,(0,-.02,.5),.9,.45,.22);put(M,B,(0,-.5,-1.95),ry(PI))
         floods(M,[(.5,-.12,-2.47),(-.5,-.12,-2.47)],.04)
     if level>=3:
-        for a in (PI/4,-PI/4,PI*.6):turret(M,(math.cos(a)*.45,1.05,math.sin(a)*.45),.85)                     # defence turrets on the dome rim
+        if guns:
+            for a in (PI/4,-PI/4,PI*.6):turret(M,(math.cos(a)*.45,1.05,math.sin(a)*.45),.85)                     # defence turrets on the dome rim
         for k in range(6):                                                                                    # armour plates
             a=k*PI/3+PI/6;c=np.array([math.cos(a),0,math.sin(a)])
             plate(M,[c*.66+[0,-.85,0]+np.cross(c,[0,1,0])*.2,c*.66+[0,-.85,0]-np.cross(c,[0,1,0])*.2,c*.66+[0,-.15,0]-np.cross(c,[0,1,0])*.2,c*.66+[0,-.15,0]+np.cross(c,[0,1,0])*.2],.05,LIGHT,.9)

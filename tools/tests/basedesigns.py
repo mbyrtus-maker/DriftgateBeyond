@@ -36,7 +36,7 @@ async def main():
         r=json.loads(await ev(f"""(()=>{{const R=__R;R.design={n};const d=devOf(R);d.store={dv};d.prod=0;d.def=0;d.armor=0;d.hangar=0;const SE=W.stationEnt;
           const m=bmBase(R,'player'),T=bmTurrets(R);let far=0;for(const t of T)far=Math.max(far,Math.hypot(...t));
           return JSON.stringify({{lv:depLvl(R),key:Object.keys(MESH).filter(k=>k.startsWith('bm{n}d')).length,ok:!!(m&&m.core),nt:T.length,far:Math.round(far),model:bmModel(R)}})}})()"""))
-        check(f'design {n}: Depot {lv} builds ({r["model"]}), turret seats on it',r['lv']==lv and r['ok'] and r['nt']>=6 and r['far']<3.2*48,r)
+        check(f'design {n}: Depot {lv} builds ({r["model"]}), turret seats on it',r['lv']==lv and r['ok'] and r['nt']>=6 and r['far']<3.2*48+16,r)
         if lv==3:
           await view(520);await pg.wait_for_timeout(900);await pg.screenshot(path=D+f'basedesign_{n}_depot3.png')
       seats[n]=await ev("JSON.stringify(bmTurrets(__R).map(t=>t.map(Math.round)))")
@@ -50,8 +50,16 @@ async def main():
     for n in range(1,7):
       r=json.loads(await ev(f"""(()=>{{const R=__R;R.design={n};const m=bmBase(R,'player'),T=bmTurrets(R);let far=0;for(const t of T)far=Math.max(far,Math.hypot(...t));
         return JSON.stringify({{ok:!!(m&&m.core),nt:T.length,far:Math.round(far),model:bmModel(R),bld:(R.bld||[]).join(','),keys:Object.keys(MESH).filter(k=>k.startsWith('bm{n}s')),key:Object.keys(MESH).some(k=>k.startsWith('bm{n}s'+(R.bld||[]).join(',')))}})}})()"""))
-      check(f'design {n}: Station with three buildings builds ({r["model"]}), turret seats on the core',r['ok'] and r['key'] and r['nt']>=8 and r['far']<5.5*32,r)
+      check(f'design {n}: Station with three buildings builds ({r["model"]}), turret seats on the core',r['ok'] and r['key'] and r['nt']>=8 and r['far']<5.5*32+16,r)
       await ev("(()=>{const SE=W.stationEnt;SE._mt=0;mdlStationTurrets(SE);return 1})()");await view(1050);await pg.wait_for_timeout(900);await pg.screenshot(path=D+f'basedesign_{n}_station.png')
+    # (10 Nov 2026) every live turret stands on its model's plinth along the hull's normal: its origin BM.tuLift above the
+    # plinth top (tp), the normal from the pack (tn); the models carry no guns of their own
+    r=json.loads(await ev("""(()=>{const R=__R,SE=W.stationEnt,out=[];for(const n of [1,2,3,4,5,6])for(const st of [0,1]){R.design=n;R.pst=st;SE._mt=0;mdlStationTurrets(SE);
+      const M=MDL.i[bmModel(R)],K=st?BM.K.station:BM.K.depot,c=M.c||[0,0,0],h=M.h||1;
+      const bad=SE.turrets.filter(t=>!t.mod).filter((t,i)=>{const m=M.tp[i%M.tp.length],nn=M.tn&&M.tn[i%M.tn.length];if(!t.n||!nn)return true;
+        return Math.hypot(...[0,1,2].map(j=>t.p[j]-((m[j]*h+c[j])*K+nn[j]*BM.tuLift)))>.01||Math.abs(Math.hypot(...t.n)-1)>.01});
+      if(bad.length||!M.tn||M.tn.length!==M.tp.length)out.push(bmModel(R))}R.pst=1;return JSON.stringify(out)})()"""))
+    check('every live turret on its plinth, along the hull normal (tp, tn)',not r,r)
     r=await ev("(()=>{const R=__R;R.design=9;return bmDesign(R).id+':'+bmModel(R)})()")
     check('an unknown design falls back to the standard set',r=='1:by_core',r)
     r=json.loads(await ev("JSON.stringify({n:CO_LOGO.length,svg:CO_LOGO.every((L,i)=>/^<svg[^>]*>.*<path d=\"M/.test(coLogoSvg(i,20,'#4a8cff',true))&&coLogoSvg(i,40).includes(L.d)),names:CO_LOGO.map(L=>L.n),clash:CO_LOGO.filter(L=>Object.values(MK_LOGO).some(M=>M.n===L.n||M.d===L.d)).length})"))

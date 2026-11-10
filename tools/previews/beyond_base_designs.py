@@ -18,7 +18,7 @@ from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,box,plate,ring
 from beyond_capitals import tube,mouth
 from beyond_recon import dish
 from beyond_stations import (ry,frame_y,put,outward,drum,truss,tank,container,radiator,floods,mast,collar,turret,pad,Rock,
-                             rock_mouth,HP_R,HP_Y,HP_A,ROCK,ROCKD)
+                             rock_mouth,HP_R,HP_Y,HP_A,ROCK,ROCKD,depot as BS_depot,station_core as BS_core)
 PI=math.pi
 
 # ------------------------------------------------------------------ shared pieces
@@ -92,10 +92,7 @@ def wheel_depot(level=1):
         for k in range(6):                                                                                # armour round the axle
             a=k*PI/3;d=np.array([math.cos(a),math.sin(a),0]);s=np.array([-math.sin(a),math.cos(a),0])
             for z0,z1 in ((.42,.86),(-.86,-.62)):plate(M,[d*.47+s*.2+[0,0,z0],d*.47-s*.2+[0,0,z0],d*.47-s*.2+[0,0,z1],d*.47+s*.2+[0,0,z1]],.04,LIGHT,.9)
-    for p,n in WHEEL_DSEATS[:3 if level>=3 else 0]:gun(M,p,n)
     return M
-_wd=lambda a,r=1.9:(np.array([math.cos(a)*r,math.sin(a)*r,.3]),np.array([math.cos(a),math.sin(a),0]))
-WHEEL_DSEATS=[_wd(PI/4),_wd(3*PI/4),_wd(PI/2+.32),_wd(0),_wd(PI),(np.array([0,.36,-1.24]),np.array([0,1.,0]))]
 def wheel_core():
     # a big standing wheel on a long axle with docking collars at both ends; a keel drum hangs under the axle and holds the
     # five hardpoints; the wheel's foot rests on the keel; radiators off the keel's back, a mast on the wheel's crown
@@ -116,8 +113,6 @@ def wheel_core():
     floods(M,[C+np.array([math.cos(a)*W,math.sin(a)*W,.36]) for a in np.linspace(0,2*PI,10,endpoint=False)],.07)
     hpads(M,lambda a:u(a)*1.08+[0,HP_Y,0])
     return M
-_wc=lambda a:(np.array([math.cos(a)*3.36,1.0+math.sin(a)*3.36,0]),np.array([math.cos(a),math.sin(a),0]))
-WHEEL_CSEATS=[_wc(PI/2-.5),_wc(PI/2+.5),_wc(PI/6),_wc(5*PI/6),_wc(0),_wc(PI),(np.array([0,1.8,1.0]),np.array([0,1.,0])),(np.array([0,1.8,-1.0]),np.array([0,1.,0]))]
 
 # ================================================================== DESIGN 3: SPIRE
 def spire_depot(level=1):
@@ -146,11 +141,9 @@ def spire_depot(level=1):
         floods(M,[(.42,-.86,-1.55),(-.42,-.86,-1.55)],.04)
     if level>=3:
         for k in range(6):a=k*PI/3+PI/6;armour(M,u(a)*.585+[0,-1.35,0],u(a),.5,.5)
-        ring_y(M,2.0,1.0,.09,MID,40,8)
-        for a in (0,2*PI/3,4*PI/3):tube(M,[u(a)*.25+[0,2.0,0],u(a)*.92+[0,2.0,0]],[.035,.035],DARK,.9,5)
-        for p,n in SPIRE_DSEATS[:3]:gun(M,p,n)
+        ring_y(M,2.2,1.0,.09,MID,40,8)                                                                   # (10 Nov 2026: raised from 2.0, clear of the balcony's guns)
+        for a in (0,2*PI/3,4*PI/3):tube(M,[u(a)*.25+[0,2.2,0],u(a)*.92+[0,2.2,0]],[.035,.035],DARK,.9,5)
     return M
-SPIRE_DSEATS=[(u(a)*.9+[0,1.4,0],np.array([0,1.,0])) for a in (PI/6,PI*5/6,PI*3/2)]+[(np.array([0,-2.3,0]),np.array([0,-1.,0])),(np.array([1.55,.75,0]),np.array([0,1.,0])),(np.array([0,2.42,.2]),np.array([0,1.,0]))]
 def spire_core():
     # a tall tower: a skirt deck at hardpoint height holds the five pads; a wide column with window bands; a big balcony with
     # four docking collars on its rim; a slim upper shaft with radiators and a small balcony; a needle with a beacon; below,
@@ -171,7 +164,6 @@ def spire_core():
     floods(M,[u(a)*2.1+[0,2.95,0] for a in np.linspace(0,2*PI,8,endpoint=False)+PI/4]+[u(a)*1.75+[0,-.62,0] for a in np.array(HP_A)+PI/5],.065)
     hpads(M,lambda a:u(a)*1.72+[0,HP_Y,0])
     return M
-SPIRE_CSEATS=[(u(a)*1.8+[0,2.92,0],np.array([0,1.,0])) for a in (PI/4,3*PI/4,5*PI/4,7*PI/4)]+[(u(a)*.95+[0,5.15,0],np.array([0,1.,0])) for a in (PI/2,3*PI/2)]+[(np.array([0,-1.3,1.35]),np.array([0,-1.,0])),(np.array([0,-1.3,-1.35]),np.array([0,-1.,0]))]
 
 # ================================================================== DESIGN 4: TRUSS CLUSTER
 def cube_frame(M,c,h,w=.16,r=.022,decks=(),belt=None):
@@ -217,10 +209,7 @@ def cluster_depot(level=1):
         ring_y(M,.6,1.85,.07,DARK,48,6,band=False)
         for a in np.linspace(0,2*PI,8,endpoint=False)+PI/8:M.blob(tuple(u(a)*1.85+[0,.6,0]),.2,LIGHT,sub=2,noise=0);ring(M,tuple(u(a)*1.85+[0,.6,0]),.2,.025,WIN,seg=16,sides=4,axis='y')
         for a in (PI/4,3*PI/4,5*PI/4,7*PI/4):tube(M,[u(a)*1.4+[0,.6,0],u(a)*1.82+[0,.6,0]],[.04,.04],DARK,.9,5)
-        for p,n in CLUSTER_DSEATS[:3]:gun(M,p,n)
     return M
-CLUSTER_DSEATS=[(np.array([1.0,1.08,1.0]),np.array([0,1.,0])),(np.array([-1.0,1.08,1.0]),np.array([0,1.,0])),(np.array([-1.0,1.48,-1.0]),np.array([0,1.,0])),
-               (np.array([1.0,-1.08,-1.0]),np.array([0,-1.,0])),(np.array([1.85,.22,0]),np.array([0,1.,0])),(np.array([-1.0,-.72,1.0]),np.array([0,1.,0]))]
 CH=1.85
 def cluster_core():
     # three cube frames stacked off-centre round a spine: the main frame holds a long hab drum and a truss belt at hardpoint
@@ -248,9 +237,6 @@ def cluster_core():
         d=u(a);t=h/max(abs(d[0]),abs(d[2]));return d*t+[0,HP_Y,0]
     hpads(M,st)
     return M
-_U,_D=np.array([0,1.,0]),np.array([0,-1.,0]);_c1=np.array([.55,CH-.2+.17+.95,-.55]);_c2=np.array([-.5,-.2-CH-.9,.4])
-CLUSTER_CSEATS=[(np.array([CH,CH-.2+.17,CH]),_U),(np.array([-CH,CH-.2+.17,-.25]),_U),(np.array([CH,CH-.2+.17,-CH]),_U),
-               (_c1+[-.9,1.0,.9],_U),(_c1+[.9,1.0,.9],_U),(_c2+[-.75,-.88,.75],_D),(np.array([CH,-.2-CH-.17,CH]),_D),(np.array([-CH,-.2-CH-.17,-CH]),_D)]
 
 # ================================================================== DESIGN 5: DISC
 DISC_D=[(-.36,.0),(-.36,.72),(-.3,1.2),(-.14,1.66),(0,1.8),(.14,1.66),(.2,1.4),(.22,.9),(.22,0)]
@@ -278,9 +264,7 @@ def disc_depot(level=1):
             d=u(a);s=np.array([-d[2],0,d[0]]);plate(M,[d*1.74+s*.3+[0,-.12,0],d*1.74-s*.3+[0,-.12,0],d*1.52-s*.25+[0,-.28,0],d*1.52+s*.25+[0,-.28,0]],.04,LIGHT,.9)
         ring_y(M,.62,1.45,.08,MID,48,8)
         for a in np.linspace(0,2*PI,6,endpoint=False):tube(M,[u(a)*1.45+[0,.16,0],u(a)*1.45+[0,.6,0]],[.035,.035],DARK,.9,5)
-        for p,n in DISC_DSEATS[:3]:gun(M,p,n)
     return M
-DISC_DSEATS=[(u(a)*1.1+[0,.23,0],np.array([0,1.,0])) for a in (0,PI*2/3+.3,PI*4/3-.3)]+[(np.array([0,-1.05,0]),np.array([0,-1.,0])),(u(PI/2)*1.3+[0,-.27,0],np.array([0,-1.,0])),(u(3*PI/2)*1.3+[0,-.27,0],np.array([0,-1.,0]))]
 DISC_C=[(-1.25,.0),(-1.25,1.2),(-1.05,2.2),(-.7,3.2),(-.4,3.55),(-.2,3.85),(0,3.55),(.12,3.1),(.2,1.8),(.22,0)]
 def disc_core():
     # a broad lens with a lit rim and five docking slots between the hardpoints; an upper tier with its own window band; a
@@ -299,7 +283,6 @@ def disc_core():
     floods(M,[u(a)*3.5+[0,y0+.18,0] for a in np.linspace(0,2*PI,10,endpoint=False)]+[u(a)*2.05+[0,.68,0] for a in np.linspace(0,2*PI,6,endpoint=False)],.065)
     hpads(M,lambda a:u(a)*3.6+[0,HP_Y,0])
     return M
-DISC_CSEATS=[(u(a)*1.85+[0,.75,0],np.array([0,1.,0])) for a in np.array(HP_A)+PI/5]+[(u(a)*3.0+[0,-.32,0],np.array([0,1.,0])) for a in (PI/2,PI*1.5+.3)]+[(np.array([0,-3.25,0]),np.array([0,-1.,0]))]
 
 # ================================================================== DESIGN 6: ASTEROID
 def asteroid_depot(level=1):
@@ -327,12 +310,10 @@ def asteroid_depot(level=1):
             d=np.array(d,float);d/=np.linalg.norm(d);armour(M,rk.surf(d,-.01),d,.6,.45,.06)
         ring_y(M,-.15,2.15,.1,MID,52,8)
         for a in (PI/4,3*PI/4,5*PI/4,7*PI/4):d=u(a)+[0,-.1,0];tube(M,[rk.surf(d,.15)+[0,-.02,0],u(a)*2.07+[0,-.15,0]],[.045,.045],DARK,.9,5)
-        for p,n in AST_DSEATS[:3]:gun(M,p,n)
     return M
 _RK_D=Rock((0,0,0),1.4,61,squash=(1.18,.86,1.0))
 def _rs(rk,d,ins=.06):
     d=np.array(d,float);d/=np.linalg.norm(d);p=rk.surf(d,ins);return (p,d)
-AST_DSEATS=[_rs(_RK_D,d) for d in ((.75,.5,.6),(.35,.55,-.9),(.5,-.9,-.3),(-.7,-.8,.3),(.15,.45,1),(-.85,.15,.8))]
 _RK_C=Rock((0,0,0),3.3,41,squash=(1.1,.8,1.05))
 def asteroid_core():
     # a big rock: a crown dock rising from its top, glass hab domes in clusters, two docking arms with collars, hangars cut
@@ -356,7 +337,97 @@ def asteroid_core():
         d=np.array([math.cos(a),HP_Y/HP_R*.6,math.sin(a)]);return rk.surf(d,.3)
     hpads(M,st)
     return M
-AST_CSEATS=[_rs(_RK_C,d,.08) for d in ((.3,.85,-.4),(-.8,.6,.3),(.7,.6,-.5),(.2,.7,.95),(-.3,-.9,.5),(.6,-.85,-.3),(-.4,.9,.2),(1,.1,-.5))]
+
+# ------------------------------------------------------------------ the live turret seats (10 Nov 2026)
+# The game draws a player base's guns live (turretMesh, aiming at targets) on these seats; the models carry no guns of their
+# own. Each seat is (point near the hull, outward normal): the pack snaps it onto the hull along its normal and builds a
+# turret plinth there (a drum whose skirt reaches the hull all round, so the turntable never hangs over a curve), and packs
+# the plinth's top as 'tp' and the normal as 'tn'. The game sets the turret's turntable on the plinth, standing along the
+# normal. A player base has four live turrets (STN.depot.tur), so the first NLIVE seats get plinths; the rest are spares the
+# game cycles through if a base ever has more. tools/previews/base_seats_check.py checks every live seat: on the hull, upright,
+# and nothing of the base (or of any building on any hardpoint) inside the turret's own space.
+NLIVE=4
+PL_R={'depot':.3,'station':.42}       # plinth radius in model units: the turret's 12 m turntable at BM.K.depot 48 / station 32
+_U,_D=np.array([0,1.,0]),np.array([0,-1.,0])
+def _n(v):v=np.array(v,float);return v/np.linalg.norm(v)
+def _ring_seat(a,r,y,n=None):return (u(a)*r+[0,y,0],_U if n is None else n)
+# design 1, the company standard: on the dome's shoulder either side of the mast, on the hub's flank over the docking arm, on
+# the tank, under the keel
+STD_DSEATS=[_ring_seat(PI*1.5+.35,.34,1.25),_ring_seat(PI*.5-.35,.34,1.25),(np.array([.7,.64,.05]),np.array([1.,0,0])),(np.array([-.2,.2,-1.0]),_U),
+            (np.array([0,-1.62,0]),_D),_ring_seat(PI,.34,1.25)]
+# its Station: on the habitat ring between the floodlights, on the crown beside the mast, under the keel
+STD_CSEATS=[_ring_seat(a,3.1,.45) for a in (PI/8,PI/8+PI/2,PI/8+PI,PI/8+3*PI/2)]+[(np.array([.5,2.75,0]),_U),(np.array([-.5,2.75,0]),_U),(np.array([0,-3.32,0]),_D),_ring_seat(5*PI/8,3.1,.45)]
+# Wheel: on the wheel's outer rim (normals out from the axle), on the tank behind it
+_wd=lambda a,r=1.9:(np.array([math.cos(a)*r,math.sin(a)*r,.3]),np.array([math.cos(a),math.sin(a),0]))
+WHEEL_DSEATS=[_wd(PI/4),_wd(3*PI/4),_wd(.08),(np.array([0,.4,-1.24]),_U),_wd(PI),_wd(-PI/2+.5)]
+_wc=lambda a:(np.array([math.cos(a)*3.34,1.0+math.sin(a)*3.34,0]),np.array([math.cos(a),math.sin(a),0]))
+WHEEL_CSEATS=[_wc(PI/2-.55),_wc(PI/2+.55),_wc(PI/9),_wc(PI-PI/9),_wc(0),_wc(PI),(np.array([0,1.85,1.0]),_U),(np.array([0,1.85,-1.0]),_U)]
+# Spire: on the balcony between its production modules, under the foot
+SPIRE_DSEATS=[_ring_seat(a,.86,1.46) for a in (PI/6,PI*5/6,PI*3/2)]+[(np.array([0,-2.32,0]),_D),(np.array([1.4,.66,0]),_U),(np.array([0,2.46,.0]),_U)]
+SPIRE_CSEATS=[_ring_seat(a,1.75,2.95) for a in (PI/4,3*PI/4,5*PI/4,7*PI/4)]+[_ring_seat(a,.85,5.12) for a in (PI/2,3*PI/2)]+[(np.array([0,-1.32,1.35]),_D),(np.array([0,-1.32,-1.35]),_D)]
+# Truss cluster: on the top deck's corners, on the corner tank, under the frame (the Station: two on its deck, two under it)
+CLUSTER_DSEATS=[(np.array([.98,1.2,.98]),_U),(np.array([-.98,1.2,.98]),_U),(np.array([1.0,1.45,-1.0]),_U),(np.array([-1.0,-1.1,-1.0]),_D),
+                (np.array([1.85,.25,0]),_U),(np.array([-1.0,-.68,1.0]),_U)]
+_c1=np.array([.55,CH-.2+.17+.95,-.55]);_c2=np.array([-.5,-.2-CH-.9,.4])
+CLUSTER_CSEATS=[(np.array([CH-.05,CH-.2+.2,CH-.05]),_U),(np.array([-CH+.05,CH-.2+.2,-.3]),_U),(np.array([-CH+.05,-.2-CH-.2,CH-.05]),_D),(np.array([CH-.05,-.2-CH-.2,-CH+.05]),_D),
+                (_c1+[-.9,1.0,.9],_U),(_c1+[.9,1.0,.9],_U),(_c2+[-.75,-.88,.75],_D),(np.array([CH-.05,CH-.2+.2,-CH+.05]),_U)]
+# Disc: on the deck between the containers, under the keel; the Station's on the lens deck above each hardpoint
+DISC_DSEATS=[_ring_seat(a,1.05,.26) for a in (PI/2,PI,7*PI/4)]+[(np.array([0,-1.06,0]),_D),_ring_seat(3*PI/2+.2,1.05,.26),_ring_seat(PI/4+.6,1.05,.26)]
+DISC_CSEATS=[_ring_seat(a,2.65,-.5) for a in HP_A]+[_ring_seat(a,1.55,.72) for a in (HP_A[0]+PI/5,HP_A[2]+PI/5)]+[(np.array([0,-3.27,0]),_D)]
+# Asteroid: on the rock, along its own outward direction, clear of the domes, the arm and the waist ring
+_RK_D=Rock((0,0,0),1.4,61,squash=(1.18,.86,1.0))
+def _rs(rk,d,ins=0.0):
+    d=_n(d);return (rk.surf(d,ins),d)
+AST_DSEATS=[_rs(_RK_D,d) for d in ((.7,.6,.55),(.3,.6,-.9),(.5,-.9,-.3),(-.7,-.8,.3),(.15,.45,1),(-.85,.15,.8))]
+_RK_C=Rock((0,0,0),3.3,41,squash=(1.1,.8,1.05))
+AST_CSEATS=[_rs(_RK_C,d) for d in ((.3,.85,-.4),(-.8,.6,.3),(.7,.6,-.5),(.2,.7,.95),(-.3,-.9,.5),(.6,-.85,-.3),(-.4,.9,.2),(1,.1,-.5))]
+
+def _tris(M):return np.array([np.array(t,float) for t in M.T]).reshape(-1,3,3)
+def _ray(T,o,d):
+    # nearest hit distance along o + t d (t>0) on triangles T, or None
+    e1=T[:,1]-T[:,0];e2=T[:,2]-T[:,0];p=np.cross(d,e2);det=(e1*p).sum(1);ok=np.abs(det)>1e-12;inv=np.where(ok,1/np.where(ok,det,1),0)
+    s=o-T[:,0];uu=(s*p).sum(1)*inv;q=np.cross(s,e1);v=(q@d)*inv;t=(e2*q).sum(1)*inv
+    m=ok&(uu>=0)&(v>=0)&(uu+v<=1)&(t>1e-6)
+    return float(np.min(np.where(m,t,np.inf))) if m.any() else None
+def snap(M,seats,kind,up=.35,deep=.8):
+    # each seat onto the hull along its normal: (plinth top, plinth bottom, normal). The plinth's top clears the highest hull
+    # point under its rim; its skirt reaches the lowest (at most `deep` below the seat)
+    T=_tris(M);r=PL_R[kind];out=[]
+    for p,n in seats:
+        p=np.array(p,float);n=_n(n);a=np.cross(n,[0,0,1.] if abs(n[2])<.9 else [1.,0,0]);a=_n(a);b=np.cross(n,a);H=[]
+        for k in range(-1,12):
+            o=p if k<0 else p+(a*math.cos(k*PI/6)+b*math.sin(k*PI/6))*r*(1 if k%2 else .6)
+            t=_ray(T,o+n*up,-n)
+            if t is not None and t<up+deep:H.append(up-t)
+        if not H:H=[0.0]
+        top=p+n*(max(H)+.02*(1 if kind=='depot' else 1.4));bot=p+n*(min(H)-.03)
+        out.append((top,bot,n))
+    return out
+def plinth(M,top,bot,n,kind):
+    # a turret plinth: a drum from the hull up to the seat, a dark deck ring and an amber edge, lit marker lamps round its skirt
+    r=PL_R[kind];top=np.array(top,float);bot=np.array(bot,float);n=_n(n)
+    if np.linalg.norm(top-bot)<.04:bot=top-n*.04
+    drum(M,bot,top-n*r*.1,r*.9,MID,12)
+    drum(M,top-n*r*.08,top,r,DARK,12)
+    R=frame_y(n);C=Mesh();ring(C,(0,0,0),r*1.01,r*.05,ACC,seg=24,sides=4,axis='y');put(M,C,top-n*r*.04,R)
+    a=_n(np.cross(n,[0,0,1.] if abs(n[2])<.9 else [1.,0,0]));b=np.cross(n,a)
+    for k in range(4):
+        q=top-n*r*.2+(a*math.cos(k*PI/2+PI/4)+b*math.sin(k*PI/2+PI/4))*r*.91;M.blob(tuple(q),r*.06,WIN,sub=1,noise=0)
+def _seated(M,seats,kind):
+    S=snap(M,seats,kind)
+    for top,bot,n in S[:NLIVE]:plinth(M,top,bot,n,kind)
+    return M,[(top,n) for top,_,n in S]
+_DEP={1:lambda lv:BS_depot(lv,guns=False)}
+_CORE={1:lambda:BS_core('standard',True)}
+_DS={1:STD_DSEATS};_CS={1:STD_CSEATS}
+def depot_model(n,lv,seats=False):
+    # design n's Depot at level lv as the pack holds it: no modelled guns, a plinth on each live seat
+    M,S=_seated(_DEP[n](lv),_DS[n],'depot');return (M,S) if seats else M
+def core_model(n,seats=False):
+    M,S=_seated(_CORE[n](),_CS[n],'station');return (M,S) if seats else M
+def live_seats():
+    # {design: (depot seats, core seats)} as (plinth top, normal), snapped on the level-1 depot and the bare core
+    return {n:(depot_model(n,1,True)[1],core_model(n,True)[1]) for n in range(1,7)}
 
 # ------------------------------------------------------------------ the families
 DESIGNS=[(2,'Wheel','a standing habitat wheel on an axle',wheel_depot,wheel_core,WHEEL_DSEATS,WHEEL_CSEATS),
@@ -364,10 +435,13 @@ DESIGNS=[(2,'Wheel','a standing habitat wheel on an axle',wheel_depot,wheel_core
          (4,'Truss cluster','modules bolted into open cube frames',cluster_depot,cluster_core,CLUSTER_DSEATS,CLUSTER_CSEATS),
          (5,'Disc','a flat lens with a lit rim and docking slots',disc_depot,disc_core,DISC_DSEATS,DISC_CSEATS),
          (6,'Asteroid','built into a large rock: domes, docking arms, lights',asteroid_depot,asteroid_core,AST_DSEATS,AST_CSEATS)]
+for _n_,_,_,_dep,_core,_ds,_cs in DESIGNS:_DEP[_n_]=_dep;_CORE[_n_]=_core;_DS[_n_]=_ds;_CS[_n_]=_cs
 def models():
-    # name -> (builder, turret seats) for the model pack
+    # name -> builder returning (mesh, seats as (plinth top, normal)) for the model pack: designs 2-6 and the standard set's
+    # Depots and core (by_depot1-3, by_core: the same models with the guns left off and plinths on the seats)
     out={}
-    for n,_,_,dep,core,ds,cs in DESIGNS:
-        for lv in (1,2,3):out['by_d%d_depot%d'%(n,lv)]=((lambda f,l:lambda:f(l))(dep,lv),[p for p,_ in ds])
-        out['by_d%d_core'%n]=(core,[p for p,_ in cs])
+    for n in range(1,7):
+        pre='by_' if n==1 else 'by_d%d_'%n
+        for lv in (1,2,3):out[pre+'depot%d'%lv]=(lambda n,l:lambda:depot_model(n,l,True))(n,lv)
+        out[pre+'core']=(lambda n:lambda:core_model(n,True))(n)
     return out
