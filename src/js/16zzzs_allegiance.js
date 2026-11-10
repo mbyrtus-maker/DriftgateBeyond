@@ -9,7 +9,7 @@
 // This replaces the whole allegianceHtml chain (rating, heat, declare, the Unbound, audience, marque and regent wrappers);
 // each piece is drawn here instead.
 const AL_PERK={halcyon:[['Ships','Shields +12% · Hull −12%'],['Perk','Trade Charter: buys freeport ore when short'],['Career','Hauling +20% (Freeport jobs) · Gannet']],
-  varkesh:[['Ships','Speed −10%'],['Perk','Dominion hulls: Hull +25%, self-repairing armour'],['Career','Mining +20% (Aurorite jobs) · Bombard']],
+  varkesh:[['Ships','Speed −10% · Hull +25%'],['Perk','Dominion hulls: self-repairing armour'],['Career','Mining +20% (Aurorite jobs) · Bombard']],
   ostrova:[['Ships','Reactor +12% · Shields −12%'],['Perk','Archive fleet: third escort, cheaper carriers'],['Career','Scout pay +40% · drive peek · Vesper']]};
 function alPerkHtml(f){const L=AL_PERK[f];if(!L)return`<div class="note" style="margin:4px 0 0">${String(FAC(f).traitText||'').split('<br>').map(esc).join('<br>')}</div>`;
   return`<div style="display:grid;grid-template-columns:58px 1fr;gap:2px 10px;margin-top:6px;font-size:13px">${L.map(([k,v])=>`<span class="lab" style="margin:0;line-height:1.7">${k}</span><span style="color:var(--ivory,#ece4cf)">${esc(v)}</span>`).join('')}</div>`}

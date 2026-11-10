@@ -3352,7 +3352,7 @@ Built as the revised proposal says (`16zzzq_components.js`, `tools/tests/compone
 ### Convoy raids by issuer, order keys for the sworn, Varkesh's perk (user, 9 Nov 2026)
 - **A convoy raid offered by several powers is one job per power** ("it clicks all of them ... I should have to choose who I'm earning standing with"): each offer's id names its issuer (`cv:<convoy>:<power>`), so selecting one selects only that power's; the bounty and standing go to the one you picked. (The Rusty Tankard's rumours keep `cv:<convoy>`.)
 - **The order keys** (Join operation, Take order, Next order, Drop order) in the Command card's quick keys are Driftgate 1's sworn-pilot orders: they show only once you fly for a power or have declared your own faction. A contractor with a selected job sees Drop job.
-- **Varkesh's perk** on the Allegiance tab reads "Dominion hulls: Hull +25%, self-repairing armour" (Ships: Speed −10%).
+- **Varkesh** on the Allegiance tab: Ships "Speed −10% · Hull +25%", Perk "Dominion hulls: self-repairing armour" (user, 9 Nov 2026).
 - The guest convoy test now renders the board once before picking a job (the board's first render on a new dock resets its filter and pick).
 
 ### Proposal: reasons to stop at a depot (user, 9 Nov 2026: "1, 2, 5 write up the designs"; not yet agreed)
