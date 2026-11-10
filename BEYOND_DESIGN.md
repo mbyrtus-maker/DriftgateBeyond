@@ -3642,3 +3642,9 @@ already left black-market jobs off, but the in-flight jobs list (`cjList`) didn'
 tab, so a Riftstone buyer or a Dread Pirate hunt posted there was only on the in-flight list. Now `cjList` drops every
 black-market job (`j.bm` or `bmr:`), and Jobs → Black market is also on a power's station. The tab's note covers all of it:
 a fixer's runs, quiet buyers (Riftstone), bounties. Test: orejobs.py.
+
+### Crews in heavy hulls (9 Nov 2026)
+The user: "why can't we hire heavy fighters? Is that a limitation somewhere for a depot?" It wasn't a rule, just a
+hard-coded list of 8 hulls in three hire screens. Now one list, `CREW_HULLS` (16o_depots.js): the three miners, the three
+haulers, Light, Medium and Heavy Fighters, Bombers and Heavy Bombers. Your Contractor Rating gates each as before (Heavy
+Fighter and Bomber 4, Heavy Bomber 6). Combat hulls start as guards. Scouts stay off: no crew job uses them. Test: baserun.py.
