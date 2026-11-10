@@ -111,5 +111,8 @@ js/16zzzo_rdstation.js
 js/16zzzp_smughold.js
 js/16zzzq_components.js
 js/16zzzr_stdparts.js
+js/16zzzs_allegiance.js
+js/16zzzt_tags.js
+js/16zzzu_myjobs.js
 js/17_main.js
 end.html

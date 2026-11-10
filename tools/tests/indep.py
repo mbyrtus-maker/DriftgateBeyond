@@ -58,7 +58,7 @@ async def main():
     await ev("""(()=>{const P=S.player,sid=window._SID;exitSector();P.sector=sid;P.docked=null;enterSector(sid);const p=W.player;p.x=4000;p.y=2000;p.z=4000;return 1})()""")
     r=json.loads(await ev("""(()=>{const sid=window._SID,I=indAll().find(x=>x.role==='hauler'&&x.st==='dock')||indAll().find(x=>x.st!=='down'&&x.st!=='pj'&&!x.live);if(!I)return '{}';const nb=NEIGH[sid][0];I.sector=nb;I.run={k:'home',to:sid,path:[nb,sid],leg:0,next:S.T,T0:S.T};I.st='go';devLedger(()=>{I.hold={fe:5}});window._L=I.id;
       I.run.leg=1;I.sector=sid;const e=indSpawn(I,true);return JSON.stringify({live:!!e,label:e&&e.pname,cargo:e&&e.cargo,pt:e&&e.pt})})()"""))
-    chk('an independent flies live with its name and trait',r.get('live') and 'Independent' in (r.get('label') or ''),r)
+    chk('an independent flies live with its name and trait',r.get('live') and (r.get('label') or '').startswith('[I] '),r)
     r=json.loads(await ev("""(()=>{const I=indById(window._L),e=W.ents.find(x=>x.indId===I.id&&x.alive);const P=S.player,s0=JSON.stringify(P.stand);const c0=Object.keys(S.sectors[W.sid].crates).length;
       damageShip(e,5,'player',{src:W.player,x:e.x,y:e.y,z:e.z},'kinetic');const k0=JSON.stringify(I.kit);killShip(e,'player',{src:W.player,kind:'missile'});return JSON.stringify({st:I.st,cause:I.cause,stand:JSON.stringify(P.stand)===s0,kit:Object.keys(I.kit).length,back:I.back-S.T,killer:I.killer})})()"""))
     chk('shot down live: down, kit lost, no standing lost',r['st']=='down' and r['kit']==0 and r['stand'],r)

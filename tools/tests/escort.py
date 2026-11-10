@@ -28,7 +28,7 @@ async def main():
       const L=jobsList(dockCtx(),P,[P.cargo,P.vault]),row=L.find(x=>x.id==='igd:'+I.id);dockAction('igtake',I.id);const took=dockErr;
       return JSON.stringify({miner:true,id:I.id,to,why:H&&H.why,cap:H&&H.cap,waits,still,onBoard:!!(row&&row.btn&&row.btn[0]==='igtake'),issuer:row?jbIssuer(row):'',took,guard:!!I.guard})})()"""))
     check('a miner going into deep space hires a guard and waits at its freeport',r.get('miner') and r.get('why')=='into deep space' and r.get('cap',0)>=400 and r.get('waits') and r.get('still'),r)
-    check('the guard job is on the Jobs board, from the miner, and the pilot takes it',r.get('onBoard') and 'independent' in r.get('issuer','') and r.get('guard'),r)
+    check('the guard job is on the Jobs board, from the miner, and the pilot takes it',r.get('onBoard') and r.get('issuer','').startswith('[I] ') and r.get('guard'),r)
     iid=r.get('id')
     r=json.loads(await ev(f"""(()=>{{const I=indById({json.dumps(iid)});igStep(I);return JSON.stringify({{st:I.st,hire:I.hire&&I.hire.st,run:I.run&&I.run.k}})}})()"""))
     check('with its guard in the system it sets off',r['st']=='go' and r['hire']=='out' and r['run']=='mine',r)
