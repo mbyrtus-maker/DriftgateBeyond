@@ -3531,3 +3531,12 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 
 ### No centre line in the cockpit (user, 9 Nov 2026)
 "No cockpit view should have a line down the middle." The Freighter's and the Heavy Hauler's cockpits had a centre mullion (`mull` in the cockpit table, 12_render.js); every hull's is now 0, so no cockpit draws one. Checked on the Light Fighter, Freighter, Heavy Hauler, Bomber, Scout and Dredger.
+
+### One purchase for a Depot or a Station; dev resources where you're docked (user, 9 Nov 2026)
+- **One purchase** ("why do I need two depot frames to build a depot, it should be everything in one purchase, same with stations"):
+  - The Depot Kit and the Station Kit already were the single purchase (each holds all the makings and unpacks itself when used), but the game's text still asked for "2 Depot Frames" or "a Capital Keel, 2 Depot Frames and a Compact Seal".
+  - Every prompt, button, note and refusal for building or upgrading now asks for the kit alone: one purchase on a station's Market, carried in a Heavy Hauler. That covers the O menu, Holdings, a Lair's upgrade and the Station upgrade.
+  - The loose makings still work if you have them.
+- **Dev resources** ("the developer menu add 10 of each resource says it goes to my hold but that isn't accessible in a station I own"):
+  - Docked, "+10 of each resource" now goes into this dock's storage: your vault at a station that keeps one, or the store of a base you own.
+  - In flight it goes to your hangar (vault) as before. The button says which.

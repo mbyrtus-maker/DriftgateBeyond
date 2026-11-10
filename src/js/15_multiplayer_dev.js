@@ -536,7 +536,8 @@ function devToggle(){const d=$('dev');d.hidden=!d.hidden;if(!d.hidden){devShips(
 // developer: +10,000 credits (the conservation baseline moves with it)
 function devCredits(){if(NET.cl){netSend({t:'dev',k:'cr'});return}devLedger(()=>{S.player.credits+=10000});feed('Developer: +10,000 credits.','good')}
 function devLedger(fn){const L0=ledger(),r=fn(),L1=ledger();for(const e of RAWS)S.ledger0.tot[e]=(S.ledger0.tot[e]||0)+L1.tot[e]-L0.tot[e];S.ledger0.credits+=L1.credits-L0.credits;return r}
-function devRes(P){P=P||S.player;devLedger(()=>{for(const k of ITEM_ORDER)inv.add(P.vault,k,10)});return `Added 10 of each of ${ITEM_ORDER.length} resources to the vault.`}
+// (9 Nov 2026) docked, they go into this dock's storage (your vault here, or the store of a base you own), so you can use them where you are
+function devRes(P){P=P||S.player;let to=P.vault,nm='the vault';try{if(P===S.player&&P.docked&&typeof dockCtx==='function'){const c=dockCtx();if(c&&c.storage){to=c.storage;nm=c.storageName?String(c.storageName).toLowerCase():'storage here'}}}catch(e){}devLedger(()=>{for(const k of ITEM_ORDER)inv.add(to,k,10)});return `Added 10 of each of ${ITEM_ORDER.length} resources to ${nm==='the vault'?nm:'the '+nm.replace(/^the /,'')}.`}
 // switch to any hull as though you had built it: its parts come with it (so a later trade-in is honest), the old hull's parts go to the vault
 function devHull(cls){if(!CLASSES[cls]||!(cls in HULL_COST))return 'Unknown hull.';const P=S.player;if(P.cls===cls)return 'You already fly that ship.';
   devLedger(()=>{inv.addAll(P.vault,P.hullInv||{});P.hullInv={...HULL_COST[cls]};

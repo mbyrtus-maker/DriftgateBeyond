@@ -16,9 +16,9 @@ function ctrOnly(){const P=S&&S.player;return!!P&&!S.unb&&!S.training&&!P.sworn&
 function ctrBuildMenu(){if(!W||!W.player||W.dead){flash('Launch first.');return}if(S.player.docked){flash('Launch first: you build in flight.');return}W.ftgt=W.player;openComms()}
 function ctrBuildOpts(){const P=S.player,O=[];let sp;try{sp=lairSpot(P)}catch(e){sp={why:'No spot for a Lair here.'}}
   O.push({k:'ctrlair',l:`Build a Lair here${sp.why?` · ${sp.why}`:''}`,off:!!(sp.why||!sp.a)&&!(sp.a&&(P.cargo.kit_lair||0)>0)});
-  const can=depCan(W.sid),kit=kitOr(DEP.cost,[P.cargo],'kit_depot');O.push({k:'ctrdep',l:`Build a Depot here${!can?' · not in a system with a station or in a power\'s home space':!kit?' · needs a Depot Kit (or 2 Depot Frames) in your hold':''}`,off:!can||!kit});
+  const can=depCan(W.sid),kit=kitOr(DEP.cost,[P.cargo],'kit_depot');O.push({k:'ctrdep',l:`Build a Depot here${!can?' · not in a system with a station or in a power\'s home space':!kit?' · needs a Depot Kit in your hold (one purchase on a station\'s Market)':''}`,off:!can||!kit});
   const R=S.stations[W.sid],mine=R&&R.owner==='player'&&(R.pid||'me')===pkeyOf(P);
-  if(mine&&!R.pst){const k2=kitOr(STA.cost,[P.cargo,R.stock],'kit_station');O.push({k:'ctrsta',l:`Upgrade ${R.name} to a Station${k2?'':' · needs a Station Kit (in your hold or its stock)'}`,off:!k2})}
+  if(mine&&!R.pst){const k2=kitOr(STA.cost,[P.cargo,R.stock],'kit_station');O.push({k:'ctrsta',l:`Upgrade ${R.name} to a Station${k2?'':' · needs a Station Kit (in your hold or its store)'}`,off:!k2})}
   else O.push({k:'ctrsta',l:mine?`${R.name} is already a Station`:'Upgrade your Depot to a Station · fly to your Depot\'s system',off:true});
   O.push({k:'help',l:'Distress: send help to me'});return O}
 {const o=cmOpts;cmOpts=function(T){if(ctrOnly()&&W&&T===W.player)return ctrBuildOpts();return o.apply(this,arguments)}}

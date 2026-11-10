@@ -8,7 +8,7 @@
 // (devLedger), as the old tools do. Guests' requests run on the host.
 const DVX={kits:{lair:{frame:1,plate:6},depot:{frame:2},station:{keel:1,frame:2,seal:1},bld:{frame:1,plate:20,coil:4}}};
 (function(){const D=document.getElementById('dev');if(!D)return;
-  const res=D.querySelector('[data-dev="res"]');if(res)res.textContent='Hangar: +10 of each resource';
+  const res=D.querySelector('[data-dev="res"]');if(res)res.textContent=S&&S.player&&S.player.docked?'Storage here: +10 of each resource':'Hangar: +10 of each resource';
   const gb=D.querySelector('[data-dev="gunboat"]');
   const sec=document.createElement('div');sec.innerHTML=`<div class="dv-sec">Beyond</div>
     <div class="dv-s"><label class="dv-l" for="devPow">Power</label><select id="devPow" aria-label="Power"></select><button type="button" class="btn" data-dev="bx:st+">Standing +25</button><button type="button" class="btn" data-dev="bx:st-">−25</button></div>
