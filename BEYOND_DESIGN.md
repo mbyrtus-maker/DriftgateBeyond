@@ -3492,3 +3492,11 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 - **Building:** a new Lair takes 60 s to build. Near your own Lair the prompt now says so with the seconds left, and once it's ready reads "E — dock at your Lair" (or "fly closer to dock").
 - **Targeting:** your own Lairs in the system are targets: in the target cycle, with a panel (level, stash, building or ready, hull, which powers have found it, how to dock). The autopilot flies you there.
 - **Code and test:** `16zzzx_contractor.js`; test `ctrbuild.py`.
+
+### Your company on the Allegiance tab (user, 9 Nov 2026)
+"Need a set up my company screen added in the Allegiance menu, or am I missing something to be able to see the company screen?"
+- **Where the profile was:** on the Company screen (key 0) → Profile, which nothing on the dock pointed to.
+- **The new section:** the dock's Allegiance tab now has a "Your company" section among the items about you.
+  - Before the profile is set, it explains what the profile is for (building Depots and Stations; name, logo, base design, colour, fees, a 100,000 cr treasury), names the key, and offers **Set up my company**.
+  - Afterwards it shows your logo and name with a **Company profile** button.
+- **The button:** opens the Company screen on its Profile tab, over the dock. It acts on your own screen only.
