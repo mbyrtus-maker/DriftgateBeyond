@@ -10,7 +10,7 @@
 // Below the systems: ammunition, missiles and charges, and Rearm. The ship's stats stay in the header line.
 // The old Loadout block in the Shipyard tab goes (it lives here now).
 let ldSel='parts';
-const LD_EFF={gun:'+10% damage a grade',laser:'+10% damage a grade',missile:'one more missile a grade',torpedo:'one more torpedo a grade',charge:'one more charge a grade',mlaser:'+15% cutting rate a grade',cargo:'+5% hold a grade',scanner:'+20% reach a grade',dronec:'+25% drone hull and +15% drone damage a grade',land:'one grade only',hide:'+4 t hidden a grade',bdev:'one more beacon device a grade',lrack:'one more limpet a grade'};
+const LD_EFF={gun:'+10% damage a grade',laser:'+10% damage a grade',missile:'one more missile a grade',torpedo:'one more torpedo a grade',charge:'one more charge a grade',mlaser:'+15% cutting rate a grade',cargo:'+5% hold a grade',scanner:'+20% reach a grade',dronec:'+25% drone hull and +15% drone damage a grade',land:'one grade only',hide:'+4 t hidden a grade',bdev:'never used up (grades add nothing)',lrack:'one more limpet a grade'};
 function ldShape(cls){if(blHull(cls))return'M0,-120 L40,-96 L52,40 L36,110 L-36,110 L-52,40 L-40,-96 Z M-52,-10 L-96,0 L-96,50 L-52,52 Z M52,-10 L96,0 L96,50 L52,52 Z';
   if(isHaulCls(cls))return'M0,-130 L36,-104 L40,110 L-40,110 L-36,-104 Z M-40,-60 L-92,-56 L-92,70 L-40,74 Z M40,-60 L92,-56 L92,70 L40,74 Z';
   return'M0,-150 L18,-80 L26,-20 L110,20 L150,34 L150,56 L110,58 L34,66 L28,110 L50,136 L0,128 L-50,136 L-28,110 L-34,66 L-110,58 L-150,56 L-150,34 L-110,20 L-26,-20 L-18,-80 Z'}

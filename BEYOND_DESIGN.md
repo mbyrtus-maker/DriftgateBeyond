@@ -3437,3 +3437,16 @@ The user's answers to the proposal above: "1 should have their own category call
 
 ### Your charge targeted for you (user, 9 Nov 2026)
 "When taking guard missions [or escort] it would be helpful to target the ship being guarded when you're in the same sector as a friendly target." In the same system as the ship you guard or escort (`P.fmE`, set by the host), it becomes your target as you arrive, undock or take the job there, with a note that the autopilot key flies in formation. A target you picked yourself, or a hostile you're fighting, is left alone; whenever you have no target (the hostile is dead), your charge is targeted again. Host and guests alike (`16zzzi_escort.js`; test in `escort.py`).
+
+### The mining ring turns with its rock; scouts' beacon rigs; parts only on their hulls (user, 9 Nov 2026)
+- **The mining laser's ring** ("targeting doesn't work, ring seems to go wherever it wishes"):
+  - **Cause:** the ring was a fixed circle in space around a sphere. The rock itself tumbles (`astPose`) and is squashed (`astScaleY`), so the ring slid over the rock's surface as it turned, and the beam's on-ring test used that same sliding circle.
+  - **Fix:** the ring is now a great circle in the rock's own frame. It is drawn and tested there: the beam is traced into the rock's frame with its height unsquashed, and the assist that swings the beam onto the ring works in the same frame. Where you see the ring is where the beam cuts.
+  - **Multiplayer:** every rock's tumble now runs on the galaxy clock `S.T` rather than each client's sector clock, so the host, which cuts for its guests, and the guests see a rock turned the same way. Landing on rocks uses the same pose.
+  - **Test:** `mlring.py`.
+- **Beacon rigs are never used up** ("it should not be used up when claiming a beacon"): fitted, a rig flips beacons as often as you like. Without one there are no flips (it used to hold one device a grade, restocked on docking).
+- **Every scout comes with a beacon rig** ("scout should come with a beacon rig"): taking up a scout hull (Scout, Pathfinder, the Unbound's skiff) at a station fits one, from your vault if you keep one there, else from the station's shelf with the hull. Once per hull: taken out by hand, it stays out (`16zzzw_scoutrig.js`).
+- **Parts only on their hulls** ("only scouts should be able to equip them, similar to mining lasers and blast chargers only on mining vessels"):
+  - **Already true when fitting:** beacon rigs and limpet racks on scouts, mining lasers and charge launchers on mining hulls.
+  - **The gap closed:** a new hull used to carry utility parts across into any empty slot, so a scout's rig could end up on a fighter. Now a new hull keeps only the utility parts that fit it (`utilOK`: rigs and racks on scouts, drone controllers on miners and haulers, Control Markers on fighters and bombers), and the rest go to the vault.
+  - **Test:** `scoutrig.py`.

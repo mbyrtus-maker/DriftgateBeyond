@@ -12,11 +12,11 @@ LOAD.ml.rate={skiff:.35,prospector:.5,dredger:.65};
 const ML={ringK:2};let mlK=1;
 {const o=mlRate;mlRate=function(P){return o.apply(this,arguments)*mlK}}
 {const o=mlCut;mlCut=function(e,P,a,dt,sec,show){let B=null;try{B=mlBeam(e,a)}catch(err){}mlK=B&&B.on&&!B.assist?ML.ringK:1;try{return o.apply(this,arguments)}finally{mlK=1}}}LOAD.ml.assist=Math.cos(45*Math.PI/180);
-{const o=mlBeam;mlBeam=function(e,a){const B=o.apply(this,arguments);try{if(B&&B.on)return B;const n=ringN(a),R=astR(a);qRot(e.q,0,0,1,_f);
-  // candidates on the ring: the point nearest the ship, and the point nearest where the beam strikes; the first within the cone wins
-  const r=e.st.radius,sx=e.x+_f.x*r,sy=e.y+_f.y*r,sz=e.z+_f.z*r,C=[[sx-a.x,sy-a.y,sz-a.z]];if(B)C.unshift([B.x-a.x,B.y-a.y,B.z-a.z]);
-  for(let[px,py,pz]of C){const dn=px*n.x+py*n.y+pz*n.z;px-=dn*n.x;py-=dn*n.y;pz-=dn*n.z;const l=Math.hypot(px,py,pz);if(l<1e-6)continue;
-    const qx=a.x+px/l*R,qy=a.y+py/l*R,qz=a.z+pz/l*R,dx=qx-sx,dy=qy-sy,dz=qz-sz,d=Math.hypot(dx,dy,dz);if(d>LOAD.ml.range||(dx*_f.x+dy*_f.y+dz*_f.z)/d<LOAD.ml.assist)continue;
+{const o=mlBeam;mlBeam=function(e,a){const B=o.apply(this,arguments);try{if(B&&B.on)return B;const F=mlFrame(a),n=F.n,R=F.R;qRot(e.q,0,0,1,_f);
+  // candidates on the ring (in the rock's own frame): the point nearest the ship, and the point nearest where the beam strikes; the first within the cone wins
+  const r=e.st.radius,sx=e.x+_f.x*r,sy=e.y+_f.y*r,sz=e.z+_f.z*r,C=[mlToS(F,sx-a.x,sy-a.y,sz-a.z)];if(B)C.unshift(mlToS(F,B.x-a.x,B.y-a.y,B.z-a.z));
+  for(let{x:px,y:py,z:pz}of C){const dn=px*n.x+py*n.y+pz*n.z;px-=dn*n.x;py-=dn*n.y;pz-=dn*n.z;const l=Math.hypot(px,py,pz);if(l<1e-6)continue;
+    const w=mlFromS(F,px/l*R,py/l*R,pz/l*R),qx=a.x+w.x,qy=a.y+w.y,qz=a.z+w.z,dx=qx-sx,dy=qy-sy,dz=qz-sz,d=Math.hypot(dx,dy,dz);if(d>LOAD.ml.range||(dx*_f.x+dy*_f.y+dz*_f.z)/d<LOAD.ml.assist)continue;
     if(((qx-a.x)*(sx-a.x)+(qy-a.y)*(sy-a.y)+(qz-a.z)*(sz-a.z))<-.3*R*Math.hypot(sx-a.x,sy-a.y,sz-a.z))continue;
     return{x:qx,y:qy,z:qz,d,on:true,off:0,assist:true}}return B}catch(err){return B}}}
 {const o=mlCut;mlCut=function(e,P,a,dt,sec,show){const k0=e.isPlayer?invMass(P.cargo):0,r=o.apply(this,arguments);

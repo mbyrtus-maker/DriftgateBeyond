@@ -58,7 +58,11 @@ function fitOf(P){if(!P)return{w:[],u:[],g:[],ug:[]};if(!P.fit||!Array.isArray(P
 // a new hull: the fitted parts move across into slots that take them, in order; what doesn't fit goes to the vault
 function fitMigrate(P,F){const D=slotsOf(P.cls,P.faction),st=P.vault||(P.vault={}),N={cls:P.cls,d:designOf(P.faction,P.cls)?P.faction:null,w:D.w.map(()=>''),u:D.u.map(()=>''),g:D.w.map(()=>1),ug:D.u.map(()=>1),wi:D.w.map(()=>null),ui:D.u.map(()=>null)};const wi=F.wi||[],ui=F.ui||[];
   F.w.forEach((k,j)=>{if(!k)return;const i=N.w.findIndex((s,x)=>!s&&wpnOK(P.cls,k,x));if(i>=0){N.w[i]=k;N.g[i]=F.g[j]||1;N.wi[i]=wi[j]||null}else partToStore(st,k,F.g[j]||1,wi[j])});
-  F.u.forEach((k,j)=>{if(!k)return;const i=N.u.indexOf('');if(i>=0){N.u[i]=k;N.ug[i]=F.ug[j]||1;N.ui[i]=ui[j]||null}else partToStore(st,k,F.ug[j]||1,ui[j])});Object.assign(F,N)}
+  F.u.forEach((k,j)=>{if(!k)return;const i=utilOK(P.cls,k)?N.u.indexOf(''):-1;if(i>=0){N.u[i]=k;N.ug[i]=F.ug[j]||1;N.ui[i]=ui[j]||null}else partToStore(st,k,F.ug[j]||1,ui[j])});Object.assign(F,N)}
+// (user, 9 Nov 2026) which hulls a utility part goes on: beacon rigs and limpet racks on scouts only, drone controllers on
+// miners and haulers, Control Markers on fighters and bombers (mining lasers and charge launchers, weapons, go on mining hulls
+// only through wpnOK). A new hull keeps only what fits it; the rest goes to the vault.
+function utilOK(cls,k){if(k==='bdev'||k==='lrack')return isScoutCls(cls);if(k==='dronec')return typeof drnHull!=='function'||!!drnHull(cls);if(k==='claim')return typeof beaconCls!=='function'||!!beaconCls(cls);return true}
 function fitG(P,k){const F=fitOf(P);let g=0;F.w.forEach((x,i)=>{if(x===k)g=Math.max(g,F.g[i]||1)});return g}
 function fitGs(P,k){const F=fitOf(P);let s=0;F.w.forEach((x,i)=>{if(x===k)s+=(F.g[i]||1)-1});return s}
 function fitUG(P,k){const F=fitOf(P);let g=0;F.u.forEach((x,i)=>{if(x===k)g=Math.max(g,F.ug[i]||1)});return g}
@@ -112,9 +116,18 @@ function ldSay(e,t,bad){if(!e)return;const k='_ldm'+t.length;if(W.t-(e[k]||-9)<2
 function ringN(a){if(a._rn&&a._rnk===a.id)return a._rn;const r=blRng(((a.seed||a.id||1)*31+7)>>>0),z=r()*2-1,t=r()*TAU,q=Math.sqrt(1-z*z);a._rn={x:q*Math.cos(t),y:q*Math.sin(t),z};a._rnk=a.id;return a._rn}
 function ringOK(a){return!!a&&!a.wpt&&!a.comet&&!a.noRing&&oreTotal(a)>0}
 // where the beam meets the rock, and whether that point is on the ring
-function mlBeam(e,a){qRot(e.q,0,0,1,_f);const R=astR(a),r=e.st.radius,ox=e.x+_f.x*r-a.x,oy=e.y+_f.y*r-a.y,oz=e.z+_f.z*r-a.z,b=ox*_f.x+oy*_f.y+oz*_f.z,c=ox*ox+oy*oy+oz*oz-R*R,D=b*b-c;
-  if(D<0)return null;const t=-b-Math.sqrt(D);if(t<0||t>LOAD.ml.range)return null;const hx=ox+_f.x*t,hy=oy+_f.y*t,hz=oz+_f.z*t,n=ringN(a),s=(hx*n.x+hy*n.y+hz*n.z)/R;
-  return{x:a.x+hx,y:a.y+hy,z:a.z+hz,d:t,on:Math.abs(s)<LOAD.ml.band,off:Math.abs(s)}}
+// (9 Nov 2026: "the ring seems to go wherever it wishes") the ring belongs to the rock: it is a great circle in the rock's own
+// frame, turning as the rock tumbles (astPose) and following its squashed shape (astScaleY). The beam is traced into that frame
+// (the rock as a sphere of radius astR once its height is unsquashed), so where you see the ring is where the beam cuts.
+const _mlq={x:0,y:0,z:0,w:1},_mlv={x:0,y:0,z:0};
+function mlFrame(a){const q=astPose(a,0,{x:0,y:0,z:0,w:1});return{q,qi:{x:-q.x,y:-q.y,z:-q.z,w:q.w},sy:astScaleY(a),R:astR(a),n:ringN(a)}}
+// a world offset from the rock's centre into ring space (the rock's frame, height unsquashed), and back
+function mlToS(F,x,y,z){const v=qRot(F.qi,x,y,z,{x:0,y:0,z:0});v.y/=F.sy;return v}
+function mlFromS(F,x,y,z){return qRot(F.q,x,y*F.sy,z,{x:0,y:0,z:0})}
+function mlBeam(e,a){qRot(e.q,0,0,1,_f);const F=mlFrame(a),R=F.R,r=e.st.radius,o=mlToS(F,e.x+_f.x*r-a.x,e.y+_f.y*r-a.y,e.z+_f.z*r-a.z),d=mlToS(F,_f.x,_f.y,_f.z);
+  const A=d.x*d.x+d.y*d.y+d.z*d.z,b=o.x*d.x+o.y*d.y+o.z*d.z,c=o.x*o.x+o.y*o.y+o.z*o.z-R*R,D=b*b-A*c;if(D<0)return null;const t=(-b-Math.sqrt(D))/A;if(t<0||t>LOAD.ml.range)return null;
+  const hx=o.x+d.x*t,hy=o.y+d.y*t,hz=o.z+d.z*t,n=F.n,s=(hx*n.x+hy*n.y+hz*n.z)/R,w=mlFromS(F,hx,hy,hz);
+  return{x:a.x+w.x,y:a.y+w.y,z:a.z+w.z,d:t,on:Math.abs(s)<LOAD.ml.band,off:Math.abs(s)}}
 function mlRate(P){return(LOAD.ml.rate[P.cls]||.2)*(1+.2*(blTier(P)-1))*(1+PG.ml*(Math.max(1,fitG(P,'mlaser'))-1))}
 // one frame of cutting (host and single player; a guest's client calls it with show only, for the beam)
 function mlCut(e,P,a,dt,sec,show){const need=LOAD.ml.e*dt;if(e.energy<need)return'energy';e.energy-=need;const B=mlBeam(e,a);if(!B)return'aim';
@@ -141,9 +154,9 @@ function mtoolToggle(){const P=S.player,t=mtools(P);if(!loadOn()||!t.length){fla
 // the ring on the targeted rock (when scanned or close), green where the beam would cut
 {const o=blDraw;blDraw=function(c){o.apply(this,arguments);if(!loadOn())return;const p=W.player,P=S.player;if(!p||!fitN(P,'mlaser'))return;
   const a=W.tgt&&W.tgt.kind==='ast'&&validTgt(W.tgt)?W.tgt.ref:null;if(!a||!ringOK(a))return;const dist=d3(a,p);if(!((a.scanT||0)>W.t||dist<BL.eyeR+astR(a)+300))return;
-  const n=ringN(a),R=astR(a)*1.01,ax=Math.abs(n.x)<.9?{x:1,y:0,z:0}:{x:0,y:1,z:0};let u={x:n.y*ax.z-n.z*ax.y,y:n.z*ax.x-n.x*ax.z,z:n.x*ax.y-n.y*ax.x};const ul=hyp(u.x,u.y,u.z);u={x:u.x/ul,y:u.y/ul,z:u.z/ul};
+  const F=mlFrame(a),n=F.n,R=F.R*1.01,ax=Math.abs(n.x)<.9?{x:1,y:0,z:0}:{x:0,y:1,z:0};let u={x:n.y*ax.z-n.z*ax.y,y:n.z*ax.x-n.x*ax.z,z:n.x*ax.y-n.y*ax.x};const ul=hyp(u.x,u.y,u.z);u={x:u.x/ul,y:u.y/ul,z:u.z/ul};
   const v={x:n.y*u.z-n.z*u.y,y:n.z*u.x-n.x*u.z,z:n.x*u.y-n.y*u.x},B=mlBeam(p,a),on=mtoolOf(P)==='mlaser'&&B&&B.on;c.save();c.lineWidth=on?2.5:1.6;
-  let prev=null;for(let i=0;i<=64;i++){const th=i/64*TAU,cs=Math.cos(th),sn=Math.sin(th),wx=u.x*cs+v.x*sn,wy=u.y*cs+v.y*sn,wz=u.z*cs+v.z*sn,front=(wx*(p.x-a.x)+wy*(p.y-a.y)+wz*(p.z-a.z))>0,L=proj(a.x+wx*R,a.y+wy*R,a.z+wz*R);
+  let prev=null;for(let i=0;i<=64;i++){const th=i/64*TAU,cs=Math.cos(th),sn=Math.sin(th),W3=mlFromS(F,(u.x*cs+v.x*sn)*R,(u.y*cs+v.y*sn)*R,(u.z*cs+v.z*sn)*R),front=(W3.x*(p.x-a.x)+W3.y*(p.y-a.y)+W3.z*(p.z-a.z))>0,L=proj(a.x+W3.x,a.y+W3.y,a.z+W3.z);
     if(prev&&!L.behind&&!prev.L.behind){c.strokeStyle=front?(on?'#7ad9a7':'rgba(122,217,167,.8)'):'rgba(122,217,167,.22)';c.beginPath();c.moveTo(prev.L.x,prev.L.y);c.lineTo(L.x,L.y);c.stroke()}prev={L}}
   if(B&&mtoolOf(P)==='mlaser'){const L=proj(B.x,B.y,B.z);if(!L.behind){c.strokeStyle=B.on?'#7ad9a7':'#f0b24a';c.beginPath();c.arc(L.x,L.y,6,0,TAU);c.stroke()}}c.restore()}}
 // ============================================================ rearming at a dock

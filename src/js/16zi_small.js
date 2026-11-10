@@ -1,7 +1,8 @@
 //@src 16zi_small.js
 // ============================================================ the smaller items (Beyond, 3 Nov 2026)
-// 1. Beacon rigs and limpet racks are fitted parts, on scout hulls only. A beacon rig holds one beacon device a grade, a limpet
-//    rack one limpet a grade; both are restocked whenever you dock. No rig, no beacon flips; no rack, no limpets.
+// 1. Beacon rigs and limpet racks are fitted parts, on scout hulls only. A beacon rig flips beacons and is never used up (user,
+//    9 Nov 2026; it used to hold one device a grade); a limpet rack holds one limpet a grade, restocked whenever you dock.
+//    No rig, no beacon flips; no rack, no limpets. Every scout hull comes with a beacon rig (16zzzw_scoutrig.js).
 // 2. Comets and derelicts are sold as intel to the Compact: fly within 2.5 km of one (3.5 km with a scanner) to log it, then
 //    sell the find at any freeport while it lasts. A comet pays 3 cr a tonne of its ore (at least 150), a derelict a fifth of
 //    its cargo's value (at least 120).
@@ -13,7 +14,7 @@
 // Ledger: tags only mark goods; a shard's Riftstone goes into the outer drift, and anything it stands in for comes out of it.
 const SMX={findR:2500,findScan:3500,cometCr:3,cometMin:150,derK:.2,derMin:120,embHeat:30,riftGood:.65};
 // ---- 1. beacon rigs and limpet racks
-UTIL.bdev={name:'Beacon rig',desc:'Scout hulls only. Holds one beacon device a grade, restocked when you dock: flip a system\'s beacon for the power you do intel work for.'};
+UTIL.bdev={name:'Beacon rig',desc:'Scout hulls only. Flips a system\'s beacon for the power you do intel work for, as often as you like: it is never used up. Every scout hull comes with one.'};
 UTIL.lrack={name:'Limpet rack',desc:'Scout hulls only. Holds one limpet a grade, restocked when you dock.'};
 PART.bdev='pt_bdev';PART.lrack='pt_lrack';PART_RC.bdev={wire:1,coil:1};PART_RC.lrack={plate:1,wire:1};PART_COL.bdev='#7ad9f0';PART_COL.lrack='#c9a0ff';
 for(const k of['bdev','lrack']){ITEMS[PART[k]]={name:UTIL[k].name,recipe:PART_RC[k],col:PART_COL[k],part:k};ITEM_ORDER.push(PART[k]);CRAFTABLE.push(PART[k])}
@@ -24,9 +25,9 @@ function smxN(P,k){if(!loadOn())return 1;const F=fitOf(P);let n=0;F.u.forEach((x
 {const o=loadoutHtml;loadoutHtml=function(c,P){if(isScoutCls(P.cls))return o.apply(this,arguments);const a=UTIL.bdev,b=UTIL.lrack;delete UTIL.bdev;delete UTIL.lrack;try{return o.apply(this,arguments)}finally{UTIL.bdev=a;UTIL.lrack=b}}}
 {const o=partsSeed;partsSeed=function(){o.apply(this,arguments);for(const id in S.stations||{}){const R=S.stations[id];if(R&&id===FAC_HOME('ostrova')&&R.owner==='ostrova'){const st=mkStock(R);inv.add(st,'pt_bdev',2);inv.add(st,'pt_lrack',2)}}}}
 // flipping takes a beacon device from the rig
-{const o=bcnFlipper;bcnFlipper=function(e){const r=o.apply(this,arguments);if(!r||!r.by||!loadOn()||S.unb)return r;const P=xPilotOfKey(r.by);if(!P)return r;return(P.bdUsed||0)<smxN(P,'bdev')?r:null}}
-{const o=beaconFlip;beaconFlip=function(sid,side,by){const B=S.beacons&&S.beacons[sid],was=B&&B.owner;const r=o.apply(this,arguments);try{if(by&&loadOn()&&B&&B.owner!==was){const P=xPilotOfKey(by);if(P)P.bdUsed=(P.bdUsed||0)+1}}catch(e){}return r}}
-{const o=beaconChip;beaconChip=function(){const r=o.apply(this,arguments);try{const P=S.player,B=S.beacons&&S.beacons[W.sid];if(loadOn()&&isScoutCls(P.cls)&&B&&W.player&&!P.docked&&d3(W.player,B)<=BCN_R*3&&(P.bdUsed||0)>=smxN(P,'bdev')&&!(P.sworn&&B.owner===P.sworn))return[smxN(P,'bdev')?'Beacon: your beacon rig is spent · dock to restock':'Beacon: fit a beacon rig to flip it','warn']}catch(e){}return r}}
+// (user, 9 Nov 2026) a beacon rig is never used up: fitted, it flips beacons as often as you like; without one, no flips
+{const o=bcnFlipper;bcnFlipper=function(e){const r=o.apply(this,arguments);if(!r||!r.by||!loadOn()||S.unb)return r;const P=xPilotOfKey(r.by);if(!P)return r;return smxN(P,'bdev')>0?r:null}}
+{const o=beaconChip;beaconChip=function(){const r=o.apply(this,arguments);try{const P=S.player,B=S.beacons&&S.beacons[W.sid];if(loadOn()&&isScoutCls(P.cls)&&B&&W.player&&!P.docked&&d3(W.player,B)<=BCN_R*3&&!smxN(P,'bdev')&&!(P.sworn&&B.owner===P.sworn))return['Beacon: fit a beacon rig to flip it','warn']}catch(e){}return r}}
 // limpets from the rack: a pilot without one has none aboard; with one, a limpet a grade
 {const o=limpetHold;limpetHold=function(hold,dt){const P=S.player;if(loadOn()&&!smxN(P,'lrack')){const F=W.lpF||(W.lpF={E:null,t:0,h:false});if(hold&&!F.h&&W.t-(W.drillMsg||0)>3){W.drillMsg=W.t;flash('No limpet rack fitted: fit one in a utility slot to carry limpets.')}F.h=hold;return}return o.apply(this,arguments)}}
 {const o=limpetChip;limpetChip=function(){const P=S.player;if(loadOn()&&isScoutCls(P.cls)&&!smxN(P,'lrack'))return null;const r=o.apply(this,arguments);try{if(r&&loadOn()&&!P.limpetUsed&&smxN(P,'lrack')>1&&/ready/.test(r[0]))r[0]=r[0].replace('Limpet ready',`Limpet ready (${smxN(P,'lrack')-(P.lpN||0)} aboard)`)}catch(e){}return r}}

@@ -303,7 +303,9 @@ const LAND_SPD=70,LAND_REACH=120,BOOT_T=4,MASK_NEAR=320;
 function mHid(o,from){return!!o&&((!!o.masked&&(!from||d3(o,from)>(o.maskR||MASK_NEAR)))||blCov(o,from))}
 // the rock's real shape: the same pose and mesh the renderer draws (astMesh), so a landed ship sits on the surface and turns
 // with the rock instead of hovering on its bounding sphere
-function astPose(a,t,o){const sd=a.seed||a.id;qAxis(((sd>>3)%7-3)/4,((sd>>6)%5-2)/2.5,1,(sd%628)/100+t*(((sd>>9)%7)-3)*.03,o);return qNorm(o)}
+// (9 Nov 2026) every rock's tumble runs on the galaxy clock S.T, not each client's own sector clock, so the host and its
+// guests see a rock (and its mining ring) turned the same way
+function astPose(a,t,o){if(typeof S!=='undefined'&&S&&S.T!=null)t=S.T;const sd=a.seed||a.id;qAxis(((sd>>3)%7-3)/4,((sd>>6)%5-2)/2.5,1,(sd%628)/100+t*(((sd>>9)%7)-3)*.03,o);return qNorm(o)}
 function astScaleY(a){const sd=a.seed||a.id;return .85+(sd%13)/40}
 const AST_SHAPE={};
 function astShape(v){if(AST_SHAPE[v])return AST_SHAPE[v];const R=mulberry(v*977+13),t=(1+Math.sqrt(5))/2;let V=[[-1,t,0],[1,t,0],[-1,-t,0],[1,-t,0],[0,-1,t],[0,1,t],[0,-1,-t],[0,1,-t],[t,0,-1],[t,0,1],[-t,0,-1],[-t,0,1]].map(p=>{const l=hyp(...p);return p.map(c=>c/l)});
