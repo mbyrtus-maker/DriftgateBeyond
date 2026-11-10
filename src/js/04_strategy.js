@@ -4,7 +4,7 @@ function strategicTick(){
   const T=S.T;
   for(const d of SECTOR_DEFS){
     const s=S.sectors[d.id],here=!!WORLDS[d.id];
-    {const R=S.stations[d.id];if(R){const cn=R.owner!=='player'&&!here&&S.T>150&&FACTIONS[R.owner]&&capNeed(R.owner),n=here&&(R.owner!=='player'||(typeof dmOn==='function'&&dmOn(R)))?0:sRound((here?2/3:1)*stRate(R,cn)*mrWork('S.'+d.id))+devOf(R).store;
+    {const R=S.stations[d.id];if(R){const cn=R.owner!=='player'&&!here&&S.T>150&&FACTIONS[R.owner]&&capNeed(R.owner),n=here&&(R.owner!=='player'||(typeof dmOn==='function'&&dmOn(R)))?0:sRound((here?2/3:1)*stRate(R,cn)*mrWork('S.'+d.id))+sRound(devOf(R).store*mrWork('S.'+d.id));
       if(R.owner==='player'){if(invMass(R.stock)<400+300*devOf(R).store)inv.addAll(R.stock,extract(s,n))}else if(n>0&&isDepotF(R)){const ds=dStore(R);if(invMass(ds)<LOGI.depotCap+120*devOf(R).store){const got=extract(s,n,false,mineSkip(R.owner));inv.addAll(ds,got);if(R.mk)for(const k in got)R.mk[k]=(R.mk[k]||0)+got[k]*.3}}else if(n>0){const st=storeOf(R)||{},sc=mkSc(R);const full=(st.fe||0)+(st.cu||0)>=((R.owner==='brood'?1000:500)+250*devOf(R).store)*sc,nuW=(st.nu||0)<120*sc&&d.ores&&d.ores.nu;if(!full||nuW){const got=extract(s,n,(st.xc||0)>=30*sc,{...mineSkip(R.owner),ir:(st.ir||0)>400*sc||mineSkip(R.owner).ir,xc:(st.xc||0)>300*sc||mineSkip(R.owner).xc,fe:full,cu:full});inv.addAll(st,got);if(R.mk)for(const k in got)R.mk[k]=(R.mk[k]||0)+got[k]*.3}}
       if(!here&&!underCapSiege(d.id,R.owner)){R.shield=R.sMax;R.hull=Math.min(R.hMax,R.hull+R.hMax*.05)}}}
     const oid=OUT_BY_SECTOR[d.id];
@@ -301,7 +301,9 @@ const WIN_TIME=600;   // Beyond: hold 20 systems for 10 minutes
 // Beyond: station extraction rounds at random to the nearest whole unit (its expected value is the exact rate), so the
 // per-faction rates in BAL.ext tune smoothly instead of in whole-unit steps
 function sRound(x){return Math.floor(x+Math.random())}
-// a station's full-strength mining per 10 s (Beyond 6 Nov 2026: shared with its miners' live rate; see 16zzn_miners.js)
+// a station's full-strength mining per 10 s (Beyond 6 Nov 2026: shared with its miners' live rate; see 16zzn_miners.js).
+// (9 Nov 2026, the user: "all depots, even faction depots, should not auto mine; they should use miners") a depot's store
+// modules add ore only through its miners too (scaled by its roster's work), so a depot with no miners gets no ore
 function stRate(R,cn){return(R.kind==='core'?5:R.kind==='hive'?BAL.brHive:R.owner==='player'?3:4)*(cn?2.2:1)*(BAL.ext[R.owner]||1)*(R.owner==='player'||R.owner==='brood'?1:BAL.aiEff)}
 function controlCounts(){const n={};for(const d of SECTOR_DEFS){let o=sectorOwner(d.id);if(o==='player')o=S.player.sworn||(S.player.decl?'player':null);if(o&&o!=='pirate'&&o!=='neutral')n[o]=(n[o]||0)+1}return n}
 const VIC_NEED=20;   // Beyond: 20 of the 42 systems that can be held (freeports and the Wrack can't), for WIN_TIME

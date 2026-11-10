@@ -3563,3 +3563,10 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 - **The ledger:** stays exact. A save from before (its kits hold the old recipe) is rebased once.
 - **Code and test:** `16zzzzb_depminers.js`; test `depminers.py`.
 - **Not yet checked with a war check:** the Depot Kit's recipe grew, and the powers' stores build the kits.
+
+### No depot mines without miners (user, 9 Nov 2026)
+"All depots, even faction depots, should not auto mine; they should use miners to get ore."
+- **Already true:** the powers' depots (and cores, the Brood's hives and held outposts) already mined through their rosters off-screen, and only by their flying miners live (16zzn_miners.js).
+- **What was left:** a depot's store modules added a flat amount of ore every tick on top, miners or not. That bonus now also goes through the roster (scaled by its work), so a depot with no miners gets no ore at all.
+- **Your own depots:** see "Your Depot's miners" above.
+- **Not changed:** the freeports (not depots) still keep their flat extraction.
