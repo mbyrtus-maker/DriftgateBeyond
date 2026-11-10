@@ -3540,3 +3540,12 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 - **Dev resources** ("the developer menu add 10 of each resource says it goes to my hold but that isn't accessible in a station I own"):
   - Docked, "+10 of each resource" now goes into this dock's storage: your vault at a station that keeps one, or the store of a base you own.
   - In flight it goes to your hangar (vault) as before. The button says which.
+
+### Post jobs from your base's own screen (user, 9 Nov 2026)
+"Under the station menu we should be able to create jobs using the company treasury to pay for them."
+- **Where:** docked at a Depot or Station you own, its Station tab ends with **Post a job here**.
+- **What you set:** the posted-job kinds (Supply, Haul, Mine, Guard; `16zf_posted.js`), the good and amount, the bid (Low, Medium, Fast), and one Post button for this base. The button shows the fee and how soon a taker should come.
+- **Paying:** fees come from the company treasury once your company is funded (`coRun` around `pjPost`, `pjTick` and `pjFinish`); the tab shows the treasury.
+- **This base's jobs:** listed below with their status, and Withdraw on the open ones. The same jobs remain on the Company screen's Jobs tab.
+- **Code:** `16zzzz_dockjobs.js`.
+- **Checked:** with a funded company, docked at a new Depot, a Mine job posted from the tab appears in the list.
