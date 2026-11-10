@@ -3812,3 +3812,17 @@ The user: "The preview should include the station model as well so depot and sta
 → Profile, and the dock's Company tab) now draws both side by side, each turning: a full Depot (level 3) and a Station
 with its five buildings. Each carries the company's logo boards in its chosen colour, placed as on a live base. The
 Station/Depot toggle is gone. Code: 16zzzy_coprev.js (`coPrevOne`).
+
+### Station buildings on the Works tab; Holdings tells buildings and modules apart (10 Nov 2026)
+The user: "In the company screen under holdings my station shows buildings open all across the board but I've already built
+5 buildings." A Station has two separate things to build:
+- its five buildings (`R.bld`: they set its level), which could only be built from Holdings;
+- the development modules on its Works tab (storage, production, defence, armour, hangar: `R.dev`).
+
+Five of the latter read as "5 buildings" while every building slot stayed open. Now:
+- a Station's Works tab opens with "Station buildings · level N of 5": the slots, the cost, and a Build button for each
+  building not yet there; then "Development modules" as before;
+- Holdings' Buildings heading says they set the Station's level, with a line under it counting the development modules
+  (Works tab) by kind.
+
+Test: baserun.py.
