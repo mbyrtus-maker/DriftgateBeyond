@@ -3434,3 +3434,6 @@ The user's answers to the proposal above: "1 should have their own category call
 - **Buying:** takes a shelf marker first, and builds one from plate and conduit only when the shelf is empty.
 - **Old saves:** a save from before gets the markers once on load (the ledger is rebased then).
 - **Test:** `stdparts.py`.
+
+### Your charge targeted for you (user, 9 Nov 2026)
+"When taking guard missions [or escort] it would be helpful to target the ship being guarded when you're in the same sector as a friendly target." In the same system as the ship you guard or escort (`P.fmE`, set by the host), it becomes your target as you arrive, undock or take the job there, with a note that the autopilot key flies in formation. A target you picked yourself, or a hostile you're fighting, is left alone; whenever you have no target (the hostile is dead), your charge is targeted again. Host and guests alike (`16zzzi_escort.js`; test in `escort.py`).

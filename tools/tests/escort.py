@@ -41,6 +41,8 @@ async def main():
     check('a jump with it pays 150 cr and a minute guarding it pays 50 cr, from its purse',r['jump']==150 and r['min']==50 and r['paid']==200 and r['purse']==200,r)
     check('the host marks the ship the pilot is guarding (P.fmE)',r['fmE']==r['eid'],r)
     l=await ev(LED);check('ledger exact after guard pay',l=='exact',l)
+    r=json.loads(await ev("""(()=>{W.tgt=null;W.fmAuto=null;W.fmn=null;hudUpdate();const E=fmEnt(),a=!!(W.tgt&&W.tgt.ref===E);const o=W.ents.find(x=>x.type==='ship'&&x.alive&&x!==E&&!x.isPlayer);if(o)W.tgt={kind:'ship',ref:o};hudUpdate();const kept=!o||W.tgt.ref===o;W.tgt=null;hudUpdate();const back=!!(W.tgt&&W.tgt.ref===E);return JSON.stringify({a,kept,back})})()"""))
+    check('in its system the ship you guard is targeted for you; a target you pick stays; with none it comes back',r['a'] and r['kept'] and r['back'],r)
     # formation: J on it flies alongside; a hostile fighter breaks it off; it vanishing at a gate takes you through with it
     r=json.loads(await ev("""(()=>{const p=W.player,E=fmEnt();W.tgt={kind:'ship',ref:E};apOn=false;toggleAutopilot();const on=!!(W.fmn&&apOn&&W.fmn.ref===E);
       for(const x of W.ents.slice())if(x.type==='ship'&&x.alive&&!x.isPlayer&&x!==E&&hostile('player',x.side))despawn(x);E.vx=60;E.vy=0;E.vz=0;p.x=E.x+600;p.y=E.y;p.z=E.z;p.vx=p.vy=p.vz=0;const d0=d3(p,E);for(let i=0;i<90;i++){autopilot(p,1/30);p.x+=p.vx/30;p.y+=p.vy/30;p.z+=p.vz/30;E.x+=E.vx/30}const closing=!!W.fmn&&d3(p,E)<d0-100;

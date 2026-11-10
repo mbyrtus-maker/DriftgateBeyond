@@ -15618,6 +15618,13 @@ function fmFly(p,dt){const F=W.fmn,R=F.ref;
 // after a jump together: fall back in on it when it appears (unless you take the stick first)
 {const o=playerUpdate;playerUpdate=function(dt){const r=o.apply(this,arguments);try{if(W&&W.fmn&&!apOn)W.fmn=null;
   if(FM_AFTER){if(performance.now()>FM_AFTER||fmMan()||S.player.docked)FM_AFTER=0;else if(!apOn&&W&&!W.jump&&!W.dead){const E=fmEnt();if(E){FM_AFTER=0;fmStart(E,true);flash(`Back in formation on ${W.fmn.name}.`)}}}}catch(e){console.error(e)}return r}}
+// ---- your charge targeted for you (user, 9 Nov 2026: "when taking guard missions [or escort] it would be helpful to target
+// the ship being guarded when you're in the same sector"). In the same system as the ship you guard or escort, it becomes your
+// target as you arrive (or undock, or take the job there), with a note on the formation key; and whenever you have no target
+// at all (a hostile you were fighting is dead), it is targeted again. A target you pick yourself is left alone.
+{const o=hudUpdate;hudUpdate=function(){const r=o.apply(this,arguments);try{if(!W||!W.player||S.player.docked){if(W)W.fmAuto=null;return r}if(W.dead||W.fmn)return r;const E=fmEnt();if(!E)return r;
+  if(W.fmAuto!==E.id){W.fmAuto=E.id;if(!W.tgt||!W.tgt.ref||!(W.tgt.kind==='ship'&&W.tgt.ref.alive&&hostile('player',W.tgt.ref.side))){W.tgt={kind:'ship',ref:E};flash(`${fmName(E)} targeted: the ship you're ${E.indId!=null?'guarding':'escorting'}. Press ${kb('autopilot')} to fly in formation.`)}}
+  else if(!W.tgt||(W.tgt.ref&&W.tgt.ref.alive===false))W.tgt={kind:'ship',ref:E}}catch(e){}return r}}
 
 //@src 16zzzj_kits.js
 // ============================================================ Beyond: Lair, Depot and Station kits (user, 8 Nov 2026)
