@@ -3589,3 +3589,14 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 - **Under the hood:** the profile's buttons run here and redraw the dock.
 - **Typing:** the dock's once-a-second redraw waits while you type in a box, as the Company screen's does.
 - **Checked:** typing a name and picking a design on the Company tab.
+
+### Company from the Station tab opens the Company screen; four crews to start (user, 9 Nov 2026)
+- **Company** ("I wanted the company profile screen, not the setup screen"; asked: the full Company screen):
+  - The Station tab's Company now opens the Company screen itself (key 0: Profile, Allegiance, Holdings, Economy, Jobs, Black market) over the dock.
+  - It opens on Holdings once your company is set up.
+  - The profile form is still on that screen's Profile tab.
+- **Crews** ("once I hire a pilot I can't hire a second pilot"):
+  - A base's hangar held one crew until you added a hangar module. It now holds 4 to start (`DEP.hangar0`).
+  - Each hangar module level adds one more, and a Station's Hangar building two more.
+  - **Checked:** four crews hired at a new Depot; the fifth is refused with the hangar note.
+  - **Not yet checked with a war check:** more crews mean more player-side miners and fighters.

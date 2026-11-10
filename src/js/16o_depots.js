@@ -12,7 +12,7 @@
 // drift). If the wage can't be paid the pilot leaves; without the plate the ship is laid up. Orders: Mine (cuts ore from this
 // system's rocks into the store), Haul (sells goods marked for sale at the nearest power market that deals with you), Guard
 // (stiffens the depot's guns), Idle.
-const DEP={cost:{frame:2},tradeT:60,lot:10,crewT:60,wage:300,run:{plate:1},guardK:.25,mine:{skiff:3,prospector:5,dredger:7},haul:{courier:20,freighter:35,bulker:70},hangar0:1};
+const DEP={cost:{frame:2},tradeT:60,lot:10,crewT:60,wage:300,run:{plate:1},guardK:.25,mine:{skiff:3,prospector:5,dredger:7},haul:{courier:20,freighter:35,bulker:70},hangar0:4};
 function myDepots(P){const k=pkeyOf(P);return Object.values(S.stations||{}).filter(R=>R&&R.owner==='player'&&R.kind==='depot'&&(R.pid||'me')===k)}
 function depLvl(R){const u=devUsed(R);return u>=6?3:u>=3?2:1}
 function depCan(sid){return!S.stations[sid]&&canBuildIn(sid,'player')}

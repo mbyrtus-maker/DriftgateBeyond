@@ -26,3 +26,7 @@ $('dock').addEventListener('click',e=>{const b=e.target.closest('#dcoBody [data-
 {const o=renderDock;renderDock=function(){try{const a=document.activeElement,el=$('dock');if(a&&el&&el.contains(a)&&(a.tagName==='TEXTAREA'||(a.tagName==='INPUT'&&!['button','submit','checkbox','radio'].includes(a.type))))return}catch(e){}
   const r=o.apply(this,arguments);try{if(dockTab==='bco'&&$('dcoBody')){const P=S.player,nm=$('coNm');if(nm)nm.addEventListener('input',ev=>{coFormOf(P).name=ev.target.value});const hu=$('coHue');if(hu){hu.addEventListener('change',ev=>{coFormOf(P).hue=+ev.target.value;hu.blur();renderDock()});hu.addEventListener('input',ev=>{const sw=hu.previousElementSibling;if(sw)sw.style.background=coHueCol(+ev.target.value)})}}}catch(e){console.error(e)}return r}}
 {const o=dockClick;dockClick=function(act,arg){if(act==='pjf'){const[k,v]=String(arg).split(':');pjForm[k]=k==='n'?Math.max(1,(pjForm.n||0)+(+v)):v;renderDock();return}return o.apply(this,arguments)}}
+// (user, 9 Nov 2026: "I wanted the company profile screen, not the setup screen"; asked: the full Company screen) the
+// Station tab's Company opens the Company screen itself (key 0: Profile, Allegiance, Holdings, Economy, Jobs, Black market)
+// over the dock, on Holdings once your company is set up
+{const o=dockClick;dockClick=function(act,arg){if(act==='tab'&&arg==='bco'){const el=$('company');if(el&&S){if(coTab==='profile'&&coFunded(S.player))coTab='holdings';el.hidden=false;$('map').hidden=true;$('help').hidden=true;coErr='';renderCompany()}return}return o.apply(this,arguments)}}

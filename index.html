@@ -10493,7 +10493,7 @@ function coClick(act,arg){coErr='';if(act==='tab'){coTab=arg;renderCompany();ret
 // drift). If the wage can't be paid the pilot leaves; without the plate the ship is laid up. Orders: Mine (cuts ore from this
 // system's rocks into the store), Haul (sells goods marked for sale at the nearest power market that deals with you), Guard
 // (stiffens the depot's guns), Idle.
-const DEP={cost:{frame:2},tradeT:60,lot:10,crewT:60,wage:300,run:{plate:1},guardK:.25,mine:{skiff:3,prospector:5,dredger:7},haul:{courier:20,freighter:35,bulker:70},hangar0:1};
+const DEP={cost:{frame:2},tradeT:60,lot:10,crewT:60,wage:300,run:{plate:1},guardK:.25,mine:{skiff:3,prospector:5,dredger:7},haul:{courier:20,freighter:35,bulker:70},hangar0:4};
 function myDepots(P){const k=pkeyOf(P);return Object.values(S.stations||{}).filter(R=>R&&R.owner==='player'&&R.kind==='depot'&&(R.pid||'me')===k)}
 function depLvl(R){const u=devUsed(R);return u>=6?3:u>=3?2:1}
 function depCan(sid){return!S.stations[sid]&&canBuildIn(sid,'player')}
@@ -16617,6 +16617,10 @@ $('dock').addEventListener('click',e=>{const b=e.target.closest('#dcoBody [data-
 {const o=renderDock;renderDock=function(){try{const a=document.activeElement,el=$('dock');if(a&&el&&el.contains(a)&&(a.tagName==='TEXTAREA'||(a.tagName==='INPUT'&&!['button','submit','checkbox','radio'].includes(a.type))))return}catch(e){}
   const r=o.apply(this,arguments);try{if(dockTab==='bco'&&$('dcoBody')){const P=S.player,nm=$('coNm');if(nm)nm.addEventListener('input',ev=>{coFormOf(P).name=ev.target.value});const hu=$('coHue');if(hu){hu.addEventListener('change',ev=>{coFormOf(P).hue=+ev.target.value;hu.blur();renderDock()});hu.addEventListener('input',ev=>{const sw=hu.previousElementSibling;if(sw)sw.style.background=coHueCol(+ev.target.value)})}}}catch(e){console.error(e)}return r}}
 {const o=dockClick;dockClick=function(act,arg){if(act==='pjf'){const[k,v]=String(arg).split(':');pjForm[k]=k==='n'?Math.max(1,(pjForm.n||0)+(+v)):v;renderDock();return}return o.apply(this,arguments)}}
+// (user, 9 Nov 2026: "I wanted the company profile screen, not the setup screen"; asked: the full Company screen) the
+// Station tab's Company opens the Company screen itself (key 0: Profile, Allegiance, Holdings, Economy, Jobs, Black market)
+// over the dock, on Holdings once your company is set up
+{const o=dockClick;dockClick=function(act,arg){if(act==='tab'&&arg==='bco'){const el=$('company');if(el&&S){if(coTab==='profile'&&coFunded(S.player))coTab='holdings';el.hidden=false;$('map').hidden=true;$('help').hidden=true;coErr='';renderCompany()}return}return o.apply(this,arguments)}}
 
 //@src 16zzzzb_depminers.js
 // ============================================================ Beyond: your Depot's miners (user, 9 Nov 2026)
