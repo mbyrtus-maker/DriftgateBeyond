@@ -14,7 +14,7 @@ async def main():
     ev=lambda c:pg.evaluate('c=>__dg.ev(c)',c)
     print('tiles',await ev("(()=>{transfer('halcyon','player',5000);$('dock').hidden=false;dockTab='market';mkFilter='bcn';renderDock();const t=$('dBody').innerText;const i=t.indexOf('CONTROL MARKERS');return t.slice(i,i+200).replace(/\\n/g,' | ')})()"))
     print('icon colour',await ev("JSON.stringify([giKind('bc_varkesh'),giCol('bc_varkesh'),FACTIONS.varkesh.col])"))
-    print('buy',await ev("(()=>{mkFilter='bcn';renderDock();document.querySelector('[data-act=buyfb][data-arg=varkesh]').click();return $('dErr').textContent.slice(0,80)+' | hold '+(S.player.cargo.bc_varkesh||0)})()"))
+    print('buy',await ev("(()=>{mkFilter='p_util';renderDock();document.querySelector('[data-act=buyfb][data-arg=varkesh]').click();return $('dErr').textContent.slice(0,80)+' | hold '+(S.player.cargo.bc_varkesh||0)})()"))
     print('hold only',await ev("(()=>{const o={owner:null};return String(fbHeld(S.player,o))})()"))
     print('loadout',await ev("(()=>{dockTab='upg';ldSel='u:0';renderDock();const t=$('dBody').innerText;return JSON.stringify({fitRow:/Control Marker \\(Varkesh\\)/.test(t),buyFit:(t.match(/Buy & fit/gi)||[]).length})})()"))
     print('fit',await ev("(()=>{dockAction('fit','u:0:bc_varkesh');const F=fitOf(S.player);return dockErr.slice(0,90)+' | '+JSON.stringify({u:F.u,ui:F.ui,hold:S.player.cargo.bc_varkesh||0,pup:pupQuote(dockCtx(),S.player,'u:0')})})()"))
