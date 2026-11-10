@@ -21,6 +21,8 @@ function cjCtx(P){const sid=P.sector,R=S.stations[sid];
 // { jobs: this system's jobs for your hull, other: how many for other hulls, dock: how many dock-only, near: the nearest fitting job elsewhere, all }
 function cjList(){const P=S.player;if(!W||!P||S.training||S.unb)return{jobs:[],other:0,dock:0,near:null,all:[]};
   const c=cjCtx(P);let all=[];try{all=jobsList(c,P,[P.cargo],!!(c.contracts||P.sworn),!!FACTIONS[P.sworn])}catch(e){console.error(e);all=[]}
+  // (user, 9 Nov 2026: "Riftstone for Halcyon is listed on my jobs screen but it should be a blackmarket job") black-market jobs stay on the dock's Jobs → Black market tab
+  all=all.filter(j=>!(j.bm||String(j.id).startsWith('bmr:')));
   const F=jobFit(P.cls),here=j=>j.where==='here'||(j.sid&&j.sid===P.sector),pre=j=>jobPre(j.id);
   const seen=new Set(),H=all.filter(here).sort((a,b)=>(b.payN||0)-(a.payN||0)).filter(j=>!seen.has(j.id)&&seen.add(j.id)),dock=H.filter(j=>CJ.dockOnly.includes(pre(j))),ok=H.filter(j=>!CJ.dockOnly.includes(pre(j))),jobs=ok.filter(j=>F.includes(j.ty)),other=ok.length-jobs.length;
   jobs.sort((a,b)=>(b.pin||0)-(a.pin||0)||(jobRank(a,P)-jobRank(b,P))||(!!a.need-!!b.need)||((b.payN||0)-(a.payN||0)));

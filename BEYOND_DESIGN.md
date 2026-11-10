@@ -3635,3 +3635,10 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 
 ### Why a base is "under threat" (user, 9 Nov 2026)
 "Why is my depot considered under threat?" On the Company screen a base reads "under threat" when a power's, the Brood's or the Unbound's strike is aimed at it (an offensive event against its station), or "damaged" when its hull is under 60%. The label now says which: "under threat: Varkesh strike inbound (lands in 1:10)" or "…attacking", or "damaged (hull under 60%)".
+
+### Black-market jobs off the in-flight list; a Black market tab at the powers' stations (9 Nov 2026)
+The user: "Riftstone for Halcyon is listed on my jobs screen but it should be a blackmarket job." The dock's main board
+already left black-market jobs off, but the in-flight jobs list (`cjList`) didn't, and a power's station had no Black market
+tab, so a Riftstone buyer or a Dread Pirate hunt posted there was only on the in-flight list. Now `cjList` drops every
+black-market job (`j.bm` or `bmr:`), and Jobs → Black market is also on a power's station. The tab's note covers all of it:
+a fixer's runs, quiet buyers (Riftstone), bounties. Test: orejobs.py.

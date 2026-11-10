@@ -27,8 +27,12 @@ async def main():
       devLedger(()=>inv.add(P.cargo,j.ore,10));const host=storeOf(S.stations[j.to]),c0=P.credits,s0=host[j.ore]||0;dockAction('oreqdel',j.id);
       return JSON.stringify({oq:!!oq&&oq.ty==='mine',btn:oq&&oq.btn,rsBm:!!rs&&rs.bm===1,inMain:/Riftstone for/.test(main),inBm:/Riftstone for/.test(bm),msg:dockErr,paid:P.credits-c0,stored:(host[j.ore]||0)-s0,mk:(ceStore(j.m)[j.ore]||0),unit:j.unit})})()"""))
     check('the ore request is a mining job on the board at the works',r['oq'],r)
-    check('Riftstone buyers are on Jobs → Black market, not the main board',r['rsBm'] and r['inBm'] and not r['inMain'],r)
     check('delivering 10 ore pays 10 × the unit price from the maker, into its host\'s store (not the maker\'s)',r['stored']==10 and r['paid']==10*r['unit'] and r['mk']==0,r)
+    check('Riftstone buyers are on Jobs → Black market, not the main board',r['rsBm'] and r['inBm'] and not r['inMain'],r)
+    r=json.loads(await ev("""(()=>{const P=S.player,j=rsjAll().find(x=>x.by!=='neutral');if(!j)return JSON.stringify({none:1});exitSector();W=null;P.sector=j.sid;enterSector(j.sid);running=false;P.docked=null;
+      const L=cjList(),inFlight=L.all.some(x=>String(x.id).startsWith('rs:'));P.docked='station';openDock('jobs');const tabs=dockG.map(g=>g[2].map(t=>t[0])).flat();$('dock').hidden=true;P.docked=null;
+      return JSON.stringify({inFlight,bmTab:tabs.includes('bmjobs'),own:S.stations[j.sid].owner})})()"""))
+    check("in flight, the jobs list leaves Riftstone off; a power's station has a Black market tab",r.get('none') or (not r['inFlight'] and r['bmTab']),r)
     r=json.loads(await ev("""(()=>{const P=S.player,j=rsjAll().find(x=>x.by!=='neutral'&&x.ore!=='xc');exitSector();W=null;P.sector=j.sid;enterSector(j.sid);running=false;P.docked='station';
       devLedger(()=>{S.drift[j.ore]=(S.drift[j.ore]||0)+2;inv.add(P.cargo,'rift',3)});const st=rsjStoreOf(j),o0=st[j.ore]||0,r0=st.rift||0,d0=S.drift[j.ore],x0=S.drift.xc||0,c0=P.credits;dockAction('rsjdel',j.id);
       return JSON.stringify({msg:dockErr,ore:(st[j.ore]||0)-o0,rift:(st.rift||0)-r0,drift:d0-S.drift[j.ore],xc:(S.drift.xc||0)-x0,paid:P.credits-c0,unit:j.unit,same:j.ore==='xc'})})()"""))
