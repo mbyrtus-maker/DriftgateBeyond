@@ -3671,3 +3671,48 @@ Test: ctrbuild.py.
 The user: "AI miners at my depot are listed as Your Wingman." A base's own miners (the station roster, `e.mrKey`) had no
 label of their own and fell through to the player side's "Your wingman". They now read "<base>'s miner (<hull>)".
 Test: depminers.py.
+
+### The Brand screen: every buildable part, systems included (9 Nov 2026)
+The user: "For 'My brand' you're going to have to move that into a separate screen and list all the parts that can be
+built. Might do a similar screen to the market where you select the type of parts and then a menu from there." Asked which
+parts it covers, the user chose everything buildable, systems included.
+- **Screen:** Company → Brand (its own tab; Holdings no longer carries it).
+  - At the top: the company name and the points rule.
+  - Then the Market's part filters as orange boxes: Drive, Reactors, Shields, Weapons, Armor, Cargo, Mining, Utility.
+  - Pick one: its parts are listed on the left, each with its shape or "standard".
+  - Pick a part: its trait editor (− and + for each trait, the points it costs or pays back), what it's called once
+    branded, and where and in which grades it's built.
+  - Set the brand / Reshape (1,500 cr) and Undo, as before.
+- **Parts covered:** the 8 kinds as before (gun, laser, missile and torpedo launchers, charge launcher, mining laser,
+  cargo pod, scanner), and:
+  - drone controller (drone hull, drone damage, top speed);
+  - the name-only parts, which have no trait to shape and carry your name only: landing kit, beacon rig, launch rack,
+    cargo scanner, hidden hold;
+  - the eight systems, each with its own traits (step per point):
+    - drive: thrust 3%, top speed 2%, turning 3%;
+    - reactor: capacity 3%, recharge 3%;
+    - shield emitter: strength 3%, reactor recharge 2%, top speed 1%;
+    - fire control: damage 2%, lock time 4%, shot energy 3%;
+    - armour: hull 3%, top speed 1%, turning 2%;
+    - cargo hold: hold 3%, top speed 1%, thrust 2%;
+    - blast rig: blast power 4%, reactor recharge 2%, top speed 1%;
+    - payload bay: reload 3%, hold 2%, thrust 2%.
+
+  As before, each step is ±1 point up to ±3 and every part's points net to zero. So a brand system is a trade: at its
+  best +9% for −6% to −9%, a little behind the makers' (Tycho drive +8% thrust for −3% speed).
+- **Grades:** branded parts and systems come in grades like the makers', with the same recipes (part: its recipe plus each
+  grade's upgrade parts; system: `compInv(slot, grade)`), so the ledger is untouched and fitting or installing only moves
+  goods. Parts are graded where the makers grade them (not the landing kit or the name-only kinds). Your workshop's top
+  grade:
+  - a Depot: G2 (G3 at Depot level 3);
+  - a Station: G4 (G5 at three buildings).
+
+  Fitting still follows your Contractor Rating (`gradeCap`).
+- **Building:** Station → Fab → Your brand, at your own base (the owner only). Pick a grade, then each of your brand's
+  parts and systems at that grade with its recipe and Make 1 / Make max, into the base's store. Making a standard part
+  there still turns it into your brand's (unchanged).
+- **Code:** 16zzzzd_brand2.js.
+  - Items: `bp<N>_<kind>` and `bp<N>_<kind>_g<g>`; systems `sy_bp<N>_<slot>` and `sy_bp<N>_<slot>_g<g>`. They carry
+    `brand:N`, never `maker` (no corporation's sales or R&D touch them).
+  - An installed brand system is recorded as `P.sysm[slot]='bp<N>'`, and `sysTr` reads its traits from the brand.
+- Player-only stats (AI ships' systems are unbranded), so no war check.

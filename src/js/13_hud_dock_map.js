@@ -262,8 +262,9 @@ function renderDock(){
     // (Beyond, 3 Nov 2026) first choose Components (plates, wire, coils and the like) or Parts (weapons and utility gear)
     const fabAll=CRAFTABLE.filter(k=>!MUNITIONS.has(k)),fabOf=k=>k==='beacon'||String(k).startsWith('bc_')?'bcn':['wpn','util'].includes(giKind(k))?giKind(k):ITEMS[k].part?(WPN[ITEMS[k].part]?'wpn':'util'):'comp',fabN=g=>fabAll.filter(k=>fabOf(k)===g),fabCan=g=>fabN(g).filter(k=>(!ITEMS[k].forge||c.forge||c.fab)&&haveIn(ITEMS[k].recipe,srcs)).length;
     // (user) the Market's menu without Ore: Components, Weapons, Utility parts, Beacons
-    const FABK=[['comp','Components'],['wpn','Weapons'],['util','Utility parts'],['bcn','Beacons']].filter(([g])=>fabN(g).length);if(fabKind&&!FABK.some(x=>x[0]===fabKind))fabKind=null;
-    h+=`<div class="obox-row" style="margin-bottom:12px">${FABK.map(([g,n])=>`<button class="obox${fabKind===g?' on':''}" type="button" data-act="fabk" data-arg="${g}" aria-pressed="${fabKind===g}">${n} <span>${fabCan(g)} / ${fabN(g).length}</span></button>`).join('')}</div>`;
+    const FABK=[['comp','Components'],['wpn','Weapons'],['util','Utility parts'],['bcn','Beacons']].filter(([g])=>fabN(g).length);if(typeof brFabOn==='function'&&brFabOn(c,P))FABK.push(['brand','Your brand']);if(fabKind&&!FABK.some(x=>x[0]===fabKind))fabKind=null;
+    h+=`<div class="obox-row" style="margin-bottom:12px">${FABK.map(([g,n])=>`<button class="obox${fabKind===g?' on':''}" type="button" data-act="fabk" data-arg="${g}" aria-pressed="${fabKind===g}">${n}${g==='brand'?'':` <span>${fabCan(g)} / ${fabN(g).length}</span>`}</button>`).join('')}</div>`;
+    if(fabKind==='brand')h+=brFabHtml(c,P);else
     if(!fabKind)h+=`<div class="note" style="margin:0">Pick what to make. The numbers are what you can make now, of all the recipes of that kind.</div>`;
     else{
     h+=`<div class="tblw"><table class="t"><thead><tr><th>${({comp:'Component',wpn:'Weapon',util:'Utility part',bcn:'Beacon'})[fabKind]||'Item'}</th><th>Recipe</th><th class="r">Have</th><th></th></tr></thead><tbody>`;

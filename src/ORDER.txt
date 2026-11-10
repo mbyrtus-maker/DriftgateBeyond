@@ -121,5 +121,6 @@ js/16zzzy_coprev.js
 js/16zzzz_dockjobs.js
 js/16zzzzb_depminers.js
 js/16zzzzc_devhulls.js
+js/16zzzzd_brand2.js
 js/17_main.js
 end.html
