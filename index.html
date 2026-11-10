@@ -16890,7 +16890,7 @@ function brScreenHtml(P){let h='';if(!myDepots(P).length)return`<p class="note">
   h+=`<div class="obox-row" style="margin:12px 0">${MK_PARTS.map(g=>`<button class="obox${brCat===g?' on':''}" type="button" data-co="brcat" data-arg="${g}" ${cnt(g)?'':'disabled'} aria-pressed="${brCat===g}">${MK_GN[g]} <span>${shaped(g)} / ${cnt(g)}</span></button>`).join('')}</div>`;
   h+=`<div class="cowrap"><div class="colist">`;
   for(const k of L){const on=k===brPick,c=brCost({[k]:D.pts[k]||{}}),st=brShapeTxt(k,D.pts[k]),bad=c>bud;
-    h+=`<button class="corow${on?' on':''}" type="button" data-co="brpick" data-arg="${k}">${gIcon(brStd(k),20)}<span><b>${esc(brKindName(k))}</b><br><span class="note" style="margin:0;color:${bad?'var(--danger)':st==='standard'||st==='name only'?'var(--dim)':'var(--ok,#7ad9a7)'}">${esc(st)}${brIsSys(k)?' · system':''}</span></span></button>`}
+    h+=`<button class="corow${on?' on':''}" type="button" data-co="brpick" data-arg="${k}">${gIcon(brStd(k),20)}<span><b>${esc(brKindName(k))}</b><br><span class="note" style="margin:0;color:${bad?'var(--danger)':st==='standard'||st==='name only'?'var(--dim)':'var(--ok,#7ad9a7)'}">${esc(st)}${brIsSys(k)?' · system':''}${brMaxG(k)>1?` · G${brResG(N,k)}`:''}</span></span></button>`}
   h+=`</div><div class="codet">`;
   if(brPick){const k=brPick,St=BR.step[k],g=D.pts[k]||{},c=brCost({[k]:g}),eg=brItemAt(N,k,1)||brItemAt(N,k,2),gs=[1,2,3,4,5].filter(x=>brItemAt(N,k,x));
     h+=`<div class="lab">${esc(MK_GN[brCat])}${brIsSys(k)?' · system':''}</div><div class="ldname">${gIcon(brStd(k),26)}<b>${esc(eg?ITEMS[eg].name.replace(/ G\d$/,''):brKindName(k))}</b></div>`;
@@ -16898,9 +16898,9 @@ function brScreenHtml(P){let h='';if(!myDepots(P).length)return`<p class="note">
     else{h+=`<div style="display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;margin:8px 0">`;
       for(const t of Object.keys(St)){const v=g[t]||0;h+=`<button class="btn sm" type="button" data-co="brstep" data-arg="${k}:${t}:-1" ${v<=-BR.range?'disabled':''} aria-label="Less ${esc(TR_TXT[t]||t)}">−</button><span style="text-align:center;color:${v>0?'var(--ok,#7ad9a7)':v<0?'var(--danger)':'var(--dim)'}">${esc(brStepLab(k,t,v))}</span><button class="btn sm" type="button" data-co="brstep" data-arg="${k}:${t}:1" ${v>=BR.range?'disabled':''} aria-label="More ${esc(TR_TXT[t]||t)}">+</button>`}
       h+=`</div><div class="kv"><span>Points</span><b style="color:${c>bud?'var(--danger)':c<0?'var(--dim)':'inherit'}">${c>0?'+':''}${c}${c>bud?' · needs weaknesses to pay for it':c<0?' · weaknesses unspent':' · balanced'}</b></div>`}
-    h+=`<div class="kv"><span>Grades</span><b>${gs.length?gs.map(x=>'G'+x).join(' · '):'—'}</b></div>`;
+    h+=`<div class="kv"><span>Grades you can build</span><b>${gs.length?gs.map(x=>'G'+x).join(' · '):'—'}</b></div>`;
     if(eg){const r=ITEMS[eg].recipe;h+=`<div class="kv"><span>Recipe (G${ITEMS[eg].grade||1})</span><b style="font-weight:400">${Object.keys(r).map(i=>`${r[i]} ${esc(ITEMS[i]?ITEMS[i].name:i)}`).join(' · ')}</b></div>`}
-    h+=`<p class="note" style="margin:8px 0 0">${brIsSys(k)?'Install it on Ship → Upgrades, like a maker\'s system.':'Fit it on Ship → Loadout, like any part.'} A Depot's workshop builds up to grade 2 (3 at level 3), a Station's up to 4 (5 with three buildings).</p>`}
+    h+=`<p class="note" style="margin:8px 0 0">${brIsSys(k)?'Install it on Ship → Upgrades, like a maker\'s system.':'Fit it on Ship → Loadout, like any part.'} Built up to the grade you've researched, and the base's own cap: a Depot's workshop grade 2 (3 at level 3), a Station's 4 (5 with three buildings).</p>`}
   h+=`</div></div>`;
   const bad=BR_KINDS.some(k=>brCost({[k]:D.pts[k]||{}})>bud),same=JSON.stringify(D.pts)===JSON.stringify(B.pts||{});
   h+=`<div class="act" style="margin-top:12px"><button class="btn pri" type="button" data-co="brsave" ${bad?'disabled':''}>${same?'Save name':B.set?`Reshape · ${fmt(BR.respec)} cr`:'Set the brand'}</button><button class="btn" type="button" data-co="brreset" ${same?'disabled':''}>Undo changes</button>${bad?`<span class="note" style="color:var(--danger);margin:0">Some strengths aren't paid for by weaknesses.</span>`:''}</div>`;
@@ -16911,6 +16911,51 @@ brHtml=function(){return''};
 {const o=coClick;coClick=function(act,arg){if(act==='brcat'){brCat=arg;brPick=null;renderCompany();return}if(act==='brpick'){brPick=arg;renderCompany();return}return o.apply(this,arguments)}}
 {const o=renderCompany;renderCompany=function(){const a=document.activeElement,keep=a&&a.id==='brName'?{v:a.value,s:a.selectionStart,e:a.selectionEnd}:null;const r=o.apply(this,arguments);
   try{if(coTab==='brand'&&S&&!S.unb&&S.player&&!$('company').hidden){$('coBody').innerHTML=brScreenHtml(S.player);if(keep){const b=$('brName');if(b){b.value=keep.v;b.focus();try{b.setSelectionRange(keep.s,keep.e)}catch(e){}}}}}catch(e){console.error(e)}return r}}
+// ---- R&D (user, 10 Nov 2026: "add the R&D panel that follows the code we set up for other makers. Should cost the same as
+// the corps.") A brand line starts at grade 1 (a payload bay at 2, like the makers'). One project at a time per brand, for a
+// line's next grade: funding (RD.cost, from the company treasury, to the Compact's yards for the lab) builds the lab at your
+// best base; then design (RD.design), materials (the prototype's components, taken from the lab base's store: it waits for
+// them), trials (RD.trial), and the launch: the line's grade rises and the prototype is the first unit, in the lab's store.
+// Your workshop builds a researched grade up to its own cap (brGradeCap); older grades stay yours to build.
+CO_REMOTE.add('brrd');
+function brMaxG(k){return brIsSys(k)||BR_GK.has(k)?5:1}
+function brResG(N,k){const B=brOf(N),g0=k==='sys_payload'?2:1;return Math.max(g0,(B&&B.g&&B.g[k])||g0)}
+function brLabOf(pid){let best=null;for(const sid in S.stations){const R=S.stations[sid];if(!R||R.owner!=='player'||(R.pid||'me')!==pid)continue;if(!best||brGradeCap(R)>brGradeCap(best))best=R}return best}
+function brRdStart(P,k){const N=brSlot(P);if(N==null||!myDepots(P).length)return'Your brand begins with your first Depot.';const B=brOf(N);if(!BR.step[k])return'No such line.';
+  if(B.rd)return`One R&D project at a time: the ${ITEMS[brItemId(N,B.rd.k,B.rd.g)].name} is in ${B.rd.stage}.`;const g=brResG(N,k)+1;if(g>brMaxG(k))return brMaxG(k)===1?`The ${brKindName(k)} has no grades.`:`Your ${brKindName(k)} is already grade 5.`;
+  if(!coFunded(P))return coNeedTxt();const w=coWal(P),cost=RD.cost[g];if((S.econ.treasury[w]||0)<cost)return`Grade ${g} R&D costs ${fmt(cost)} cr from the company treasury (it holds ${fmt(S.econ.treasury[w]||0)}).`;
+  const pid=pkeyOf(P),R=brLabOf(pid);if(!R)return'R&D needs a Depot or Station for its lab.';transfer(w,'neutral',cost);
+  B.rd={k,g,stage:'design',until:S.T+RD.design[g],proto:{},lab:R.sid,pid,t0:S.T};return`✓ R&D opened: the ${ITEMS[brItemId(N,k,g)].name}. Its lab is going up at ${R.name}; design takes ${Math.round(RD.design[g]/60)} minutes.`}
+function brItemId(N,k,g){return rdGid(brIsSys(k)?`sy_bp${N}_${k.slice(4)}`:`bp${N}_${k}`,g)}
+function brRdFeed(B,msg,k){try{feedTo(B.rd&&B.rd.pid!=='me'?B.rd.pid:null,msg,k)}catch(e){}}
+function brRdTick(){if(NET.cl||!S.brands||S.training||S.unb)return;const T=S.T;
+  for(const n in S.brands){const B=S.brands[n],P2=B&&B.rd;if(!P2||T<P2.until)continue;const N=+n,gid=brItemId(N,P2.k,P2.g);
+    let R=S.stations[P2.lab];if(!R||R.owner!=='player'||(R.pid||'me')!==P2.pid){R=brLabOf(P2.pid);if(!R){P2.until=T+60;continue}P2.lab=R.sid}
+    if(P2.stage==='design'){P2.stage='materials';P2.until=T+rnd(...RD.mat);continue}
+    if(P2.stage==='materials'){if(!P2.got){const rc=ITEMS[gid].recipe;if(!haveIn(rc,[R.stock])){if(!P2.wait){P2.wait=1;brRdFeed(B,`${ITEMS[gid].name}: the design is done. The prototype needs its components in ${R.name}'s store: ${Object.keys(rc).map(i=>`${rc[i]} ${ITEMS[i].name}`).join(', ')}.`)}P2.until=T+60;continue}
+        takeFrom(rc,[R.stock]);inv.addAll(P2.proto,rc);P2.got=1;P2.wait=0}P2.stage='trials';P2.until=T+rnd(...RD.trial);continue}
+    if(P2.stage==='trials'){(B.g=B.g||{})[P2.k]=P2.g;inv.addAll(R.stock,{});const rc=ITEMS[gid].recipe;inv.addAll(R.stock,P2.proto);P2.proto={};if(haveIn(rc,[R.stock])){takeFrom(rc,[R.stock]);inv.add(R.stock,gid,1)}
+      B.rd=null;brRdFeed({rd:P2},`✓ R&D done: your brand launches the ${ITEMS[gid].name}. The prototype is in ${R.name}'s store; the workshop builds it from now on.`,'ok')}}}
+{const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{brRdTick()}catch(e){console.error(e)}return r}}
+// the prototype's components are counted while they sit in the lab
+{const o=ledger;ledger=function(){const r=o.apply(this,arguments);try{const L=r.L.Stations;for(const n in S.brands||{}){const P2=S.brands[n]&&S.brands[n].rd;if(!P2||!P2.proto)continue;const v=invVec(P2.proto);for(const e of RAWS){L[e]+=v[e];r.tot[e]+=v[e]}}}catch(e){}return r}}
+{const o=dockAction;dockAction=function(act,arg){if(act==='brrd'){dockErr=brRdStart(S.player,arg);return}return o.apply(this,arguments)}}
+{const o=coClick;coClick=function(act,arg){if(act==='brrd'){if(NET.cl){netSend({t:'act',act,arg});coErr='Working…';renderCompany();return}dockAction(act,arg);coErr=dockErr;renderCompany();return}return o.apply(this,arguments)}}
+// building waits for the research
+{const o=brItemAt;brItemAt=function(N,k,g){if(g>brResG(N,k))return null;return o.apply(this,arguments)}}
+{const o=brMake;brMake=function(P,k,n){const I=ITEMS[k];if(I&&I.brand!=null&&(I.grade||1)>brResG(I.brand,I.part||('sys_'+I.sys)))return`Research grade ${I.grade} first: Company → Brand → R&D.`;return o.apply(this,arguments)}}
+function brRdHtml(P,N,k){const B=brOf(N),rg=brResG(N,k),mx=brMaxG(k);if(mx===1)return'';const P2=B.rd,w=coWal(P),t=(w&&S.econ.treasury[w])||0,lab=brLabOf(pkeyOf(P));
+  let h=`<div class="lab" style="margin-top:14px">R&amp;D</div><div class="kv"><span>Researched</span><b>grade ${rg} of 5</b></div>`;
+  if(P2&&P2.k===k){const left=Math.max(0,P2.until-S.T),L=S.stations[P2.lab],rc=ITEMS[brItemId(N,k,P2.g)].recipe;
+    h+=`<div class="kv"><span>Grade ${P2.g}</span><b>${P2.stage==='design'?`design · ${fmtT(left)} left`:P2.stage==='materials'?(P2.got?'prototype built':P2.wait?'waiting on materials':`materials · ${fmtT(left)}`):`trials · ${fmtT(left)} left`}</b></div>`;
+    if(P2.stage==='materials'&&!P2.got)h+=`<p class="note" style="margin:4px 0 0">The prototype takes its components from ${esc(L?L.name:'your lab')}'s store: ${Object.keys(rc).map(i=>`${rc[i]} ${esc(ITEMS[i].name)}`).join(', ')}.</p>`}
+  else if(rg<mx){const g=rg+1,cost=RD.cost[g];
+    h+=`<div class="act" style="margin-top:6px"><button class="btn${P2?'':' pri'}" type="button" data-co="brrd" data-arg="${k}" ${P2||t<cost||!lab?'disabled':''}>Research grade ${g} · ${fmt(cost)} cr</button></div>
+      <p class="note" style="margin:6px 0 0">${P2?`One project at a time: the ${esc(ITEMS[brItemId(N,P2.k,P2.g)].name)} is in ${P2.stage}. `:''}${t<cost?`The company treasury holds ${fmt(t)} cr. `:''}Funding from the treasury builds the lab at ${esc(lab?lab.name:'your best base')}; then design (${Math.round(RD.design[g]/60)} min), the prototype's components from that base's store, and trials (${Math.round(RD.trial[0]/60)}–${Math.round(RD.trial[1]/60)} min). The prototype is the first unit.</p>`}
+  else h+=`<p class="note" style="margin:4px 0 0">Top grade.</p>`;return h}
+{const o=brScreenHtml;brScreenHtml=function(P){let h=o.apply(this,arguments);try{const N=brSlot(P);if(N==null||!brPick)return h;const B=brOf(N);
+    const at=h.lastIndexOf('<p class="note" style="margin:8px 0 0">');if(at>=0){const end=h.indexOf('</p>',at)+4;h=h.slice(0,end)+brRdHtml(P,N,brPick)+h.slice(end)}
+    if(B&&B.rd){const P2=B.rd,nm=ITEMS[brItemId(N,P2.k,P2.g)].name;h=`<div class="coalert" style="margin-bottom:10px">R&amp;D: the ${esc(nm)} · ${P2.stage}${P2.stage!=='materials'||!P2.wait?` · ${fmtT(Math.max(0,P2.until-S.T))}`:' · waiting on materials'}</div>`+h}}catch(e){console.error(e)}return h}}
 
 //@src 17_main.js
 // ============================================================ main loop

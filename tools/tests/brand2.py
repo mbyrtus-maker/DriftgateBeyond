@@ -1,6 +1,6 @@
 # Beyond, the Brand screen (9 Nov 2026): Company → Brand lists every buildable part and system under the Market's part filters;
 # a drive's traits are shaped and saved; Station → Fab → Your brand builds the brand's parts and systems by grade at your own
-# base (grade capped by the base); a brand drive installs as the brand and its traits apply; Holdings no longer carries it;
+# base (grade capped by the base and by R&D, which follows the makers': funded from the treasury, design, materials, trials); a brand drive installs as the brand and its traits apply; Holdings no longer carries it;
 # the ledger stays exact
 import asyncio,json
 from playwright.async_api import async_playwright
@@ -30,12 +30,19 @@ async def main():
     check('Drive lists the drive system; +3 thrust for −3 turning saves as the brand',r['rows']==['sys_engine'] and r['pts'].get('sys_engine')=={'thrust':3,'turn':-3},r)
     check('Holdings no longer carries the brand',not r['holdBrand'],r)
     r=json.loads(await ev("""(()=>{const P=S.player,R=myDepots(P)[0],N=brSlot(P);P.docked='station';$('dock').hidden=true;openDock('fab');fabKind='brand';renderDock();const box=!!document.querySelector('#dock [data-act=fabk][data-arg=brand]');
-      const id=rdGid(`sy_bp${N}_engine`,2);devLedger(()=>inv.addAll(R.stock,ITEMS[id].recipe));const btn=document.querySelector(`#dock [data-act=make][data-arg="${id}:1"]`);dockClick('brfabg','2');
-      const btn2=document.querySelector(`#dock [data-act=make][data-arg="${id}:1"]`);if(btn2)btn2.click();const made=R.stock[id]||0,msg=dockErr;
-      const g4=dockAction('make',rdGid(`sy_bp${N}_engine`,4)+':1');const g4msg=dockErr;
+      const id=rdGid(`sy_bp${N}_engine`,2);const pre=dockAction('make',id+':1'),preMsg=dockErr;
+      const w=P.co.w,t0=S.econ.treasury[w];const st=brRdStart(P,'sys_engine'),paid=t0-S.econ.treasury[w],twice=brRdStart(P,'gun');
+      const fwd=()=>{brOf(N).rd&&(brOf(N).rd.until=S.T);brRdTick()};fwd();const st1=brOf(N).rd.stage;fwd();const waiting=brOf(N).rd.wait;
+      devLedger(()=>inv.addAll(R.stock,ITEMS[id].recipe));fwd();fwd();const done=!brOf(N).rd,res=brResG(N,'sys_engine'),proto=R.stock[id]||0;
+      brOf(N).g.gun=2;
+      devLedger(()=>inv.addAll(R.stock,ITEMS[id].recipe));const btn=document.querySelector(`#dock [data-act=make][data-arg="${id}:1"]`);dockClick('brfabg','2');
+      const btn2=document.querySelector(`#dock [data-act=make][data-arg="${id}:1"]`);if(btn2)btn2.click();const made=(R.stock[id]||0)-proto,msg=dockErr;
+      brOf(N).g.sys_engine=4;const g4=dockAction('make',rdGid(`sy_bp${N}_engine`,4)+':1');const g4msg=dockErr;brOf(N).g.sys_engine=2;
       P.rp=RATING.need[6];const th0=W.player.st.thrust,tu0=W.player.st.turn;const fit=rdSysFit(`engine:${id}`);refreshPlayerStats();const th1=W.player.st.thrust,tu1=W.player.st.turn;
       const gun=rdGid(`bp${N}_gun`,2);devLedger(()=>inv.addAll(R.stock,ITEMS[gun].recipe));dockAction('make',gun+':1');const gmade=R.stock[gun]||0;$('dock').hidden=true;
-      return JSON.stringify({box,made,msg,g4msg,fit,sysm:P.sysm.engine,N,thK:th1/th0,tuK:tu1/tu0,name:ITEMS[id].name,gmade,gname:ITEMS[gun].name,tier:P.tiers.engine})})()"""))
+      return JSON.stringify({pre:preMsg,st,paid,twice,st1,waiting,done,res,proto,box,made,msg,g4msg,fit,sysm:P.sysm.engine,N,thK:th1/th0,tuK:tu1/tu0,name:ITEMS[id].name,gmade,gname:ITEMS[gun].name,tier:P.tiers.engine})})()"""))
+    check('R&D: grade 2 is not built before it is researched; funding takes 750 cr from the treasury; one project at a time',r['pre'].startswith('Research grade 2') and r['st'].startswith('✓') and r['paid']==750 and r['twice'].startswith('One R&D'),r)
+    check('R&D runs design → materials (waits for the prototype components in the lab store) → trials → launch, the prototype in the store',r['st1']=='materials' and r['waiting']==1 and r['done'] and r['res']==2 and r['proto']==1,r)
     check('Station → Fab has Your brand at your Depot; a grade 2 brand drive is built into its store; grade 4 waits for a Station',r['box'] and r['made']==1 and 'grade 2' in r['g4msg'],r)
     check('installed, the brand drive is recorded as the brand, and the ship gains +9% thrust for −9% turning (on top of grade 2)',r['fit'].startswith('✓') and r['sysm']=='bp'+str(r['N']) and r['tier']==2,r)
     check('a branded grade 2 gun is built too',r['gmade']==1 and r['gname'].endswith('G2'),r)

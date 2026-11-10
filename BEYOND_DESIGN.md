@@ -3734,3 +3734,24 @@ The user: "it says it lands in 1666666666666666666666666662.20." A strike flying
 `eta` at 1e12 (the fleet, `S.raids` with `.strike`, carries the timing), and the label printed it. Now
 `coThreatEta` (16zo_company2.js) reads the fleet: "N jumps out · about m:ss" (the next jump's time plus `RAID.hop` per jump
 left). Without a fleet it shows the event's eta only when it's a real time. Test: baserun.py.
+
+### Brand R&D: your lines rise a grade by invention, like the makers' (10 Nov 2026)
+The user: "Under brands do I also have an R&D section to create upgrade grades of parts?" There wasn't one (any grade up to
+the base's cap could be built). Then: "Add the R&D panel that follows the code we set up for other makers. Should cost the
+same as the corps."
+- Every brand line starts at grade 1 (a payload bay at 2, like the makers'); the name-only parts have no grades.
+- One project at a time per brand, for a line's next grade, from Company → Brand → (a part) → R&D. Following the makers
+  (16zzza_rd.js `RD`):
+  - **funding:** G2 750, G3 2,000, G4 4,500, G5 9,000 cr from the company treasury, to the Compact's yards for the lab. The
+    lab goes up at your base with the highest workshop cap.
+  - **design:** 15, 30, 45 or 60 minutes.
+  - **materials:** 10 to 20 minutes, then the prototype takes its components from the lab base's store. If they're not
+    there it waits, and says once what it needs.
+  - **trials:** 5 to 15 minutes.
+  - **launch:** the line's grade rises, and the prototype is the first unit, in the lab's store.
+- The workshop (Station → Fab → Your brand) builds any grade up to the line's researched grade and the base's cap (Depot
+  G2/G3, Station G4/G5). Older grades aren't retired: what you build is yours.
+- The prototype's components are counted by the ledger while they sit in the lab (as the makers' are).
+- Guests can start R&D for their own brand while undocked (`brrd` is in `CO_REMOTE`).
+- The screen shows the running project across the top, and each part's researched grade in the list.
+- Code: 16zzzzd_brand2.js (`brRdStart`, `brRdTick`, `brResG`). Test: brand2.py.
