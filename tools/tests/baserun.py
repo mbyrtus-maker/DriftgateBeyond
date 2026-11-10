@@ -21,9 +21,9 @@ async def main():
       P.docked='station';openDock('works');dockTab='bjobs';renderDock();const t0=S.econ.treasury[P.co.w],c0=P.credits;document.querySelector('#dock [data-act=crewhire][data-arg$=":prospector"]').click();const hired=(R.crew||[]).length;renderDock();
       const q=R.crew[0];document.querySelector(`#dock [data-act=crewjob][data-arg="${sid}:${q.id}:guard"]`).click();const job=q.job;renderDock();
       const tabs=dockG.map(g=>g[2].map(t=>t[0])).flat();document.querySelector(`#dock [data-act=crewfire][data-arg="${sid}:${q.id}"]`).click();
-      return JSON.stringify({hired,job,left:(R.crew||[]).length,paidT:t0-S.econ.treasury[P.co.w],paidC:c0-P.credits,bm:tabs.includes('bmjobs'),co:tabs.includes('bco')})})()"""))
+      return JSON.stringify({hired,job,left:(R.crew||[]).length,paidT:t0-S.econ.treasury[P.co.w],paidC:c0-P.credits,bm:tabs.includes('bmjobs'),co:tabs.includes('bco'),jobs:tabs.includes('jobs')})})()"""))
     check('Station → Jobs hires a pilot, sets its job and lets it go; paid from the treasury',r['hired']==1 and r['job']=='guard' and r['left']==0 and r['paidT']>0 and r['paidC']==0,r)
-    check("the Black market and Company are on your base's screen",r['bm'] and r['co'],r)
+    check("Jobs (the regular board), the Black market and Company are on your base's screen",r['bm'] and r['co'] and r['jobs'],r)
     r=json.loads(await ev("""(()=>{const P=S.player,R=myDepots(P)[0];P.rp=RATING.need[6];devLedger(()=>{S.econ.treasury[P.co.w]+=60000});R.crew=[];renderDock();const btn=k=>!!document.querySelector(`#dock [data-act=crewhire][data-arg$=":${k}"]`);const b={heavy:btn('heavy'),bomber:btn('bomber'),gunboat:btn('gunboat')};
       const msg=[];for(const k of['heavy','bomber','gunboat']){dockAction('crewhire',R.sid+':'+k);msg.push(dockErr)}const cls=R.crew.map(q=>q.cls),jobs=R.crew.map(q=>q.job);
       let flown=0;try{for(const q of R.crew){const e=crewSpawn(R,R.sid,q);if(e&&e.cls===q.cls)flown++}}catch(err){msg.push(String(err))}R.crew=[];

@@ -3721,3 +3721,10 @@ parts it covers, the user chose everything buildable, systems included.
 The user: "Under 'Your Company' the logo shows but it's not in the hue that was selected." The box read `P.co.hue` and
 `P.co.name`, but the colour and name live on the brand record (`S.brands`). It now uses `coCol` and `brName`, like the
 rest of the game. Test: profile.py.
+
+### A regular Jobs board at your own base (9 Nov 2026)
+The user: "The Halcyon riftstone jobs are still showing in my station's jobs screen." At your own base the Jobs group had
+only the Black market tab (a player base posts no contract board), so the Black market tab, with Halcyon's quiet buyer
+from up to 3 jumps away, was the whole Jobs screen. The user chose to add the regular board: your base now has Jobs →
+Jobs (the system's jobs, as in flight: guards, escorts, freight, posted jobs), and Riftstone stays on Jobs → Black market.
+Test: baserun.py.
