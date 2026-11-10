@@ -105,11 +105,13 @@ function worksSync(){const SE=W.stationEnt;W.works=W.works||[];const want=SE&&SE
   for(const w of W.works.slice())if(!want.some(d=>d.id===w.id)){W.works.splice(W.works.indexOf(w),1);const i=W.ents.indexOf(w);if(i>=0)W.ents.splice(i,1);if(W.tgt&&W.tgt.ref===w)W.tgt=null;
     if(NET.cl&&w.lowHp)for(const c of w.col.slice(0,3))fxBoom(c,c.r*1.4,sideCol(w.fac))}
   for(const d of want){let w=W.works.find(x=>x.id===d.id);if(!w){w={type:'works',lastHit:-99,...d};W.works.push(w);W.ents.push(w)}
-    Object.assign(w,d);const sig=w.lvl+'|'+(w.slot||0)+'|'+MDL.ready+'|'+SE.x+','+SE.y+','+SE.z;if(w.sig===sig)continue;w.sig=sig;
-    const L=wkLayout(SE.kind,w.k,w.lvl,w.slot),q=SE.q||q0();w.q=qNorm(qMul(q,qAxis(0,1,0,L.yaw,q0()),q0()));
+    Object.assign(w,d);const L=wkLayout(SE.kind,w.k,w.lvl,w.slot),sig=w.lvl+'|'+(w.slot||0)+'|'+MDL.ready+'|'+SE.x+','+SE.y+','+SE.z+'|'+(L.sig||'');if(w.sig===sig)continue;w.sig=sig;
+    // (10 Nov 2026) a layout may draw its modules smaller (sc: a player base's, 16x2_basemods.js), hide the model (hide) or
+    // hang them on a strut from a hull point (hub)
+    w.sc=L.sc||1;w.hide=!!L.hide;w.hub=L.hub||null;const q=SE.q||q0();w.q=qNorm(qMul(q,qAxis(0,1,0,L.yaw,q0()),q0()));
     w.parts=L.parts.map(p=>{qRot(q,p[0],p[1],p[2],_u);return{x:SE.x+_u.x,y:SE.y+_u.y,z:SE.z+_u.z}});
-    const mi=w.parts[Math.floor(w.parts.length/2)];w.x=mi.x;w.y=mi.y;w.z=mi.z;const u=WKU[w.k];
-    if(w.k==='yard'||w.k==='yardb'){w.col=[];for(let i=0;i<6;i++){const zz=(-.78+i*.33)*u;qRot(w.q,0,0,zz,_u);w.col.push({x:w.x+_u.x,y:w.y+_u.y,z:w.z+_u.z,r:u*.3})}w.r=u}
+    const mi=w.parts[Math.floor(w.parts.length/2)];w.x=mi.x;w.y=mi.y;w.z=mi.z;const u=WKU[w.k]*w.sc;
+    if(w.k==='yard'||w.k==='yardb'){w.col=[];for(let i=0;i<6;i++){const zz=(-.78+i*.33)*u+(w.hide?WK_SLIP[2]:0);qRot(w.q,0,0,zz,_u);w.col.push({x:w.x+_u.x,y:w.y+_u.y,z:w.z+_u.z,r:u*.3})}w.r=u}
     else{w.col=w.parts.map(p=>({x:p.x,y:p.y,z:p.z,r:u*.78}));w.r=u*(1+(w.parts.length-1)*1.15)}}
   for(const w of W.works)w.lowHp=wkHp(w)<wkMax(w)*.3}
 function worksIn(w2){return(w2||W).works||[]}
@@ -155,7 +157,7 @@ function wkBlast(m,tp,BR){for(const w of worksIn()){if(!hostile(m.side,w.fac))co
 function wkMesh(name,fac){const key='wk'+name+fac;return MESH[key]||(MESH[key]=mdlMesh(name,fac,MDL.i[name].s))}
 function drawWorks(t){if(!MDL.ready)return;for(const w of worksIn()){const nm=WK_MDL[w.k],hg=w.k==='hangar';if((!hg&&!mdlHas(nm))||!w.parts)continue;const fac=w.fac,m=hg?hgMesh(fac):wkMesh(nm,fac),fr=wkHp(w)/wkMax(w),hurt=W.t-w.lastHit<.12,u=WKU[w.k];
     const tint=fr<.5?[.62+fr*.5,.56+fr*.5,.54+fr*.5]:ONE3,em=hurt?[.35,.25,.15]:ZERO3;
-    for(const p of w.parts){if(!inView(p.x,p.y,p.z,u*1.8))continue;mModel(MM,p.x,p.y,p.z,w.q,1,1,1);
+    const ws=w.sc||1;for(const p of w.parts){if(w.hide)break;if(!inView(p.x,p.y,p.z,u*1.8))continue;mModel(MM,p.x,p.y,p.z,w.q,ws,ws,ws);
       if(w.k==='yardb'){const pr=wkProg(w);drawMesh({buf:m.buf,n:Math.max(3,Math.floor(m.n*(.12+.88*pr)/3)*3),mode:m.mode},MM,[.82,.82,.85],em);if(W===LW&&Math.random()<.25){qRot(w.q,rnd(-.5,.5)*u,rnd(-.3,.3)*u,(-.8+1.4*pr)*u,_u);fxSpark({x:p.x+_u.x,y:p.y+_u.y,z:p.z+_u.z},'#ffe9b8',2)}}
       else drawMesh(m,MM,tint,em);
       if(fr<.5&&W===LW&&Math.random()<(.5-fr)*.5)fxSpark({x:p.x+rnd(-.5,.5)*u,y:p.y+rnd(-.4,.4)*u,z:p.z+rnd(-.5,.5)*u},fr<.25?'#ff8a4a':'#ffcf8a',2)}

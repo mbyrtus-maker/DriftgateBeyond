@@ -223,10 +223,13 @@ for _k,_f in BASE_MODELS.items():MODELS[_k]=('base',(lambda f:lambda:f().out())(
 # (10 Nov 2026) every design's Depots and core, the standard set's too, carry no guns of their own: the game draws its live
 # turrets on their seats, each on a plinth. The pack keeps each seat's plinth top as 'tp' and its outward normal as 'tn'.
 import beyond_base_designs as _BD
-TNORM={}
+# (10 Nov 2026) also each model's docking ports (its collars' faces, 'pt'), its development modules' berths ('wb': for each
+# kind, the hull point its strut starts from and its stack's centre) and its logo boards ('lg': point, outward normal,
+# half-size), all in the model's packed frame
+TNORM={};WB={};LG={}
 def _bdpart(f,name):
     def g():
-        M,S=f();MOUNTS[name]=[p for p,_ in S];TNORM[name]=[[round(float(v),3) for v in n] for _,n in S]
+        M,S,E=f();MOUNTS[name]=[p for p,_ in S];TNORM[name]=[[round(float(v),3) for v in n] for _,n in S];PTS[name]=E['pt'];WB[name]=E['wb'];LG[name]=E.get('lg',[])
         return M.out()
     return g
 for _k,_f in _BD.models().items():MODELS[_k]=('base',_bdpart(_f,_k))
@@ -284,7 +287,7 @@ def pack():
         tp=[[round(float(x),3) for x in (np.array(m)-c)/half] for m in MOUNTS.get(name,[])]
         pt=[[round(float(x),3) for x in (np.array(m)-c)/half] for m in PTS.get(name,[])]
         sb={k:[[round(float(x),3) for x in (np.array(m)-c)/half] for m in v] for k,v in SUBS.get(name,{}).items()}
-        idx[name]={**({'c':[round(float(x),4) for x in c],'h':round(float(half),4)} if kind=='base' else {}),'o':off,'n':len(T),'k':kind,'s':FIT.get(name,1),'e':eng,'tp':tp,'top':round(float(T[:,:,1].max()),3),**({'pt':pt} if pt else {}),**({'tn':TNORM[name]} if name in TNORM else {}),**({'sub':sb} if sb else {}),**EXTRA.get(name,{})}
+        idx[name]={**({'c':[round(float(x),4) for x in c],'h':round(float(half),4)} if kind=='base' else {}),'o':off,'n':len(T),'k':kind,'s':FIT.get(name,1),'e':eng,'tp':tp,'top':round(float(T[:,:,1].max()),3),**({'pt':pt} if pt else {}),**({'tn':TNORM[name]} if name in TNORM else {}),**({'lg':[[[round(float(x),3) for x in (np.array(p)-c)/half],[round(float(x),3) for x in d],round(float(hs)/half,4)] for p,d,hs in LG[name]]} if LG.get(name) else {}),**({'wb':{k:[[round(float(x),3) for x in (np.array(m)-c)/half] for m in v] for k,v in WB[name].items()}} if name in WB else {}),**({'sub':sb} if sb else {}),**EXTRA.get(name,{})}
         print(name.ljust(12),kind,len(T),'tris',('eng %d'%len(eng)) if eng else '',('lifted %d'%zl) if zl else '')
     return idx,bytes(blob)
 idx,blob=pack()

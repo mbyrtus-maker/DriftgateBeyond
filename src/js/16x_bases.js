@@ -5,7 +5,9 @@
 // core with five hardpoints, each built-on hardpoint carrying its building (shipyard, external storage, defence platform,
 // hangar, forge, market wing) in the order you built them. The pack keeps each model's centre and half-extent (c, h) so the
 // buildings go back on the core at the right size; each base is assembled once into one mesh and cached by its shape.
-const BM={K:{lair:38,depot:48,station:32},hpR:4.6,hpY:-.9,bS:.8,bld:{yard:'by_yard',storage:'by_storage',defence:'by_defence',hangar:'by_hangar',forge:'by_forge',market:'by_market'}};
+const BM={K:{lair:38,depot:48,station:40},hpR:4.6,hpY:-.9,bS:.8,bld:{yard:'by_yard',storage:'by_storage',defence:'by_defence',hangar:'by_hangar',forge:'by_forge',market:'by_market'}};
+// (10 Nov 2026) a Station draws at 40 (was 32), so even bare it stands well over its Depot (each design's core also has its
+// own Station feature: two rings and a bridge, twin wheels, lesser spires, a command tower, stacked saucers, a moonlet)
 const BM_HP=[0,1,2,3,4].map(k=>Math.PI/2+k*2*Math.PI/5);
 // (8 Nov 2026) six base designs, picked on your company profile (looks only: stats, turrets and buildings are the same). Each
 // has a Depot at levels 1-3 and a Station core with the same five hardpoints, so the buildings attach unchanged. Designs 2-6

@@ -3774,3 +3774,35 @@ Spire's balcony seats under its level-3 ring, the Truss cluster's into its frame
   The Spire Depot 3's life-support ring is raised from 2.0 to 2.2 to clear its balcony guns.
 - Check: base_seats_check.py, every live seat on every design, Depot 1-3 and the Station with every building on every
   hardpoint: 0 out of place (was 80). Preview: tools/previews/base_turrets_game.py (in game, three angles). Test: basedesigns.py.
+### Stations look unlike Depots; ports and modules on your base (visuals bot, 10 Nov 2026)
+The user upgraded a Wheel Depot to a Station and "it was the ring and looked just like the depot": a new Station has no
+buildings, and each design's bare core was its Depot's shape at about the same size (153 m against 110-146 m).
+- **A Station draws at 40 units per model unit (was 32)**, so even bare it is 1.5-2 times its Depot (192-266 m half-size
+  against 94-146 m), and each design's core has its own Station feature: Company standard a command tower with a lit command
+  deck and a second habitat ring below the hub; Wheel twin wheels round a lit command sphere on a long axle; Spire three
+  lesser spires on bridges round the tower; Truss cluster a lattice tower to a lit command pod with a dish and two big lit
+  hab spheres outside the frame; Disc stacked saucers (a second lens on a tall column); Asteroid a habitat ring round the
+  crown dock and a moonlet on a lattice bridge. Buildings still attach at BM_HP (they draw 25% bigger with the core).
+- **Docking ports are the model's own collars** (pack `pt`, 16x2_basemods.js wraps portName and mdlPorts): one on each
+  Depot, 2-5 on each Station. Before, every player base used the Driftgate 1 depot's three ports, rings hanging 124 m out
+  (inside the bigger cores). base_seats_check.py checks each port sits on its collar and its lane keeps 40 m off the turrets.
+- **Development modules stand on the base** (the coordinator, after Job 1's report: "a player Depot's development modules
+  draw as a separate row floating beside the base"). The works (storage vaults, production, habitat, shield works, fighter
+  hangar, defence platform) used `wkLayout`'s Driftgate 1 ring 400 m out. On a player base each kind now has a berth from
+  the pack (`wb`: hull point and stack centre, found by beyond_base_designs.berths clear of the turrets and their barrels,
+  the docking lanes, every hardpoint's building and each other), its units stacked on it at half size (BM.wkS; their hit
+  spheres too) and joined to the hull by a truss strut (and a spine up a stack). The defence platform's turrets stand on its
+  deck and keel along its normal. A Station's shipyard works sit in its Shipyard building (no second slipway drawn).
+  worksSync now takes a layout's scale, hidden model and strut point (05_freeports_campaigns.js); other stations unchanged.
+- Sheet: tools/previews/base_station_game.py (every level with its modules, one scale). Test: basedesigns.py.
+
+### Your company's logo on your bases (visuals bot, 10 Nov 2026)
+The user: "The company logos should show somewhere on the company depots and stations." Every player Depot and Station now
+carries its owner's mark (the profile's logo, `P.co.logo` into CO_LOGO) on boards lying on its hull, in the company's colour
+(`coCol`), lit: a dark plate with a coloured rim and the glyph in lit tiles (16x3_baselogos.js). The glyph is rasterised once
+per mark from its SVG path (a canvas, Path2D, 40x40, runs merged into rectangles); the board mesh is cached per mark and
+colour, so two companies' bases differ and a change of mark or colour shows at once. Each base model has its board spots in
+the pack (`lg`: centre, normal, half-size; beyond_base_designs.logo_spots): the model seen along 74 directions as a depth map,
+a board wherever the hull is nearly flat with nothing in front of it, clear of the turrets, the docking lanes and the module
+stacks; two on a Depot (13-20 m half-size), three on a Station (15-24 m), facing well apart. Looks only.
+Sheet: tools/previews/base_logos_game.py. Test: basedesigns.py.

@@ -50,7 +50,7 @@ async def main():
     for n in range(1,7):
       r=json.loads(await ev(f"""(()=>{{const R=__R;R.design={n};const m=bmBase(R,'player'),T=bmTurrets(R);let far=0;for(const t of T)far=Math.max(far,Math.hypot(...t));
         return JSON.stringify({{ok:!!(m&&m.core),nt:T.length,far:Math.round(far),model:bmModel(R),bld:(R.bld||[]).join(','),keys:Object.keys(MESH).filter(k=>k.startsWith('bm{n}s')),key:Object.keys(MESH).some(k=>k.startsWith('bm{n}s'+(R.bld||[]).join(',')))}})}})()"""))
-      check(f'design {n}: Station with three buildings builds ({r["model"]}), turret seats on the core',r['ok'] and r['key'] and r['nt']>=8 and r['far']<5.5*32+16,r)
+      check(f'design {n}: Station with three buildings builds ({r["model"]}), turret seats on the core',r['ok'] and r['key'] and r['nt']>=8 and r['far']<5.5*40+16,r)
       await ev("(()=>{const SE=W.stationEnt;SE._mt=0;mdlStationTurrets(SE);return 1})()");await view(1050);await pg.wait_for_timeout(900);await pg.screenshot(path=D+f'basedesign_{n}_station.png')
     # (10 Nov 2026) every live turret stands on its model's plinth along the hull's normal: its origin BM.tuLift above the
     # plinth top (tp), the normal from the pack (tn); the models carry no guns of their own
@@ -60,6 +60,32 @@ async def main():
         return Math.hypot(...[0,1,2].map(j=>t.p[j]-((m[j]*h+c[j])*K+nn[j]*BM.tuLift)))>.01||Math.abs(Math.hypot(...t.n)-1)>.01});
       if(bad.length||!M.tn||M.tn.length!==M.tp.length)out.push(bmModel(R))}R.pst=1;return JSON.stringify(out)})()"""))
     check('every live turret on its plinth, along the hull normal (tp, tn)',not r,r)
+    # (10 Nov 2026) a bare Station stands well over its Depot 3 (drawn at BM.K.station 40) in every design; a base docks at
+    # its own model's collars (portsW from the pack's pt, on the hull); its development modules stand on it on struts, at
+    # BM.wkS of their size, every kind on its own berth, near the hull; the defence platform's turrets stand on its deck
+    r=json.loads(await ev("""(()=>{const R=__R,SE=W.stationEnt,out={};const d=devOf(R);Object.assign(d,{life:2,store:2,prod:1,def:1,armor:1,hangar:1});
+      for(const n of [1,2,3,4,5,6]){R.design=n;const o={};for(const st of [0,1]){R.pst=st;R.bld=[];SE._mt=0;mdlStationTurrets(SE);worldUpdate(.016);
+        const M=MDL.i[bmModel(R)],K=st?BM.K.station:BM.K.depot,P=portsW(SE)||[];o[st?'s':'d']={size:Math.round((M.h||1)*K),nport:P.length,pt:(M.pt||[]).length,
+          pfar:Math.round(Math.max(...P.map(p=>Math.hypot(p.x-SE.x,p.y-SE.y,p.z-SE.z)))),
+          wk:(W.works||[]).filter(w=>w.sid===W.sid&&w.k!=='yard').map(w=>({k:w.k,sc:w.sc,hub:!!w.hub,d:Math.round(Math.hypot(w.x-SE.x,w.y-SE.y,w.z-SE.z))})),
+          dt:SE.turrets.filter(t=>t.mod).map(t=>!!t.n)}}out[n]=o}R.pst=1;R.bld=['yard','storage','market'];return JSON.stringify(out)})()"""))
+    for n in range(1,7):
+      o=r[str(n)];dd,ss=o['d'],o['s']
+      check(f'design {n}: the bare Station is at least 1.4 times its Depot\'s size',ss['size']>=1.4*dd['size'],(dd['size'],ss['size']))
+      check(f'design {n}: Depot and Station dock at their own collars',dd['nport']==dd['pt']>=1 and ss['nport']==ss['pt']>=2 and dd['pfar']<3.2*48 and ss['pfar']<6*40,(dd['nport'],dd['pfar'],ss['nport'],ss['pfar']))
+      ok=all(len(x['wk'])==6 and all(w['hub'] and w['sc']==.5 for w in x['wk']) and len({w['k'] for w in x['wk']})==6 for x in (dd,ss))
+      check(f'design {n}: every development module stands on the base on a strut, near it',ok and max(w['d'] for w in dd['wk'])<300 and max(w['d'] for w in ss['wk'])<420,[(w['k'],w['d']) for w in dd['wk']+ss['wk']])
+      check(f'design {n}: the defence platform\'s turrets stand along its deck',dd['dt'] and all(dd['dt']) and all(ss['dt']),dd['dt'])
+    # (10 Nov 2026) the owner's logo on every base: each Depot model has at least two boards and each core three; the board
+    # mesh follows the profile's mark and the brand colour (one mesh per mark and colour), and draws without error
+    r=json.loads(await ev("""(()=>{const R=__R,P=S.player,few=BM_DESIGNS.flatMap(D=>[1,2,3].map(l=>D.depot(l)).concat([D.core])).filter(m=>{const L=MDL.i[m].lg||[];return L.length<(/core$/.test(m)?3:2)});
+      P.co=P.co||{};const N=brSlot(P,true),keys=[],tiles=[];for(const [lg,col] of [[2,'#4f7cff'],[9,'#f0b24a']]){P.co.logo=lg;S.brands[N].col=col;R.design=5;R.pst=0;bmLogos();
+        keys.push('bmlg'+bmLogoOf(R)+coCol(R.pid||'me'));tiles.push(bmLogoRects(lg).length)}
+      const all=CO_LOGO.map((L,i)=>bmLogoRects(i).length);R.pst=1;
+      return JSON.stringify({few,keys,made:keys.every(k=>!!MESH[k]),tiles,all})})()"""))
+    check('every base model carries logo boards (two on a Depot, three on a Station)',not r['few'],r['few'])
+    check('the logo follows the owner\'s mark and colour (a mesh for each)',r['made'] and len(set(r['keys']))==2 and r['keys'][0].endswith('#4f7cff'),r['keys'])
+    check('every mark rasterises into lit tiles',all(t>3 for t in r['all']),r['all'])
     r=await ev("(()=>{const R=__R;R.design=9;return bmDesign(R).id+':'+bmModel(R)})()")
     check('an unknown design falls back to the standard set',r=='1:by_core',r)
     r=json.loads(await ev("JSON.stringify({n:CO_LOGO.length,svg:CO_LOGO.every((L,i)=>/^<svg[^>]*>.*<path d=\"M/.test(coLogoSvg(i,20,'#4a8cff',true))&&coLogoSvg(i,40).includes(L.d)),names:CO_LOGO.map(L=>L.n),clash:CO_LOGO.filter(L=>Object.values(MK_LOGO).some(M=>M.n===L.n||M.d===L.d)).length})"))

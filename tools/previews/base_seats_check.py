@@ -11,7 +11,7 @@ import numpy as np
 HERE=os.path.dirname(os.path.abspath(__file__));sys.path.insert(0,HERE)
 import beyond_stations as BS
 import beyond_base_designs as BD
-K={'depot':48.0,'station':32.0}
+K={'depot':48.0,'station':40.0}
 TS=1.15                       # the turret's scale on a model-seated base (12_render.js draw3D)
 LIFT=13.2*TS                  # the turntable's underside below the turret's origin (turretMesh: base ring to y -13.2)
 RAD=11.0*TS                   # the turntable's radius (10.6) with a little room
@@ -59,7 +59,15 @@ def run(designs):
                 hit=int(((h*k>2.0)&(h*k<TOP)&(rad*k<RAD)).sum());skirt=float((top-bot)@nn)*k
                 flag=gap is None or gap>6 or skirt>40 or hit>0;bad+=flag
                 print(f"design {n} {lab:8s} seat {i}: centre {'  none' if gap is None else '%5.1f'%gap} m  skirt {skirt:5.1f} m  tilt {' none' if tilt is None else '%3.0f'%tilt}°  hits {hit:4d}{'   <<' if flag else ''}",flush=True)
-    print('seats out of place:',bad)
+            # (10 Nov 2026) each docking port sits on the hull (a collar's face) and its approach lane (straight out from the
+            # base's axis, 260 m) keeps clear of the live turrets
+            for j,pp in enumerate(BD.ports(n,kind)):
+                dd=np.array([pp[0],0,pp[2]]);dd/=np.linalg.norm(dd);pw=pp*k
+                dmin=min(float(BD._dist_seg(np.array([top*k+nn*BD.TU_LIFT]),pw,pw+dd*260)[0]) for top,_,nn in S)
+                t,_=ray(T,pp+dd*.5,-dd);back=None if t is None else (t-.5)*k
+                flag=dmin<40 or back is None or back>12;bad+=flag
+                print(f"design {n} {lab:8s} port {j}: nearest turret {dmin:5.0f} m from its lane, hull {'none' if back is None else '%.0f m'%back} behind it{'   <<' if flag else ''}",flush=True)
+    print('seats or ports out of place:',bad)
     return bad
 if __name__=='__main__':
     run([int(a) for a in sys.argv[1:]] or range(1,7))
