@@ -4614,7 +4614,7 @@ addEventListener('keydown',e=>{touchLast=false;if(e.code==='F11'){e.preventDefau
   if(c==='KeyK'&&S.player.cls==='wraith'){stealthOn();return}
   if(c==='KeyK'){flash('Constructors fly for faction command now: open comms (I) and choose 3 to call one in here.');return}
   if(c==='KeyU'&&!(W&&W.bridge)){if(NET.cl)netSend({t:'order',k:'help'});else pilotDistress();return}
-  if(c==='KeyO'){const ops=friendlyOps();if(!ops.length){flash('No friendly operations right now. Strikes and threats appear in the Ops list and on the map.');return}joinOp(ops[0]);return}
+  if(c==='KeyO'){if(ctrOnly()){flash('Operations are for pilots who fly for a power or their own faction. Contract work is on the Jobs board.');return}const ops=friendlyOps();if(!ops.length){flash('No friendly operations right now. Strikes and threats appear in the Ops list and on the map.');return}joinOp(ops[0]);return}
   if(c==='KeyY'){assistTarget();return}
   if(c==='KeyL'){S.player.level=S.player.level===false;flash(S.player.level===false?'Auto-level off: full six-axis freedom.':'Auto-level on: the ship rolls back level with the sector plane.');return}
   if(c==='KeyX'){S.player.fa=!S.player.fa;feed(`Flight assist ${S.player.fa?'on':'off'}.`)}
@@ -16498,6 +16498,17 @@ function scDrones(P){try{if(P&&P.docked==='station'&&loadOn()&&drnNeed(P)>0){con
 // launching: a drone bay that isn't full is topped up first (host and single player; a guest's launch runs here on the host)
 {const o=undock;undock=function(){try{const P=S.player;if(P&&P.docked==='station'&&loadOn()&&drnNeed(P)>0)scDrones(P)}catch(e){console.error(e)}return o.apply(this,arguments)}}
 {const o=hUndock;hUndock=function(pid){try{const P=S.pilots&&S.pilots[pid];if(P&&P.docked==='station'&&loadOn()&&drnNeed(P)>0)scDrones(P)}catch(e){console.error(e)}return o.apply(this,arguments)}}
+
+//@src 16zzzx_contractor.js
+// ============================================================ Beyond: a contractor's keys (user, 9 Nov 2026)
+// "I think the take order and drop order and join operation are carry overs from Driftgate 1, they can be hidden until you have
+// your own faction or declare an allegiance" and "O is engaging autopilot". For a pilot who neither flies for a power nor has
+// declared a faction: O (join operation) and P / Shift+P (take or pick an order) do nothing but say so, the operations list
+// is empty (so nothing sets a course and engages the autopilot for them), and the quick keys don't show them (05). Backspace
+// still drops a selected job. The training courses keep them.
+function ctrOnly(){const P=S&&S.player;return!!P&&!S.unb&&!S.training&&!P.sworn&&!P.decl}
+{const o=planKey;planKey=function(){if(ctrOnly()){flash('Orders are for pilots who fly for a power or their own faction. Contract work is on the Jobs board.');return}return o.apply(this,arguments)}}
+{const o=friendlyOps;friendlyOps=function(){if(ctrOnly())return[];return o.apply(this,arguments)}}
 
 //@src 17_main.js
 // ============================================================ main loop

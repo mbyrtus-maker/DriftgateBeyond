@@ -94,7 +94,7 @@ addEventListener('keydown',e=>{touchLast=false;if(e.code==='F11'){e.preventDefau
   if(c==='KeyK'&&S.player.cls==='wraith'){stealthOn();return}
   if(c==='KeyK'){flash('Constructors fly for faction command now: open comms (I) and choose 3 to call one in here.');return}
   if(c==='KeyU'&&!(W&&W.bridge)){if(NET.cl)netSend({t:'order',k:'help'});else pilotDistress();return}
-  if(c==='KeyO'){const ops=friendlyOps();if(!ops.length){flash('No friendly operations right now. Strikes and threats appear in the Ops list and on the map.');return}joinOp(ops[0]);return}
+  if(c==='KeyO'){if(ctrOnly()){flash('Operations are for pilots who fly for a power or their own faction. Contract work is on the Jobs board.');return}const ops=friendlyOps();if(!ops.length){flash('No friendly operations right now. Strikes and threats appear in the Ops list and on the map.');return}joinOp(ops[0]);return}
   if(c==='KeyY'){assistTarget();return}
   if(c==='KeyL'){S.player.level=S.player.level===false;flash(S.player.level===false?'Auto-level off: full six-axis freedom.':'Auto-level on: the ship rolls back level with the sector plane.');return}
   if(c==='KeyX'){S.player.fa=!S.player.fa;feed(`Flight assist ${S.player.fa?'on':'off'}.`)}

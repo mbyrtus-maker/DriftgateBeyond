@@ -116,5 +116,6 @@ js/16zzzt_tags.js
 js/16zzzu_myjobs.js
 js/16zzzv_depotwork.js
 js/16zzzw_scoutrig.js
+js/16zzzx_contractor.js
 js/17_main.js
 end.html
