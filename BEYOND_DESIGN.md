@@ -3610,3 +3610,18 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 - **The pack turret** (`beyond_stations.turret`, on Depot 3, the defence platform and the Depot 3 of designs 2–6) gets the same treatment in the pack's style, about 440 triangles (was about 100): `by_depot3`, `by_defence`, `by_d2…d6_depot3` rebuilt. Preview `tools/previews/turrets_sheet.py` → `tools/previews/beyond_turrets.png`.
 - **The R&D stations' turret seats** (`tools/rdstation.py`) were bare drums; each now carries the pack turret, added after the windows are lit (the towers' windows are unchanged). `rds_halcyon/varkesh/ostrova/free` rebuilt; the seats (`tp`) are where they were.
 - The capitals' and faction stations' `main_turret` and the Kenney kit turrets on the older models are unchanged.
+
+### Running a base from its own screen; who can run it (user, 9 Nov 2026)
+"Just add hire a pilot to the depot jobs screen and make sure the black market is on the depot screen as well. The company profile screen should select what Depot/Station/Lair you're trying to hire for or create jobs for or modify. Company profile is an overview of multiple stations and lairs and depots, while the main depot needs enough options to run it. Guests for example with the right access should be able to create jobs, hire/fire pilots etc. But maybe not have access to the company tab for now."
+- **Station → Jobs at your base:**
+  - The base's pilots, with their job (Mining, Hauling, Guarding, Idle) and Let go.
+  - **Hire a pilot**, by hull, paid from the company treasury.
+  - Then Post a job here.
+- **Black market:** Jobs → Black market is open at your own base too.
+- **Company screen:** it stays the overview of all your bases, and its Jobs tab already picks the base to hire for and lists every base to post for.
+- **Who can run this base** (Station → Works, the owner only):
+  - The owner lets other pilots run the base. Let in, a pilot docked there gets Works and Jobs, but not Company.
+  - They can hire, set jobs, let go, post and withdraw jobs and set fees, all on the owner's behalf and paid from the owner's treasury. The owner gets a note of each.
+  - A pilot without access is refused.
+- **Wording:** Holdings' "Upgrade to a Station" asks for the Station Kit alone.
+- **Test:** `baserun.py`.

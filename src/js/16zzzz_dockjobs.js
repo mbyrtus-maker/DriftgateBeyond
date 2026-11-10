@@ -19,7 +19,7 @@ function djHtml(c,P,R){const F=pjForm,goods=['fe','cu','ir','au','nu','xc','plat
 // (user, 9 Nov 2026: "make the jobs and the works two different tabs under Station; also need access to the company profile
 // tab, just call it Company") at your own base the Station tab has Works, Jobs (posting, this file) and Company (the profile,
 // as on the Company screen, with the base design turning beside it)
-{const o=dockCtx;dockCtx=function(){const c=o.apply(this,arguments);try{const P=S.player,R=c&&c.kind==='station'&&S.stations[P.sector];if(R&&R.owner==='player'&&(R.pid||'me')===pkeyOf(P)&&!S.unb)c.ownBase=true}catch(e){}return c}}
+{const o=dockCtx;dockCtx=function(){const c=o.apply(this,arguments);try{const P=S.player,R=c&&c.kind==='station'&&S.stations[P.sector];if(R&&R.owner==='player'&&!S.unb){if((R.pid||'me')===pkeyOf(P)){c.ownBase=true;c.baseOwner=true}else if(baseAcc(R,P))c.ownBase=true}}catch(e){}return c}}
 function dcoHtml(P){return`<div id="dcoBody">${coPrevBox(coFormOf(P))}${coProfHtml(P)}</div>`}
 // the profile's buttons are the Company screen's (data-co): run them here and redraw the dock
 $('dock').addEventListener('click',e=>{const b=e.target.closest('#dcoBody [data-co]');if(!b||b.disabled)return;e.preventDefault();e.stopPropagation();coErr='';coClick(b.dataset.co,b.dataset.arg||'');dockErr=coErr||'';renderDock()},true);
@@ -30,3 +30,31 @@ $('dock').addEventListener('click',e=>{const b=e.target.closest('#dcoBody [data-
 // Station tab's Company opens the Company screen itself (key 0: Profile, Allegiance, Holdings, Economy, Jobs, Black market)
 // over the dock, on Holdings once your company is set up
 {const o=dockClick;dockClick=function(act,arg){if(act==='tab'&&arg==='bco'){const el=$('company');if(el&&S){if(coTab==='profile'&&coFunded(S.player))coTab='holdings';el.hidden=false;$('map').hidden=true;$('help').hidden=true;coErr='';renderCompany()}return}return o.apply(this,arguments)}}
+
+// ============================================================ (user, 9 Nov 2026) "just add hire a pilot to the depot jobs screen and make sure the
+// black market is on the depot screen as well ... the main depot needs enough options to run it. Guests for example with the
+// right access should be able to create jobs, hire/fire pilots etc. But maybe not have access to the company tab for now."
+//   Station → Jobs also hires this base's pilots and sets or ends their jobs; the Jobs tab's Black market is open at your base.
+//   Access: the owner lets other pilots run a base (Station → Works, "Who can run this base"). A pilot with access docked there
+//   gets Works and Jobs (not Company): hiring, jobs and letting pilots go, posting and withdrawing jobs, and the fees, all on
+//   the owner's behalf and paid from the owner's company treasury. The Company screen stays the owner's.
+// the host's own pilot, kept while a guest's order runs as that guest
+let HOST_P=null,RA_D=0;
+{const o=runAs;runAs=function(pid,fn){if(!RA_D)HOST_P=S&&S.player;RA_D++;try{return o.apply(this,arguments)}finally{RA_D--}}}
+function baseOwnerP(R){const k=R.pid||'me';if(k==='me'||isMe(k)||(NET.on&&k===NET.me))return RA_D?HOST_P:S.player;return(S.pilots||{})[k]||null}
+function baseAcc(R,P){if(!R||!P)return false;const k=pkeyOf(P);return!!(R.acc&&R.acc[k])}
+const BASE_ACTS=new Set(['crewhire','crewjob','crewfire','pjpost','pjcancel','feeset']);
+function baseOfArg(act,arg){const a=String(arg||'');if(act==='pjcancel'){const j=pjList().find(x=>String(x.id)===a);return j&&S.stations[j.sid]}return S.stations[a.split(':')[0]]}
+{const o=dockAction;dockAction=function(act,arg){try{if(act==='baseacc'){const P=S.player,R=S.stations[P.sector],[k,on]=String(arg).split(':');if(!R||R.owner!=='player'||(R.pid||'me')!==pkeyOf(P)){dockErr='Only the owner sets who can run this base.';return}
+      R.acc=R.acc||{};if(on==='1')R.acc[k]=1;else delete R.acc[k];const Q=(S.pilots||{})[k];dockErr=`✓ ${Q&&Q.name||'That pilot'} ${on==='1'?'can now run':'can no longer run'} ${R.name}.`;return}
+    if(BASE_ACTS.has(act)){const P=S.player,R=baseOfArg(act,arg);if(R&&R.owner==='player'&&(R.pid||'me')!==pkeyOf(P)&&baseAcc(R,P)&&P.docked==='station'&&P.sector===R.sid){const O=baseOwnerP(R);if(O){const g=S.player;S.player=O;try{o.apply(this,arguments)}finally{S.player=g}
+        if(String(dockErr).startsWith('✓')){const k=R.pid||'me';keyFeed(k,`${P.name||'A pilot'} at ${R.name}: ${String(dockErr).replace(/^✓ /,'')}`,'info')}return}}}}catch(e){console.error(e)}return o.apply(this,arguments)}}
+// Station → Jobs: this base's pilots, and hiring
+function djCrewHtml(c,P,R){const O=baseOwnerP(R)||P,cash=djTreas(O),crew=R.crew||[],full=crew.length>=crewCap(R);
+  let h=`<div class="h3" style="margin-top:4px">Pilots at ${esc(R.name)} · ${crew.length}/${crewCap(R)}</div><p class="note" style="margin:0 0 8px">AI crews work from this base while you fly: miners cut rock into its store, haulers sell what you mark for sale, fighters guard it. Each draws ${fmt(DEP.wage)} cr an hour from the company treasury (<b class="mono">${fmt(cash)} cr</b>) and an Alloy Plate of running costs.</p>`;
+  for(const q of crew)h+=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:4px 0;border-top:1px solid var(--line,#1d2740)"><b style="min-width:130px">${esc(q.name)}</b><span class="note" style="margin:0;min-width:110px">${esc(CLASSES[q.cls].name)}${q.laid&&q.job!=='run'?' · <span style="color:var(--danger)">laid up</span>':''}</span>${['mine','haul','guard','idle'].map(j=>`<button class="btn sm${q.job===j?' pri':''}" type="button" data-act="crewjob" data-arg="${R.sid}:${q.id}:${j}" ${j==='mine'&&!DEP.mine[q.cls]||j==='haul'&&!DEP.haul[q.cls]||q.job==='run'?'disabled':''}>${JB_WORD[j]}</button>`).join('')}<span style="flex:1"></span><button class="btn sm" type="button" data-act="crewfire" data-arg="${R.sid}:${q.id}" ${q.job==='run'?'disabled':''}>Let go</button></div>`;
+  h+=`<div class="lab" style="margin-top:10px">Hire a pilot</div>`+(full?`<div class="note">The hangar is full: add a hangar module (Works), or let a pilot go.</div>`:`<div style="display:flex;gap:6px;flex-wrap:wrap">${['skiff','prospector','dredger','courier','freighter','bulker','interceptor','striker'].map(x=>{const ok=hullRatingOK(P,x),pr=Math.max(800,hullPrice(x));return`<button class="btn sm" type="button" data-act="crewhire" data-arg="${R.sid}:${x}" ${ok&&cash>=pr?'':'disabled'} title="${ok?'':'needs a higher Contractor Rating'}">${esc(CLASSES[x].name)} · ${fmt(pr)} cr</button>`}).join('')}</div>`);
+  return h}
+{const o=djHtml;djHtml=function(c,P,R){let h='';try{h=djCrewHtml(c,P,R)}catch(e){console.error(e)}const O=baseOwnerP(R);if(O&&O!==P){const g=S.player;S.player=O;try{return h+o.call(this,c,O,R).replace('Post a job here','Post a job here for '+esc(O.name||'the owner'))}finally{S.player=g}}return h+o.apply(this,arguments)}}
+// Station → Works: who can run this base (the owner sets it)
+{const o=worksHtml;worksHtml=function(c,P,srcs,R){let h=o.apply(this,arguments);try{if(R&&R.owner==='player'&&(R.pid||'me')===pkeyOf(P)){const others=allPilots().filter(Q=>Q&&Q!==P&&Q.name);if(others.length)h+=`<div class="h3" style="margin-top:20px">Who can run this base</div><p class="note" style="margin:0 0 8px">A pilot you let in can hire and set pilots here, post jobs and set its fees, paid from your company treasury. Your Company screen stays yours.</p>${others.map(Q=>{const k=pkeyOf(Q),on=!!(R.acc&&R.acc[k]);return`<div style="display:flex;gap:8px;align-items:center;margin:3px 0"><span style="flex:1">${esc(Q.name)}</span><button class="btn sm${on?' pri':''}" type="button" data-act="baseacc" data-arg="${k}:${on?0:1}">${on?'Can run it · revoke':'Let them run it'}</button></div>`}).join('')}`}}catch(e){console.error(e)}return h}}
