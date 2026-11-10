@@ -3329,11 +3329,13 @@ function commsUpdate(){const P=S.player,dl=Math.max(0,(P.distT||0)-S.T),fc=W.fla
   $('hCds').innerHTML=cdsHtml();
   const ops=friendlyOps().filter(o=>o.kind==='local'||S.unb).slice(0,3),osig=ops.map(o=>o.label+opWhen(o)).join('~');
   if(osig!==cmSig.o){cmSig.o=osig;$('cOpsT').hidden=!ops.length;$('cOps').innerHTML=ops.map((o,i)=>`<button type="button" class="ct op ${o.kind}" data-op="${i}"><i></i><span>${esc(o.label)}</span><em>${esc(opWhen(o))}</em></button>`).join('')}
-  const sig=nEv+'|'+FEED.length+'|'+(last.length?last[last.length-1].rt:0)+'|'+Math.ceil(dl)+'|'+Math.ceil(fc)+'|'+Math.floor(S.T/15);if(sig===cmSig.s)return;cmSig.s=sig;
+  const sig=(S.player.sworn||'')+(S.player.decl?'d':'')+(typeof JTRACK!=='undefined'&&JTRACK?'j':'')+'|'+nEv+'|'+FEED.length+'|'+(last.length?last[last.length-1].rt:0)+'|'+Math.ceil(dl)+'|'+Math.ceil(fc)+'|'+Math.floor(S.T/15);if(sig===cmSig.s)return;cmSig.s=sig;
   const ago=t=>{const d=Math.max(0,S.T-t);return d<60?Math.round(d)+'s':Math.round(d/60)+'m'};
   $('cEv').innerHTML=last.length?last.slice().reverse().map(f=>`<div class="${f.kind}" title="${esc(f.msg)}"><span>${esc(f.msg)}</span><em>${ago(f.t)}</em></div>`).join(''):'<div class="news"><span>Quiet on all channels.</span></div>';
+  // (user, 9 Nov 2026) the order keys (join operation, take, next, drop order) show only once you fly for a power or have
+  // declared your own faction; a contractor with a selected job sees Drop job
   const K=(k,l,w)=>`<div${w?' class="wait"':''}><kbd>${k}</kbd>${l}</div>`;
-  $('cKeys').innerHTML=K('U',dl>0?`Distress ${Math.ceil(dl)}s`:'Distress',dl>0)+K('I','Comms menu')+K('Y','Assist friendly')+K('O','Join operation')+K('P','Take order')+K('⇧P','Next order')+K(kb('ordDrop')==='Backspace'?'⌫':kb('ordDrop'),'Drop order')+K('B',fc>0?`Flares ${Math.ceil(fc)}s`:'Flares',fc>0)
+  $('cKeys').innerHTML=K('U',dl>0?`Distress ${Math.ceil(dl)}s`:'Distress',dl>0)+K('I','Comms menu')+K('Y','Assist friendly')+(()=>{const P=S.player,dk=kb('ordDrop')==='Backspace'?'⌫':kb('ordDrop');if(P.sworn||P.decl)return K('O','Join operation')+K('P','Take order')+K('⇧P','Next order')+K(dk,'Drop order');return typeof JTRACK!=='undefined'&&JTRACK?K(dk,'Drop job'):''})()+K('B',fc>0?`Flares ${Math.ceil(fc)}s`:'Flares',fc>0)
     +`<div class="sub"><kbd>I</kbd> opens Command (escort me, guard me, build, distress), then steps through the ships around you; <kbd>1</kbd>–<kbd>4</kbd> pick</div>`}
 function campHud(){const el=$('hOrd');if(!el)return;if(S.unb){ujobHud(el);return}const C=myCamp(),m=C&&C.mv,f=S.player.sworn;if(!f||!FACTIONS[f]){const jr=jobHudRow();if(!jr){el.hidden=true;return}el.hidden=false;const J=S.player.job,by=J&&J.by;const hh=`<div class="ot" style="border-color:${by?sideCol(by):'#e8c878'}"><span>Contract work${by?' · '+esc(sideName(by)):''}</span><b>${by?esc(standName(standOf(by))):''}</b></div>`+jr;if(el._h!==hh){el._h=hh;el.innerHTML=hh}return}const L=orderList(),si=ordSel(L),pick=L[si],multi=L.length>1;el.hidden=false;
   const n=controlCounts()[f]||0,k=pkey(),cs=C&&(m||C.goal);let h=`<div class="ot" style="border-color:${sideCol(f)}"><span>${esc(FACTIONS[f].short)} ${cs?'· '+esc(DOCTRINE[f].name):'orders'}</span><b>${n}/${VIC_NEED} systems</b></div>`;
@@ -6795,7 +6797,7 @@ function jobsList(c,P,srcs,hasOrders,hasMis){const f=P.sworn,out=[],hop=sid=>sid
   // this station or at a freeport every power it stands Neutral or better with. The issuer pays the bounty and the escort fee.
   if(!S.unb)for(const f of jobIssuers(c,P)){
     for(const t of (S.traders||[]).filter(t=>t.kind==='haul'&&hostile(f,t.side)&&t.side!=='pirate'&&hop(t.sector)<=3&&(covered(t.sector)||hop(t.sector)<=1))){const j=hop(t.sector);
-      out.push({id:'cv:'+t.id,by:f,sid:t.sector,ty:'fight',title:`Convoy raid: ${esc(FACTIONS[t.side]?fShort(t.side):'Brood')} ${esc(t.why||'supplies')}`,sub:`${esc(haulWhat(t))} · bound for ${esc(DEF[t.to].name)}`,hops:j,where:far(j),payN:raidBounty(t),pay:`${fmt(raidBounty(t))} cr`,btn:t.sector===P.sector?null:['cvint',t.id,'Intercept'],
+      out.push({id:`cv:${t.id}:${f}`,by:f,sid:t.sector,ty:'fight',title:`Convoy raid: ${esc(FACTIONS[t.side]?fShort(t.side):'Brood')} ${esc(t.why||'supplies')}`,sub:`${esc(haulWhat(t))} · bound for ${esc(DEF[t.to].name)}`,hops:j,where:far(j),payN:raidBounty(t),pay:`${fmt(raidBounty(t))} cr`,btn:t.sector===P.sector?null:['cvint',t.id,'Intercept'],
         detail:()=>`<p class="note" style="margin:0">An enemy supply convoy. Destroy the freighter to cut their logistics: command pays the bounty, and half the hold spills as salvage.${t.sector===P.sector?' It is in this system: launch.':''}</p>`})}
     {const me=P.pid||'me';for(const t of (S.traders||[]).filter(t=>t.kind==='haul'&&t.side===f&&cvLeft(t)>=1&&hop(t.sector)<=3)){const E=t.esc,mine=E&&E.k===me,j=hop(t.sector),pay=cvPay(t,mine?Math.max(E.hops,E.need):Math.ceil(cvLeft(t)*ESC_CV.need));
       out.push({id:'ce:'+t.id,by:f,sid:t.sector,ty:'fight',title:`Escort: ${esc(t.why||'supplies')} to ${esc(DEF[t.to].name)}`,sub:mine?`escorting · ${E.hops}/${E.need} jumps`:E?`escorted by ${esc(E.name||'another pilot')}`:`${cvLeft(t)} jumps left · now in ${esc(DEF[t.sector].name)}`,hops:j,where:far(j),payN:pay,pay:`${fmt(pay)} cr`,btn:mine||E?null:['cvesc',t.id,'Escort'],
@@ -9246,7 +9248,8 @@ function jobLive(T){if(!T)return false;const pre=jobPre(T.id),id=T.id.slice(pre.
   if(pre==='k'||pre==='b'||pre==='r')return(S.contracts||[]).some(x=>String(x.id)===id);
   if(pre==='s'){const t=(S.frigates||[]).find(x=>String(x.id)===id);if(t)T.sid=t.sector;return!!t&&Object.keys(carNeed(t)).length>0}
   if(pre==='bm'){const f=S.player.sworn;return(S.bcnMis&&S.bcnMis[f]||[]).some(x=>String(x.id)===id&&S.T<x.until)}
-  if(pre==='cv'||pre==='ce'){const t=(S.traders||[]).find(x=>String(x.id)===id);if(t)T.sid=t.sector;return!!t}
+  // (a convoy raid's id names its issuer too, cv:<convoy>:<power>, so each power's offer is its own job: user, 9 Nov 2026)
+  if(pre==='cv'||pre==='ce'){const tid=id.split(':')[0],t=(S.traders||[]).find(x=>String(x.id)===tid);if(t)T.sid=t.sector;return!!t}
   if(pre==='op'){const ev=(S.events||[]).find(x=>String(x.id)===id);return ev?ev.stage!=='done'&&ev.stage!=='failed':friendlyOps().some(o=>o.sector===T.sid)}
   return false}
 function jobClear(){if(S&&S.player)S.player.job=null;if(NET.cl)netSend({t:'job',by:null})}
@@ -12888,7 +12891,7 @@ function cjPick(o){const P=S.player;
   if(pre==='o'){const C=myCamp(),x=C&&sideOf(C).find(y=>'o:'+y.id===j.id);if(x)sideTake(x);flash(`Signed on: ${cjTxt(j.title)}.`);return}
   if(JOB_OPEN.includes(pre)){if(!jobIsMine(j))jobTrack(j.id);
     if(pre==='ce'){const t=(S.traders||[]).find(x=>'ce:'+x.id===j.id);if(t){if(NET.cl){netSend({t:'cvesc',id:t.id});flash('Signing on as escort…')}else cvTake(t);const e=cjShipOf(t);if(e)W.ftgt=e}return}
-    if(pre==='cv'){const t=(S.traders||[]).find(x=>'cv:'+x.id===j.id),e=cjShipOf(t);if(e)cjTarget(e,`Targeted ${shipLabel(e)}: destroy it for the bounty.`);else flash('Job selected. The freighter is somewhere in this system.');return}
+    if(pre==='cv'){const t=(S.traders||[]).find(x=>'cv:'+x.id===j.id||String(j.id).startsWith('cv:'+x.id+':')),e=cjShipOf(t);if(e)cjTarget(e,`Targeted ${shipLabel(e)}: destroy it for the bounty.`);else flash('Job selected. The freighter is somewhere in this system.');return}
     if(pre==='op'){joinOp(friendlyOps()[j.opi]);return}
     if(['k','pj','b','r'].includes(pre)){const R=S.stations[P.sector];flash(`Job selected: ${cjTxt(j.title)}. Dock${R?' at '+R.name:''} to deliver.`);return}
     flash(`Job selected: ${cjTxt(j.title)}.`);return}
@@ -16232,7 +16235,7 @@ for(const id of stdSysIds())ITEMS[id].trTxt='Standard: the system ships come wit
 // This replaces the whole allegianceHtml chain (rating, heat, declare, the Unbound, audience, marque and regent wrappers);
 // each piece is drawn here instead.
 const AL_PERK={halcyon:[['Ships','Shields +12% · Hull −12%'],['Perk','Trade Charter: buys freeport ore when short'],['Career','Hauling +20% (Freeport jobs) · Gannet']],
-  varkesh:[['Ships','Hull +25% · Speed −10% · self-repair'],['Career','Mining +20% (Aurorite jobs) · Bombard']],
+  varkesh:[['Ships','Speed −10%'],['Perk','Dominion hulls: Hull +25%, self-repairing armour'],['Career','Mining +20% (Aurorite jobs) · Bombard']],
   ostrova:[['Ships','Reactor +12% · Shields −12%'],['Perk','Archive fleet: third escort, cheaper carriers'],['Career','Scout pay +40% · drive peek · Vesper']]};
 function alPerkHtml(f){const L=AL_PERK[f];if(!L)return`<div class="note" style="margin:4px 0 0">${String(FAC(f).traitText||'').split('<br>').map(esc).join('<br>')}</div>`;
   return`<div style="display:grid;grid-template-columns:58px 1fr;gap:2px 10px;margin-top:6px;font-size:13px">${L.map(([k,v])=>`<span class="lab" style="margin:0;line-height:1.7">${k}</span><span style="color:var(--ivory,#ece4cf)">${esc(v)}</span>`).join('')}</div>`}

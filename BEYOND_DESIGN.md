@@ -3348,3 +3348,9 @@ Built as the revised proposal says (`16zzzq_components.js`, `tools/tests/compone
 - **Pilot tags** ("rather than saying Independent, use [I] [H] [O] [V] [U] [B]"): the contacts list tags every ship by side: [I] independents and the freeports' ships, [H] Halcyon, [O] Ostrova, [V] Varkesh, [U] the Unbound, [B] the Brood (your own ships none). An independent's label reads "[I] Name · what it's doing · trait", and a job it posts is issued by "[I] Name". `16zzzt_tags.js`.
 - **The jobs you're on, in flight** ("I can't see the job I'm currently on while in flight"): the HUD's orders card showed only a job picked with Select job. Freight, escorts, guard jobs, black-market runs and black-market contracts taken with their own button now each have a row there while they last: kind, what, where and how far, pay or progress. `16zzzu_myjobs.js`, test `myjobs.py`.
 - The Jobs detail's first button (e.g. "Buy & fit a Halcyon Control Marker") wraps instead of running past the panel's edge.
+
+### Convoy raids by issuer, order keys for the sworn, Varkesh's perk (user, 9 Nov 2026)
+- **A convoy raid offered by several powers is one job per power** ("it clicks all of them ... I should have to choose who I'm earning standing with"): each offer's id names its issuer (`cv:<convoy>:<power>`), so selecting one selects only that power's; the bounty and standing go to the one you picked. (The Rusty Tankard's rumours keep `cv:<convoy>`.)
+- **The order keys** (Join operation, Take order, Next order, Drop order) in the Command card's quick keys are Driftgate 1's sworn-pilot orders: they show only once you fly for a power or have declared your own faction. A contractor with a selected job sees Drop job.
+- **Varkesh's perk** on the Allegiance tab reads "Dominion hulls: Hull +25%, self-repairing armour" (Ships: Speed −10%).
+- The guest convoy test now renders the board once before picking a job (the board's first render on a new dock resets its filter and pick).

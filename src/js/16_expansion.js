@@ -1085,7 +1085,8 @@ function jobLive(T){if(!T)return false;const pre=jobPre(T.id),id=T.id.slice(pre.
   if(pre==='k'||pre==='b'||pre==='r')return(S.contracts||[]).some(x=>String(x.id)===id);
   if(pre==='s'){const t=(S.frigates||[]).find(x=>String(x.id)===id);if(t)T.sid=t.sector;return!!t&&Object.keys(carNeed(t)).length>0}
   if(pre==='bm'){const f=S.player.sworn;return(S.bcnMis&&S.bcnMis[f]||[]).some(x=>String(x.id)===id&&S.T<x.until)}
-  if(pre==='cv'||pre==='ce'){const t=(S.traders||[]).find(x=>String(x.id)===id);if(t)T.sid=t.sector;return!!t}
+  // (a convoy raid's id names its issuer too, cv:<convoy>:<power>, so each power's offer is its own job: user, 9 Nov 2026)
+  if(pre==='cv'||pre==='ce'){const tid=id.split(':')[0],t=(S.traders||[]).find(x=>String(x.id)===tid);if(t)T.sid=t.sector;return!!t}
   if(pre==='op'){const ev=(S.events||[]).find(x=>String(x.id)===id);return ev?ev.stage!=='done'&&ev.stage!=='failed':friendlyOps().some(o=>o.sector===T.sid)}
   return false}
 function jobClear(){if(S&&S.player)S.player.job=null;if(NET.cl)netSend({t:'job',by:null})}

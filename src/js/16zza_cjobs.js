@@ -63,7 +63,7 @@ function cjPick(o){const P=S.player;
   if(pre==='o'){const C=myCamp(),x=C&&sideOf(C).find(y=>'o:'+y.id===j.id);if(x)sideTake(x);flash(`Signed on: ${cjTxt(j.title)}.`);return}
   if(JOB_OPEN.includes(pre)){if(!jobIsMine(j))jobTrack(j.id);
     if(pre==='ce'){const t=(S.traders||[]).find(x=>'ce:'+x.id===j.id);if(t){if(NET.cl){netSend({t:'cvesc',id:t.id});flash('Signing on as escort…')}else cvTake(t);const e=cjShipOf(t);if(e)W.ftgt=e}return}
-    if(pre==='cv'){const t=(S.traders||[]).find(x=>'cv:'+x.id===j.id),e=cjShipOf(t);if(e)cjTarget(e,`Targeted ${shipLabel(e)}: destroy it for the bounty.`);else flash('Job selected. The freighter is somewhere in this system.');return}
+    if(pre==='cv'){const t=(S.traders||[]).find(x=>'cv:'+x.id===j.id||String(j.id).startsWith('cv:'+x.id+':')),e=cjShipOf(t);if(e)cjTarget(e,`Targeted ${shipLabel(e)}: destroy it for the bounty.`);else flash('Job selected. The freighter is somewhere in this system.');return}
     if(pre==='op'){joinOp(friendlyOps()[j.opi]);return}
     if(['k','pj','b','r'].includes(pre)){const R=S.stations[P.sector];flash(`Job selected: ${cjTxt(j.title)}. Dock${R?' at '+R.name:''} to deliver.`);return}
     flash(`Job selected: ${cjTxt(j.title)}.`);return}

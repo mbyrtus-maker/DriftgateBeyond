@@ -23,7 +23,7 @@ async def mkConvoy(K,side,frm,to,load):
     await K.wait(1000)
   return r
 async def board(K,jid):
-  return json.loads(await K.G("""(()=>{dockTab='jobs';jobFilter='all';jobSel=%s;renderDock();const j=(JOBS_LAST||[]).find(x=>x.id===%s);const b=j?[...document.querySelectorAll('#dBody [data-act]')].filter(x=>x.dataset.arg==String(j.btn&&j.btn[1])&&x.dataset.act===(j.btn&&j.btn[0])).map(x=>x.textContent.trim()):[];
+  return json.loads(await K.G("""(()=>{dockTab='jobs';renderDock();jobFilter='all';jobSel=%s;renderDock();const j=(JOBS_LAST||[]).find(x=>x.id===%s);const b=j?[...document.querySelectorAll('#dBody [data-act]')].filter(x=>x.dataset.arg==String(j.btn&&j.btn[1])&&x.dataset.act===(j.btn&&j.btn[0])).map(x=>x.textContent.trim()):[];
     return JSON.stringify(j?{title:j.title.replace(/<[^>]+>/g,''),pay:j.pay,by:j.by,btn:j.btn,sub:j.sub.replace(/<[^>]+>/g,''),shown:b}:null)})()"""%(J(jid),J(jid))))
 async def shoot(K,tid):
   # the host pins the freighter just ahead of the guest; the guest aims and holds fire with its own guns
@@ -68,12 +68,12 @@ async def body(K):
   # ================= a power's convoy raid
   cv=await mkConvoy(K,g,sec,far,{'plate':30,'coil':6})
   print('raid convoy:',cv)
-  j=await board(K,'cv:%d'%cv['id'])
+  j=await board(K,'cv:%d:%s'%(cv['id'],f))
   print('board:',j)
   check('the raid is on the guest\'s board for %s'%f,bool(j) and j['by']==f,j)
-  await G("(()=>{jobTrack('cv:%d');return 1})()"%cv['id']);await K.wait(1500)
+  await G("(()=>{jobTrack('cv:%d:%s');return 1})()"%(cv['id'],f));await K.wait(1500)
   jb=json.loads(await Hh("JSON.stringify(%s.job||null)"%HP))
-  check('the job is recorded on the host',jb and jb['by']==f and jb['id']=='cv:%d'%cv['id'],jb)
+  check('the job is recorded on the host',jb and jb['by']==f and jb['id']=='cv:%d:%s'%(cv['id'],f),jb)
   await K.undock();await clear(K)
   tr0=await Hh("S.econ.treasury[%s]"%J(f));c0=await G("S.player.credits")
   dead=await shoot(K,cv['id'])
