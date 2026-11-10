@@ -35,6 +35,9 @@ async def main():
       const post=runAs('g1',()=>{dockAction('pjpost',sid+':mine:plate:10:medium');return dockErr});const crew=(R.crew||[]).length;delete S.pilots.g1;NET.on=n0.on;NET.me=n0.me;R.pid='me';
       return JSON.stringify({deny,ok,tabs:JSON.parse(tabs),post,crew,paid:t0-S.econ.treasury[P.co.w],gcred:G.credits})})()"""))
     check("a pilot without access is refused; let in, they hire on the owner's treasury and post jobs, but get no Company tab",('Not your' in r['deny']) and r['ok'].startswith('✓') and r['crew']==1 and r['paid']>0 and r['gcred']==500 and r['post'].startswith('✓') and r['tabs']['own'] and not r['tabs']['owner'],r)
+    r=json.loads(await ev("""(()=>{const P=S.player,R=myDepots(P)[0];exitSector();W=null;P.sector=R.sid;P.docked=null;enterSector(R.sid);running=false;if(!R.pst){devLedger(()=>{P.cargo.kit_station=1});staUp(P,R)}
+      P.docked='station';$('dock').hidden=true;openDock('allegiance');const b=document.querySelector('#dock [data-co=declare]');if(b)b.click();const out={btn:!!b,decl:!!P.decl,msg:dockErr,tab:dockTab,sw:P.sworn||null,decl0:declOK(P)};$('dock').hidden=true;return JSON.stringify(out)})()"""))
+    check("Declare your faction works from the dock's Allegiance tab",r['btn'] and r['decl'],r)
     l=await ev(LED);check('ledger exact',l=='exact',l)
     check('no errors',not errs,errs[:3])
     print('ALL OK' if not bad else 'FAILED: '+', '.join(bad))

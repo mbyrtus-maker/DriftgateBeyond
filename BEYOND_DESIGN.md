@@ -3658,3 +3658,11 @@ The three things that stop it are now named on the line (`ctrStaWhy`, `kitWhere`
   station and says to carry it in a Heavy Hauler;
 - elsewhere with the kit: "fly to <your Depot>".
 Test: ctrbuild.py.
+
+### Declare works from the dock; a Station reads as a Station (9 Nov 2026)
+- The user: "Declare my faction doesn't seem to work either." The dock's Allegiance tab draws Declare and the alliance and
+  tribute answers as Company buttons (`data-co`). The dock passed those to `coClick` only inside its Company tab, so the
+  click did nothing. They now go through on the Allegiance tab too (16zzzz_dockjobs.js). Test: baserun.py.
+- The user: "I upgrade a depot to a station it says it did it, but I'm still looking at a depot." The model does change
+  (`bmModel` follows `R.pst`; checked in a test). The dock line for your own base said "Your depot" either way and now
+  says "Your Station".
