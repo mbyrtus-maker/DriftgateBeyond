@@ -3549,3 +3549,17 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 - **This base's jobs:** listed below with their status, and Withdraw on the open ones. The same jobs remain on the Company screen's Jobs tab.
 - **Code:** `16zzzz_dockjobs.js`.
 - **Checked:** with a funded company, docked at a new Depot, a Mine job posted from the tab appears in the list.
+
+### Your Depot's miners (user, 9 Nov 2026)
+"Depots should not automatically mine; they should come with a few miners that then begin mining in that sector, and they have to be rebuilt if destroyed."
+- **Before:** a Depot (or Station) you own filled its store from the system's rocks at a flat rate, with no ships.
+- **Now:** it keeps a roster of 3 miners like the powers' depots (16zzn_miners.js).
+  - Live, they fly out to the rocks and home to unload. Off-screen they mine at their share of the old rate.
+  - No miners, no mining.
+  - A miner shot down is gone with its kit. The depot builds another from its store (plate, conduit, any drones it can spare) every 4 minutes while the store holds the makings.
+- **It comes with them:** the Depot Kit now also carries the makings of 3 miners (8 Alloy Plate, 6 Conduit). These go into the new depot's store and the 3 miners are built at once. The build message says so.
+- **On screen:** the depot's Station tab shows its miners.
+- **Hired crews:** your hired crews' miners work as before, on top of the roster.
+- **The ledger:** stays exact. A save from before (its kits hold the old recipe) is rebased once.
+- **Code and test:** `16zzzzb_depminers.js`; test `depminers.py`.
+- **Not yet checked with a war check:** the Depot Kit's recipe grew, and the powers' stores build the kits.

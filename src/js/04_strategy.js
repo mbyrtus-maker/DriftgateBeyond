@@ -4,7 +4,7 @@ function strategicTick(){
   const T=S.T;
   for(const d of SECTOR_DEFS){
     const s=S.sectors[d.id],here=!!WORLDS[d.id];
-    {const R=S.stations[d.id];if(R){const cn=R.owner!=='player'&&!here&&S.T>150&&FACTIONS[R.owner]&&capNeed(R.owner),n=here&&R.owner!=='player'?0:sRound((here?2/3:1)*stRate(R,cn)*mrWork('S.'+d.id))+devOf(R).store;
+    {const R=S.stations[d.id];if(R){const cn=R.owner!=='player'&&!here&&S.T>150&&FACTIONS[R.owner]&&capNeed(R.owner),n=here&&(R.owner!=='player'||(typeof dmOn==='function'&&dmOn(R)))?0:sRound((here?2/3:1)*stRate(R,cn)*mrWork('S.'+d.id))+devOf(R).store;
       if(R.owner==='player'){if(invMass(R.stock)<400+300*devOf(R).store)inv.addAll(R.stock,extract(s,n))}else if(n>0&&isDepotF(R)){const ds=dStore(R);if(invMass(ds)<LOGI.depotCap+120*devOf(R).store){const got=extract(s,n,false,mineSkip(R.owner));inv.addAll(ds,got);if(R.mk)for(const k in got)R.mk[k]=(R.mk[k]||0)+got[k]*.3}}else if(n>0){const st=storeOf(R)||{},sc=mkSc(R);const full=(st.fe||0)+(st.cu||0)>=((R.owner==='brood'?1000:500)+250*devOf(R).store)*sc,nuW=(st.nu||0)<120*sc&&d.ores&&d.ores.nu;if(!full||nuW){const got=extract(s,n,(st.xc||0)>=30*sc,{...mineSkip(R.owner),ir:(st.ir||0)>400*sc||mineSkip(R.owner).ir,xc:(st.xc||0)>300*sc||mineSkip(R.owner).xc,fe:full,cu:full});inv.addAll(st,got);if(R.mk)for(const k in got)R.mk[k]=(R.mk[k]||0)+got[k]*.3}}
       if(!here&&!underCapSiege(d.id,R.owner)){R.shield=R.sMax;R.hull=Math.min(R.hMax,R.hull+R.hMax*.05)}}}
     const oid=OUT_BY_SECTOR[d.id];
