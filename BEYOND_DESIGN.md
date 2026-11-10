@@ -3528,3 +3528,6 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 - **Old saves:** fees saved under the old scheme convert once: the transaction fee at its default, the services % times 100 cr, sell and buy dropped.
 - **Where it shows:** the profile's defaults for new bases, each base's Fees in Holdings, the map line and Economy all show the three.
 - **Tests:** `fees.py`, `profile.py`.
+
+### No centre line in the cockpit (user, 9 Nov 2026)
+"No cockpit view should have a line down the middle." The Freighter's and the Heavy Hauler's cockpits had a centre mullion (`mull` in the cockpit table, 12_render.js); every hull's is now 0, so no cockpit draws one. Checked on the Light Fighter, Freighter, Heavy Hauler, Bomber, Scout and Dredger.

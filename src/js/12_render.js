@@ -640,7 +640,7 @@ const CK_FAC={
   varkesh:{m0:'rgba(46,32,26,.97)',m1:'rgba(12,8,7,.99)',shape:'angle',pip:'square',emb:'fang',panelBg:'rgba(14,8,5,.95)'},
   ostrova:{m0:'rgba(36,27,56,.96)',m1:'rgba(9,7,18,.98)',shape:'rib',pip:'diamond',emb:'eye',panelBg:'rgba(9,6,18,.94)'}};
 // w: strut weight · top: where the side struts meet the canopy rim (fraction of width) · brow: canopy-rim style
-// inner: extra strut pairs · mull: centre mullion weight · dash: dashboard height · panels: instruments, left to right
+// inner: extra strut pairs · mull: centre mullion weight (none: the user, 9 Nov 2026, "no cockpit view should have a line down the middle") · dash: dashboard height · panels: instruments, left to right
 const CK_CLS={
   interceptor:{w:.7,top:.31,brow:'bubble',inner:0,mull:0,dash:.8,panels:['vitals','speed','weapons']},
   striker:{w:1,top:.27,brow:'thin',inner:0,mull:0,dash:.95,panels:['vitals','speed','weapons']},
@@ -651,8 +651,8 @@ const CK_CLS={
   prospector:{w:1.1,top:.26,brow:'console',inner:0,mull:0,dash:1.05,panels:['vitals','speed','drill','drones'],ops:'MINING'},
   dredger:{w:1.4,top:.25,brow:'console',inner:1,mull:0,dash:1.2,panels:['drones','vitals','speed','drill'],ops:'DEEP MINING',lamps:true},
   courier:{w:1,top:.2,brow:'visor',inner:0,mull:0,dash:.9,panels:['vitals','speed','cargo']},
-  freighter:{w:1.25,top:.21,brow:'visor',inner:0,mull:.8,dash:1.1,panels:['vitals','speed','cargo','drones']},
-  bulker:{w:1.6,top:.22,brow:'armored',inner:1,mull:1.3,dash:1.25,panels:['manifest','vitals','speed','cargo','drones']},
+  freighter:{w:1.25,top:.21,brow:'visor',inner:0,mull:0,dash:1.1,panels:['vitals','speed','cargo','drones']},
+  bulker:{w:1.6,top:.22,brow:'armored',inner:1,mull:0,dash:1.25,panels:['manifest','vitals','speed','cargo','drones']},
   scout:{w:.38,top:.36,brow:'bubble',inner:0,mull:0,dash:.95,panels:['intel','vitals','scope','speed','scan'],bubble:true,narrowKinds:['scope']},
   constructor:{w:1.5,top:.23,brow:'console',inner:1,mull:0,dash:1.25,panels:['vitals','speed','build','cargo'],ops:'CONSTRUCTION',lamps:true}};
 // the Advanced Scout and the Unbound hulls fly the cockpit of the frame they're built on (the Skiff gets the scout's radar scope and reports)
