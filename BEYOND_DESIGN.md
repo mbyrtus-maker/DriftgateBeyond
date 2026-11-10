@@ -3666,3 +3666,8 @@ Test: ctrbuild.py.
 - The user: "I upgrade a depot to a station it says it did it, but I'm still looking at a depot." The model does change
   (`bmModel` follows `R.pst`; checked in a test). The dock line for your own base said "Your depot" either way and now
   says "Your Station".
+
+### Your base's miners are labelled as miners (9 Nov 2026)
+The user: "AI miners at my depot are listed as Your Wingman." A base's own miners (the station roster, `e.mrKey`) had no
+label of their own and fell through to the player side's "Your wingman". They now read "<base>'s miner (<hull>)".
+Test: depminers.py.

@@ -31,3 +31,6 @@ function dmBuilt(P,before,srcs){const R=Object.values(S.stations).find(x=>dmOn(x
 // a save from before: its kits hold the old recipe; rebase the ledger once
 {const o=newGame;newGame=function(){const r=o.apply(this,arguments);try{if(S)S.dmk=1}catch(e){}return r}}
 {const o=migrate;migrate=function(){const r=o.apply(this,arguments);try{if(S&&!S.dmk){S.dmk=1;const l=ledger();S.ledger0={tot:l.tot,credits:l.credits}}}catch(e){console.error(e)}return r}}
+// (user, 9 Nov 2026: "AI miners at my depot are listed as Your Wingman. When they are just miners") your base's own miners
+// are named for what they are and where they're from
+{const o=shipLabel;shipLabel=function(e){if(e&&e.mrKey&&e.side==='player'&&!e.crewId){let R=null;try{const st=mrSite(e.mrKey);R=st&&st.R}catch(err){}return`${R?R.name+"'s":'Your'} miner (${CLASSES[e.cls]?CLASSES[e.cls].name:'miner'})`}return o.apply(this,arguments)}}

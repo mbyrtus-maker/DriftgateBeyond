@@ -28,6 +28,8 @@ async def main():
       const ships=W.ents.filter(e=>e.alive&&e.mrKey==='S.'+sid);const n0=S.mrs['S.'+sid].m.length;let killed=false;if(ships[0]){killShip(ships[0]);killed=true}const n1=S.mrs['S.'+sid].m.length;
       devLedger(()=>{inv.addAll(R.stock,{plate:4,wire:4})});S.mrs['S.'+sid].t=S.T;mrTick();const n2=S.mrs['S.'+sid].m.length;return JSON.stringify({live:ships.length,side:ships[0]&&ships[0].side,killed,n0,n1,n2})})()"""))
     check('live, the miners fly; one shot down leaves the roster, and the store builds another',r['live']>=1 and r['killed'] and r['n1']==r['n0']-1 and r['n2']==r['n0'],r)
+    r=json.loads(await ev("""(()=>{const e=W&&W.ents.find(x=>x.alive&&x.mrKey&&x.side==='player');return JSON.stringify({lab:e?shipLabel(e):null})})()"""))
+    check("your Depot's miners are labelled as its miners, not wingmen",r['lab'] and 'miner' in r['lab'] and 'wingman' not in r['lab'],r)
     l=await ev(LED);check('ledger exact',l=='exact',l)
     check('no errors',not errs,errs[:3])
     print('ALL OK' if not bad else 'FAILED: '+', '.join(bad))
