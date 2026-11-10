@@ -19,6 +19,10 @@ async def main():
       if not ok:bad.append(name)
     r=json.loads(await ev("""(()=>{running=false;const W0=stdWant(),miss=[];for(const R of mkStations()){const st=mkStock(R);for(const id in W0)if((st[id]||0)<1)miss.push(R.sid+':'+id)}return JSON.stringify({n:mkStations().length,kinds:Object.keys(W0).length,miss:miss.slice(0,8),nm:miss.length})})()"""))
     check("every power's and freeport's market starts with every standard part and standard system",r['nm']==0 and r['kinds']>=20,r)
+    r=json.loads(await ev("""(()=>{const out={},bad=[];for(const R of mkStations()){const st=mkStock(R);for(const f of stdBcAt(R))if((st['bc_'+f]||0)<2)bad.push(R.sid+':'+f)}
+      const P=S.player;exitSector();W=null;P.sector='mw';enterSector('mw');running=false;P.docked='station';const c=dockCtx(),st=c.market,n0=st.bc_varkesh||0,pl=st.plate||0;devLedger(()=>{P.credits+=5000});dockAction('buyfb','varkesh');
+      mkFilter='p_util';const h=mkHtml(c,P);return JSON.stringify({bad:bad.slice(0,6),nb:bad.length,took:n0-(st.bc_varkesh||0),plate:pl-(st.plate||0),msg:dockErr,shown:(h.match(/data-act="buyfb"/g)||[]).length})})()"""))
+    check('every station starts with 2 Control Markers for each power it sells for; a purchase comes off the shelf',r['nb']==0 and r['took']==1 and r['plate']==0 and r['shown']>=3,r)
     r=json.loads(await ev("""(()=>{const P=S.player;exitSector();W=null;P.sector='mw';enterSector('mw');running=false;P.docked='station';const c=dockCtx(),st=c.market;const id=rdGid('sy_engine',1);mkFilter=mkGroup(id);mkView='tiles';const h=mkHtml(c,P),n0=st[id]||0;devLedger(()=>{P.credits+=20000});const want=stdWant()[id],nb=Math.max(1,n0-want+1);for(let i=0;i<nb;i++)dockAction('buy',id+':1');const bought=n0-(st[id]||0),low=st[id]||0;const src=storeOf(S.stations.mw);devLedger(()=>inv.addAll(src,ITEMS[id].recipe));S.stdT=0;stdTick();
       return JSON.stringify({shown:h.includes(ITEMS[id].name),bought,nb,low,back:st[id]||0,n0,want})})()"""))
     check('at Mirrorwater the standard drive is on the Market, sells, and the station builds another',r['shown'] and r['bought']==r['nb'] and r['back']==r['low']+1,r)

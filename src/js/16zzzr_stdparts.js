@@ -28,3 +28,17 @@ function stdTick(){if(NET.cl||!S||S.training||S.unb||S.T<(S.stdT||0))return;S.st
 {const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{stdTick()}catch(e){console.error(e)}return r}}
 for(const k in PART)if(ITEMS[PART[k]])ITEMS[PART[k]].trTxt='Standard: no strength, no weakness. Every station keeps a few.';
 for(const id of stdSysIds())ITEMS[id].trTxt='Standard: the system ships come with. Every station keeps a few.';
+// ---- Control Markers on the shelf (user, 9 Nov 2026: "control markers should always be available, especially at the start of
+// a galaxy there should be 2 control markers available for every faction"). Every station that sells a power's Control
+// Markers (its own power's at a power's station or depot, every power's at a freeport) keeps STD.bc of each on its shelf from
+// the start, restocked like the standard parts (from its own store, a depot from its power's warehouse; a depot keeps 2 too).
+// Buying takes a shelf marker first, and builds one from the station's plate and conduit only when the shelf is empty.
+STD.bc=2;
+function stdBcAt(R){if(!R||S.unb)return[];if(R.owner==='neutral')return FAC_IDS.slice();if(FAC_IDS.includes(R.owner))return[R.owner];return[]}
+{const o=stdWantAt;stdWantAt=function(R){const W0=o.apply(this,arguments);for(const f of stdBcAt(R))W0['bc_'+f]=STD.bc;return W0}}
+{const o=fbBuy;fbBuy=function(c,P,f){const k='bc_'+f,st=c&&c.market;if(!st||!((st[k]||0)>0)||!fbSold(c,P).includes(f)||P.credits<CLAIM_PRICE)return o.apply(this,arguments);
+  inv.take(st,k,1);transfer('player',c.wallet,CLAIM_PRICE);const room=W&&W.player&&W.player.st?W.player.st.cargo-invMass(P.cargo):0,toHold=room>=mass(k);inv.add(toHold?P.cargo:c.storage,k,1);
+  return`✓ Bought a Control Marker for ${FACTIONS[f].short} for ${fmt(CLAIM_PRICE)} cr. It's in your ${toHold?'hold':String(c.storageName).toLowerCase()}. Carry it into an unclaimed or breached outpost's ring in a fighter or bomber and hold there to claim it for ${FACTIONS[f].short}.`}}
+// a save from before: the markers once
+{const o=migrate;migrate=function(){const r=o.apply(this,arguments);try{if(S&&!S.bcSeed&&!S.training){S.bcSeed=1;for(const R of mkStations()){const st=mkStock(R);if(!st)continue;for(const f of stdBcAt(R)){const n=STD.bc-(st['bc_'+f]||0);if(n>0)inv.add(st,'bc_'+f,n)}}const l=ledger();S.ledger0={tot:l.tot,credits:l.credits}}}catch(e){console.error(e)}return r}}
+{const o=partsSeed;partsSeed=function(){const r=o.apply(this,arguments);try{if(S)S.bcSeed=1}catch(e){}return r}}

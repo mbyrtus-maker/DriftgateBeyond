@@ -3426,3 +3426,11 @@ The user's answers to the proposal above: "1 should have their own category call
   - **On the Market:** the depot's Market has a Salvage box listing what qualifies.
 - **Handing stolen cargo back:** goods marked stolen from a power can be handed back at its depot from that box. They go into the depot's store, the power pays 25% of their value as a finder's fee, the mark is cleared, the theft heat eases, and standing rises a little.
 - Not yet checked with a war check: the payments come from treasuries.
+
+### Control Markers always on the shelf (user, 9 Nov 2026)
+"Control markers should always be available, especially at the start of a galaxy there should be 2 control markers available for every faction." Markers used to be built at the moment of purchase from the station's plate and conduit, so a station short of either sold none. Now:
+- **Starting stock:** every station that sells a power's markers keeps 2 of each on its shelf from the galaxy's start. That's its own power's markers at a power's station or depot, and all three powers' at a freeport. The Market tile shows how many are in stock.
+- **Restocking:** like the standard parts (`16zzzr_stdparts.js`): from the station's own store, and at a depot from its power's warehouse.
+- **Buying:** takes a shelf marker first, and builds one from plate and conduit only when the shelf is empty.
+- **Old saves:** a save from before gets the markers once on load (the ledger is rebased then).
+- **Test:** `stdparts.py`.
