@@ -3806,3 +3806,9 @@ the pack (`lg`: centre, normal, half-size; beyond_base_designs.logo_spots): the 
 a board wherever the hull is nearly flat with nothing in front of it, clear of the turrets, the docking lanes and the module
 stacks; two on a Depot (13-20 m half-size), three on a Station (15-24 m), facing well apart. Looks only.
 Sheet: tools/previews/base_logos_game.py. Test: basedesigns.py.
+
+### The profile preview shows the Depot and the Station (10 Nov 2026)
+The user: "The preview should include the station model as well so depot and station." The base design preview (Company
+→ Profile, and the dock's Company tab) now draws both side by side, each turning: a full Depot (level 3) and a Station
+with its five buildings. Each carries the company's logo boards in its chosen colour, placed as on a live base. The
+Station/Depot toggle is gone. Code: 16zzzy_coprev.js (`coPrevOne`).
