@@ -3500,3 +3500,10 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
   - Before the profile is set, it explains what the profile is for (building Depots and Stations; name, logo, base design, colour, fees, a 100,000 cr treasury), names the key, and offers **Set up my company**.
   - Afterwards it shows your logo and name with a **Company profile** button.
 - **The button:** opens the Company screen on its Profile tab, over the dock. It acts on your own screen only.
+
+### Typing on the Company screen (user, 9 Nov 2026)
+"I can't type in the name box, it keeps stealing the cursor."
+- **Cause:** the Company screen redraws itself every second (`16n_holdings.js`), which replaced the text box being typed in.
+- **Fix:** while a text box, list or slider on the Company screen has the focus, the redraw waits. It resumes the moment you click a button or anywhere else.
+- **Covers:** the profile name, the brand designer and any other box there.
+- **Checked:** typing a full name at a normal pace, with the screen open for several seconds, keeps every letter and the cursor.

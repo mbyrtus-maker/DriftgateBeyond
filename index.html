@@ -16547,6 +16547,10 @@ function myLairsHere(){if(!W||!S)return[];const k=curPid()||'me';return(S.lairs|
   $('hTgt').innerHTML=`<div class="tp"><div class="tn" style="color:#f0b24a">Your Lair</div><div class="ts">Level ${L.lvl||1} · stash ${invMass(L.stash||{})}/${typeof lairStash==='function'?lairStash(L):200} t${L.build>S.T?` · being built: ${Math.ceil(L.build-S.T)} s`:''}</div>
     <div class="row">Range<b>${fmt(d)} m</b></div><div class="row">Hull<b>${Math.round(L.hull)}</b></div><div class="ts">${seen.length?`<span style="color:var(--amber)">Found by ${seen.map(f=>esc(FACTIONS[f].short)).join(', ')}: their ships attack it on sight.</span>`:'Hidden: no power has found it.'}</div>
     <div class="ts">${L.build>S.T?'Not ready yet.':d<260?`${actKey()} to dock.`:`Fly within 260 m and press ${actKey()} to dock (${kb('autopilot')} flies you there).`}</div></div>`}}catch(e){}return r}}
+// ---- (user, 9 Nov 2026: "I can't type in the name box, it keeps stealing the cursor") the Company screen redraws itself every
+// second, which replaced the box you were typing in. While a box or slider on it has the focus, the redraw waits; it runs
+// again as soon as you click elsewhere (any button)
+{const o=renderCompany;renderCompany=function(){try{const a=document.activeElement,el=$('company');if(a&&el&&el.contains(a)&&(a.tagName==='TEXTAREA'||a.tagName==='SELECT'||(a.tagName==='INPUT'&&!['button','submit','checkbox','radio'].includes(a.type))))return}catch(e){}return o.apply(this,arguments)}}
 
 //@src 17_main.js
 // ============================================================ main loop
