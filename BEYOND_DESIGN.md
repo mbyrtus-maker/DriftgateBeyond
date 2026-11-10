@@ -3354,3 +3354,50 @@ Built as the revised proposal says (`16zzzq_components.js`, `tools/tests/compone
 - **The order keys** (Join operation, Take order, Next order, Drop order) in the Command card's quick keys are Driftgate 1's sworn-pilot orders: they show only once you fly for a power or have declared your own faction. A contractor with a selected job sees Drop job.
 - **Varkesh's perk** on the Allegiance tab reads "Dominion hulls: Hull +25%, self-repairing armour" (Ships: Speed −10%).
 - The guest convoy test now renders the board once before picking a job (the board's first render on a new dock resets its filter and pick).
+
+### Proposal: reasons to stop at a depot (user, 9 Nov 2026: "1, 2, 5 write up the designs"; not yet agreed)
+Today a power's depot is a smaller copy of its core: repairs, vault, a small market, the Jobs board, standard parts, Fabricate and hulls if it has the works. Nothing draws a pilot to a depot rather than the core except supply hauling. Three proposals, all paid in credits from the depot's power's treasury (the ledger is untouched: goods only move between holds and stores, and salvage is a mark on real goods, like the stolen tag).
+
+**Shared: how close a depot is to the front.** Each power's depot has a front level, worked out every minute:
+- **Front:** an enemy power or the Brood holds a neighbouring system, or the depot was raided or attacked in the last 30 minutes. Pay ×1.5.
+- **Border:** it borders a system its power doesn't hold (`edgeDepot`). Pay ×1.25.
+- **Interior:** neither. Pay ×1.0 (and it posts none of the work below).
+The map shows Front and Border depots with a small marker, so a pilot can see where the work is.
+
+#### 1. Front-line work, posted at the depot
+A Front or Border depot posts up to three jobs at a time. They are listed only on that depot's Jobs board (marked "Posted here"): to take one, you dock there.
+- **Defend the depot:** posted when a raid (the Unbound, the Brood, or an enemy power's strike or siege) is on its way to the depot or there. Pays a sign-on fee if you're in the system when the attack lands, each kill's bounty ×1.5, and a hold bonus if the depot still stands when it's over.
+- **Sweep:** hostile ships seen within one jump (a Brood swarm, an Unbound prowl, an enemy patrol). Kill N of them in the named systems within 20 minutes. Pays per kill on top of the normal bounty, plus a bonus at N.
+- **Picket:** hold station near the depot's gate into enemy or Brood space for 10 minutes. What you see goes onto the power's map. Pays per minute (scouts +50%), and stops if you leave.
+- **Convoy in:** the depot's own inbound supply convoy, for its last two jumps (today's escort job, posted here with the front pay).
+- **Who can take them:** pilots sworn to the power, and contractors who stand Neutral or better with it. Standing rises as with any of the power's work.
+
+#### 2. Shortage buy orders, shown on the map
+- **What a depot is short of:** whatever its own needs call for and its store lacks: its next upgrade, its garrison's and miners' kits, the standard parts it keeps, missiles and charges. When the warehouse can't send it soon (the warehouse is short too, or no convoy can be under way within 10 minutes), the depot posts a buy order.
+- **The order:** the item, the quantity (its shortfall, at most 40 t), and a price fixed for the order's 30 minutes: list price ×1.3 (Interior), ×1.5 (Border) or ×1.7 (Front). Sold at the depot's Market, up to the quantity, while it lasts. It ends early when the power's own convoy delivers.
+- **Where it shows:**
+  - an amber "buying" badge on the depot on the galaxy map, with its orders in the tooltip and the system's side panel;
+  - a Haul job ("Supply order: 20 Flux Coil to Tessellate Depot") on every Jobs board within 4 jumps, with Set course.
+- **Who else answers:** the AI's merchants and independent haulers see the orders too, so a depot gets filled whether or not a pilot comes, and pilots race them.
+- **Who can see them:** depots of powers you aren't hostile with, in systems on your map.
+
+#### 5. Salvage buyers
+- **What counts as salvage:**
+  - goods you scooped from a crate (a ship's spilled cargo);
+  - goods you cut from a wreck (capital hulks, Brood hulks).
+  They carry a salvage mark naming where they came from (`P.salv[item][source]`, like `P.stol`). The mark wears off when the goods are sold, stored or used.
+- **Enemy salvage pays a premium at Front and Border depots:** +40% over the market price for salvage from the power's enemies (their convoys and capital wrecks, the Unbound's ships), paid by the power on top of the market price. Brood salvage pays +80% at any depot (the powers study the Brood). The depot's Market shows a Salvage line listing what you carry that qualifies.
+- **Returning a power's own lost cargo:** goods marked stolen from this power are refused at its markets today. At its depots they can be handed back for a finder's fee (25% of their value), which clears the mark and the heat it brings, and raises your standing a little.
+- **Recover the wreck:** when a capital ship or a convoy dies within one jump of a Front or Border depot, the depot posts a job to cut N t from the hulk and bring it in before it breaks up or the Brood eat it. Pays per tonne on top of the salvage price.
+
+#### Balance and checks
+- Every payment comes from a power's treasury, so a power fighting on many fronts spends more keeping its depots supplied and defended. That works as a drag on the leader, but it needs a war check once built.
+- AI merchants filling buy orders moves goods toward the front, and that may help powers at war. Also checked by the war check.
+- Tests: front levels; each job kind posted, taken only at its depot, and paid; buy orders on the map and the Jobs board, filled by a pilot and by a merchant; salvage marks on a crate and a wreck, the premium paid, and a stolen return clearing heat. The ledger is checked throughout.
+
+#### Open questions for the user
+1. Should front-line jobs be visible on other boards (but takeable only at the depot), or listed only at the depot?
+2. Should independents (AI fighters) take Defend and Sweep jobs too, or are they for players only?
+3. Who sees buy orders: everyone in charted systems, or only pilots with Neutral-or-better standing with that power?
+4. Are the premiums right (buy orders ×1.3/1.5/1.7; enemy salvage +40%; Brood salvage +80%; a finder's fee of 25%)?
+5. Should the finder's fee for returned cargo exist at all, or should stolen goods stay a black-market matter?
