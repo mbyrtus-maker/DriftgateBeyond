@@ -152,7 +152,14 @@ def seat(M,o,d):
     p,n=ray(M,o,d);top=p+n*.07
     drum(M,p-n*.02,top,.12,DARK,10);B=Mesh();ring(B,(0,0,0),.1,.016,ACC,seg=16,sides=4,axis='y')
     from beyond_stations import frame_y
-    put(M,B,top,frame_y(n));return top
+    put(M,B,top,frame_y(n));return top,n
+def seat_gun(M,top,n):
+    # (9 Nov 2026) the gun on a seat: the company-style twin turret (beyond_stations.turret) standing on the drum, its barrels
+    # turned away from the tower's axis (or up, on a seat that faces sideways); added after the windows are lit, so the
+    # tower's lit windows are where they were
+    from beyond_stations import frame_y,turret
+    h=np.array([top[0],0,top[2]],float);h=h/np.linalg.norm(h) if abs(n[1])>.7 and np.linalg.norm(h)>1e-6 else np.array([0,1.,0])
+    B=Mesh();turret(B,(0,0,0),.5);put(M,B,top-n*.01,frame_y(n,h))
 # the two turret seats per style, each a ray (start, direction) onto the tower; kept clear of the launch bay (+z, low), the
 # sockets (the four diagonals) and the logo boards: one covering above, one below
 TURRET_RAYS={
@@ -200,8 +207,9 @@ def tower_model(style):
                 if s=='halcyon':tube(M,[p0,(p0+p1)/2+[0,.08,0],p1],[.07,.06,.05],LIGHT,.92,8)
                 else:BC.truss(M,p0,p1,.14,.018)
         info=dict(bay=np.array(BAY[style][0],float),bay_d=np.array([0,0,1.]),cc=np.array(CC[style],float),boards=boards)
-    tp=[seat(M,o,d) for o,d in TURRET_RAYS[style]]
+    S0=[seat(M,o,d) for o,d in TURRET_RAYS[style]];tp=[t for t,_ in S0]
     lit(M,40,win_size(style),seed=7)
+    for t,n in S0:seat_gun(M,t,n)
     SK=sockets(style)
     # the radius of the whole station with a grade-5 lab in every socket, from the tower's centre
     V=np.array(M.T).reshape(-1,3);c0=(V.max(0)+V.min(0))/2;rr=float(np.linalg.norm(V-c0,axis=1).max())

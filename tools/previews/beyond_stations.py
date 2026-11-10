@@ -9,7 +9,7 @@
 #   Buildings     shipyard, external storage, defence platform, hangar, forge, market wing
 import math
 import numpy as np
-from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,box,plate,ring
+from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,box,plate,ring,loft
 from beyond_capitals import tube,mouth
 from beyond_recon import dish
 ROCK,ROCKD=7,8
@@ -77,12 +77,29 @@ def collar(M,c,r,axis_dir):
     c=np.array(c,float);n=np.array(axis_dir,float);n/=np.linalg.norm(n)
     drum(M,c,c+n*r*.8,r,MID,12,caps=True)
     B=Mesh();ring(B,(0,0,0),r*1.05,r*.12,WIN,seg=20,sides=4,axis='y');put(M,B,c+n*r*.82,frame_y(n))
+def _oct(w,h,ch,x=0.0,y=0.0):
+    # a chamfered rectangle (half-width w, half-height h, corners cut by ch) centred on (x,y)
+    return [(x-w,y-h+ch),(x-w+ch,y-h),(x+w-ch,y-h),(x+w,y-h+ch),(x+w,y+h-ch),(x+w-ch,y+h),(x-w+ch,y+h),(x-w,y+h-ch)]
 def turret(M,c,s=1.0,up=True):
-    # a station gun turret: a base drum, an angled housing, twin barrels (+z)
-    c=np.array(c,float);k=1 if up else -1
-    drum(M,c,c+[0,k*.08*s,0],.2*s,DARK,10)
-    box(M,tuple(c+[0,k*.17*s,0]),(.3*s,.16*s,.36*s),MID,(.8,.8))
-    for sx in (1,-1):tube(M,[c+[sx*.07*s,k*.17*s,.16*s],c+[sx*.07*s,k*.17*s,.7*s]],[.03*s,.025*s],DARK,1.0,6)
+    # a station gun turret (9 Nov 2026, was a drum, a tapered box and two tubes): a base drum with an accent band, a yoke
+    # holding a chamfered housing with a tapered glacis, a faceted sensor dome, a mantlet, twin barrels (+z) in recoil sleeves
+    # with muzzle collars, accent strips on the roof and a lit sight. Same footprint and barrel reach as before.
+    c=np.array(c,float);k=1 if up else -1;x0,y0,z0=c;yc=y0+k*.17*s
+    drum(M,c,c+[0,k*.07*s,0],.2*s,DARK,10)
+    ring(M,tuple(c+[0,k*.07*s,0]),.19*s,.012*s,ACC,seg=10,sides=3,axis='y')
+    for sx in (1,-1):box(M,(x0+sx*.165*s,y0+k*.12*s,z0),(.035*s,.12*s,.17*s),MID)                              # yoke cheeks
+    loft(M,[(z0-.17*s,_oct(.125*s,.065*s,.025*s,x0,yc)),(z0-.12*s,_oct(.15*s,.08*s,.03*s,x0,yc)),(z0+.07*s,_oct(.15*s,.08*s,.03*s,x0,yc)),
+            (z0+.16*s,_oct(.115*s,.055*s,.022*s,x0,yc-k*.005*s))],(LIGHT,.92))                                   # housing
+    loft(M,[(z0+.15*s,_oct(.1*s,.042*s,.015*s,x0,yc)),(z0+.21*s,_oct(.09*s,.036*s,.014*s,x0,yc))],(MID,1.0))    # mantlet
+    M.blob((x0-.065*s,yc+k*.075*s,z0-.05*s),.045*s,GLASS,sub=0,squash=(1,.6,1),noise=0)                          # sensor dome
+    for sx in (1,-1):
+        bx=x0+sx*.07*s
+        tube(M,[(bx,yc,z0+.19*s),(bx,yc,z0+.3*s)],[.034*s,.032*s],MID,1.0,6)                                     # recoil sleeve
+        tube(M,[(bx,yc,z0+.29*s),(bx,yc,z0+.66*s)],[.022*s,.019*s],DARK,1.0,6,cap0=False)                                   # barrel
+        tube(M,[(bx,yc,z0+.33*s),(bx,yc,z0+.35*s)],[.029*s,.029*s],ACC,1.0,6,cap0=False,cap1=False)                   # band
+        tube(M,[(bx,yc,z0+.64*s),(bx,yc,z0+.7*s)],[.032*s,.03*s],MID,1.0,6,cap0=False)                                      # muzzle collar
+        box(M,(x0+sx*.1*s,yc+k*.081*s,z0-.03*s),(.012*s,.006*s,.17*s),ACC)                                        # roof strip
+    box(M,(x0+.105*s,yc+k*.066*s,z0+.115*s),(.03*s,.012*s,.03*s),GLOW)                                             # sight
 def pad(M,c,r=.38):
     # an empty hardpoint: a hex pad with hazard ring and corner lights, where a building will go
     c=np.array(c,float)

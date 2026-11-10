@@ -69,8 +69,8 @@ function setWeapon(w){if(!S||!running)return;if(S.player.wpn===w)return;S.player
 function laserRay(e,range){qRot(e.q,0,0,1,_f);const fx=_f.x,fy=_f.y,fz=_f.z,r=e.st.radius,ox=e.x+fx*r,oy=e.y+fy*r,oz=e.z+fz*r;let best=range,hit=null;
   const test=(c,R)=>{const lx=c.x-ox,ly=c.y-oy,lz=c.z-oz,t=lx*fx+ly*fy+lz*fz;if(t<-R||t-R>best)return false;const d2=lx*lx+ly*ly+lz*lz-t*t;if(d2>R*R)return false;const th=Math.max(0,t-Math.sqrt(R*R-d2));if(th<best){best=th;return true}return false};
   for(const o of W.ents){if(o.type!=='ship'||!o.alive||o===e)continue;if(o.isPlayer&&(S.player.docked||W.dead))continue;if(!hostAt(e.side,e,o))continue;if(test(o,o.st.radius*1.4+8))hit={kind:'ship',ref:o}}
-  const OE=W.outpostEnt;if(OE&&test(OE,80))hit=OE.o.owner&&!OE.o.breached&&hostile(e.side,OE.o.owner)?{kind:'outpost',ref:OE}:{kind:'block'};
-  const SE=W.stationEnt;if(SE){if(hostile(e.side,SE.fac)&&!SE.offline&&SE.shield>0){if(test(SE,165))hit={kind:'station',ref:SE}}else if(hostile(e.side,SE.fac)&&test(SE,75))hit={kind:'station',ref:SE};else if(test(SE,60))hit={kind:'block'}}
+  const OE=W.outpostEnt;if(OE){const ho=OE.o.owner&&!OE.o.breached&&hostile(e.side,OE.o.owner);if(ho&&OE.o.shield>0){const u=bubSeg(opBub(OE),ox,oy,oz,ox+fx*best,oy+fy*best,oz+fz*best);if(u>=0){best*=u;hit={kind:'outpost',ref:OE}}}else if(test(OE,80))hit=ho?{kind:'outpost',ref:OE}:{kind:'block'}}
+  const SE=W.stationEnt;if(SE){if(hostile(e.side,SE.fac)&&!SE.offline&&SE.shield>0){const u=bubSeg(stBub(SE),ox,oy,oz,ox+fx*best,oy+fy*best,oz+fz*best);if(u>=0){best*=u;hit={kind:'station',ref:SE}}}else if(hostile(e.side,SE.fac)&&test(SE,75))hit={kind:'station',ref:SE};else if(test(SE,60))hit={kind:'block'}}
   for(const a of S.sectors[W.sid].ast)if(test(a,astR(a)))hit={kind:'block'};
   return{hit,x:ox+fx*best,y:oy+fy*best,z:oz+fz*best,d:best}}
 function fireLaser(e){if(jamDark(e))return;if(e.cool>0||e.landed||e.stealth||(e.boot&&W.t<e.boot))return;const cost=e.st.shotCost*1.6;
@@ -452,9 +452,9 @@ function detonate(m,i){if(m.harp||m.jt){W.missiles.splice(i,1);toDebris(S.sector
   for(const e of W.ents.slice()){if(e.type!=='ship'||!e.alive)continue;if(e.isPlayer&&(S.player.docked||W.dead))continue;if(!hostAt(m.side,m.src,e))continue;const d=d3(e,m);if(d<BR+e.st.radius){
     const bare=!tp&&e.shield<=e.st.sCap*.05,mul=bare?BARE_MUL:1;if(bare){fxSpark(e,'#ff9a6a',sw?3:8);if(m.side==='player'&&W.t-(W.bareT||-9)>1.5){W.bareT=W.t;flash('Shields down: missiles hit for ×1.8!')}}
     damageShip(e,(m.incend?(e.side==='brood'&&e.role==='builder'?1.5:.85):1)*m.dmg*mul*(d<e.st.radius+28?1:.45)*(tp&&e.role!=='frigate'?TORP_SMALL:1),m.side,m)}}
-  if(m.tgt&&m.tgt.type==='station'&&W.stationEnt===m.tgt&&hostile(m.side,m.tgt.fac)&&d3(m.tgt,m)<240)damageStation(m.tgt,m.dmg*(tp?TORP_STATION:1)*(m.incend&&m.tgt.fac==='brood'?1.5:1),m.side,m.kind,m.src);
+  if(m.tgt&&m.tgt.type==='station'&&W.stationEnt===m.tgt&&hostile(m.side,m.tgt.fac)&&(d3(m.tgt,m)<240||(m.tgt.shield>0&&!m.tgt.offline&&bubIn(stBub(m.tgt),m.x,m.y,m.z,BR))))damageStation(m.tgt,m.dmg*(tp?TORP_STATION:1)*(m.incend&&m.tgt.fac==='brood'?1.5:1),m.side,m.kind,m.src);
   if(W.works&&W.works.length)wkBlast(m,tp,BR);
-  const T=m.tgt;if(T&&T.type==='outpost'&&!T.o.breached&&T.o.owner&&hostile(m.side,T.o.owner)&&d3(T,m)<(tp?230:170))damageOutpost(T,m.dmg*(tp?3:1.5),m.side);
+  const T=m.tgt;if(T&&T.type==='outpost'&&!T.o.breached&&T.o.owner&&hostile(m.side,T.o.owner)&&(d3(T,m)<(tp?230:170)||(T.o.shield>0&&W.outpostEnt===T&&bubIn(opBub(T),m.x,m.y,m.z,BR))))damageOutpost(T,m.dmg*(tp?3:1.5),m.side);
   toDebris(s,m.inv)}
 function deployFlares(e){const fl=[];for(let i=0;i<3;i++){const d=rdir(),f={decoy:true,x:e.x,y:e.y,z:e.z,vx:e.vx*.4+d.x*120,vy:e.vy*.4+d.y*120,vz:e.vz*.4+d.z*120,life:3.2};W.decoys.push(f);fl.push(f)}
   const chance=Math.min(.95,(e.isPlayer||e.flares?.8:.6)*(1+.3*((CLASSES[e.cls].agile||1)-1)));for(const m of W.missiles)if(m.tgt===e&&d3(m,e)<1700&&Math.random()<chance*(m.kind==='torpedo'?.5:m.kind==='swarm'?.55:1))m.tgt=pick(fl);fxSpark(e,'#fff1c0',10)}
@@ -474,7 +474,8 @@ function missilesUpdate(dt){
     m.smoke-=dt;if(m.smoke<=0){m.smoke=tp?.025:.035;W.fx.push({x:ox,y:oy,z:oz,vx:rnd(-8,8),vy:rnd(-8,8),vz:rnd(-8,8),life:tp?1.6:.9,max:tp?1.6:.9,c:tp?[.5,.42,.3]:[.4,.4,.44],sz:rnd(4,7)*(tp?1.8:1)})}
     let boom=m.ttl<=0;
     if(!boom&&m.tgt&&m.tgt.type==='works'){if(wkSegHit(m.tgt,ox,oy,oz,m.x,m.y,m.z,tp?30:18))boom=true}
-    else if(!boom&&m.tgt){const R=m.tgt.decoy?18:m.tgt.type==='station'?170:m.tgt.type==='outpost'?(tp?140:110):m.tgt.st.radius+(m.kind==='swarm'?14:22);if(segHit(ox,oy,oz,m.x,m.y,m.z,m.tgt,R))boom=true}
+    else if(!boom&&m.tgt){const T2=m.tgt,bb=T2.type==='station'&&W.stationEnt===T2&&!T2.offline&&T2.shield>0?stBub(T2):T2.type==='outpost'&&W.outpostEnt===T2&&T2.o.shield>0?opBub(T2):null;
+      if(bb){if(bubSeg(bb,ox,oy,oz,m.x,m.y,m.z)>=0)boom=true}else{const R=T2.decoy?18:T2.type==='station'?170:T2.type==='outpost'?(tp?140:110):T2.st.radius+(m.kind==='swarm'?14:22);if(segHit(ox,oy,oz,m.x,m.y,m.z,T2,R))boom=true}}
     if(!boom)for(const e of W.ents){if(e.type!=='ship'||!e.alive||e===m.src||!hostE(m.side,e))continue;if(e.isPlayer&&(S.player.docked||W.dead))continue;if(segHit(ox,oy,oz,m.x,m.y,m.z,e,e.st.radius+10)){boom=true;break}}
     if(!boom)for(const a of s.ast)if(d3(a,m)<astR(a)){boom=true;break}
     if(boom){detonate(m,i);if(!W)return}}

@@ -46,8 +46,8 @@ function mgShot(e,G,T){const n=mgNose(e),spd=900,lp=T.type==='ship'?leadPoint({x
 function segD(ax,ay,az,ux,uy,uz,L,p){const px=p.x-ax,py=p.y-ay,pz=p.z-az;const t=clamp(px*ux+py*uy+pz*uz,0,L);return hyp(px-ux*t,py-uy*t,pz-uz*t)}
 function mawFire(e,G){const n=mgNose(e);qRot(e.q,0,0,1,_f);const ux=_f.x,uy=_f.y,uz=_f.z,L=G.len,ex=n.x+ux*L,ey=n.y+uy*L,ez=n.z+uz*L;let hits=0;
   for(const o of W.ents.slice()){if(o.type!=='ship'||!o.alive||o===e||!hostE(e.side,o))continue;if(o.isPlayer&&(S.player.docked||W.dead))continue;if(segD(n.x,n.y,n.z,ux,uy,uz,L,o)<G.w+o.st.radius){damageShip(o,G.dmg,e.side,{x:o.x,y:o.y,z:o.z,vx:ux,vy:uy,vz:uz,src:e},'capital');hits++;if(!MUTE)fxBoom(o,50,'#d9ff9a')}}
-  const SE=W.stationEnt;if(SE&&hostile(e.side,SE.fac)&&segD(n.x,n.y,n.z,ux,uy,uz,L,SE)<G.w+120){damageStation(SE,G.dmg,e.side,'capital',e);hits++}
-  const OE=W.outpostEnt;if(OE&&OE.o.owner&&!OE.o.breached&&hostile(e.side,OE.o.owner)&&segD(n.x,n.y,n.z,ux,uy,uz,L,OE)<G.w+OE.r){damageOutpost(OE,G.dmg,e.side);hits++}
+  const SE=W.stationEnt;if(SE&&hostile(e.side,SE.fac)&&(SE.shield>0&&!SE.offline?bubSeg(stBub(SE),n.x,n.y,n.z,ex,ey,ez,G.w)>=0:segD(n.x,n.y,n.z,ux,uy,uz,L,SE)<G.w+120)){damageStation(SE,G.dmg,e.side,'capital',e);hits++}
+  const OE=W.outpostEnt;if(OE&&OE.o.owner&&!OE.o.breached&&hostile(e.side,OE.o.owner)&&(OE.o.shield>0?bubSeg(opBub(OE),n.x,n.y,n.z,ex,ey,ez,G.w)>=0:segD(n.x,n.y,n.z,ux,uy,uz,L,OE)<G.w+OE.r)){damageOutpost(OE,G.dmg,e.side);hits++}
   if(W.works&&W.works.length){const b={x:ex,y:ey,z:ez,vx:ux,vy:uy,vz:uz,dmg:G.dmg,side:e.side,src:e,cap:true};try{if(wkShot(b,n.x,n.y,n.z))hits++}catch(err){}}
   W.beams.push({src:e,x:ex,y:ey,z:ez,ttl:1.1,col:'#c8ff7a'});if(!MUTE){fxBoom(n,90,'#c8ff7a');const v=vAt(e);if(v>.05)SFX.lance(Math.min(1,v*1.6));W.shake=Math.max(W.shake||0,v*.6)}return hits}
 function mgTick(e,G,dt,manual,C){const m=e.mg||(e.mg={cd:rnd(1,3),ch:0}),t=e.tok,lm=pmul(t,'lance'),brood=e.side==='brood'&&isDst(t);if(brood)e.shield=0;
