@@ -3356,6 +3356,7 @@ Built as the revised proposal says (`16zzzq_components.js`, `tools/tests/compone
 - The guest convoy test now renders the board once before picking a job (the board's first render on a new dock resets its filter and pick).
 
 ### Proposal: reasons to stop at a depot (user, 9 Nov 2026: "1, 2, 5 write up the designs"; not yet agreed)
+*Answered and built: see "Depot missions and salvage: agreed and built" (9 Nov 2026). Shortage buy orders (2) were turned down.*
 Today a power's depot is a smaller copy of its core: repairs, vault, a small market, the Jobs board, standard parts, Fabricate and hulls if it has the works. Nothing draws a pilot to a depot rather than the core except supply hauling. Three proposals, all paid in credits from the depot's power's treasury (the ledger is untouched: goods only move between holds and stores, and salvage is a mark on real goods, like the stolen tag).
 
 **Shared: how close a depot is to the front.** Each power's depot has a front level, worked out every minute:
@@ -3401,3 +3402,27 @@ A Front or Border depot posts up to three jobs at a time. They are listed only o
 3. Who sees buy orders: everyone in charted systems, or only pilots with Neutral-or-better standing with that power?
 4. Are the premiums right (buy orders ×1.3/1.5/1.7; enemy salvage +40%; Brood salvage +80%; a finder's fee of 25%)?
 5. Should the finder's fee for returned cargo exist at all, or should stolen goods stay a black-market matter?
+
+### Depot missions and salvage: agreed and built (user, 9 Nov 2026)
+The user's answers to the proposal above: "1 should have their own category called 'Depot missions' and it tells the pilots they have to fly there to take them. 2 No. 5 salvage is fine." So front-line work and salvage are built, and the shortage buy orders are not. The proposal's other open questions go with what it proposed: only players take depot missions, and the premiums and the finder's fee are as written. `16zzzv_depotwork.js`, test `depotwork.py`.
+- **Front levels** (every 30 s, `S.dpf`):
+  - Front: an enemy power or the Brood holds a neighbouring system, or the depot is damaged, raided, or was hit in the last 30 minutes.
+  - Border: it borders a system its power doesn't hold.
+  - Interior: neither.
+  - Pay ×1.5 / ×1.25 / ×1. On the galaxy map a Front depot's square is ringed red and a Border depot's amber. A system's side panel says which it is and lists its open depot missions.
+- **Depot missions** (`S.dpm`), a Jobs category of their own ("Depot missions"):
+  - **Where they show:** a Front or Border depot posts up to three at once. They are listed on every Jobs board within 6 jumps, saying "Fly to <depot> to take this mission" with Set course, and taken only while docked at that depot.
+  - **Who:** one at a time per pilot; pilots sworn to the power, or contractors at Neutral or better.
+  - **Pay:** from the power's treasury, with +2 standing each payment.
+  - **Defend:** posted while a raid or an enemy strike is coming for the depot. 60 cr a minute while you're in its system, half again of each kill's bounty, and 1,500 cr if the depot still stands when the attack ends (all × front).
+  - **Sweep:** Front only. Kill 4 of the power's enemies in the depot's system or an enemy-held neighbour within 20 minutes: 250 cr a kill and 1,200 cr at the fourth (× front), on top of bounties.
+  - **Picket:** hold within 2.5 km of the gate into the next system that isn't the power's, 10 minutes in all: 900 cr × front (scouts ×1.5). While you hold, the power sees into that system.
+  - **Convoy in:** the depot's inbound supply convoy within 3 jumps. Taking it signs you on as its escort, and when it docks you get the escort pay plus 50% × front.
+  - **Recover the wreck:** a capital wreck in the depot's system or next to it. Sell N t of its chunks (10–40 t) at the depot's Market: 25 cr a tonne × front, on top of the salvage price and premium.
+  - **On the HUD:** the mission shows on the orders card in flight.
+- **Salvage marks** (`P.salv[item][source]`, a mark on real goods like the stolen tag):
+  - **What carries one:** goods scooped from a ship's spilled cargo (crates now record whose ship it was), and chunks blasted off a wreck (marked with that wreck).
+  - **The premium:** at any power's depot, Brood salvage sells for +80%; at a Front or Border depot, salvage from the power's enemies or the Unbound sells for +40%. The power pays the premium.
+  - **On the Market:** the depot's Market has a Salvage box listing what qualifies.
+- **Handing stolen cargo back:** goods marked stolen from a power can be handed back at its depot from that box. They go into the depot's store, the power pays 25% of their value as a finder's fee, the mark is cleared, the theft heat eases, and standing rises a little.
+- Not yet checked with a war check: the payments come from treasuries.

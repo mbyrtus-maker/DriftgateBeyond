@@ -318,7 +318,7 @@ function killShip(e,src,at){if(e.role==='limpet'){limpetShot(e,src,at);return}
   if(e.role==='frigate'&&e.tok&&makeWreck(e)){{const _i=W.ents.indexOf(e);if(_i>=0)W.ents.splice(_i,1)}if(W.tgt&&W.tgt.ref===e)W.tgt=null;payKill(e,src,at);return}
   const crate={};for(const k in e.load){const m=Math.min(e.load[k],Math.floor(e.load[k]*.5+Math.random()*.6));if(m)crate[k]=m;const rest=e.load[k]-m;if(rest>0)toDebris(s,{[k]:rest})}
   inv.addAll(crate,e.cargo);e.load={};e.cargo={};
-  if(Object.keys(crate).length)s.crates.push({id:S.nextId++,x:Math.round(e.x),y:Math.round(e.y),z:Math.round(e.z),inv:crate,until:S.T+300,own:FAC_IDS.includes(e.side)?e.side:undefined});
+  if(Object.keys(crate).length)s.crates.push({id:S.nextId++,x:Math.round(e.x),y:Math.round(e.y),z:Math.round(e.z),inv:crate,until:S.T+300,own:FAC_IDS.includes(e.side)?e.side:undefined,side:e.side});
   {const _i=W.ents.indexOf(e);if(_i>=0)W.ents.splice(_i,1)}if(W.tgt&&W.tgt.ref===e)W.tgt=null;
   payKill(e,src,at)
 }

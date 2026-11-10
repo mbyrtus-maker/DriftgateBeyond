@@ -498,7 +498,7 @@ function drawMap(){
     if(d.kind==='core'){c.fillStyle=col;c.beginPath();c.arc(x,y,6,0,TAU);c.fill()}
     if(d.kind==='deep'){c.fillStyle='#6ff2cf';c.font='700 10px "Saira Semi Condensed",sans-serif';c.textAlign='center';c.fillText('Au',x,y+4)}
     if(d.kind==='hive'){c.fillStyle=hexA(FACTIONS.brood.col,.7);for(let i=0;i<7;i++){const a=i/7*TAU+t*.3;c.beginPath();c.arc(x+Math.cos(a)*7,y+Math.sin(a)*7,3,0,TAU);c.fill()}}
-    {const Rs=S.stations[d.id];if(Rs&&!d.home&&Rs.kind==='depot'){c.fillStyle=sideCol(Rs.owner);c.fillRect(x+r*.55,y-r*1.15,9,9);c.strokeStyle='#070b16';c.lineWidth=1.5;c.strokeRect(x+r*.55,y-r*1.15,9,9)}
+    {const Rs=S.stations[d.id];if(Rs&&!d.home&&Rs.kind==='depot'){c.fillStyle=sideCol(Rs.owner);c.fillRect(x+r*.55,y-r*1.15,9,9);c.strokeStyle='#070b16';c.lineWidth=1.5;c.strokeRect(x+r*.55,y-r*1.15,9,9);{const fl=(S.dpf||{})[d.id]||0;if(fl){c.strokeStyle=fl>1?'#ff5d4f':'#f0b24a';c.lineWidth=2;c.strokeRect(x+r*.55-3,y-r*1.15-3,15,15)}}}
       if(!Rs&&d.home&&d.kind==='frontier'){c.strokeStyle='#ff5d4f';c.lineWidth=2;c.beginPath();c.moveTo(x-6,y-6);c.lineTo(x+6,y+6);c.moveTo(x+6,y-6);c.lineTo(x-6,y+6);c.stroke()}}
     brMapMarks(c,d,x,y,r,t);
     const oid=OUT_BY_SECTOR[d.id];if(oid){const o=S.outposts[oid];c.fillStyle=col;c.font='800 13px "Big Shoulders Display",sans-serif';c.textAlign='center';c.fillText(o.type==='forge'?'F':'Y',x,y+5);if(o.owner==='player'){c.strokeStyle=PLAYER_COL;c.lineWidth=1.5;c.beginPath();c.arc(x,y,r+6,0,TAU);c.stroke()}}
