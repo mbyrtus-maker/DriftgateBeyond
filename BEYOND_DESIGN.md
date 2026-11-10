@@ -3625,3 +3625,10 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
   - A pilot without access is refused.
 - **Wording:** Holdings' "Upgrade to a Station" asks for the Station Kit alone.
 - **Test:** `baserun.py`.
+
+### Dev menu: jump to any system (user, 9 Nov 2026)
+"Add to the developer menu a 'jump to system' choice so I can instantly teleport anywhere on the map."
+- **The control:** the dev menu has a system picker (every system, with who holds its station) and **Jump to system**.
+- **What it does:** undocks you if docked, then puts you in that system at once: 500 m from its station if it has one, else just inside a gate.
+- **Multiplayer:** a guest teleports on its own screen and the host moves its ship there.
+- **Code:** `16zzzzc_devhulls.js`.
