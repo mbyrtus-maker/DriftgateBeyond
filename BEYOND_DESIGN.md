@@ -3728,3 +3728,9 @@ only the Black market tab (a player base posts no contract board), so the Black 
 from up to 3 jumps away, was the whole Jobs screen. The user chose to add the regular board: your base now has Jobs →
 Jobs (the system's jobs, as in flight: guards, escorts, freight, posted jobs), and Riftstone stays on Jobs → Black market.
 Test: baserun.py.
+
+### Holdings: a strike in transit shows jumps out (10 Nov 2026)
+The user: "it says it lands in 1666666666666666666666666662.20." A strike flying the lanes as a real fleet parks its event's
+`eta` at 1e12 (the fleet, `S.raids` with `.strike`, carries the timing), and the label printed it. Now
+`coThreatEta` (16zo_company2.js) reads the fleet: "N jumps out · about m:ss" (the next jump's time plus `RAID.hop` per jump
+left). Without a fleet it shows the event's eta only when it's a real time. Test: baserun.py.

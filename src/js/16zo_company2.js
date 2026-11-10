@@ -38,7 +38,7 @@ function coDetail(P,b){const s=[];
   for(const b of B){if(!b.R)continue;const t=coThreat(b.R);if(t&&!t.hurt)h+=`<div class="coalert"><span class="cdot" style="background:var(--danger)"></span><span style="flex:1">${esc(DEF[b.R.sid].name)} ${b.kind}: a ${esc(sideName(t.att))} strike is on its way</span><button class="btn sm" type="button" data-co="hgguard" data-arg="${b.R.sid}">Send a guard</button></div>`}
   h+=`<div class="cowrap"><div class="colist">`;
   for(const b of B){const on=b.key===coSel,R=b.R,L=b.L,lv=L?(L.lvl||1):R.pst?staLvl(R):depLvl(R),mx=L?2:R.pst?5:3,t=R&&coThreat(R),seen=L&&Object.keys(L.seen||{}).some(f=>L.seen[f]);
-    const st=t?['var(--danger)',t.hurt?'damaged (hull under 60%)':`under threat: ${t.att==='brood'?'the Brood':t.att==='pirate'?'the Unbound':(FAC(t.att)||{}).short||'an enemy'} ${t.stage==='inbound'?`strike inbound${t.eta?` (lands in ${fmtT(Math.max(0,t.eta-S.T))})`:''}`:'attacking'}`]:L?(seen?['var(--danger)','found']:['var(--dim)','hidden']):R.pst?['var(--ok,#7ad9a7)','holds the system']:['var(--ok,#7ad9a7)','market open'];
+    const st=t?['var(--danger)',t.hurt?'damaged (hull under 60%)':`under threat: ${t.att==='brood'?'the Brood':t.att==='pirate'?'the Unbound':(FAC(t.att)||{}).short||'an enemy'} ${t.stage==='inbound'?`strike inbound${coThreatEta(t)}`:'attacking'}`]:L?(seen?['var(--danger)','found']:['var(--dim)','hidden']):R.pst?['var(--ok,#7ad9a7)','holds the system']:['var(--ok,#7ad9a7)','market open'];
     const poly=L?GI_SH.con:R.pst?'15,2 27,9 27,21 15,28 3,21 3,9':GI_SH.comp;
     h+=`<button class="corow${on?' on':''}" type="button" data-co="cosel" data-arg="${b.key}"><svg width="20" height="20" viewBox="0 0 30 30" aria-hidden="true"><polygon points="${poly}" fill="none" stroke="${on?'#f0b24a':'#5a647c'}" stroke-width="2"/></svg><span><b>${esc(DEF[(R||L).sid].name)}</b><br><span class="note" style="margin:0">${b.kind} · level ${lv} of ${mx}</span></span><span>${coPip(lv,mx)}</span><span class="cost" style="color:${st[0]}"><span class="cdot" style="background:${st[0]}"></span>${st[1]}</span></button>`}
   if(!B.length)h+=`<div class="empty">No bases yet. A Lair is your first: carry a Depot Frame and 6 Alloy Plate to a large asteroid in a system with no station.</div>`;
@@ -52,3 +52,9 @@ function coDetail(P,b){const s=[];
 {const o=dockAction;dockAction=function(act,arg){if(act==='hgguard'){const P=S.player,R=S.stations[arg];if(!R||R.owner!=='player'||(R.pid||'me')!==pkeyOf(P)){dockErr='Not your base.';return}
     const c=(R.crew||[]).find(x=>x.job!=='guard'&&x.job!=='run'&&!x.laid);if(c){c.job='guard';dockErr=`✓ ${c.name} is guarding ${R.name}.`;return}
     if((R.crew||[]).some(x=>x.job==='guard')){dockErr=`${R.name}'s crews are already guarding it.`;return}dockErr=pjPost(P,`${R.sid}:guard:x:0:medium`);return}return o.apply(this,arguments)}}
+
+// (user, 10 Nov 2026: "it says it lands in 1666666666666666666662.20") a strike flying the lanes parks its eta at 1e12;
+// its fleet (S.raids, .strike) knows its route: jumps left, and the time from its next jump
+function coThreatEta(t){try{const r=t.tr&&(S.raids||[]).find(x=>x.id===t.tr);if(r&&r.path){const left=Math.max(0,r.path.length-1-r.leg),eta=r.next+Math.max(0,left-1)*RAID.hop;
+    return` (${left} jump${left===1?'':'s'} out · about ${fmtT(Math.max(0,eta-S.T))})`}
+  if(t.eta&&t.eta-S.T<36000)return` (lands in ${fmtT(Math.max(0,t.eta-S.T))})`}catch(e){}return''}

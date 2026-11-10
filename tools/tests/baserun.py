@@ -38,6 +38,9 @@ async def main():
     r=json.loads(await ev("""(()=>{const P=S.player,R=myDepots(P)[0];exitSector();W=null;P.sector=R.sid;P.docked=null;enterSector(R.sid);running=false;if(!R.pst){devLedger(()=>{P.cargo.kit_station=1});staUp(P,R)}
       P.docked='station';$('dock').hidden=true;openDock('allegiance');const b=document.querySelector('#dock [data-co=declare]');if(b)b.click();const out={btn:!!b,decl:!!P.decl,msg:dockErr,tab:dockTab,sw:P.sworn||null,decl0:declOK(P)};$('dock').hidden=true;return JSON.stringify(out)})()"""))
     check("Declare your faction works from the dock's Allegiance tab",r['btn'] and r['decl'],r)
+    r=json.loads(await ev("""(()=>{const P=S.player,R=myDepots(P)[0];const f=FAC_IDS.find(x=>homeOf(x)&&homeOf(x)!==R.sid&&trPath(homeOf(x),R.sid));const ev={id:S.nextId++,type:'offensive',att:f,st:R.sid,stName:R.name,sector:R.sid,eta:S.T+60,force:{},n:1,tier:1,cls:['interceptor'],stage:'inbound'};
+      S.events.push(ev);prwStrikeStart(ev);const h=holdingsHtml(P);const m=h.match(/under threat[^<]*/);S.events.splice(S.events.indexOf(ev),1);S.raids=(S.raids||[]).filter(x=>x.strike!==ev.id);return JSON.stringify({tr:!!ev.tr,lab:m?m[0]:null})})()"""))
+    check("a strike flying the lanes shows jumps out and a sane arrival time on Holdings",r['tr'] and r['lab'] and 'jump' in r['lab'] and not __import__('re').search(r'\d{6,}',r['lab']),r)
     l=await ev(LED);check('ledger exact',l=='exact',l)
     check('no errors',not errs,errs[:3])
     print('ALL OK' if not bad else 'FAILED: '+', '.join(bad))
