@@ -16,5 +16,13 @@ function djHtml(c,P,R){const F=pjForm,goods=['fe','cu','ir','au','nu','xc','plat
   const k=pkeyOf(P),L=pjList().filter(j=>j.pid===k&&j.sid===R.sid).slice(-8).reverse();
   if(L.length)h+=`<div class="tblw" style="margin-top:10px"><table class="t"><thead><tr><th>Posted here</th><th>Status</th><th class="r">Fee</th><th></th></tr></thead><tbody>${L.map(j=>`<tr><td class="iname" style="white-space:normal">${esc(pjTitle(j))}</td><td style="white-space:normal">${j.state==='open'?`waiting for a taker (${fmtT(Math.max(0,j.claimAt-S.T))})`:j.state==='taken'?`${esc(j.who||'a pilot')} on it`:esc(j.msg||j.state)}</td><td class="r num">${fmt(j.bid||0)}</td><td>${j.state==='open'?`<button class="btn sm" type="button" data-act="pjcancel" data-arg="${j.id}">Withdraw</button>`:''}</td></tr>`).join('')}</tbody></table></div>`;
   return h}
-{const o=worksHtml;worksHtml=function(c,P,srcs,R){let h=o.apply(this,arguments);try{if(R&&R.owner==='player'&&(R.pid||'me')===pkeyOf(P)&&!S.unb)h+=djHtml(c,P,R)}catch(e){console.error(e)}return h}}
+// (user, 9 Nov 2026: "make the jobs and the works two different tabs under Station; also need access to the company profile
+// tab, just call it Company") at your own base the Station tab has Works, Jobs (posting, this file) and Company (the profile,
+// as on the Company screen, with the base design turning beside it)
+{const o=dockCtx;dockCtx=function(){const c=o.apply(this,arguments);try{const P=S.player,R=c&&c.kind==='station'&&S.stations[P.sector];if(R&&R.owner==='player'&&(R.pid||'me')===pkeyOf(P)&&!S.unb)c.ownBase=true}catch(e){}return c}}
+function dcoHtml(P){return`<div id="dcoBody">${coPrevBox(coFormOf(P))}${coProfHtml(P)}</div>`}
+// the profile's buttons are the Company screen's (data-co): run them here and redraw the dock
+$('dock').addEventListener('click',e=>{const b=e.target.closest('#dcoBody [data-co]');if(!b||b.disabled)return;e.preventDefault();e.stopPropagation();coErr='';coClick(b.dataset.co,b.dataset.arg||'');dockErr=coErr||'';renderDock()},true);
+{const o=renderDock;renderDock=function(){try{const a=document.activeElement,el=$('dock');if(a&&el&&el.contains(a)&&(a.tagName==='TEXTAREA'||(a.tagName==='INPUT'&&!['button','submit','checkbox','radio'].includes(a.type))))return}catch(e){}
+  const r=o.apply(this,arguments);try{if(dockTab==='bco'&&$('dcoBody')){const P=S.player,nm=$('coNm');if(nm)nm.addEventListener('input',ev=>{coFormOf(P).name=ev.target.value});const hu=$('coHue');if(hu){hu.addEventListener('change',ev=>{coFormOf(P).hue=+ev.target.value;hu.blur();renderDock()});hu.addEventListener('input',ev=>{const sw=hu.previousElementSibling;if(sw)sw.style.background=coHueCol(+ev.target.value)})}}}catch(e){console.error(e)}return r}}
 {const o=dockClick;dockClick=function(act,arg){if(act==='pjf'){const[k,v]=String(arg).split(':');pjForm[k]=k==='n'?Math.max(1,(pjForm.n||0)+(+v)):v;renderDock();return}return o.apply(this,arguments)}}

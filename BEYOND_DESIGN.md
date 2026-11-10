@@ -3579,3 +3579,13 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 - **Multiplayer:** works for guests too (the host applies it).
 - **Code:** `16zzzzc_devhulls.js`.
 - **Checked:** the Bombard, Corsair, Gannet, Vesper, Ostrova Heavy Hauler and Unbound Skiff each fly, and the ledger stays exact.
+
+### Your base's Station tab: Works, Jobs, Company (user, 9 Nov 2026)
+"Make the jobs and the works two different tabs under Station. Also need access to the company profile tab, just call it Company."
+- **The sub-tabs:** docked at a Depot or Station you own, the Station tab has:
+  - **Works:** the base's modules and its miners;
+  - **Jobs:** "Post a job here", paid from the company treasury;
+  - **Company:** the company profile, as on the Company screen: name, logo, base design with the chosen design turning beside it, colour, fees, Save, and the treasury.
+- **Under the hood:** the profile's buttons run here and redraw the dock.
+- **Typing:** the dock's once-a-second redraw waits while you type in a box, as the Company screen's does.
+- **Checked:** typing a name and picking a design on the Company tab.

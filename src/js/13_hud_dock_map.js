@@ -86,7 +86,7 @@ function holdFree(p,P){return Math.max(0,((p&&p.st&&p.st.cargo)||0)-invMass(P.ca
 function csellQuote(P){const r=shipRec(P),parts={};shipStrip(JSON.parse(JSON.stringify(r)),parts);const hull=START_HULLS.includes(r.cls)?0:Math.floor(hullPrice(r.cls)*TRADE_IN),up=Math.floor(invValue(parts)*TRADE_IN);return{hull,up,tot:hull+up,parts,bare:shipBare(P)}}
 // the station screen: five task tabs on one row (keys 1–5, always the same tab for the same number), each with a few views.
 // Docking lands on Overview: what you can do right now. A tab with nothing at this dock is hidden; a dot marks one to act on.
-const DOCK_TOP=[['home','Overview',['home','news']],['trade','Trade',['market','fence','trade','storage']],['jobs','Jobs',['jobs','bmjobs','hire','marks','wanted']],['ship','Ship',['black','ship','bay','upg','refit']],['station','Station',['fab','works','patron','outpost']],['allegiance','Allegiance',['allegiance']]];
+const DOCK_TOP=[['home','Overview',['home','news']],['trade','Trade',['market','fence','trade','storage']],['jobs','Jobs',['jobs','bmjobs','hire','marks','wanted']],['ship','Ship',['black','ship','bay','upg','refit']],['station','Station',['fab','works','bjobs','bco','patron','outpost']],['allegiance','Allegiance',['allegiance']]];
 const dockTopOf=k=>(DOCK_TOP.find(g=>g[2].includes(k))||DOCK_TOP[0])[0];
 function dockTop(i){const T=DOCK_TOP[i];if(!T)return;const G=dockG.find(g=>g[0]===T[0]);if(!G)return;const m=dockSubMem[T[0]];dockTab=G[2].some(t=>t[0]===m)?m:G[2][0][0];dockErr='';renderDock()}
 // Control Markers sell for credits at your own faction's stations and depots (the treasury takes the money)
@@ -236,7 +236,7 @@ function renderDock(){
   $('dTitle').textContent=c.name;$('dTitle').style.color=sideCol(c.owner);$('dSub').textContent=c.sub;
   $('dMeta').innerHTML=`<div>Credits<b class="amber">${fmt(P.credits)}</b></div><div>Hold<b>${invMass(P.cargo)}/${p.st.cargo} t</b></div><div>${c.storageName}<b>${invMass(c.storage)} t</b></div>${c.wallet?`<div>${sideName(c.wallet)} treasury<b>${fmt(S.econ.treasury[c.wallet])}</b></div>`:''}`;
   const hasOrders=!S.unb&&c.contracts||(c.wallet&&!!P.sworn&&c.wallet===P.sworn&&S.plans&&S.plans[P.sworn]),hasMis=!!FACTIONS[P.sworn];
-  const tabs=[['home','Overview']];if(!S.unb&&!S.training)tabs.push(['news','News']);if(c.haven)tabs.push(['fence','Fence'],['black','Hulls'],['marks','Marks'],['wanted','Wanted'],['works','Works']);if(c.market)tabs.push(['market','Market']);if(c.rum)tabs.push(['bmk','Black market']);if(!c.haven)tabs.push(['trade','Best runs']);if(hasOrders||hasMis)tabs.push(['jobs','Jobs']);if(!S.unb&&!S.training&&(c.owner==='neutral'||c.rum))tabs.push(['bmjobs','Black market']);tabs.push(['fab','Fabricate'],['upg','Systems']);if(c.refit)tabs.push(['refit','Refits']);if(c.works)tabs.push(['works','Station works']);if(patOK(c,P))tabs.push(['patron','Patronage']);if(hireOK(c,P))tabs.push(['hire','Hire pilots']);if(c.fortify)tabs.push(['outpost','Outpost']);if(!c.haven&&!S.unb)tabs.push(['ship','Shipyard']);tabs.push(['storage',c.storageName]);if(c.lair){}else if(c.storage===P.vault&&!S.unb)tabs.push(['bay',`Hangar ${shipsCount(P)}/${BAY_MAX}`]);
+  const tabs=[['home','Overview']];if(!S.unb&&!S.training)tabs.push(['news','News']);if(c.haven)tabs.push(['fence','Fence'],['black','Hulls'],['marks','Marks'],['wanted','Wanted'],['works','Works']);if(c.market)tabs.push(['market','Market']);if(c.rum)tabs.push(['bmk','Black market']);if(!c.haven)tabs.push(['trade','Best runs']);if(hasOrders||hasMis)tabs.push(['jobs','Jobs']);if(!S.unb&&!S.training&&(c.owner==='neutral'||c.rum))tabs.push(['bmjobs','Black market']);tabs.push(['fab','Fabricate'],['upg','Systems']);if(c.refit)tabs.push(['refit','Refits']);if(c.works)tabs.push(['works',c.ownBase?'Works':'Station works']);if(c.ownBase)tabs.push(['bjobs','Jobs'],['bco','Company']);if(patOK(c,P))tabs.push(['patron','Patronage']);if(hireOK(c,P))tabs.push(['hire','Hire pilots']);if(c.fortify)tabs.push(['outpost','Outpost']);if(!c.haven&&!S.unb)tabs.push(['ship','Shipyard']);tabs.push(['storage',c.storageName]);if(c.lair){}else if(c.storage===P.vault&&!S.unb)tabs.push(['bay',`Hangar ${shipsCount(P)}/${BAY_MAX}`]);
   if(!S.unb&&(!S.training||S.training.by))tabs.push(['allegiance','Allegiance']);
   if(dockTab==='orders'||dockTab==='missions')dockTab='jobs';
   if(!tabs.some(t=>t[0]===dockTab))dockTab=tabs[0][0];
@@ -332,6 +332,8 @@ function renderDock(){
   }else if(dockTab==='orders'){h+=ordersHtml(c,P,srcs);
   }else if(dockTab==='missions'){h+=missionsHtml(c,P,srcs);
   }else if(dockTab==='hire'){h+=hireHtml(c,P);}else if(dockTab==='patron'){h+=patronHtml(c,P);}else if(dockTab==='bmjobs'){h+=jbBmHtml(c,P,srcs);}else if(dockTab==='jobs'){h+=jobsHtml(c,P,srcs,hasOrders,hasMis);
+  }else if(dockTab==='bjobs'&&c.ownBase){h+=djHtml(c,P,S.stations[P.sector]);
+  }else if(dockTab==='bco'&&c.ownBase){h+=dcoHtml(P);
   }else if(dockTab==='works'&&!c.haven){h+=worksHtml(c,P,srcs,S.stations[P.sector]);
   }else if(dockTab==='refit'){h+=refitHtml(c,P,srcs);
   }else if(dockTab==='outpost'){

@@ -6732,7 +6732,7 @@ function holdFree(p,P){return Math.max(0,((p&&p.st&&p.st.cargo)||0)-invMass(P.ca
 function csellQuote(P){const r=shipRec(P),parts={};shipStrip(JSON.parse(JSON.stringify(r)),parts);const hull=START_HULLS.includes(r.cls)?0:Math.floor(hullPrice(r.cls)*TRADE_IN),up=Math.floor(invValue(parts)*TRADE_IN);return{hull,up,tot:hull+up,parts,bare:shipBare(P)}}
 // the station screen: five task tabs on one row (keys 1–5, always the same tab for the same number), each with a few views.
 // Docking lands on Overview: what you can do right now. A tab with nothing at this dock is hidden; a dot marks one to act on.
-const DOCK_TOP=[['home','Overview',['home','news']],['trade','Trade',['market','fence','trade','storage']],['jobs','Jobs',['jobs','bmjobs','hire','marks','wanted']],['ship','Ship',['black','ship','bay','upg','refit']],['station','Station',['fab','works','patron','outpost']],['allegiance','Allegiance',['allegiance']]];
+const DOCK_TOP=[['home','Overview',['home','news']],['trade','Trade',['market','fence','trade','storage']],['jobs','Jobs',['jobs','bmjobs','hire','marks','wanted']],['ship','Ship',['black','ship','bay','upg','refit']],['station','Station',['fab','works','bjobs','bco','patron','outpost']],['allegiance','Allegiance',['allegiance']]];
 const dockTopOf=k=>(DOCK_TOP.find(g=>g[2].includes(k))||DOCK_TOP[0])[0];
 function dockTop(i){const T=DOCK_TOP[i];if(!T)return;const G=dockG.find(g=>g[0]===T[0]);if(!G)return;const m=dockSubMem[T[0]];dockTab=G[2].some(t=>t[0]===m)?m:G[2][0][0];dockErr='';renderDock()}
 // Control Markers sell for credits at your own faction's stations and depots (the treasury takes the money)
@@ -6882,7 +6882,7 @@ function renderDock(){
   $('dTitle').textContent=c.name;$('dTitle').style.color=sideCol(c.owner);$('dSub').textContent=c.sub;
   $('dMeta').innerHTML=`<div>Credits<b class="amber">${fmt(P.credits)}</b></div><div>Hold<b>${invMass(P.cargo)}/${p.st.cargo} t</b></div><div>${c.storageName}<b>${invMass(c.storage)} t</b></div>${c.wallet?`<div>${sideName(c.wallet)} treasury<b>${fmt(S.econ.treasury[c.wallet])}</b></div>`:''}`;
   const hasOrders=!S.unb&&c.contracts||(c.wallet&&!!P.sworn&&c.wallet===P.sworn&&S.plans&&S.plans[P.sworn]),hasMis=!!FACTIONS[P.sworn];
-  const tabs=[['home','Overview']];if(!S.unb&&!S.training)tabs.push(['news','News']);if(c.haven)tabs.push(['fence','Fence'],['black','Hulls'],['marks','Marks'],['wanted','Wanted'],['works','Works']);if(c.market)tabs.push(['market','Market']);if(c.rum)tabs.push(['bmk','Black market']);if(!c.haven)tabs.push(['trade','Best runs']);if(hasOrders||hasMis)tabs.push(['jobs','Jobs']);if(!S.unb&&!S.training&&(c.owner==='neutral'||c.rum))tabs.push(['bmjobs','Black market']);tabs.push(['fab','Fabricate'],['upg','Systems']);if(c.refit)tabs.push(['refit','Refits']);if(c.works)tabs.push(['works','Station works']);if(patOK(c,P))tabs.push(['patron','Patronage']);if(hireOK(c,P))tabs.push(['hire','Hire pilots']);if(c.fortify)tabs.push(['outpost','Outpost']);if(!c.haven&&!S.unb)tabs.push(['ship','Shipyard']);tabs.push(['storage',c.storageName]);if(c.lair){}else if(c.storage===P.vault&&!S.unb)tabs.push(['bay',`Hangar ${shipsCount(P)}/${BAY_MAX}`]);
+  const tabs=[['home','Overview']];if(!S.unb&&!S.training)tabs.push(['news','News']);if(c.haven)tabs.push(['fence','Fence'],['black','Hulls'],['marks','Marks'],['wanted','Wanted'],['works','Works']);if(c.market)tabs.push(['market','Market']);if(c.rum)tabs.push(['bmk','Black market']);if(!c.haven)tabs.push(['trade','Best runs']);if(hasOrders||hasMis)tabs.push(['jobs','Jobs']);if(!S.unb&&!S.training&&(c.owner==='neutral'||c.rum))tabs.push(['bmjobs','Black market']);tabs.push(['fab','Fabricate'],['upg','Systems']);if(c.refit)tabs.push(['refit','Refits']);if(c.works)tabs.push(['works',c.ownBase?'Works':'Station works']);if(c.ownBase)tabs.push(['bjobs','Jobs'],['bco','Company']);if(patOK(c,P))tabs.push(['patron','Patronage']);if(hireOK(c,P))tabs.push(['hire','Hire pilots']);if(c.fortify)tabs.push(['outpost','Outpost']);if(!c.haven&&!S.unb)tabs.push(['ship','Shipyard']);tabs.push(['storage',c.storageName]);if(c.lair){}else if(c.storage===P.vault&&!S.unb)tabs.push(['bay',`Hangar ${shipsCount(P)}/${BAY_MAX}`]);
   if(!S.unb&&(!S.training||S.training.by))tabs.push(['allegiance','Allegiance']);
   if(dockTab==='orders'||dockTab==='missions')dockTab='jobs';
   if(!tabs.some(t=>t[0]===dockTab))dockTab=tabs[0][0];
@@ -6978,6 +6978,8 @@ function renderDock(){
   }else if(dockTab==='orders'){h+=ordersHtml(c,P,srcs);
   }else if(dockTab==='missions'){h+=missionsHtml(c,P,srcs);
   }else if(dockTab==='hire'){h+=hireHtml(c,P);}else if(dockTab==='patron'){h+=patronHtml(c,P);}else if(dockTab==='bmjobs'){h+=jbBmHtml(c,P,srcs);}else if(dockTab==='jobs'){h+=jobsHtml(c,P,srcs,hasOrders,hasMis);
+  }else if(dockTab==='bjobs'&&c.ownBase){h+=djHtml(c,P,S.stations[P.sector]);
+  }else if(dockTab==='bco'&&c.ownBase){h+=dcoHtml(P);
   }else if(dockTab==='works'&&!c.haven){h+=worksHtml(c,P,srcs,S.stations[P.sector]);
   }else if(dockTab==='refit'){h+=refitHtml(c,P,srcs);
   }else if(dockTab==='outpost'){
@@ -16576,7 +16578,7 @@ function coPrevBox(F){const D=BM_DESIGNS.find(x=>x.id===F.design)||BM_DESIGNS[0]
 {const o=renderCompany;renderCompany=function(){const r=o.apply(this,arguments);try{if(coTab==='profile'&&S&&!S.unb&&!$('company').hidden){const b=$('coBody');if(b&&!$('coPrevBox'))b.insertAdjacentHTML('afterbegin',coPrevBox(coFormOf(S.player)))}}catch(e){console.error(e)}return r}}
 {const o=coClick;coClick=function(act,arg){if(act==='coprevk'){CPV.k=arg==='depot'?'depot':'station';renderCompany();return}return o.apply(this,arguments)}}
 function coPrevMesh(F){const R=CPV.k==='depot'?{design:F.design,pst:0}:{design:F.design,pst:1,bld:['market','hangar','defence','storage','yard']};return bmBase(R,'co:'+coHueCol(F.hue)).core}
-function coPrevDraw(){const cv=$('coPrev'),co=$('company');if(!cv||!co||co.hidden||coTab!=='profile'||!S||!S.player||!bmReady()||!SCN||!SCN.sun)return;const w=cv.width,h=cv.height;if(glc.width<w||glc.height<h)return;
+function coPrevDraw(){const cv=$('coPrev'),co=$('company'),dk=$('dock'),inCo=co&&!co.hidden&&coTab==='profile',inDock=dk&&!dk.hidden&&dockTab==='bco';if(!cv||!(inCo||inDock)||!S||!S.player||!bmReady()||!SCN||!SCN.sun)return;const w=cv.width,h=cv.height;if(glc.width<w||glc.height<h)return;
   const F=coFormOf(S.player),m=coPrevMesh(F);if(!m||!m.data)return;if(m._pr==null){let r=0;for(let i=0;i<m.data.length;i+=10)r=Math.max(r,Math.hypot(m.data[i],m.data[i+1],m.data[i+2]));m._pr=r||100}
   const r=m._pr,d=r*2.3,ex=0,ey=r*.75,ez=d,fl=Math.hypot(ex,ey,ez),f=[-ex/fl,-ey/fl,-ez/fl];let s=[f[1]*0-f[2]*1,f[2]*0-f[0]*0,f[0]*1-f[1]*0];const sl=Math.hypot(...s);s=s.map(v=>v/sl);const u=[s[1]*f[2]-s[2]*f[1],s[2]*f[0]-s[0]*f[2],s[0]*f[1]-s[1]*f[0]];
   const Vv=new Float32Array([s[0],u[0],-f[0],0,s[1],u[1],-f[1],0,s[2],u[2],-f[2],0,-(s[0]*ex+s[1]*ey+s[2]*ez),-(u[0]*ex+u[1]*ey+u[2]*ez),f[0]*ex+f[1]*ey+f[2]*ez,1]);
@@ -16605,7 +16607,15 @@ function djHtml(c,P,R){const F=pjForm,goods=['fe','cu','ir','au','nu','xc','plat
   const k=pkeyOf(P),L=pjList().filter(j=>j.pid===k&&j.sid===R.sid).slice(-8).reverse();
   if(L.length)h+=`<div class="tblw" style="margin-top:10px"><table class="t"><thead><tr><th>Posted here</th><th>Status</th><th class="r">Fee</th><th></th></tr></thead><tbody>${L.map(j=>`<tr><td class="iname" style="white-space:normal">${esc(pjTitle(j))}</td><td style="white-space:normal">${j.state==='open'?`waiting for a taker (${fmtT(Math.max(0,j.claimAt-S.T))})`:j.state==='taken'?`${esc(j.who||'a pilot')} on it`:esc(j.msg||j.state)}</td><td class="r num">${fmt(j.bid||0)}</td><td>${j.state==='open'?`<button class="btn sm" type="button" data-act="pjcancel" data-arg="${j.id}">Withdraw</button>`:''}</td></tr>`).join('')}</tbody></table></div>`;
   return h}
-{const o=worksHtml;worksHtml=function(c,P,srcs,R){let h=o.apply(this,arguments);try{if(R&&R.owner==='player'&&(R.pid||'me')===pkeyOf(P)&&!S.unb)h+=djHtml(c,P,R)}catch(e){console.error(e)}return h}}
+// (user, 9 Nov 2026: "make the jobs and the works two different tabs under Station; also need access to the company profile
+// tab, just call it Company") at your own base the Station tab has Works, Jobs (posting, this file) and Company (the profile,
+// as on the Company screen, with the base design turning beside it)
+{const o=dockCtx;dockCtx=function(){const c=o.apply(this,arguments);try{const P=S.player,R=c&&c.kind==='station'&&S.stations[P.sector];if(R&&R.owner==='player'&&(R.pid||'me')===pkeyOf(P)&&!S.unb)c.ownBase=true}catch(e){}return c}}
+function dcoHtml(P){return`<div id="dcoBody">${coPrevBox(coFormOf(P))}${coProfHtml(P)}</div>`}
+// the profile's buttons are the Company screen's (data-co): run them here and redraw the dock
+$('dock').addEventListener('click',e=>{const b=e.target.closest('#dcoBody [data-co]');if(!b||b.disabled)return;e.preventDefault();e.stopPropagation();coErr='';coClick(b.dataset.co,b.dataset.arg||'');dockErr=coErr||'';renderDock()},true);
+{const o=renderDock;renderDock=function(){try{const a=document.activeElement,el=$('dock');if(a&&el&&el.contains(a)&&(a.tagName==='TEXTAREA'||(a.tagName==='INPUT'&&!['button','submit','checkbox','radio'].includes(a.type))))return}catch(e){}
+  const r=o.apply(this,arguments);try{if(dockTab==='bco'&&$('dcoBody')){const P=S.player,nm=$('coNm');if(nm)nm.addEventListener('input',ev=>{coFormOf(P).name=ev.target.value});const hu=$('coHue');if(hu){hu.addEventListener('change',ev=>{coFormOf(P).hue=+ev.target.value;hu.blur();renderDock()});hu.addEventListener('input',ev=>{const sw=hu.previousElementSibling;if(sw)sw.style.background=coHueCol(+ev.target.value)})}}}catch(e){console.error(e)}return r}}
 {const o=dockClick;dockClick=function(act,arg){if(act==='pjf'){const[k,v]=String(arg).split(':');pjForm[k]=k==='n'?Math.max(1,(pjForm.n||0)+(+v)):v;renderDock();return}return o.apply(this,arguments)}}
 
 //@src 16zzzzb_depminers.js
