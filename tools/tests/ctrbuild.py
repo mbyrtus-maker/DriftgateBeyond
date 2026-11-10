@@ -28,6 +28,10 @@ async def main():
       p.x=L.x+1500;p.y=L.y;p.z=L.z;p.vx=p.vy=p.vz=0;const t=targetables().find(x=>x.kind==='lair'&&x.ref===L);W.tgt=t;hudUpdate();const panel=$('hTgt').textContent;const d0=d3(p,L);apOn=false;toggleAutopilot();for(let i=0;i<900;i++)step(1/60);running=false;
       const d1=d3(p,L);hudUpdate();return JSON.stringify({pb,tg:!!t,panel:panel.slice(0,120),d0:Math.round(d0),d1:Math.round(d1),prompt:$('hPrompt').textContent})})()"""))
     check('once built the Lair is a target with a panel, and the autopilot flies there',r['tg'] and 'Your Lair' in r['panel'] and r['d1']<r['d0'],r)
+    r=json.loads(await ev("""(()=>{const P=S.player,sta=()=>ctrBuildOpts().find(o=>o.k==='ctrsta').l,out={};const sv=P.vaultAt,R0=myDepots(P).filter(R=>!R.pst);
+      if(!R0.length)out.noDep=sta();devLedger(()=>{P.vaults=P.vaults||{};const k=Object.keys(S.stations).find(id=>S.stations[id].owner==='neutral');(P.vaults[k]=P.vaults[k]||{}).kit_station=1;out.k=k});out.hang=sta();
+      devLedger(()=>{inv.take(P.vaults[out.k],'kit_station',1)});return JSON.stringify(out)})()"""))
+    check("the Station line says what's missing: a Depot first, or a Station Kit left in a hangar",(r.get('noDep') is None or 'Depot first' in r['noDep']) and ('hangar at' in r['hang'] or 'Depot first' in r['hang']),r)
     l=await ev(LED);check('ledger exact',l=='exact',l)
     check('no errors',not errs,errs[:3])
     print('ALL OK' if not bad else 'FAILED: '+', '.join(bad))

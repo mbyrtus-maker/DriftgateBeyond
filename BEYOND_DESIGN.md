@@ -3648,3 +3648,13 @@ The user: "why can't we hire heavy fighters? Is that a limitation somewhere for 
 hard-coded list of 8 hulls in three hire screens. Now one list, `CREW_HULLS` (16o_depots.js): the three miners, the three
 haulers, Light, Medium and Heavy Fighters, Bombers and Heavy Bombers. Your Contractor Rating gates each as before (Heavy
 Fighter and Bomber 4, Heavy Bomber 6). Combat hulls start as guards. Scouts stay off: no crew job uses them. Test: baserun.py.
+
+### The Station line says what's missing (9 Nov 2026)
+The user: "I have a station kit but cannot build a station, I have setup my company properly." A Station Kit works (checked:
+company set, a Depot, the kit in the hold, O → Upgrade → done), but the build menu only said "fly to your Depot's system".
+The three things that stop it are now named on the line (`ctrStaWhy`, `kitWhere` in 16zzzx_contractor.js):
+- no Depot yet: "you need a Depot first: a Station grows from one" (a Lair becomes a Depot with a Depot Kit);
+- the kit waiting in a hangar: a kit bought outside a Heavy Hauler goes to that station's hangar, and the line names the
+  station and says to carry it in a Heavy Hauler;
+- elsewhere with the kit: "fly to <your Depot>".
+Test: ctrbuild.py.

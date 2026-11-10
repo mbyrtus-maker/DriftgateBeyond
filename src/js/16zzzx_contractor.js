@@ -18,8 +18,8 @@ function ctrBuildOpts(){const P=S.player,O=[];let sp;try{sp=lairSpot(P)}catch(e)
   O.push({k:'ctrlair',l:`Build a Lair here${sp.why?` · ${sp.why}`:''}`,off:!!(sp.why||!sp.a)&&!(sp.a&&(P.cargo.kit_lair||0)>0)});
   const can=depCan(W.sid),kit=kitOr(DEP.cost,[P.cargo],'kit_depot');O.push({k:'ctrdep',l:`Build a Depot here${!can?' · not in a system with a station or in a power\'s home space':!kit?' · needs a Depot Kit in your hold (one purchase on a station\'s Market)':''}`,off:!can||!kit});
   const R=S.stations[W.sid],mine=R&&R.owner==='player'&&(R.pid||'me')===pkeyOf(P);
-  if(mine&&!R.pst){const k2=kitOr(STA.cost,[P.cargo,R.stock],'kit_station');O.push({k:'ctrsta',l:`Upgrade ${R.name} to a Station${k2?'':' · needs a Station Kit (in your hold or its store)'}`,off:!k2})}
-  else O.push({k:'ctrsta',l:mine?`${R.name} is already a Station`:'Upgrade your Depot to a Station · fly to your Depot\'s system',off:true});
+  if(mine&&!R.pst){const k2=kitOr(STA.cost,[P.cargo,R.stock],'kit_station');O.push({k:'ctrsta',l:`Upgrade ${R.name} to a Station${k2?'':(w=>w.length?` · your Station Kit is in your hangar at ${w.join(', ')}: bring it here in a Heavy Hauler`:' · needs a Station Kit (in your hold or its store)')(kitWhere(P,'kit_station'))}`,off:!k2})}
+  else O.push({k:'ctrsta',l:mine?`${R.name} is already a Station`:`Upgrade a Depot to a Station · ${ctrStaWhy(P)}`,off:true});
   O.push({k:'help',l:'Distress: send help to me'});return O}
 {const o=cmOpts;cmOpts=function(T){if(ctrOnly()&&W&&T===W.player)return ctrBuildOpts();return o.apply(this,arguments)}}
 {const o=cmDo;cmDo=function(k,T){if(k==='ctrlair'){const m=lairBuildB();if(m)flash(m,!String(m).startsWith('✓'));return}
@@ -43,3 +43,12 @@ function myLairsHere(){if(!W||!S)return[];const k=curPid()||'me';return(S.lairs|
 // second, which replaced the box you were typing in. While a box or slider on it has the focus, the redraw waits; it runs
 // again as soon as you click elsewhere (any button)
 {const o=renderCompany;renderCompany=function(){try{const a=document.activeElement,el=$('company');if(a&&el&&el.contains(a)&&(a.tagName==='TEXTAREA'||a.tagName==='SELECT'||(a.tagName==='INPUT'&&!['button','submit','checkbox','radio'].includes(a.type))))return}catch(e){}return o.apply(this,arguments)}}
+
+// (user, 9 Nov 2026: "I have a station kit but cannot build a station") say what's missing: a Station grows from your Depot,
+// in its system, with the kit in your hold or the Depot's store; a kit bought outside a Heavy Hauler waits in that hangar
+function kitWhere(P,kid){const L=[];const add=(sid,n)=>{if(n>0&&DEF[sid])L.push(S.stations[sid]?S.stations[sid].name:DEF[sid].name)};
+  if(P.vaultAt&&P.vault)add(P.vaultAt,P.vault[kid]||0);for(const k in P.vaults||{}){const sid=vaultSid(k);if(sid&&sid!==P.vaultAt)add(sid,(P.vaults[k]||{})[kid]||0)}return L}
+function ctrStaWhy(P){const D=myDepots(P).filter(R=>!R.pst);if(!D.length)return myStations(P).length?'your Depots are all Stations already':'you need a Depot first: a Station grows from one (a Lair becomes a Depot with a Depot Kit)';
+  const at=D.map(R=>R.name).join(', '),kit=(P.cargo.kit_station||0)>0||D.some(R=>(R.stock.kit_station||0)>0),w=kitWhere(P,'kit_station');
+  if(!kit&&w.length)return`your Station Kit is in your hangar at ${w.join(', ')}: carry it to ${at} in a Heavy Hauler`;
+  return`fly to ${at}${kit?'':' with a Station Kit'}`}
