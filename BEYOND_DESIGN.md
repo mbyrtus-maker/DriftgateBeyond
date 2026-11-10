@@ -3716,3 +3716,8 @@ parts it covers, the user chose everything buildable, systems included.
     `brand:N`, never `maker` (no corporation's sales or R&D touch them).
   - An installed brand system is recorded as `P.sysm[slot]='bp<N>'`, and `sysTr` reads its traits from the brand.
 - Player-only stats (AI ships' systems are unbranded), so no war check.
+
+### Allegiance → Your company in the company's colour (9 Nov 2026)
+The user: "Under 'Your Company' the logo shows but it's not in the hue that was selected." The box read `P.co.hue` and
+`P.co.name`, but the colour and name live on the brand record (`S.brands`). It now uses `coCol` and `brName`, like the
+rest of the game. Test: profile.py.

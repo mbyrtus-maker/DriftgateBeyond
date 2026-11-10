@@ -37,6 +37,8 @@ async def main():
     check('a crew hired at it is paid from the treasury, not your credits',r['crew']==1 and r['cr']==0 and r['tr']<0,r)
     r=json.loads(await ev("""(()=>{const P=S.player,w=P.co.w,t0=S.econ.treasury[w],c0=P.credits;const a=coTreas(P,'in:10000'),t1=S.econ.treasury[w];const b=coTreas(P,'out:all');return JSON.stringify({a,b,dep:t1-t0,back:P.credits-c0,left:S.econ.treasury[w]})})()"""))
     check('Deposit and Withdraw move credits between you and the treasury',r['dep']==10000 and r['left']==0,r)
+    r=json.loads(await ev("""(()=>{const P=S.player,col=coCol(pkeyOf(P)),h=allegianceHtml(P);return JSON.stringify({col,inLogo:h.includes(col),nm:brName(brSlot(P)),hasNm:h.includes(esc(brName(brSlot(P))))})})()"""))
+    check("Allegiance → Your company draws the logo and name in the company's chosen colour",r['inLogo'] and r['hasNm'],r)
     l=await ev(LED);check('ledger exact at the end',l=='exact',l)
     check('no errors',not errs,errs[:3])
     print('ALL OK' if not bad else 'FAILED: '+', '.join(bad))
