@@ -3507,3 +3507,10 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 - **Fix:** while a text box, list or slider on the Company screen has the focus, the redraw waits. It resumes the moment you click a button or anywhere else.
 - **Covers:** the profile name, the brand designer and any other box there.
 - **Checked:** typing a full name at a normal pace, with the screen open for several seconds, keeps every letter and the cursor.
+
+### The base design shown on the Profile tab (user, 9 Nov 2026)
+"On the base design need to show the selected design (and spin it animation) on the right side."
+- **The preview:** the Company screen's Profile tab shows the chosen base design on its right, turning slowly, in the chosen colour, with the design's name and description.
+- **Station or Depot:** a toggle shows it as a Station (with five buildings) or a Depot.
+- **How it's drawn:** by the game's own renderer, into a corner of its canvas at the start of each frame. It is copied to the preview and then painted over by the frame, so nothing shows on the main view.
+- **Code:** `16zzzy_coprev.js`.
