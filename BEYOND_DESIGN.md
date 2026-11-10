@@ -3570,3 +3570,12 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 - **What was left:** a depot's store modules added a flat amount of ore every tick on top, miners or not. That bonus now also goes through the roster (scaled by its work), so a depot with no miners gets no ore at all.
 - **Your own depots:** see "Your Depot's miners" above.
 - **Not changed:** the freeports (not depots) still keep their flat extraction.
+
+### Dev menu: fly any faction's hulls (user, 9 Nov 2026)
+"On the cheat menu you should be able to select a faction and then a hull, so you can fly all the ships in the game as a developer."
+- **The picker:** the dev menu's ship row has a faction picker (Halcyon, Varkesh, Ostrova, the Unbound) before the hull list.
+- **What each lists:** a power lists every hull a yard builds and the Wraith, in its design, plus its signature hull (Gannet, Bombard, Vesper). The Unbound lists the Raider, Corsair, Plunderer, Skiff and Wraith.
+- **Flying one:** sets your ship's faction (its look, its design's stats and its names) to the one picked.
+- **Multiplayer:** works for guests too (the host applies it).
+- **Code:** `16zzzzc_devhulls.js`.
+- **Checked:** the Bombard, Corsair, Gannet, Vesper, Ostrova Heavy Hauler and Unbound Skiff each fly, and the ledger stays exact.
