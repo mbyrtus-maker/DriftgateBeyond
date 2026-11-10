@@ -3462,3 +3462,6 @@ The user's answers to the proposal above: "1 should have their own category call
   - Launching tops up a bay that isn't full (host, single player, and a guest's launch on the host), on the same terms as the rearm: your own drones from hold or vault first, then drones the station builds, at their price.
   - If the station can't build them, you're told the bay is short.
 - **Test:** `scoutrig.py`.
+
+### The Lair build order says what it does (user, 9 Nov 2026)
+Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms (I) → Command → the order on yourself, or from the Company screen (0) → Holdings → Build a Lair here. For a pilot not sworn to a power, that Comms order was labelled "Request a depot here" although it builds a Lair. It now reads "Build a Lair here (Lair Kit or its makings in your hold)".
