@@ -28,7 +28,7 @@ function rdGid(id,g){return g>1?`${id}_g${g}`:id}
       ITEMS[gid]={name:`${I.name} G${g}`,recipe:rc,col:I.col,part:I.part,maker:m,grade:g,base:id,tr:I.tr,trTxt:I.trTxt};ITEM_ORDER.push(gid);(MK_ITEMS[I.part]=MK_ITEMS[I.part]||[]).push(gid)}}
   // systems as parts: the makers' lines, and the unbranded systems ships come with
   const SYSN={engine:'drive',power:'reactor',shield:'shield emitter',weapon:'fire control',armor:'armour',drill:'blast rig',cargo:'cargo hold',payload:'payload bay'};
-  for(const sl in SYS_LINES){for(let g=1;g<=5;g++){const id=`sy_${sl}`,gid=rdGid(id,g);ITEMS[gid]={name:`${SLOT[sl].name} G${g} (unbranded)`,recipe:compInv(sl,g),col:'#9fb3d8',sys:sl,grade:g,base:id,trTxt:'Unbranded: the system a ship came with.'};ITEM_ORDER.push(gid)}
+  for(const sl in SYS_LINES){for(let g=1;g<=5;g++){const id=`sy_${sl}`,gid=rdGid(id,g);ITEMS[gid]={name:`Standard ${SLOT[sl].name} G${g}`,recipe:compInv(sl,g),col:'#9fb3d8',sys:sl,grade:g,base:id,trTxt:'Unbranded: the system a ship came with.'};ITEM_ORDER.push(gid)}
     for(const m of SYS_LINES[sl]){const id=`sy_${m}_${sl}`;for(let g=1;g<=5;g++){const gid=rdGid(id,g);ITEMS[gid]={name:`${MAKERS[m].short} ${SYSN[sl]}${g>1?' G'+g:''}`,recipe:compInv(sl,g),col:'#9fb3d8',sys:sl,grade:g,base:id,maker:m,tr:{},trTxt:`${MAKERS[m].name}: ${SYSN[sl]}, grade ${g}.`};ITEM_ORDER.push(gid)}
       MK_LINE[m].push(id);CE_DEF.it[id]={name:ITEMS[id].name,tr:{}}}}
   for(const m in MK_LINE)for(const id of MK_LINE[m])for(let g=2;g<=5;g++){const gid=rdGid(id,g);if(ITEMS[gid]&&!CE_DEF.it[gid])CE_DEF.it[gid]={name:ITEMS[gid].name,tr:ITEMS[gid].tr||{}}}})();

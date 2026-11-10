@@ -2,7 +2,7 @@
 // ============================================================ Beyond: standard parts and systems at every station (user, 9 Nov 2026)
 // "I'm docked at Mirrorwater and standard parts aren't available. Standard parts should start at all stations with all systems
 // with some stock." This reverses part of 3 Nov 2026 ("markets sell only corporations' parts"): the makers' parts stay, and
-// beside them every power's and freeport's market now starts with STD.part of each standard (unbranded) part and STD.sys of
+// beside them every power's and freeport's market now starts with STD.part of each standard part and STD.sys of
 // each standard grade 1 system, and keeps them: every STD.every seconds a station short of one builds it from its own store
 // (as the powers build plate and conduit), so the ledger stays exact. A save from before gets the starting stock once (the
 // ledger is rebased then, as at a new galaxy's start).

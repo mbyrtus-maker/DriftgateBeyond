@@ -3337,3 +3337,8 @@ Built as the revised proposal says (`16zzzq_components.js`, `tools/tests/compone
 - Every 10 minutes a station short of one builds it from its own store (turning its own ore into plate, conduit or coil when needed); a power's depot that can't falls back on its power's warehouse, which spends ore only above the 80 Ferrite and 80 Cuprite the powers keep. Depots built during the game start empty and fill as goods allow (about three quarters of the kinds on the shelf two hours in).
 - A save from before gets the starting stock once on load (the ledger is rebased then, as at a new galaxy's start). The ledger stays exact otherwise.
 - Test: `tools/tests/stdparts.py`.
+
+### Names and the Jobs sort (user, 9 Nov 2026)
+- The systems ships come with are called "Standard Drive G1", "Standard Reactor G2" and so on ("remove (unbranded), just call it standard").
+- The weapons system is called **Fire Control** ("'Weapons' part should probably be Fire Control"); makers' versions follow (e.g. "Hold Foundry Fire Control"). The Market's Weapons category (guns, lasers, launchers) keeps its name.
+- Jobs: the Sort button sits at the top of the job list, above the pay column, instead of at the far end of the kind filters.

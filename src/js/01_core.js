@@ -152,7 +152,7 @@ function invMass(o){let m=0;for(const k in o)m+=mass(k)*o[k];return m}
 function invValue(o){let v=0;for(const k in o)v+=baseValue(k)*o[k];return v}
 const SLOTS=[
   {id:'engine',name:'Drive',base:{plate:2,wire:2}},{id:'power',name:'Reactor',base:{plate:1,wire:2}},
-  {id:'shield',name:'Shield Emitter',base:{plate:1,wire:2}},{id:'weapon',name:'Weapons',base:{plate:1,wire:2}},
+  {id:'shield',name:'Shield Emitter',base:{plate:1,wire:2}},{id:'weapon',name:'Fire Control',base:{plate:1,wire:2}},
   {id:'armor',name:'Armor',base:{plate:3}},{id:'drill',name:'Blast Rig',base:{plate:1,wire:1}},{id:'cargo',name:'Cargo Hold',base:{plate:2}},{id:'payload',name:'Payload Bay',base:{}},
 ];
 const SLOT={};SLOTS.forEach(s=>SLOT[s.id]=s);

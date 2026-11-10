@@ -811,7 +811,7 @@ function invMass(o){let m=0;for(const k in o)m+=mass(k)*o[k];return m}
 function invValue(o){let v=0;for(const k in o)v+=baseValue(k)*o[k];return v}
 const SLOTS=[
   {id:'engine',name:'Drive',base:{plate:2,wire:2}},{id:'power',name:'Reactor',base:{plate:1,wire:2}},
-  {id:'shield',name:'Shield Emitter',base:{plate:1,wire:2}},{id:'weapon',name:'Weapons',base:{plate:1,wire:2}},
+  {id:'shield',name:'Shield Emitter',base:{plate:1,wire:2}},{id:'weapon',name:'Fire Control',base:{plate:1,wire:2}},
   {id:'armor',name:'Armor',base:{plate:3}},{id:'drill',name:'Blast Rig',base:{plate:1,wire:1}},{id:'cargo',name:'Cargo Hold',base:{plate:2}},{id:'payload',name:'Payload Bay',base:{}},
 ];
 const SLOT={};SLOTS.forEach(s=>SLOT[s.id]=s);
@@ -12332,9 +12332,11 @@ const all=jobsList(c,P,srcs,hasOrders,hasMis).filter(j=>JB_BM===(String(j.id).st
   const L=all.filter(j=>jobFilter==='all'||j.ty===jobFilter).sort((a,b)=>(jobRank(a,P)-jobRank(b,P))||(b.pin||0)-(a.pin||0)||(!!a.need-!!b.need)||(jobSort==='dist'?(a.hops-b.hops)||(b.payN-a.payN):((b.ok?1:0)-(a.ok?1:0))||(b.payN-a.payN)));
   JOBS_LAST=all;for(const j of L)jobOpenBtns(j);
   if(!L.some(j=>j.id===jobSel))jobSel=L.length?L[0].id:null;const sel=L.find(j=>j.id===jobSel);
-  let h=`<div class="coviews">${[['all','All'],...Object.entries(JOB_TY)].map(([k,n])=>`<button class="cov${jobFilter===k?' on':''}" type="button" data-act="jfil" data-arg="${k}" aria-pressed="${jobFilter===k}">${n} ${cnt(k)}</button>`).join('')}<span style="flex:1"></span><button class="cov" type="button" data-act="jsort" data-arg="${jobSort==='pay'?'dist':'pay'}">Sort: ${jobSort==='pay'?'Pay':'Distance'} ▾</button></div>`;
+  let h=`<div class="coviews">${[['all','All'],...Object.entries(JOB_TY)].map(([k,n])=>`<button class="cov${jobFilter===k?' on':''}" type="button" data-act="jfil" data-arg="${k}" aria-pressed="${jobFilter===k}">${n} ${cnt(k)}</button>`).join('')}</div>`;
   if(!L.length)h+=`<div class="empty">${all.length?'No jobs of this kind right now. Try All.':'No jobs posted here right now. Contracts come every minute or so, and command posts orders with each campaign move.'}</div>`;
   else{h+=`<div class="cowrap jb2"><div class="colist">`;
+    // (user, 9 Nov 2026) the sort sits at the top of the list, above the pay the jobs offer
+    h+=`<div class="jsorthd" style="display:flex;justify-content:flex-end;padding:0 10px 4px"><button class="cov" type="button" data-act="jsort" data-arg="${jobSort==='pay'?'dist':'pay'}">Sort: ${jobSort==='pay'?'Pay':'Distance'} ▾</button></div>`;
     for(const j of L){const col=j.by?sideCol(j.by):j.pin?'#f0b24a':'#8c91a5',iss=jbIssuer(j),on=j.id===jobSel;
       h+=`<button class="corow jrow2${on?' on':''}${j.need?' dim':''}" type="button" data-act="jsel" data-arg="${j.id}"><svg width="20" height="20" viewBox="0 0 30 30" aria-hidden="true"><polygon points="${JB_SH[j.pin?'camp':j.ty]||JB_SH.haul}" fill="none" stroke="${col}" stroke-width="2.2"/></svg><span style="min-width:0"><b class="cosub" style="font-weight:600">${j.title}</b><span class="note cosub" style="margin:0">${iss?`<span style="color:${col}">${esc(iss)}</span> · `:''}${j.need?`<span style="color:var(--amber)">${esc(j.need)}</span>`:`<span${j.ok?' style="color:#7ad9a7"':''}>${j.sub}</span>`}</span></span><span class="note jw" style="margin:0;white-space:nowrap">${jobIsMine(j)?'<span style="color:#7ad9a7">✓ yours</span> · ':''}${j.where||''}</span><span class="cost mono" style="color:var(--ivory,#ece4cf)">${j.pay}</span></button>`}
     if(c&&c.owner==='neutral'&&!P.sworn&&!S.unb){const hid=FAC_IDS.filter(f=>standOf(f,P)<STAND.dock);if(hid.length)h+=`<div class="coln" style="border:0;color:var(--dim)"><span class="cdot" style="background:#ff9a4a"></span>${hid.map(f=>esc(FACTIONS[f].short)).join(', ')} jobs hidden: your standing is ${standName(Math.min(...hid.map(f=>standOf(f,P))))}</div>`}
@@ -14617,7 +14619,7 @@ function rdGid(id,g){return g>1?`${id}_g${g}`:id}
       ITEMS[gid]={name:`${I.name} G${g}`,recipe:rc,col:I.col,part:I.part,maker:m,grade:g,base:id,tr:I.tr,trTxt:I.trTxt};ITEM_ORDER.push(gid);(MK_ITEMS[I.part]=MK_ITEMS[I.part]||[]).push(gid)}}
   // systems as parts: the makers' lines, and the unbranded systems ships come with
   const SYSN={engine:'drive',power:'reactor',shield:'shield emitter',weapon:'fire control',armor:'armour',drill:'blast rig',cargo:'cargo hold',payload:'payload bay'};
-  for(const sl in SYS_LINES){for(let g=1;g<=5;g++){const id=`sy_${sl}`,gid=rdGid(id,g);ITEMS[gid]={name:`${SLOT[sl].name} G${g} (unbranded)`,recipe:compInv(sl,g),col:'#9fb3d8',sys:sl,grade:g,base:id,trTxt:'Unbranded: the system a ship came with.'};ITEM_ORDER.push(gid)}
+  for(const sl in SYS_LINES){for(let g=1;g<=5;g++){const id=`sy_${sl}`,gid=rdGid(id,g);ITEMS[gid]={name:`Standard ${SLOT[sl].name} G${g}`,recipe:compInv(sl,g),col:'#9fb3d8',sys:sl,grade:g,base:id,trTxt:'Unbranded: the system a ship came with.'};ITEM_ORDER.push(gid)}
     for(const m of SYS_LINES[sl]){const id=`sy_${m}_${sl}`;for(let g=1;g<=5;g++){const gid=rdGid(id,g);ITEMS[gid]={name:`${MAKERS[m].short} ${SYSN[sl]}${g>1?' G'+g:''}`,recipe:compInv(sl,g),col:'#9fb3d8',sys:sl,grade:g,base:id,maker:m,tr:{},trTxt:`${MAKERS[m].name}: ${SYSN[sl]}, grade ${g}.`};ITEM_ORDER.push(gid)}
       MK_LINE[m].push(id);CE_DEF.it[id]={name:ITEMS[id].name,tr:{}}}}
   for(const m in MK_LINE)for(const id of MK_LINE[m])for(let g=2;g<=5;g++){const gid=rdGid(id,g);if(ITEMS[gid]&&!CE_DEF.it[gid])CE_DEF.it[gid]={name:ITEMS[gid].name,tr:ITEMS[gid].tr||{}}}})();
@@ -16192,7 +16194,7 @@ function cmpFitDelta(R){const d={};const sub=(o,s)=>{for(const k in s)d[k]=(d[k]
 // ============================================================ Beyond: standard parts and systems at every station (user, 9 Nov 2026)
 // "I'm docked at Mirrorwater and standard parts aren't available. Standard parts should start at all stations with all systems
 // with some stock." This reverses part of 3 Nov 2026 ("markets sell only corporations' parts"): the makers' parts stay, and
-// beside them every power's and freeport's market now starts with STD.part of each standard (unbranded) part and STD.sys of
+// beside them every power's and freeport's market now starts with STD.part of each standard part and STD.sys of
 // each standard grade 1 system, and keeps them: every STD.every seconds a station short of one builds it from its own store
 // (as the powers build plate and conduit), so the ledger stays exact. A save from before gets the starting stock once (the
 // ledger is rebased then, as at a new galaxy's start).
