@@ -24,6 +24,10 @@ async def main():
     check('O opens the Command page with Lair, Depot and Station building and the distress call',r['open'] and any('Lair' in x for x in r['L']) and any('Depot here' in x for x in r['L']) and any('Station' in x for x in r['L']),r)
     check('with a Lair Kit near a big rock, picking it builds the Lair',r['lair']==1,r)
     check('the Depot (with a Depot Kit) asks for the company profile first',not r['off'] and 'profile' in r['msg'].lower(),r)
+    r=json.loads(await ev("""(()=>{const P=S.player,L=myLairsHere()[0];const p=W.player;hudUpdate();const pb=$('hPrompt').textContent;S.T=L.build+1;for(let i=0;i<3;i++){S.T+=1;strategicTick()}running=true;
+      p.x=L.x+1500;p.y=L.y;p.z=L.z;p.vx=p.vy=p.vz=0;const t=targetables().find(x=>x.kind==='lair'&&x.ref===L);W.tgt=t;hudUpdate();const panel=$('hTgt').textContent;const d0=d3(p,L);apOn=false;toggleAutopilot();for(let i=0;i<900;i++)step(1/60);running=false;
+      const d1=d3(p,L);hudUpdate();return JSON.stringify({pb,tg:!!t,panel:panel.slice(0,120),d0:Math.round(d0),d1:Math.round(d1),prompt:$('hPrompt').textContent})})()"""))
+    check('once built the Lair is a target with a panel, and the autopilot flies there',r['tg'] and 'Your Lair' in r['panel'] and r['d1']<r['d0'],r)
     l=await ev(LED);check('ledger exact',l=='exact',l)
     check('no errors',not errs,errs[:3])
     print('ALL OK' if not bad else 'FAILED: '+', '.join(bad))

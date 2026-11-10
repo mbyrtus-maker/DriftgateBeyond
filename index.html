@@ -3337,7 +3337,7 @@ function commsUpdate(){const P=S.player,dl=Math.max(0,(P.distT||0)-S.T),fc=W.fla
   // (user, 9 Nov 2026) the order keys (join operation, take, next, drop order) show only once you fly for a power or have
   // declared your own faction; a contractor with a selected job sees Drop job
   const K=(k,l,w)=>`<div${w?' class="wait"':''}><kbd>${k}</kbd>${l}</div>`;
-  $('cKeys').innerHTML=K('U',dl>0?`Distress ${Math.ceil(dl)}s`:'Distress',dl>0)+K('I','Comms menu')+K('Y','Assist friendly')+(()=>{const P=S.player,dk=kb('ordDrop')==='Backspace'?'⌫':kb('ordDrop');if(P.sworn||P.decl)return K('O','Join operation')+K('P','Take order')+K('⇧P','Next order')+K(dk,'Drop order');return K('O','Build here: Lair, Depot, Station')+(typeof JTRACK!=='undefined'&&JTRACK?K(dk,'Drop job'):'')})()+K('B',fc>0?`Flares ${Math.ceil(fc)}s`:'Flares',fc>0)
+  $('cKeys').innerHTML=K('U',dl>0?`Distress ${Math.ceil(dl)}s`:'Distress',dl>0)+K('I','Comms menu')+K('Y','Assist friendly')+(()=>{const P=S.player,dk=kb('ordDrop')==='Backspace'?'⌫':kb('ordDrop');if(P.sworn||P.decl)return K('O','Join operation')+K('P','Take order')+K('⇧P','Next order')+K(dk,'Drop order');return K('O','Build here')+(typeof JTRACK!=='undefined'&&JTRACK?K(dk,'Drop job'):'')})()+K('B',fc>0?`Flares ${Math.ceil(fc)}s`:'Flares',fc>0)
     +`<div class="sub"><kbd>I</kbd> opens Command (escort me, guard me, build, distress), then steps through the ships around you; <kbd>1</kbd>–<kbd>4</kbd> pick</div>`}
 function campHud(){const el=$('hOrd');if(!el)return;if(S.unb){ujobHud(el);return}const C=myCamp(),m=C&&C.mv,f=S.player.sworn;if(!f||!FACTIONS[f]){const jr=jobHudRow();if(!jr){el.hidden=true;return}el.hidden=false;const J=S.player.job,by=J&&J.by;const hh=`<div class="ot" style="border-color:${by?sideCol(by):'#e8c878'}"><span>Contract work${by?' · '+esc(sideName(by)):''}</span><b>${by?esc(standName(standOf(by))):''}</b></div>`+jr;if(el._h!==hh){el._h=hh;el.innerHTML=hh}return}const L=orderList(),si=ordSel(L),pick=L[si],multi=L.length>1;el.hidden=false;
   const n=controlCounts()[f]||0,k=pkey(),cs=C&&(m||C.goal);let h=`<div class="ot" style="border-color:${sideCol(f)}"><span>${esc(FACTIONS[f].short)} ${cs?'· '+esc(DOCTRINE[f].name):'orders'}</span><b>${n}/${VIC_NEED} systems</b></div>`;
@@ -16525,6 +16525,21 @@ function ctrBuildOpts(){const P=S.player,O=[];let sp;try{sp=lairSpot(P)}catch(e)
 {const o=cmOpts;cmOpts=function(T){if(ctrOnly()&&W&&T===W.player)return ctrBuildOpts();return o.apply(this,arguments)}}
 {const o=cmDo;cmDo=function(k,T){if(k==='ctrlair'){const m=lairBuildB();if(m)flash(m,!String(m).startsWith('✓'));return}
   if(k==='ctrdep'||k==='ctrsta'){coErr='';coClick(k==='ctrdep'?'depotbuild':'staup',k==='ctrsta'?W.sid:'');if(coErr)flash(coErr,!String(coErr).startsWith('✓')&&coErr!=='Working…');return}return o.apply(this,arguments)}}
+// ---- (user, 9 Nov 2026: "I cannot dock at my Lair" / "it worked after a bit") a new Lair takes 60 s to build; near your own
+// Lair the prompt now says so, with the seconds left, and once it's ready "E — dock at your Lair"
+{const o=hudUpdate;hudUpdate=function(){const r=o.apply(this,arguments);try{if(!W||!W.player||S.player.docked||W.dead||S.unb||W.lairIn)return r;const el=$('hPrompt');if(!el||el.textContent)return r;const k=curPid()||'me',p=W.player;
+  const L=(S.lairs||[]).find(x=>x.sid===W.sid&&x.hull>0&&x.pid===k&&d3(x,p)<600);if(!L)return r;
+  el.innerHTML=`<span>${L.build>S.T?`Your Lair is still being built: ${Math.ceil(L.build-S.T)} s`:d3(L,p)<260?`${actKey()} — dock at your Lair`:'Your Lair: fly closer to dock'}</span>`}catch(e){}return r}}
+// ---- (user, 9 Nov 2026: "it's not targetable though") your own Lairs in the system are targets: in the target cycle, with a
+// panel (level, stash, building or ready, who has found it) and the autopilot flies you to it
+function myLairsHere(){if(!W||!S)return[];const k=curPid()||'me';return(S.lairs||[]).filter(L=>L.sid===W.sid&&L.hull>0&&L.pid===k)}
+{const o=targetables;targetables=function(){const out=o.apply(this,arguments);try{for(const L of myLairsHere())out.push({kind:'lair',ref:L})}catch(e){}return out}}
+{const o=validTgt;validTgt=function(t){if(t&&t.kind==='lair')return myLairsHere().includes(t.ref);return o.apply(this,arguments)}}
+{const o=tRad;tRad=function(t){if(t&&t.kind==='lair')return 90;return o.apply(this,arguments)}}
+{const o=hudUpdate;hudUpdate=function(){const r=o.apply(this,arguments);try{if(W&&W.tgt&&W.tgt.kind==='lair'&&validTgt(W.tgt)&&W.player){const L=W.tgt.ref,d=Math.round(d3(L,W.player)),seen=Object.keys(L.seen||{}).filter(f=>L.seen[f]);
+  $('hTgt').innerHTML=`<div class="tp"><div class="tn" style="color:#f0b24a">Your Lair</div><div class="ts">Level ${L.lvl||1} · stash ${invMass(L.stash||{})}/${typeof lairStash==='function'?lairStash(L):200} t${L.build>S.T?` · being built: ${Math.ceil(L.build-S.T)} s`:''}</div>
+    <div class="row">Range<b>${fmt(d)} m</b></div><div class="row">Hull<b>${Math.round(L.hull)}</b></div><div class="ts">${seen.length?`<span style="color:var(--amber)">Found by ${seen.map(f=>esc(FACTIONS[f].short)).join(', ')}: their ships attack it on sight.</span>`:'Hidden: no power has found it.'}</div>
+    <div class="ts">${L.build>S.T?'Not ready yet.':d<260?`${actKey()} to dock.`:`Fly within 260 m and press ${actKey()} to dock (${kb('autopilot')} flies you there).`}</div></div>`}}catch(e){}return r}}
 
 //@src 17_main.js
 // ============================================================ main loop

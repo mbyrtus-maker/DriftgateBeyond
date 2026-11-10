@@ -3485,3 +3485,10 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 - **When it can't be done yet,** each entry says why: too far from a big rock, a system with a station or in a power's home space, no kit. A Depot or Station without a company profile asks you to fill it out first.
 - **The quick keys** show "O: Build here: Lair, Depot, Station". P still says orders are for sworn or declared pilots.
 - **Code and test:** `16zzzx_contractor.js`, test `ctrbuild.py`.
+
+### Your Lair: a target, and a prompt while it builds (user, 9 Nov 2026)
+"The menu should just say O Build here", "I cannot dock at my Lair" ("it worked after a bit"), "it's not targetable though."
+- **Quick keys:** they read "O: Build here".
+- **Building:** a new Lair takes 60 s to build. Near your own Lair the prompt now says so with the seconds left, and once it's ready reads "E — dock at your Lair" (or "fly closer to dock").
+- **Targeting:** your own Lairs in the system are targets: in the target cycle, with a panel (level, stash, building or ready, hull, which powers have found it, how to dock). The autopilot flies you there.
+- **Code and test:** `16zzzx_contractor.js`; test `ctrbuild.py`.
