@@ -3514,3 +3514,17 @@ Asked "what key is it to use a Lair Kit": a contractor builds a Lair from Comms 
 - **Station or Depot:** a toggle shows it as a Station (with five buildings) or a Depot.
 - **How it's drawn:** by the game's own renderer, into a corner of its canvas at the start of each frame. It is copied to the preview and then painted over by the frame, so nothing shows on the main view.
 - **Code:** `16zzzy_coprev.js`.
+
+### Base fees reworked: transaction %, services cr, docking cr (user, 9 Nov 2026)
+"Fees screen doesn't make sense, should be a per transaction fee, services fee (credits not percentage) and docking fee (default 0)"; asked, the transaction fee is a percent of each trade. *Supersedes the four fees of "your base's fees" (3 Nov).*
+- **Transaction fee** (0–20%, default 5%): a cut of every trade at your market.
+  - Traders buying from you pay it on top of the price; traders selling to you have it taken off what you pay them.
+  - A higher fee means smaller lots: 30% smaller per 10 points above the default, up to 1.4 times bigger below it.
+  - It replaces "your sell price %" and "your buy offer %".
+- **Services fee** (0–500 cr, default 100 cr): what a visiting pilot pays for repairs and rearming.
+  - Visits thin above the default (a fifth as many at 500 cr) and grow below it (1.4 times at 0).
+  - It replaces "services %"; the old 60–180 cr times a percentage is gone.
+- **Docking fee** (0–100 cr, default 0): as before.
+- **Old saves:** fees saved under the old scheme convert once: the transaction fee at its default, the services % times 100 cr, sell and buy dropped.
+- **Where it shows:** the profile's defaults for new bases, each base's Fees in Holdings, the map line and Economy all show the three.
+- **Tests:** `fees.py`, `profile.py`.

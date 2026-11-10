@@ -12482,54 +12482,61 @@ function stStartable(k){return selFac==='pirate'?UNB_START.includes(k):START_HUL
 
 //@src 16zt_fees.js
 // ============================================================ your base's fees (Beyond, agreed 3 Nov 2026)
-// At a Depot or Station you own you set four fees, each between a minimum and a maximum, all starting at the galaxy default:
-// your sell price to traders (80–130%), your buy offer (80–120%), services for visiting pilots (50–200%) and a docking fee
-// (0–100 cr). They change traffic only, never standing:
-//   traders come 7% less often per 10 cr of docking fee (100 cr: under a third as often) and pay it on each visit; each visit's lot shrinks 22% per 10% of
-//   price above the default (grows below it, up to 1.4 times), the buy offer the other way round;
-//   visiting pilots (Compact contractors and the pilots of the powers that deal with you) stop to repair and rearm, about six
-//   an hour at the defaults (a Station half as many again), paying 60–180 cr of services times your fee plus the docking fee;
-//   8% fewer per 10% of services fee above the default (a fifth at 200%), 8% more below it (1.4 times at 50%);
-//   takers for the jobs you post there wait longer the higher the docking fee (twice as long at 100 cr).
-// Only credits move (treasuries to you), so the ledger stays exact. Shown in Holdings (Fees), Economy and the map panel.
-const FEE={sell:{min:.8,max:1.3,step:.05,def:1,name:'Your sell price'},buy:{min:.8,max:1.2,step:.05,def:1,name:'Your buy offer'},svc:{min:.5,max:2,step:.1,def:1,name:'Services'},dock:{min:0,max:100,step:5,def:0,name:'Docking'},
-  k:2.2,svcK:.8,visit:.1,pay:[60,180],skip:.35};
-function feeOf(R){const f=R&&R.fees||{};const o={};for(const k of['sell','buy','svc','dock'])o[k]=typeof f[k]==='number'?f[k]:FEE[k].def;return o}
+// At a Depot or Station you own you set three fees, each between a minimum and a maximum (reworked 9 Nov 2026, the user: "should
+// be a per transaction fee, services fee (credits not percentage) and docking fee (default 0)"; it used to be a sell price %,
+// a buy offer % and a services %):
+//   Transaction fee (0–20%, default 5%): a cut of every trade at your market. Traders buying from you pay it on top of the price;
+//     traders selling to you have it taken off what you pay them. Each visit's lot shrinks 30% per 10 points above the default
+//     (grows below it, up to 1.4 times).
+//   Services fee (0–500 cr, default 100 cr): what a visiting pilot pays for repairs and rearming. Visiting pilots (Compact
+//     contractors and the pilots of the powers that deal with you) stop about six an hour at the default (a Station half as
+//     many again); 8% fewer per 10 cr above the default (a fifth at 500 cr), 8% more below it (1.4 times at 0).
+//   Docking fee (0–100 cr, default 0): paid by every trader and visiting pilot who docks; traders come 7% less often per 10 cr
+//     (100 cr: under a third as often), and takers for the jobs you post there wait longer (twice as long at 100 cr).
+// They change traffic only, never standing. Only credits move (treasuries to you), so the ledger stays exact. Fees saved under
+// the old scheme are converted once (the transaction fee at its default, the services % times 100 cr). Shown in Holdings
+// (Fees), Economy, the map panel and the company profile (the defaults for new bases).
+const FEE={tx:{min:0,max:.2,step:.01,def:.05,name:'Transaction fee'},svc:{min:0,max:500,step:10,def:100,name:'Services fee'},dock:{min:0,max:100,step:5,def:0,name:'Docking fee'},
+  k:3,svcK:.8,visit:.1,skip:.35};
+const FEE_KEYS=['tx','svc','dock'];
+// fees saved under the old scheme (sell %, buy %, services %): converted once
+function feeMig(f){if(!f||typeof f!=='object')return f;if('sell'in f||'buy'in f||(typeof f.svc==='number'&&f.svc>0&&f.svc<=2)){if(typeof f.svc==='number'&&f.svc>0&&f.svc<=2)f.svc=Math.round(f.svc*10)*10;delete f.sell;delete f.buy}return f}
+function feeOf(R){const f=feeMig(R&&R.fees)||{};const o={};for(const k of FEE_KEYS)o[k]=typeof f[k]==='number'?f[k]:FEE[k].def;return o}
 function feeTd(F){return Math.max(0,1-F.dock/140)}
-function feeTs(F){return clamp(1-FEE.k*(F.sell-1),.2,1.4)}
-function feeTb(F){return clamp(1+FEE.k*(F.buy-1),.2,1.4)}
-function feeTv(F){return clamp(1-FEE.svcK*(F.svc-1),.2,1.4)}
+function feeTs(F){return clamp(1-FEE.k*(F.tx-FEE.tx.def),.2,1.4)}
+function feeTb(F){return feeTs(F)}
+function feeTv(F){return clamp(1-FEE.svcK*(F.svc-FEE.svc.def)/100,.2,1.4)}
 function feeReps(R){return typeof hasB==='function'&&hasB(R,'market')?2:1}
 function feeVisitP(R,F){return FEE.visit*(R.pst?1.5:1)*feeTv(F)*feeTd(F)}
-function feeFmt(k,v){return k==='dock'?`${fmt(v)} cr`:`${Math.round(v*100)}%`}
+function feeFmt(k,v){return k==='tx'?`${Math.round(v*100)}%`:`${fmt(v)} cr`}
 // ---- traders, with your prices and docking fee
 depTradeTick=function(){for(const R of Object.values(S.stations||{})){if(!R||R.owner!=='player'||R.kind!=='depot'||!R.sell)continue;const O=lairOwner({pid:R.pid||'me'})||S.player,fs=depTraders(O),reps=feeReps(R),F=feeOf(R),
     lot=DEP.lot*(typeof hasB==='function'&&hasB(R,'storage')?2:1),mg=(R.mg||1)*(reps>1?1.1:1);if(!fs.length)continue;
   for(let rep=0;rep<reps;rep++){if(Math.random()>(1-FEE.skip)*feeTd(F))continue;const f=pick(fs),st=R.stock,fst=S.econ.stock[f]=S.econ.stock[f]||{};
     if(F.dock>0){const got=payTo(O,f,Math.min(F.dock,S.econ.treasury[f]||0));if(got)eco(R,'docking',got,`${FACTIONS[f].short} trader docked`)}
     const ls=Math.max(1,Math.round(lot*feeTs(F))),lb=Math.max(1,Math.round(lot*feeTb(F)));
-    for(const k in R.sell){const n=Math.min(ls,(st[k]||0)-(R.sell[k]||0));if(n<=0)continue;const pr=Math.max(1,Math.round(price(st,k)*mg*F.sell));const pay=Math.min(n*pr,S.econ.treasury[f]||0);const m=Math.floor(pay/pr);if(m<=0)continue;inv.take(st,k,m);inv.add(fst,k,m);const got=payTo(O,f,m*pr);eco(R,'market',got,`${FACTIONS[f].short} traders bought ${m} ${ITEMS[k].name}`)}
-    for(const k in R.buy){const n=Math.min(lb,(R.buy[k]||0)-(st[k]||0),fst[k]||0);if(n<=0)continue;const pr=Math.max(1,Math.round(price(fst,k)*F.buy));const m=Math.min(n,Math.floor(O.credits/pr));if(m<=0)continue;inv.take(fst,k,m);inv.add(st,k,m);payFrom(O,f,m*pr);eco(R,'market',-m*pr,`bought ${m} ${ITEMS[k].name} from ${FACTIONS[f].short} traders`)}}
+    for(const k in R.sell){const n=Math.min(ls,(st[k]||0)-(R.sell[k]||0));if(n<=0)continue;const pr=Math.max(1,Math.round(price(st,k)*mg*(1+F.tx)));const pay=Math.min(n*pr,S.econ.treasury[f]||0);const m=Math.floor(pay/pr);if(m<=0)continue;inv.take(st,k,m);inv.add(fst,k,m);const got=payTo(O,f,m*pr);eco(R,'market',got,`${FACTIONS[f].short} traders bought ${m} ${ITEMS[k].name}`)}
+    for(const k in R.buy){const n=Math.min(lb,(R.buy[k]||0)-(st[k]||0),fst[k]||0);if(n<=0)continue;const pr=Math.max(1,Math.round(price(fst,k)*(1-F.tx)));const m=Math.min(n,Math.floor(O.credits/pr));if(m<=0)continue;inv.take(fst,k,m);inv.add(st,k,m);payFrom(O,f,m*pr);eco(R,'market',-m*pr,`bought ${m} ${ITEMS[k].name} from ${FACTIONS[f].short} traders`)}}
   // visiting pilots: repairs and rearming
-  if(Math.random()<feeVisitP(R,F)){const by=Math.random()<.5||!fs.length?'neutral':pick(fs),want=Math.round(ri(FEE.pay[0],FEE.pay[1])*F.svc)+F.dock,got=payTo(O,by,Math.min(want,S.econ.treasury[by]||0));
+  if(Math.random()<feeVisitP(R,F)){const by=Math.random()<.5||!fs.length?'neutral':pick(fs),want=Math.round(F.svc)+F.dock,got=payTo(O,by,Math.min(want,S.econ.treasury[by]||0));
     if(got)eco(R,'services',got,`${by==='neutral'?'a Compact contractor':`${/^[AEIOU]/.test(FACTIONS[by].short)?'an':'a'} ${FACTIONS[by].short} pilot`} repaired and rearmed`)}}};
 // ---- posted jobs: the docking fee makes takers slower to come
 {const o=pjPost;pjPost=function(P,arg){const n0=pjList().length,r=o.apply(this,arguments);try{if(pjList().length>n0){const j=pjList()[pjList().length-1],F=feeOf(S.stations[j.sid]);if(F.dock>0)j.claimAt=j.posted+(j.claimAt-j.posted)*(1+F.dock/100)}}catch(e){}return r}}
 // ---- setting them
 function feeSet(P,arg){const[sid,k,d]=String(arg).split(':'),R=S.stations[sid];if(!R||R.owner!=='player'||(R.pid||'me')!==pkeyOf(P))return'Not your base.';
-  if(k==='reset'){R.fees={};return`✓ ${R.name}'s fees are back at the galaxy defaults.`}const D=FEE[k];if(!D||!D.step)return'';const F=feeOf(R);
-  const v=Math.round(clamp(F[k]+(+d||0)*D.step,D.min,D.max)/D.step)*D.step;R.fees=R.fees||{};R.fees[k]=k==='dock'?Math.round(v):Math.round(v*100)/100;return`✓ ${R.name}: ${D.name.toLowerCase()} ${feeFmt(k,R.fees[k])}.`}
+  if(k==='reset'){R.fees={};return`✓ ${R.name}'s fees are back at the galaxy defaults.`}const D=FEE[k];if(!D||!D.step||!FEE_KEYS.includes(k))return'';const F=feeOf(R);
+  const v=Math.round(clamp(F[k]+(+d||0)*D.step,D.min,D.max)/D.step)*D.step;R.fees=R.fees||{};R.fees[k]=k==='tx'?Math.round(v*100)/100:Math.round(v);return`✓ ${R.name}: ${D.name.toLowerCase()} ${feeFmt(k,R.fees[k])}.`}
 {const o=dockAction;dockAction=function(act,arg){if(act==='feeset'){dockErr=feeSet(S.player,arg);return}return o.apply(this,arguments)}}
 {const o=coClick;coClick=function(act,arg){if(act==='feeset'){if(NET.cl){netSend({t:'act',act,arg});coErr='Working…';renderCompany();return}dockAction(act,arg);coErr=dockErr;renderCompany();return}return o.apply(this,arguments)}}
 // ---- shown: Holdings detail (Fees), the map panel
 function feeHtml(R){const F=feeOf(R),reps=feeReps(R),tv=Math.round(60*reps*(1-FEE.skip)*feeTd(F)),tv0=Math.round(60*reps*(1-FEE.skip)),pv=Math.round(60*feeVisitP(R,F)),pv0=Math.round(60*feeVisitP(R,feeOf(null)));
   const row=k=>{const D=FEE[k],v=F[k];return`<div class="coln"><span style="flex:1">${D.name} <span class="mass">${feeFmt(k,D.min)}–${feeFmt(k,D.max)} · default ${feeFmt(k,D.def)}</span></span><span class="cotri"><button type="button" data-co="feeset" data-arg="${R.sid}:${k}:-1" ${v<=D.min+1e-9?'disabled':''} aria-label="Lower">−</button><button type="button" class="on" style="min-width:64px;justify-content:center;cursor:default" tabindex="-1">${feeFmt(k,v)}</button><button type="button" data-co="feeset" data-arg="${R.sid}:${k}:1" ${v>=D.max-1e-9?'disabled':''} aria-label="Raise">+</button></span></div>`};
-  const lotS=feeTs(F),lotB=feeTb(F),dflt=['sell','buy','svc','dock'].every(k=>Math.abs(F[k]-FEE[k].def)<1e-9);
-  return`<div class="lab" style="margin-top:14px">Fees</div>${['sell','buy','svc','dock'].map(row).join('')}
+  const lotS=feeTs(F),lotB=feeTb(F),dflt=FEE_KEYS.every(k=>Math.abs(F[k]-FEE[k].def)<1e-9);
+  return`<div class="lab" style="margin-top:14px">Fees</div>${FEE_KEYS.map(row).join('')}
     <div class="note" style="margin:8px 0 0">Traders: about ${tv} visits an hour${tv!==tv0?` (${tv0} at the defaults)`:''}, buying ${lotS<.99||lotS>1.01?`${lotS>1?'bigger':'smaller'} lots (×${lotS.toFixed(2)})`:'normal lots'} and selling you ${lotB<.99||lotB>1.01?`${lotB>1?'bigger':'smaller'} lots (×${lotB.toFixed(2)})`:'normal lots'}. Visiting pilots: about ${pv} an hour${pv!==pv0?` (${pv0} at the defaults)`:''}.</div>
     ${dflt?'':`<div class="act" style="justify-content:flex-start;margin-top:6px"><button class="btn sm" type="button" data-co="feeset" data-arg="${R.sid}:reset">Back to the defaults</button></div>`}`}
 {const o=coDetail;coDetail=function(P,b){let h=o.apply(this,arguments);try{if(b&&b.R)h=h.replace(/<div class="act" style="margin-top:16px"><button class="btn sm" type="button" data-co="tab" data-arg="economy">/,m=>feeHtml(b.R)+m)}catch(e){console.error(e)}return h}}
-function feeLine(R){const F=feeOf(R);return`Fees: sell ${feeFmt('sell',F.sell)} · buy ${feeFmt('buy',F.buy)} · services ${feeFmt('svc',F.svc)} · docking ${feeFmt('dock',F.dock)}`}
+function feeLine(R){const F=feeOf(R);return`Fees: transaction ${feeFmt('tx',F.tx)} · services ${feeFmt('svc',F.svc)} · docking ${feeFmt('dock',F.dock)}`}
 {const o=mpHtml;mpHtml=function(sid){let h=o.apply(this,arguments);try{const R=S.stations[sid];if(R&&R.owner==='player'&&R.fees)h=h.replace('<div class="mpslot-course"></div>',`<div class="note" style="margin:-4px 0 10px">${esc(feeLine(R))}</div><div class="mpslot-course"></div>`)}catch(e){}return h}}
 
 //@src 16zu_cscan.js
@@ -15752,7 +15759,7 @@ function coSave(P,arg){const q={};for(const kv of String(arg||'').split(';')){co
   if(name.length<2)return'Give your company a name.';if(!(logo>=0&&logo<coLogoCount()))return'Pick a logo.';if(!(design>=1&&design<=6))return'Pick a base design.';if(!(hue>=0&&hue<360))return'Pick a colour.';
   const clash=coHueClash(hue);const N=brSlot(P,true);if(N==null)return'No company slot free in this galaxy.';const B=S.brands[N],col=coHueCol(hue);
   if(P.decl&&B.col&&B.col!==col)return'Your colour is fixed now that you have declared a faction.';if(clash&&B.col!==col)return`That colour is too close to ${clash}'s. Pick another hue.`;
-  const fees={};for(const k of['sell','buy','svc','dock']){const D=FEE[k];if(q[k]==null||q[k]==='')continue;const v=clamp(+q[k],D.min,D.max);if(isFinite(v))fees[k]=k==='dock'?Math.round(v):Math.round(v*100)/100}
+  const fees={};for(const k of FEE_KEYS){const D=FEE[k];if(q[k]==null||q[k]==='')continue;const v=clamp(+q[k],D.min,D.max);if(isFinite(v))fees[k]=k==='tx'?Math.round(v*100)/100:Math.round(v)}
   let first=false;if(!coFunded(P)){if(P.credits<COP.deposit)return`Opening your company's treasury takes a ${fmt(COP.deposit)} cr deposit. You have ${fmt(P.credits)} cr.`;first=true}
   const k=pkeyOf(P);P.co=Object.assign(P.co||{},{ok:1,fund:1,w:(P.co&&P.co.w)||'co_'+k,logo,design,fees,T:(P.co&&P.co.T)||S.T});if(first)transfer('player',P.co.w,COP.deposit);
   if(!P.decl)B.name=name;B.col=col;for(const R of myDepots(P))R.design=design;try{for(const key of Object.keys(MESH))if(key.startsWith('bm'))delete MESH[key]}catch(e){}
@@ -15794,9 +15801,9 @@ function coRun(fn){if(CO_SW||!S)return fn();const L=[];for(const P of allPilots(
 // ---- the Profile tab
 let coForm=null;
 function coFormOf(P){if(coForm)return coForm;const N=brSlot(P),B=N!=null&&S.brands?S.brands[N]:null,col=B&&B.col;let hue=col?Math.round(hexHue(col)||40):40;if(!col)while(coHueClash(hue)&&hue<400)hue+=17;
-  const f={...feeOfDef(),...((P.co&&P.co.fees)||{})};return coForm={name:(B&&B.name)||`${P.name||'Pilot'}'s Works`,logo:P.co?P.co.logo:0,design:P.co?P.co.design:1,hue:hue%360,fees:f}}
-function feeOfDef(){const o={};for(const k of['sell','buy','svc','dock'])o[k]=FEE[k].def;return o}
-function coArg(F){return[`name=${encodeURIComponent(F.name)}`,`logo=${F.logo}`,`design=${F.design}`,`hue=${F.hue}`,...['sell','buy','svc','dock'].map(k=>`${k}=${F.fees[k]}`)].join(';')}
+  const f={...feeOfDef(),...(feeMig(P.co&&P.co.fees)||{})};return coForm={name:(B&&B.name)||`${P.name||'Pilot'}'s Works`,logo:P.co?P.co.logo:0,design:P.co?P.co.design:1,hue:hue%360,fees:f}}
+function feeOfDef(){const o={};for(const k of FEE_KEYS)o[k]=FEE[k].def;return o}
+function coArg(F){return[`name=${encodeURIComponent(F.name)}`,`logo=${F.logo}`,`design=${F.design}`,`hue=${F.hue}`,...FEE_KEYS.map(k=>`${k}=${F.fees[k]}`)].join(';')}
 function coProfHtml(P){const F=coFormOf(P),col=coHueCol(F.hue),clash=coHueClash(F.hue),ready=coFunded(P),w=ready?P.co.w:null,D=coDesigns();
   let h=`<p class="note" style="margin:0 0 12px">${ready?'Your company. Change anything here and Save; the deposit is paid once.':`Before you build a Depot or a Station, or buy their kits, set up your company. Saving opens its treasury with a ${fmt(COP.deposit)} cr deposit from your credits; your bases' business runs through it from then on.`}</p>`;
   h+=`<div class="lab">Name</div><input id="coNm" type="text" maxlength="32" value="${esc(F.name)}" ${P.decl?'disabled':''} style="width:min(360px,100%);margin:4px 0 12px" aria-label="Company name">`;
@@ -15804,7 +15811,7 @@ function coProfHtml(P){const F=coFormOf(P),col=coHueCol(F.hue),clash=coHueClash(
   h+=`<div class="lab">Base design <span class="note" style="margin:0">(looks only)</span></div><div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px">${D.map((n,i)=>`<button class="btn sm" type="button" data-co="cof" data-arg="design:${i+1}" aria-pressed="${F.design===i+1}" style="border-color:${F.design===i+1?col:'var(--line)'}">${esc(n)}</button>`).join('')}</div>`;
   h+=`<div class="lab">Colour</div><div style="display:flex;gap:10px;align-items:center;margin:6px 0 4px"><span style="display:inline-block;width:28px;height:28px;border-radius:6px;background:${col}"></span><input id="coHue" type="range" min="0" max="359" value="${F.hue}" ${P.decl?'disabled':''} aria-label="Company colour hue" style="width:min(300px,60vw);accent-color:${col}"></div>`;
   h+=`<div class="note" style="margin:0 0 12px;${clash?'color:var(--amber)':''}">${clash?`Too close to ${esc(clash)}'s colour: move the slider.`:P.decl?'Fixed now that you have declared a faction.':'Kept clear of the powers\', the Brood\'s, the Unbound\'s and the Compact\'s colours.'}</div>`;
-  h+=`<div class="lab">Fees at new bases</div><div style="margin:6px 0 4px">${['sell','buy','svc','dock'].map(k=>{const Dd=FEE[k];return`<div style="display:flex;gap:8px;align-items:center;margin:3px 0"><span style="width:130px">${esc(Dd.name)}</span><button class="btn sm" type="button" data-co="cof" data-arg="fee:${k}:-1">−</button><b class="mono" style="min-width:56px;text-align:center">${esc(feeFmt(k,F.fees[k]))}</b><button class="btn sm" type="button" data-co="cof" data-arg="fee:${k}:1">+</button></div>`}).join('')}</div>`;
+  h+=`<div class="lab">Fees at new bases</div><div style="margin:6px 0 4px">${FEE_KEYS.map(k=>{const Dd=FEE[k];return`<div style="display:flex;gap:8px;align-items:center;margin:3px 0"><span style="width:130px">${esc(Dd.name)}</span><button class="btn sm" type="button" data-co="cof" data-arg="fee:${k}:-1">−</button><b class="mono" style="min-width:56px;text-align:center">${esc(feeFmt(k,F.fees[k]))}</b><button class="btn sm" type="button" data-co="cof" data-arg="fee:${k}:1">+</button></div>`}).join('')}</div>`;
   if(ready)h+=`<button class="btn sm" type="button" data-co="cofeeall" style="margin:2px 0 12px">Apply to all my bases</button>`;
   h+=`<div class="act" style="margin:10px 0 16px"><button class="btn pri" type="button" data-co="cosave" ${clash&&!P.decl?'disabled':''}>${ready?'Save':`Save and open the treasury · ${fmt(COP.deposit)} cr`}</button></div>`;
   if(ready){const t=S.econ.treasury[w]||0;h+=`<div class="h3">Treasury · <span class="mono">${fmt(t)} cr</span></div><p class="note" style="margin:0 0 6px">Wages, posted jobs, your markets' buys and capital ships come out of it; fees and your markets' sales go into it.</p>
@@ -15815,7 +15822,7 @@ function coProfHtml(P){const F=coFormOf(P),col=coHueCol(F.hue),clash=coHueClash(
     const nm=$('coNm');if(nm)nm.addEventListener('input',e=>{coFormOf(P).name=e.target.value});const hu=$('coHue');if(hu){hu.addEventListener('change',e=>{coFormOf(P).hue=+e.target.value;renderCompany()});hu.addEventListener('input',e=>{const sw=hu.previousElementSibling;if(sw)sw.style.background=coHueCol(+e.target.value)})}}
   if(S&&S.player&&coFunded(S.player)){const t=S.econ.treasury[S.player.co.w]||0,sub=$('coSub');if(sub&&!/treasury/.test(sub.textContent))sub.textContent+=` · treasury ${fmt(t)} cr`}}catch(e){console.error(e)}return r}}
 {const o=coClick;coClick=function(act,arg){const P=S.player;
-  if(act==='cof'){const F=coFormOf(P),[k,v,d]=String(arg).split(':');if(k==='logo')F.logo=+v;else if(k==='design')F.design=+v;else if(k==='fee'){const D=FEE[v];F.fees[v]=Math.round(clamp(F.fees[v]+(+d)*D.step,D.min,D.max)/D.step)*D.step;if(v!=='dock')F.fees[v]=Math.round(F.fees[v]*100)/100}renderCompany();return}
+  if(act==='cof'){const F=coFormOf(P),[k,v,d]=String(arg).split(':');if(k==='logo')F.logo=+v;else if(k==='design')F.design=+v;else if(k==='fee'){const D=FEE[v];if(D){F.fees[v]=Math.round(clamp((F.fees[v]??D.def)+(+d)*D.step,D.min,D.max)/D.step)*D.step;F.fees[v]=v==='tx'?Math.round(F.fees[v]*100)/100:Math.round(F.fees[v])}}renderCompany();return}
   if(act==='cosave'||act==='cotr'||act==='cofeeall'){const a=act==='cosave'?'coprof':act,g=act==='cosave'?coArg(coFormOf(P)):arg;if(NET.cl){netSend({t:'act',act:a,arg:g});coErr='Working…';renderCompany();return}dockAction(a,g);coErr=dockErr;if(a==='coprof'&&dockErr.startsWith('✓'))coForm=null;renderCompany();return}
   return o.apply(this,arguments)}}
 

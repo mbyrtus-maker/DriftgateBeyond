@@ -22,10 +22,10 @@ async def main():
       devLedger(()=>inv.add(P.cargo,'frame',2));const m=depFresh(P);return JSON.stringify({sid,m,none:!S.stations[sid]})})()"""))
     check('no Depot without a company profile',r['none'] and 'Profile' in r['m'],r)
     r=json.loads(await ev("""(()=>{$('company').hidden=false;coTab='profile';renderCompany();const B=$('coBody');return JSON.stringify({name:!!$('coNm'),hue:!!$('coHue'),logos:B.querySelectorAll('[data-arg^="logo:"]').length,designs:B.querySelectorAll('[data-arg^="design:"]').length,fees:B.querySelectorAll('[data-arg^="fee:"]').length,tab:!!document.querySelector('#coTabs [data-arg="profile"]')})})()"""))
-    check('Company → Profile: name, 12 logos, 6 designs, a hue slider, four fees',r['name'] and r['hue'] and r['logos']==12 and r['designs']==6 and r['fees']==8 and r['tab'],r)
-    r=json.loads(await ev("""(()=>{const P=S.player,hh=Math.round(hexHue(FACTIONS.halcyon.col));const a=coSave(P,`name=Tester%20Works;logo=3;design=6;hue=${hh};sell=1.1;buy=1;svc=1;dock=20`);
-      P.credits=Math.min(P.credits,5000);let ok=40;while(coHueClash(ok))ok+=11;const b=coSave(P,`name=Tester%20Works;logo=3;design=6;hue=${ok};sell=1.1;buy=1;svc=1;dock=20`);
-      devLedger(()=>{P.credits+=150000});const c0=P.credits,cs=coSave(P,`name=Tester%20Works;logo=3;design=6;hue=${ok};sell=1.1;buy=1;svc=1;dock=20`);
+    check('Company → Profile: name, 12 logos, 6 designs, a hue slider, three fees',r['name'] and r['hue'] and r['logos']==12 and r['designs']==6 and r['fees']==6 and r['tab'],r)
+    r=json.loads(await ev("""(()=>{const P=S.player,hh=Math.round(hexHue(FACTIONS.halcyon.col));const a=coSave(P,`name=Tester%20Works;logo=3;design=6;hue=${hh};tx=0.08;svc=150;dock=20`);
+      P.credits=Math.min(P.credits,5000);let ok=40;while(coHueClash(ok))ok+=11;const b=coSave(P,`name=Tester%20Works;logo=3;design=6;hue=${ok};tx=0.08;svc=150;dock=20`);
+      devLedger(()=>{P.credits+=150000});const c0=P.credits,cs=coSave(P,`name=Tester%20Works;logo=3;design=6;hue=${ok};tx=0.08;svc=150;dock=20`);
       return JSON.stringify({a,b,cs,paid:c0-P.credits,tr:S.econ.treasury[P.co.w]||0,name:coName(P),col:coCol(pkeyOf(P))===coHueCol(ok)})})()"""))
     check('a hue too close to a power\'s colour is refused',"too close" in r['a'],r)
     check('saving needs the 100,000 cr deposit',"100,000" in r['b'],r)
