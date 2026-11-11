@@ -3859,4 +3859,18 @@ draining standard stock." Now:
 - every 10 minutes a station rebuilds only what left its shelf since the last look;
 - a Depot built or taken later starts with an empty shelf and stays so.
 
-Test: stdparts.py, which now checks that nothing is rebuilt in two hours with nothing sold. War check on the fix: pending.
+Test: stdparts.py (depots built later keep an empty shelf; only what raids took is rebuilt). War check on the fix: Brood 26%, Varkesh 26, Halcyon 25, Ostrova 21, unfinished 2 (see "War check on the standard-stock fix").
+
+### War check on the standard-stock fix (war bot, 10 Nov 2026)
+600 galaxies, 16 h, `PPORT=mw`, neutral leaders, no tune file, no page errors.
+- **Build `dc36ad2` (the fix): Brood 26%, Varkesh 26%, Halcyon 25%, Ostrova 21%, unfinished 2%.**
+- Compared with the last recorded check (`8de4169`, 9 Nov: Halcyon 28, Varkesh 27, Ostrova 25, Brood 18, unfinished 2), the Brood is up 8 points and Ostrova down 4. Both are outside the ±2 noise. The Brood is 6 points over its 20% target and Ostrova 4 under its 25%. Halcyon and Varkesh are on target.
+- Before the fix, at `9be351a` (the Unbound change): Brood 83%, Varkesh 5, Halcyon 4, Ostrova 2, unfinished 6. The Brood's median peak was 21 systems, against 4 at `8de4169`.
+- Bisect, 60 galaxies a step, "bad" meaning Brood over 50%:
+  - `e345d46`: Brood 23%, good;
+  - `c09db15` (standard stock): Brood 83%, bad;
+  - `4c903d5`, `294d16d`, `6e0d0a4`, `5535a44`: bad (80 to 90%);
+  - 120-galaxy looks: `2762212` (before the Unbound change) Brood 75%; `8de4169` Brood 13%, the powers 26 to 30%.
+  First bad: `c09db15`.
+- Still not separated: the Unbound's `pirNear` targeting, depot store modules mining only through their miners (`5535a44`), the Depot Kit recipe, four crews, and the fees all landed together with the fix. Any of them could account for the remaining Brood +8.
+- Not tuned. Brood grazing is the dial the Brood is balanced on (`BAL.brGraze` 1.3 in `02_state.js`; the 8 Nov sweep found 1.0 about 3 points lower for the Brood than 1.3).
