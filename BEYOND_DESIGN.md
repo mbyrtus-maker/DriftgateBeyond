@@ -3826,3 +3826,21 @@ Five of the latter read as "5 buildings" while every building slot stayed open. 
   (Works tab) by kind.
 
 Test: baserun.py.
+
+### The Unbound raid near the Wrack; a player's Depot weighs like a power's (10 Nov 2026)
+The user: "Why do the Unbound almost immediately send a raid on my new depot in Saltmoor?" The Unbound's strike planning
+(`planOffensive`, 04_strategy.js) came from Driftgate 1:
+- a player Depot weighed 1.4 against 0.5 for a power's, since there the player ran a whole faction;
+- distance didn't count;
+- a new base had no grace period.
+
+So one contractor's new Depot drew strikes from across the galaxy.
+
+The user chose:
+- a player's Depot or Station weighs 0.5 like a power's;
+- every Unbound target (outposts and Depots, not the Wrack's own outpost) is weighed by its distance from the Wrack:
+  `pirNear` = 1.2 − 0.1 per jump, floored at 0.5. That's 1.2 at the Wrack, 1.1 next door, 0.7 at 5 jumps (Saltmoor),
+  0.6 at 6 (the far edge).
+
+Saltmoor's Depot went from 1.4 to 0.35. A grace period for new bases was offered and not taken. The powers' and the Brood's
+targeting is unchanged. War check below.

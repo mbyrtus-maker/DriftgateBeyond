@@ -369,19 +369,23 @@ function broodNear(sid){const t=territory('brood');return t.has(sid)||NEIGH[sid]
 // Aurorite and Vantium rock while its warehouse holds plenty (MINE_SKIP) and go for the Ferrite and Cuprite its war machine runs on
 const MINE_SKIP={xc:300,ir:300,au:300,nu:300};
 function mineSkip(f){const st=FAC_IDS.includes(f)&&S.econ.stock[f];if(!st)return{};const k={};for(const e in MINE_SKIP)if((st[e]||0)>MINE_SKIP[e])k[e]=1;return k}
+// Beyond (user, 10 Nov 2026: "Why do the Unbound almost immediately send a raid on my new depot in Saltmoor"): the Unbound prefer
+// targets near the Wrack, 1.2x next door down to 0.5x at the galaxy's edge; and a player's Depot weighs 0.5 like a power's
+// (it was 1.4, from Driftgate 1, where the player ran a faction)
+function pirNear(sec){const h=(HOP.wr&&HOP.wr[sec]!=null)?HOP.wr[sec]:9;return Math.max(.5,1.2-.1*h)}
 function planOffensive(f){if(FACTIONS[f]&&f!=='brood'&&campBusy(f)){S.ai[f].next=S.T+rnd(30,50);return}
   const terr=territory(f),busy=new Set(S.events.filter(e=>e.type==='offensive'&&e.stage!=='done'&&e.att===f).map(e=>e.st?'st:'+e.st:e.target)),c=[],pf=S.player.sworn;
   const adjOf=sec=>terr.has(sec)||NEIGH[sec].some(n=>terr.has(n)),hopTo=sec=>{let m=9;for(const t of terr)m=Math.min(m,HOP[t][sec]);return m},bw=sec=>{const h=hopTo(sec);return h<=1?1.6:h===2?1.1:h===3?.7:.4};
   // the Brood hunts the strong: targets held by the faction with the most systems weigh up to 1.5x, the weakest down to 0.6x
   const bcc=f==='brood'?controlCounts():null,bmx=bcc?Math.max(1,...FAC_IDS.map(k=>bcc[k]||0)):1,bstr=ow=>!bcc||!FAC_IDS.includes(sideNorm(ow))?1:.6+.9*(bcc[sideNorm(ow)]||0)/bmx;
   for(const id in S.outposts){const o=S.outposts[id];if(o.owner===f||busy.has(id)||outLockBars(o.sector,f))continue;if(isPow(f)&&o.owner&&isPow(sideNorm(o.owner))&&!warWith(f,o.owner))continue;let w;
-    if(f==='pirate'&&o.owner==='brood')continue;if(f==='pirate'){if(id!=='wrack'&&!o.owner&&!RAID.pirHold)continue;w=id==='wrack'?6:o.owner==='player'?2.2:1}
+    if(f==='pirate'&&o.owner==='brood')continue;if(f==='pirate'){if(id!=='wrack'&&!o.owner&&!RAID.pirHold)continue;w=id==='wrack'?6:(o.owner==='player'?2.2:1)*pirNear(o.sector)}
     else if(f==='brood'){if(o.owner==='pirate')continue;w=(o.owner?1.6*bstr(o.owner):2.2)*bw(o.sector)}
     else{w=!o.owner?3:o.owner==='player'?2:o.owner==='brood'?3.4:o.owner==='pirate'?(id==='wrack'?.8:2):1.4;w*=adjOf(o.sector)?1.6:.3}
     c.push([{out:id},w])}
   for(const sid in S.stations){const R=S.stations[sid];if(R.owner===f||(R.owner==='neutral'&&f!=='brood')||busy.has('st:'+sid)||R.kind==='hive'||!fightsAt(f,R.owner))continue;const adj=adjOf(sid);let w=0;
     if(f==='brood')w=R.kind==='core'?(adj?.5*bstr(R.owner):0):R.kind==='free'?1.8*bw(sid):2.6*bw(sid)*bstr(R.owner);
-    else if(R.kind==='depot'){if(f==='pirate')w=R.owner==='player'?1.4:DEF[sid].home?0:.5;else w=(R.owner==='brood'?BAL.antiBrood:R.owner==='player'?1.2:DEF[sid].home?.15:.9)*(adj?1.4:.2)}
+    else if(R.kind==='depot'){if(f==='pirate')w=DEF[sid].home&&R.owner!=='player'?0:.5*pirNear(sid);else w=(R.owner==='brood'?BAL.antiBrood:R.owner==='player'?1.2:DEF[sid].home?.15:.9)*(adj?1.4:.2)}
     if(w>0)c.push([{st:sid},w])}
   {const C=S.coal;if(C&&f!=='pirate'&&f!=='brood'){const own=x=>{const o=x[0].out?S.outposts[x[0].out]:null;return sideNorm(o?o.owner:S.stations[x[0].st].owner)};
     if(C.mem.includes(f)){for(const x of c){const ow=own(x);x[1]*=ow===C.lead?1+3.5*BAL.coal:C.mem.includes(ow)?0:1}}
