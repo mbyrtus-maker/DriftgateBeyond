@@ -3887,3 +3887,9 @@ War check (war bot; build `c7c21f3`, 600 galaxies, 16 h, `PPORT=mw`, neutral lea
   Grazing 1.0 no longer puts the Brood at 20% on the current build.
 - Target: all three powers are on 25% (within ±2). The Brood is about 5 points over its 20%, outside the noise.
   Brood wins come early (median 3.7 h, against 6.3 to 7.5 h for the powers' wins). The Brood's median peak is 4.5 systems.
+
+### Incoming raids on your base's Overview (10 Nov 2026)
+The user: "incoming raids should also be in the overview of a depot or station." Docked at your own Depot or Station, the
+Overview tab now opens with a red line when a strike is on its way ("Raid incoming · a strike from <who> is on its way to
+<base> (N jumps out · about m:ss)") or attacking ("Under attack"). It uses the same `coThreat` / `coThreatEta` as Holdings
+(16zo_company2.js, a `homeHtml` wrapper). Test: baserun.py.

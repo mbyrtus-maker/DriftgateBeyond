@@ -43,8 +43,9 @@ async def main():
       return JSON.stringify({btn:!!b,n0,n1,sec:/Station buildings/.test(txt)&&/Development modules/.test(txt),hold:/they set the Station's level/.test(hold)&&/Development modules \\(Works tab/.test(hold),msg:dockErr})})()"""))
     check("a Station's buildings are built on its Works tab (above the modules), and Holdings tells buildings and modules apart",r['btn'] and r['sec'] and r['n1']==r['n0']+1 and r['hold'],r)
     r=json.loads(await ev("""(()=>{const P=S.player,R=myDepots(P)[0];const f=FAC_IDS.find(x=>homeOf(x)&&homeOf(x)!==R.sid&&trPath(homeOf(x),R.sid));const ev={id:S.nextId++,type:'offensive',att:f,st:R.sid,stName:R.name,sector:R.sid,eta:S.T+60,force:{},n:1,tier:1,cls:['interceptor'],stage:'inbound'};
-      S.events.push(ev);prwStrikeStart(ev);const h=holdingsHtml(P);const m=h.match(/under threat[^<]*/);S.events.splice(S.events.indexOf(ev),1);S.raids=(S.raids||[]).filter(x=>x.strike!==ev.id);return JSON.stringify({tr:!!ev.tr,lab:m?m[0]:null})})()"""))
+      S.events.push(ev);prwStrikeStart(ev);const h=holdingsHtml(P);const m=h.match(/under threat[^<]*/);const P0=[P.sector,P.docked];P.sector=R.sid;P.docked='station';let ov='';try{$('dock').hidden=true;openDock('home');ov=$('dock').innerHTML;$('dock').hidden=true}catch(e){ov='ERR '+e.message}P.sector=P0[0];P.docked=P0[1];S.events.splice(S.events.indexOf(ev),1);S.raids=(S.raids||[]).filter(x=>x.strike!==ev.id);return JSON.stringify({tr:!!ev.tr,lab:m?m[0]:null,ov:/Raid incoming/.test(ov)&&/jump/.test(ov),ovErr:ov.startsWith('ERR')?ov:''})})()"""))
     check("a strike flying the lanes shows jumps out and a sane arrival time on Holdings",r['tr'] and r['lab'] and 'jump' in r['lab'] and not __import__('re').search(r'\d{6,}',r['lab']),r)
+    check("the dock's Overview at the base shows the incoming raid, with jumps out",r['ov'],r)
     l=await ev(LED);check('ledger exact',l=='exact',l)
     check('no errors',not errs,errs[:3])
     print('ALL OK' if not bad else 'FAILED: '+', '.join(bad))

@@ -12344,6 +12344,11 @@ function coDetail(P,b){const s=[];
 function coThreatEta(t){try{const r=t.tr&&(S.raids||[]).find(x=>x.id===t.tr);if(r&&r.path){const left=Math.max(0,r.path.length-1-r.leg),eta=r.next+Math.max(0,left-1)*RAID.hop;
     return` (${left} jump${left===1?'':'s'} out · about ${fmtT(Math.max(0,eta-S.T))})`}
   if(t.eta&&t.eta-S.T<36000)return` (lands in ${fmtT(Math.max(0,t.eta-S.T))})`}catch(e){}return''}
+// (user, 10 Nov 2026: "incoming raids should also be in the overview of a depot or station") the dock's Overview at your own
+// base opens with any strike on its way to it (who, jumps out, when) or attacking it now
+function coThreatWho(t){return t.att==='brood'?'the Brood':t.att==='pirate'?'the Unbound':(FAC(t.att)||{}).name||'an enemy'}
+{const o=homeHtml;homeHtml=function(c,P){let h=o.apply(this,arguments);try{const R=P&&P.docked==='station'&&S.stations[P.sector];if(R&&R.owner==='player'&&!S.unb){const t=coThreat(R);
+    if(t&&!t.hurt){const w=coThreatWho(t);h=`<div class="coalert" style="border-left-color:var(--danger)"><span class="cdot" style="background:var(--danger)"></span><span style="flex:1"><b style="color:var(--danger)">${t.stage==='inbound'?'Raid incoming':'Under attack'}</b> · ${t.stage==='inbound'?`a strike from ${esc(w)} is on its way to ${esc(R.name)}${coThreatEta(t)}`:`${esc(w)} is attacking ${esc(R.name)}`}</span></div>`+h}}}catch(e){console.error(e)}return h}}
 
 //@src 16zp_company3.js
 // ============================================================ the Company screen, minimal: Allegiance, Economy, Jobs, Black market (3 Nov 2026)
