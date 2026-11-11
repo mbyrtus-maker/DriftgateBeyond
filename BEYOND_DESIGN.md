@@ -3893,3 +3893,8 @@ The user: "incoming raids should also be in the overview of a depot or station."
 Overview tab now opens with a red line when a strike is on its way ("Raid incoming · a strike from <who> is on its way to
 <base> (N jumps out · about m:ss)") or attacking ("Under attack"). It uses the same `coThreat` / `coThreatEta` as Holdings
 (16zo_company2.js, a `homeHtml` wrapper). Test: baserun.py.
+
+### Rift Shard on a part with no trait (10 Nov 2026, review)
+Found in review. Since the Brand screen gave the name-only parts (landing kit, beacon rig, launch rack, cargo scanner,
+hidden hold) an empty entry in `BR.step`, a Rift Shard used while upgrading one of them picked a trait from an empty list
+and threw. It now says the shard burned out, as it did before (16zi_small.js `pupr`).

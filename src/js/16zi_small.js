@@ -59,7 +59,7 @@ function riftSwap(k,srcs){const c=comp(k),s=comp('riftshard');takeFrom({riftshar
       riftSwap(lack[0],srcs);inv.add(P.cargo,lack[0],1);const r2=o.call(this,act,`${k}:1`);if(String(dockErr).startsWith('✓'))dockErr+=` A Rift Shard stood in for the ${ITEMS[lack[0]].name}.`;else{inv.take(P.cargo,lack[0],1);dockErr+=' (the shard was spent)'}return r2}}}
   if(act==='pupr'){const c=dockCtx(),P=S.player;const srcs=[P.cargo,(c&&c.storage)||P.vault];if(countIn('riftshard',srcs)<1){dockErr='No Rift Shard on hand.';return}dockAction('pup',arg);if(!String(dockErr).startsWith('✓'))return;
     const[g,i0]=String(arg).split(':'),F=fitOf(P),kind=(g==='w'?F.w:F.u)[+i0];takeFrom({riftshard:1},srcs);const s=comp('riftshard');S.drift=S.drift||{};for(const e of RAWS)S.drift[e]=(S.drift[e]||0)+s[e];
-    const St=BR.step[kind];if(!St){dockErr+=' The shard burned out: that part takes no trait.';return}const keys=Object.keys(St).filter(t=>t!=='speed'),t=pick(keys),good=Math.random()<SMX.riftGood,steps=good?ri(1,2):-1,v=Math.round(steps*St[t][0]*St[t][1]*1000)/1000;
+    const St=BR.step[kind];if(!St||!Object.keys(St).some(t=>t!=='speed')){dockErr+=' The shard burned out: that part takes no trait.';return}const keys=Object.keys(St).filter(t=>t!=='speed'),t=pick(keys),good=Math.random()<SMX.riftGood,steps=good?ri(1,2):-1,v=Math.round(steps*St[t][0]*St[t][1]*1000)/1000;
     F.rt=F.rt||{};F.rt[g+i0]={k:kind,tr:{[t]:v}};dockErr+=` The Rift Shard left a trait: ${trText({[t]:v})}.`;return}
   return o.apply(this,arguments)}}
 // a rift trait counts with the part's maker trait
