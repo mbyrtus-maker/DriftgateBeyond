@@ -3878,4 +3878,12 @@ Test: stdparts.py (depots built later keep an empty shelf; only what raids took 
 ### Brood grazing 1.0 (10 Nov 2026)
 After the standard-stock fix, the war check gave Brood 26%, Varkesh 26, Halcyon 25, Ostrova 21. The user: "Lower grazing to
 1.0 and simulation." `BAL.brGraze` 1.3 → 1.0 (02_state.js; `BR0.brGraze` takes it from there). The 8 Nov sweep had 1.0 at
-Brood 20%, Halcyon 29, Ostrova 27, Varkesh 23, before the standard-stock and depot-miner changes. War check: pending.
+Brood 20%, Halcyon 29, Ostrova 27, Varkesh 23, before the standard-stock and depot-miner changes.
+War check (war bot; build `c7c21f3`, 600 galaxies, 16 h, `PPORT=mw`, neutral leaders, no tune file, no page errors):
+**Varkesh 25%, Ostrova 25%, Brood 25%, Halcyon 24%, unfinished 1%** (151 / 150 / 150 / 144 / 5).
+- Against grazing 1.3 at `dc36ad2` (Brood 26, Varkesh 26, Halcyon 25, Ostrova 21, unfinished 2): the Brood fell only 1 point,
+  within the noise. Ostrova rose 4 points (21 to 25), outside it. Halcyon and Varkesh did not move.
+- Against the 8 Nov sweep at 1.0 (Brood 20, Halcyon 29, Ostrova 27, Varkesh 23): the Brood is 5 points higher and Halcyon 5 lower.
+  Grazing 1.0 no longer puts the Brood at 20% on the current build.
+- Target: all three powers are on 25% (within ±2). The Brood is about 5 points over its 20%, outside the noise.
+  Brood wins come early (median 3.7 h, against 6.3 to 7.5 h for the powers' wins). The Brood's median peak is 4.5 systems.
