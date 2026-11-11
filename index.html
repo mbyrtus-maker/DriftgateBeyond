@@ -16414,7 +16414,7 @@ function cmpFitDelta(R){const d={};const sub=(o,s)=>{for(const k in s)d[k]=(d[k]
 //@src 16zzzr_stdparts.js
 // ============================================================ Beyond: standard parts and systems at every station (user, 9 Nov 2026)
 // "I'm docked at Mirrorwater and standard parts aren't available. Standard parts should start at all stations with all systems
-// with some stock." This reverses part of 3 Nov 2026 ("markets sell only corporations' parts"): the makers' parts stay, and
+// with some stock." (Restocking changed 10 Nov 2026, see stdTick.) This reverses part of 3 Nov 2026 ("markets sell only corporations' parts"): the makers' parts stay, and
 // beside them every power's and freeport's market now starts with STD.part of each standard part and STD.sys of
 // each standard grade 1 system, and keeps them: every STD.every seconds a station short of one builds it from its own store
 // (as the powers build plate and conduit), so the ledger stays exact. A save from before gets the starting stock once (the
@@ -16435,9 +16435,22 @@ function stdComp(rc,src,depth,keep){for(const k in rc){const need=rc[k]-(src[k]|
   for(let i=0;i<need;i++){if(!stdComp(c,src,depth+1,keep)||!Object.keys(c).every(e=>(src[e]||0)-c[e]>=(keep[e]||0)))return false;takeFrom(c,[src]);inv.add(src,k,1)}}return haveIn(rc,[src])}
 function stdBuild(id,st,srcs){const rc=ITEMS[id].recipe;for(const src of srcs){if(!src)continue;const keep=stdIsWh(src)?STD.keep:{};if(haveIn(rc,[src])||stdComp(rc,src,0,keep)){takeFrom(rc,[src]);inv.add(st,id,1);return true}}return false}
 function stdIsWh(src){return!!S.econ&&FAC_IDS.some(f=>S.econ.stock[f]===src)}
-function stdTick(){if(NET.cl||!S||S.training||S.unb||S.T<(S.stdT||0))return;S.stdT=S.T+STD.every;
-  for(const R of mkStations()){let st;try{st=mkStock(R)}catch(e){continue}if(!st)continue;const W0=stdWantAt(R),wh=isDepotF(R)&&S.econ&&S.econ.stock[R.owner];const srcs=[st,wh!==st?wh:null];
-    for(const id in W0){let n=W0[id]-(st[id]||0);while(n-->0&&stdBuild(id,st,srcs));}}}
+// (user, 10 Nov 2026: "They just need to start with standard stock, they don't need to keep replenishment going unless something
+// is draining standard stock.") The war check found the Brood winning 83%: no one bought a standard part in a 2.8 h galaxy, but
+// every Depot a power built or took during the war filled its empty shelf from its power's warehouse: 410 parts and systems,
+// about 2,000 Ferrite and 2,000 Cuprite. Now the shelves are stocked once (stdSeed: the galaxy's start, or an old save's first
+// load), and a station rebuilds only what left its shelf since the last look (S.stdHave: each station's shelf count then, with
+// its owner). A station seen for the first time, or with a new owner, is only noted: a Depot built or taken later starts
+// with an empty shelf and stays so until something is sold from it, which it never is.
+function stdTick(){if(NET.cl||!S||S.training||S.unb||S.T<(S.stdT||0))return;S.stdT=S.T+STD.every;const H=S.stdHave=S.stdHave||{};
+  for(const R of mkStations()){let st;try{st=mkStock(R)}catch(e){continue}if(!st)continue;const W0=stdWantAt(R),k=R.sid||R.id,rec=H[k];
+    if(!rec||rec.o!==R.owner){H[k]={o:R.owner,c:Object.fromEntries(Object.keys(W0).map(id=>[id,st[id]||0]))};continue}
+    const wh=isDepotF(R)&&S.econ&&S.econ.stock[R.owner];const srcs=[st,wh!==st?wh:null];
+    for(const id in W0){const cur=st[id]||0;let n=Math.min(W0[id]-cur,(rec.c[id]!=null?rec.c[id]:cur)-cur);while(n-->0&&stdBuild(id,st,srcs));rec.c[id]=st[id]||0}}}
+// at the start (and an old save's first load) every station's stocked shelf is noted, so a sale is seen as a sale
+function stdNote(){const H=S.stdHave={};for(const R of mkStations()){let st;try{st=mkStock(R)}catch(e){continue}if(!st)continue;const W0=stdWantAt(R);H[R.sid||R.id]={o:R.owner,c:Object.fromEntries(Object.keys(W0).map(id=>[id,st[id]||0]))}}}
+{const o=partsSeed;partsSeed=function(){const r=o.apply(this,arguments);try{stdNote()}catch(e){}return r}}
+{const o=migrate;migrate=function(){const r=o.apply(this,arguments);try{if(S&&!S.stdHave&&!S.training)stdNote()}catch(e){}return r}}
 {const o=strategicTick;strategicTick=function(){const r=o.apply(this,arguments);try{stdTick()}catch(e){console.error(e)}return r}}
 for(const k in PART)if(ITEMS[PART[k]])ITEMS[PART[k]].trTxt='Standard: no strength, no weakness. Every station keeps a few.';
 for(const id of stdSysIds())ITEMS[id].trTxt='Standard: the system ships come with. Every station keeps a few.';

@@ -26,11 +26,11 @@ async def main():
     r=json.loads(await ev("""(()=>{const P=S.player;exitSector();W=null;P.sector='mw';enterSector('mw');running=false;P.docked='station';const c=dockCtx(),st=c.market;const id=rdGid('sy_engine',1);mkFilter=mkGroup(id);mkView='tiles';const h=mkHtml(c,P),n0=st[id]||0;devLedger(()=>{P.credits+=20000});const want=stdWant()[id],nb=Math.max(1,n0-want+1);for(let i=0;i<nb;i++)dockAction('buy',id+':1');const bought=n0-(st[id]||0),low=st[id]||0;const src=storeOf(S.stations.mw);devLedger(()=>inv.addAll(src,ITEMS[id].recipe));S.stdT=0;stdTick();
       return JSON.stringify({shown:h.includes(ITEMS[id].name),bought,nb,low,back:st[id]||0,n0,want})})()"""))
     check('at Mirrorwater the standard drive is on the Market, sells, and the station builds another',r['shown'] and r['bought']==r['nb'] and r['back']==r['low']+1,r)
-    r=json.loads(await ev("""(()=>{exitSector();W=null;S.player.docked=null;const st0=new Set(mkStations().map(R=>R.sid));for(let i=0;i<720;i++){S.T+=10;strategicTick();updateEvents()}const miss=[];let nk=0,have=0,nd=0;
+    r=json.loads(await ev("""(()=>{exitSector();W=null;S.player.docked=null;const st0=new Set(mkStations().map(R=>R.sid));let nb=0;const ob=stdBuild;stdBuild=function(){const r=ob.apply(this,arguments);if(r)nb++;return r};for(let i=0;i<720;i++){S.T+=10;strategicTick();updateEvents()}stdBuild=ob;const miss=[];let nk=0,have=0,nd=0;
       for(const R of mkStations()){const st=mkStock(R),W0=stdWantAt(R);if(st0.has(R.sid)&&R.kind!=='depot'){for(const id in W0)if((st[id]||0)<1)miss.push(R.sid+':'+id)}else if(!st0.has(R.sid)){nd++;for(const id in W0){nk++;if((st[id]||0)>0)have++}}}
-      return JSON.stringify({nm:miss.length,miss:miss.slice(0,6),newDepots:nd,share:nk?have/nk:1})})()"""))
+      return JSON.stringify({nm:miss.length,miss:miss.slice(0,6),newDepots:nd,share:nk?have/nk:0,built:nb})})()"""))
     check('two hours on, the cores and freeports still have every standard part and system',r['nm']==0,r)
-    check('depots built since fill from their own store or their power\'s warehouse (most kinds on the shelf)',r['share']>=0.6,r)
+    check("with nothing sold, nothing is rebuilt in two hours, and depots built since keep an empty shelf (no drain on the powers' ore)",r['built']==0 and r['share']==0,r)
     l=await ev(LED);check('ledger exact',l=='exact',l)
     check('no errors',not errs,errs[:3])
     print('ALL OK' if not bad else 'FAILED: '+', '.join(bad))

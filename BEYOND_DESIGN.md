@@ -3844,3 +3844,19 @@ The user chose:
 
 Saltmoor's Depot went from 1.4 to 0.35. A grace period for new bases was offered and not taken. The powers' and the Brood's
 targeting is unchanged. War check below.
+
+### Standard stock: stocked once, rebuilt only when sold (10 Nov 2026)
+The war check after the Unbound change found the Brood winning 83% (target about 20%). A 120-galaxy look at the build before
+that change gave 75%, so the Unbound change didn't cause it. The war bot's bisect pointed at `c09db15` (standard stock).
+
+The drain: in a 2.8 h galaxy no one bought a standard part, but `stdTick` rebuilt 410 parts and systems (about 2,000
+Ferrite and 2,000 Cuprite), all at Depots the powers built or took during the war. Each new Depot filled its empty shelf
+from its power's warehouse, which starved the powers of exactly the ores they run short of.
+
+The user: "They just need to start with standard stock, they don't need to keep replenishment going unless something is
+draining standard stock." Now:
+- the shelves are stocked once (`stdSeed` at the start or an old save's first load), and noted (`stdNote`, `S.stdHave`);
+- every 10 minutes a station rebuilds only what left its shelf since the last look;
+- a Depot built or taken later starts with an empty shelf and stays so.
+
+Test: stdparts.py, which now checks that nothing is rebuilt in two hours with nothing sold. War check on the fix: pending.
