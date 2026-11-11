@@ -3874,3 +3874,8 @@ Test: stdparts.py (depots built later keep an empty shelf; only what raids took 
   First bad: `c09db15`.
 - Still not separated: the Unbound's `pirNear` targeting, depot store modules mining only through their miners (`5535a44`), the Depot Kit recipe, four crews, and the fees all landed together with the fix. Any of them could account for the remaining Brood +8.
 - Not tuned. Brood grazing is the dial the Brood is balanced on (`BAL.brGraze` 1.3 in `02_state.js`; the 8 Nov sweep found 1.0 about 3 points lower for the Brood than 1.3).
+
+### Brood grazing 1.0 (10 Nov 2026)
+After the standard-stock fix, the war check gave Brood 26%, Varkesh 26, Halcyon 25, Ostrova 21. The user: "Lower grazing to
+1.0 and simulation." `BAL.brGraze` 1.3 → 1.0 (02_state.js; `BR0.brGraze` takes it from there). The 8 Nov sweep had 1.0 at
+Brood 20%, Halcyon 29, Ostrova 27, Varkesh 23, before the standard-stock and depot-miner changes. War check: pending.
