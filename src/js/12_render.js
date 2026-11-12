@@ -429,9 +429,21 @@ const GEN={},Q_ID={x:0,y:0,z:0,w:1};
 function genMeshes(){
   GEN.shield=new GB().sphere(1,12,18,[1,1,1],1).upload();
   GEN.ring=new GB().circleLines(1,96,[1,1,1]).upload(true);
-  GEN.gate=(()=>{const g=new GB();g.set(0,0,0,qAxis(1,0,0,Math.PI/2,q0())).torus(110,8,40,6,[.55,.57,.63],0,true);for(let i=0;i<12;i++){const a=i/12*TAU;g.set(Math.cos(a)*110,Math.sin(a)*110,0).box(9,9,20,[1,1,1],1)}return g.upload()})();
+  // (12 Nov 2026, graphics pass) the jump gate: it was a plain hoop with twelve lit cubes on it. Same size and place; now a main
+  // hoop with a dark inner liner and a thin outer rail, and twelve emitter pylons: a housing astride the hoop with a lit band
+  // through it (the lights stay where the cubes were), a fin outside, and an emitter horn with a lit tip pointing into the ring
+  GEN.gate=(()=>{const g=new GB(),qr=qAxis(1,0,0,Math.PI/2,q0()),B=[.55,.57,.63],D=[.3,.31,.36],M=[.44,.46,.52];
+    g.set(0,0,0,qr).torus(110,7,48,6,B,0,true);g.set(0,0,0,qr).torus(102.5,2.2,48,4,D,0,true);g.set(0,0,0,qr).torus(118,1.5,48,4,M,0,true);
+    for(let i=0;i<12;i++){const a=i/12*TAU,c=Math.cos(a),s=Math.sin(a),qa=qAxis(0,0,1,a,q0()),qc=qAxis(0,0,1,a-Math.PI/2,q0());
+      g.set(c*111,s*111,0,qa).box(21,11,15,M);g.set(c*111,s*111,0,qa).box(12,4.5,18,[1,1,1],1);g.set(c*123,s*123,0,qa).box(4,7,10,D);
+      g.set(c*95,s*95,0,qc).cyl(1.6,4.6,12,6,D);g.set(c*88,s*88,0,qc).cyl(.9,.9,3.5,6,[1,1,1],1)}
+    return g.upload()})();
   GEN.disc=(()=>{const g=new GB();for(let i=0;i<48;i++){const a=i/48*TAU,b=(i+1)/48*TAU;g.tri([0,0,0],[Math.cos(a)*104,Math.sin(a)*104,0],[Math.cos(b)*104,Math.sin(b)*104,0],[1,1,1],1)}return g.upload()})();
-  GEN.crate=new GB().box(1,1,1,[.5,.48,.42],0,true).upload();
+  // (12 Nov 2026, graphics pass) the cargo crate: it was a plain cube. Same size; now a body with corner posts, two dark bands
+  // and a hatch plate (its outline, which carries its colour, is drawn as before)
+  GEN.crate=(()=>{const g=new GB(),B=[.5,.48,.42],D=[.37,.36,.32],P=[.43,.41,.36];g.set(0,0,0).box(.94,.94,.94,B,0,true);
+    for(const y of[-.3,.3])g.set(0,y,0).box(1,.11,1,D,0,true);for(const x of[-.44,.44])for(const z of[-.44,.44])g.set(x,0,z).box(.12,1,.12,P,0,true);
+    g.set(0,.48,0).box(.5,.05,.5,D,0,true);return g.upload()})();
   // sector beacon: a spiked mast on a finned hub, a lamp at the top and a spinning halo, both lit in the holder's colour
   GEN.bcn=(()=>{const g=new GB(),M=[.5,.52,.57],D=[.22,.24,.28];g.set(0,-8,0).cyl(16,22,10,10,D);g.set(0,-26,0).cyl(1.5,14,26,10,M);g.set(0,22,0).cyl(3.6,2.4,50,8,M);g.set(0,-2,0).torus(25,3,24,6,M,0,true);
     for(let i=0;i<3;i++){const a=i/3*TAU;g.set(Math.cos(a)*22,-8,Math.sin(a)*22,qAxis(0,1,0,-a,q0())).box(18,7,3,D)}for(let i=0;i<2;i++)g.set(0,40,0,qAxis(0,1,0,i*Math.PI/2,q0())).box(26,2,2,D);return g.upload()})();
