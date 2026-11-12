@@ -3985,3 +3985,9 @@ Found while the manual's statements were checked against the code:
 - the Overview's "Build your first base" step sends you to Trade → Market → Components, where kits are sold.
 
 Left as found: Mirrorwater showed 3 Control Markers per power at a galaxy's start, not the 2 agreed (one more is harmless).
+
+### Decided: the Compact flies the powers' designs in sand (11 Nov 2026)
+The graphics audit found the freeport (Compact) ships are still the old box-built kit models with no Beyond design. Asked
+whether to rebuild them or drop them, the user: "Sand colored same as the powers." So freeport security, independent
+pilots and freeport traders fly the three powers' hull designs in the Compact's sand colour; the old kit ship models go
+once nothing draws them. With the graphics pass (stage 4); gameplay sizes and stats stay each class's own.
