@@ -3917,3 +3917,37 @@ Doc: https://claude.ai/artifact/3dWyL8BohLaVZ38SELR1Gx. Nothing here is built or
   Rules apply in live systems only, so the off-screen war is unchanged; nothing creates or destroys goods.
 - **Decisions open:** Standard length, the hour-6 floor, the 100,000 cr deposit, whether the first contract is offered to
   everyone, which systems, the Hollow Relay derelict, whether AI obeys Truce Water and The Hush.
+
+### Decided: onboarding as a Training option, a 12 to 14 hour game, systems one at a time (11 Nov 2026)
+The user, on the proposal above: "Stick the onboarding section as an option in the training menu. War length or rather
+game length needs to extend to 12-14 hours with the option to go longer. System texture: some of the ideas are good but not
+all of them, we'll need to go step by step through that." Then, asked:
+- **Onboarding:** a guided real start. A top entry on the Training menu, "Guided start: your first contract", launches a
+  real galaxy with the five paid steps, the next-step Overview and the Your path panel on for that pilot. Not built yet.
+- **For every pilot** (all four chosen): rewrite the manual; one Jobs row per target; the small bug fixes; the Overview's
+  next step.
+- **Game length:** 12 to 14 hours as Standard, with a Long option; built after the graphics pass, so its 30-hour war
+  checks don't share the machine.
+- **System texture:** each system reviewed with the user one at a time before any is built.
+
+### The first hour, for every pilot (11 Nov 2026)
+Built from the decision above (16zzzze_firsthour.js, 16zq_jobs2.js, 13_hud_dock_map.js). Test: firsthour.py.
+- **The starter ship arrives armed.** A new pilot (and a joining guest) starts with rounds, rack and charges full, so the
+  first dock no longer bills "Rearmed: 600 rounds for 90 cr". A new pilot starts with the full 1,800 cr.
+- **The Overview's next step.** Where "Ready now" had nothing, it shows one step with a button (`nextStep`):
+  - a job under way: open Jobs;
+  - else the best job for the hull, within 2 jumps if there is one, else the nearest: "Show me the job" opens Jobs with it
+    selected;
+  - else 100,000 cr and no company: Set up my company;
+  - else a company and no base: buy a kit (and that a Heavy Hauler carries it);
+  - else a Depot and no Station: what's missing (`ctrStaWhy`);
+  - else Trade → Best runs.
+
+  Not in training or for the Unbound.
+- **One Jobs row per target.** Jobs whose ids differ only in a last `:<power>` that is their issuer (claim an outpost for
+  Halcyon, Varkesh, Ostrova) are one row (`jbGroup`). The row names the powers; the detail panel has "For which power"
+  with a button each (`jpow`). The row shown is the power picked, else the one you stand best with. The in-flight list is
+  unchanged.
+- **Shipyard:** the card for the class you fly shows your own hull's name and "current", not the yard's design for that
+  class (at a freeport the yard sells a random design per class).
+- **Overview standing line:** each power's name and standing stay together when the line wraps.

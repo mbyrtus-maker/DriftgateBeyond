@@ -17,10 +17,10 @@ function jbBmHtml(c,P,srcs){const f=jobFilter;JB_BM=true;jobFilter='all';let h='
   return`<p class="note" style="margin:0 0 10px">Off-the-books work: a fixer's goods carried past a power's customs, quiet buyers (Riftstone), bounties. Each pays by the heat it risks if you're caught. The Company screen's Black Market tab has every offer your contacts have, galaxy-wide.</p>`+(/class="cowrap/.test(h)?h:`<div class="empty">No black-market runs on offer here right now.</div>`)}
 {const o=openDock;openDock=function(){jbDockN++;return o.apply(this,arguments)}}
 function jbBoard(c,P,srcs,hasOrders,hasMis){const dk=P.cls+'|'+jbDockN;if(!JB_BM&&jbDefKey!==dk){jbDefKey=dk;const f=(typeof jobFit==='function'?jobFit(P.cls):[])[0];jobFilter=f&&JOB_TY[f]?f:'all';jobSel=null}
-const all=jobsList(c,P,srcs,hasOrders,hasMis).filter(j=>JB_BM===(String(j.id).startsWith('bmr:')||!!j.bm)),cnt=t=>t==='all'?all.length:all.filter(j=>j.ty===t).length;
+const all0=jobsList(c,P,srcs,hasOrders,hasMis).filter(j=>JB_BM===(String(j.id).startsWith('bmr:')||!!j.bm)),all=jbGroup(all0,P),cnt=t=>t==='all'?all.length:all.filter(j=>j.ty===t).length;
   if(jobFilter!=='all'&&!JOB_TY[jobFilter])jobFilter='all';
   const L=all.filter(j=>jobFilter==='all'||j.ty===jobFilter).sort((a,b)=>(jobRank(a,P)-jobRank(b,P))||(b.pin||0)-(a.pin||0)||(!!a.need-!!b.need)||(jobSort==='dist'?(a.hops-b.hops)||(b.payN-a.payN):((b.ok?1:0)-(a.ok?1:0))||(b.payN-a.payN)));
-  JOBS_LAST=all;for(const j of L)jobOpenBtns(j);
+  JOBS_LAST=all0;for(const j of L)jobOpenBtns(j);
   if(!L.some(j=>j.id===jobSel))jobSel=L.length?L[0].id:null;const sel=L.find(j=>j.id===jobSel);
   let h=`<div class="coviews">${[['all','All'],...Object.entries(JOB_TY)].map(([k,n])=>`<button class="cov${jobFilter===k?' on':''}" type="button" data-act="jfil" data-arg="${k}" aria-pressed="${jobFilter===k}">${n} ${cnt(k)}</button>`).join('')}</div>`;
   if(!L.length)h+=`<div class="empty">${all.length?'No jobs of this kind right now. Try All.':'No jobs posted here right now. Contracts come every minute or so, and command posts orders with each campaign move.'}</div>`;
@@ -28,11 +28,12 @@ const all=jobsList(c,P,srcs,hasOrders,hasMis).filter(j=>JB_BM===(String(j.id).st
     // (user, 9 Nov 2026) the sort sits at the top of the list, above the pay the jobs offer
     h+=`<div class="jsorthd" style="display:flex;justify-content:flex-end;padding:0 10px 4px"><button class="cov" type="button" data-act="jsort" data-arg="${jobSort==='pay'?'dist':'pay'}">Sort: ${jobSort==='pay'?'Pay':'Distance'} ▾</button></div>`;
     for(const j of L){const col=j.by?sideCol(j.by):j.pin?'#f0b24a':'#8c91a5',iss=jbIssuer(j),on=j.id===jobSel;
-      h+=`<button class="corow jrow2${on?' on':''}${j.need?' dim':''}" type="button" data-act="jsel" data-arg="${j.id}"><svg width="20" height="20" viewBox="0 0 30 30" aria-hidden="true"><polygon points="${JB_SH[j.pin?'camp':j.ty]||JB_SH.haul}" fill="none" stroke="${col}" stroke-width="2.2"/></svg><span style="min-width:0"><b class="cosub" style="font-weight:600">${j.title}</b><span class="note cosub" style="margin:0">${iss?`<span style="color:${col}">${esc(iss)}</span> · `:''}${j.need?`<span style="color:var(--amber)">${esc(j.need)}</span>`:`<span${j.ok?' style="color:#7ad9a7"':''}>${j.sub}</span>`}</span></span><span class="note jw" style="margin:0;white-space:nowrap">${jobIsMine(j)?'<span style="color:#7ad9a7">✓ yours</span> · ':''}${j.where||''}</span><span class="cost mono" style="color:var(--ivory,#ece4cf)">${j.pay}</span></button>`}
+      h+=`<button class="corow jrow2${on?' on':''}${j.need?' dim':''}" type="button" data-act="jsel" data-arg="${j.id}"><svg width="20" height="20" viewBox="0 0 30 30" aria-hidden="true"><polygon points="${JB_SH[j.pin?'camp':j.ty]||JB_SH.haul}" fill="none" stroke="${col}" stroke-width="2.2"/></svg><span style="min-width:0"><b class="cosub" style="font-weight:600">${j._sibs?j._gt:j.title}</b><span class="note cosub" style="margin:0">${j._sibs?`<span style="color:var(--dim)">for ${j._sibs.map(x=>`<span style="color:${sideCol(x.by)}">${esc(FAC(x.by).short)}</span>`).join(', ')}</span> · `:iss?`<span style="color:${col}">${esc(iss)}</span> · `:''}${j.need?`<span style="color:var(--amber)">${esc(j.need)}</span>`:`<span${j.ok?' style="color:#7ad9a7"':''}>${j.sub}</span>`}</span></span><span class="note jw" style="margin:0;white-space:nowrap">${jobIsMine(j)?'<span style="color:#7ad9a7">✓ yours</span> · ':''}${j.where||''}</span><span class="cost mono" style="color:var(--ivory,#ece4cf)">${j.pay}</span></button>`}
     if(c&&c.owner==='neutral'&&!P.sworn&&!S.unb){const hid=FAC_IDS.filter(f=>standOf(f,P)<STAND.dock);if(hid.length)h+=`<div class="coln" style="border:0;color:var(--dim)"><span class="cdot" style="background:#ff9a4a"></span>${hid.map(f=>esc(FACTIONS[f].short)).join(', ')} jobs hidden: your standing is ${standName(Math.min(...hid.map(f=>standOf(f,P))))}</div>`}
     h+=`</div><div class="codet jdet2">`;
     if(sel){const iss=jbIssuer(sel),v=sel.by&&STAND_POW.includes(sel.by)?standOf(sel.by,P):null;
       h+=`<div class="lab">${sel.pin?'Campaign':JOB_TY[sel.ty]}${sel.where?' · '+sel.where:''}</div><div class="ldname" style="align-items:flex-start"><b style="font-size:20px;line-height:1.15">${sel.title}</b></div>`;
+      if(sel._sibs)h+=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px"><span class="lab" style="margin:0">For which power</span>${sel._sibs.map(x=>`<button class="cov${x.id===sel.id?' on':''}" type="button" data-act="jpow" data-arg="${x.id}" aria-pressed="${x.id===sel.id}" style="${x.id===sel.id?`border-color:${sideCol(x.by)};color:${sideCol(x.by)}`:''}">${esc(FAC(x.by).short)}</button>`).join('')}</div>`;
       if(iss)h+=`<div style="font-size:13px;color:${sideCol(sel.by)};margin:0 0 10px">Issued by ${esc(iss)}${v!=null?` · you are ${standName(v)} (${v>0?'+':''}${Math.round(v)})`:''}</div>`;
       h+=coKV([sel.where?['Where',esc(sel.where)+(sel.sid&&DEF[sel.sid]?` · ${esc(DEF[sel.sid].name)}`:'')]:null,['Pays',`<b class="amber">${sel.pay}</b>`],iss&&sel.by!=='pirate'?['Paid by',`${esc(iss)}'s treasury`]:null]);
       h+=`<div style="margin-top:12px">${sel.need?`<p class="note" style="color:var(--amber);margin:0 0 8px">${esc(sel.need)}</p>`:''}${sel.detail?sel.detail():''}</div>`;
@@ -41,3 +42,15 @@ const all=jobsList(c,P,srcs,hasOrders,hasMis).filter(j=>JB_BM===(String(j.id).st
   if(hasOrders)h+=convoyHtml(c,P);
   return h}
 {const o=jobsHtml;jobsHtml=function(c,P,srcs,hasOrders,hasMis){if(!S||S.unb)return o.apply(this,arguments);let bar='';try{bar=typeof intelBarHtml==='function'?intelBarHtml(c,P):''}catch(e){}return bar+jbBoard(c,P,srcs,hasOrders,hasMis)}}
+
+// (user, 11 Nov 2026: "One Jobs row per target") the same job offered by several powers (claim an outpost for Halcyon, for
+// Varkesh, for Ostrova) is one row; the detail panel asks which power it's for. A group = jobs whose ids differ only in a
+// last ":<power>" that is the job's issuer. The row shown is the power picked (JB_POW), else the selected one, else the
+// power you stand best with.
+const JB_POW={};
+function jbKey(j){const id=String(j.id),i=id.lastIndexOf(':');return i>0&&j.by&&FAC_IDS.includes(j.by)&&id.slice(i+1)===j.by?id.slice(0,i):null}
+function jbGroup(all,P){const G={};for(const j of all){j._sibs=null;const k=jbKey(j);if(k)(G[k]=G[k]||[]).push(j)}const hide=new Set();
+  for(const k in G){const L=G[k];if(L.length<2)continue;const best=L.find(j=>j.id===jobSel)||L.find(j=>j.by===JB_POW[k])||L.slice().sort((a,b)=>(!!a.need-!!b.need)||(standOf(b.by,P)-standOf(a.by,P)))[0];
+    for(const j of L)if(j!==best)hide.add(j);best._sibs=L;best._gt=String(best.title).replace(new RegExp(` for ${esc(FAC(best.by).short).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}$`),'')}
+  return all.filter(j=>!hide.has(j))}
+{const o=dockClick;dockClick=function(act,arg){if(act==='jpow'){const J=(JOBS_LAST||[]).find(j=>j.id===arg);if(J){const k=jbKey(J);if(k)JB_POW[k]=J.by;jobSel=J.id}renderDock();return}return o.apply(this,arguments)}}
