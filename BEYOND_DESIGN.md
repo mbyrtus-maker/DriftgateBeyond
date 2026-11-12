@@ -4119,6 +4119,7 @@ pass. Step one is the dials, with no change in play yet (16zzzzg_length.js; test
   and the user agrees.
 
 ### Game length: the galaxy clock dial (12 Nov 2026)
+*Superseded: the clock is removed; see "Game length: no galaxy clock".*
 Eleven quick looks (120 galaxies, 30 hours each) showed that the win-rule dials cannot reach 12 hours on their own:
 - **Offensive tempo** did nothing for length. With twice the wait between offensives the powers still won at a median of 7.1 h (7.3 h before), and the Brood rose to 43%, because the tempo dial did not slow its building. A war's pace is set by what the warehouses and industry produce, not by how often a side attacks.
 - **The Brood's quiet opening** only delayed the Brood (13% at 30%-strength for two hours), and the powers then won sooner (6.7 h).
@@ -4128,6 +4129,7 @@ Eleven quick looks (120 galaxies, 30 hours each) showed that the win-rule dials 
 So `LEN` gets one more dial, **`clock`**: the strategic turn (mining into the warehouses, industry, every side's decisions, the makers and the rest of the off-screen galaxy) runs once every `clock` beats of 10 s, and each side's waits for its next offensive and build stretch to match. Battles, sieges, convoys and the hold keep real time. It is 1 in every setting until the war checks choose a value and the user agrees what a slower galaxy means for a pilot (shelves restocking, job boards and rock regrowth run on the same turn). Test: `length.py`.
 
 ### Game length: the clock's first looks, and a diplomacy-pace dial (12 Nov 2026)
+*Superseded: the diplomacy guess was disproved and both dials are removed; see "Game length: no galaxy clock".*
 Quick looks, 120 galaxies each (clock 2.2 run for 40 hours):
 
 | Tune | Median | Earliest tenth | Powers' median win | Unfinished | Brood |
@@ -4141,3 +4143,21 @@ Quick looks, 120 galaxies each (clock 2.2 run for 40 hours):
 The clock stretches the whole spread about 2.2 times and galaxies still finish, but the Brood's share rises to about 40% and does not respond to its own growth dials. The powers declare 13.2 wars a galaxy under clock 2.2 against 9.0 at baseline: the leaders' waits and a war's shortest and wearying lengths are real-time timers, so against halved production the powers fight each other more. Whether that is the cause is being tested, not settled.
 
 For that test `LEN` gets a dial **`dip`**: the leaders' waits between decisions (`REL.leadCool`), a pair's wait between dealings (`REL.pairCool`), the wait between proposals (`DECL.propEvery`), and the shortest and the wearying length of a war (`REL.warMin` 600 s and `REL.warLong` 2,400 s, which were bare numbers in `weary` and the leaders' options) are multiplied by it. It is 1 in every setting, so nothing changes in play.
+
+### Game length: no galaxy clock (12 Nov 2026)
+**The user's rule (12 Nov 2026):** "I'd like the simulation to stay as realistic as possible, as if a pilot was in those sectors. So don't deviate too far from that baseline." A system nobody is watching behaves as it would with a pilot in it. A galaxy clock breaks that (at 2.2 an unseen system mines and builds at under half the speed of one a pilot sits in), so the `clock` and `dip` dials and the off-screen stretch are taken out again. `LEN` keeps `quiet`, `full`, `bq`, `floor`, `hold`, `need`, `tempo` and `truce`.
+
+What the clock looks found, for the record (120 galaxies each, clock 2.2, 40 hours):
+
+| Tune | Median | Brood |
+|---|---|---|
+| baseline (no clock) | 5.8 h | 26% |
+| clock alone | 12.8 h | 40% |
+| clock, the Brood's growth at half | 12.5 h | 38% |
+| clock, diplomacy timers stretched to match | 12.9 h | 40% |
+| clock, diplomacy, and the Brood's surge gap, node growth and Leviathan minute stretched | 8.7 h | 53% |
+| clock, diplomacy, and every off-screen duration stretched (flights, builds, capitals, raids, surge gap, node growth) | 9.1 h | 48% |
+
+The clock reached the length but always raised the Brood, and nothing tried brought it back. **The cause is not traced.** Disproved: the Brood's growth dials (no effect), the powers' diplomacy pace (wars per galaxy returned to 8.5 from 13.2, the Brood stayed at 40%), and real-time off-screen durations (stretching them made it worse). An instrumented run did show the powers' attacks on the Brood succeeding less often under the clock (33% and 28% in the first two stretched hours against 44% and 37%).
+
+Still standing from the earlier looks: 24 systems to win, a 30-minute hold and no win before hour 6 give a 7.7 h median (the powers' wins 9.6 h), the Brood 24%, 5% unfinished at 30 hours. Reaching 12 to 14 hours needs a rule that works the same in view and out of view, to be agreed with the user.

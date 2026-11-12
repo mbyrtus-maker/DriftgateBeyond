@@ -12,32 +12,14 @@
 //   tempo            the time between any side's offensives is multiplied by this (1 = as before)
 //   truce            1 = the other powers call a truce against a power on the win clock (TRUCE_POWERS; the user turned
 //                    this off on 8 Nov 2026, so it is 0 in every setting and only war checks try it)
-//   clock            the galaxy's clock: the strategic turn (mining into the warehouses, industry, every side's decisions,
-//                    the makers and the rest of the off-screen galaxy) runs once every `clock` beats of 10 s instead of
-//                    every beat, and each side's waits for its next offensive and next build are stretched to match.
-//                    What happens out of sight stretches with it: a fleet's flight to its target, builds, capitals in
-//                    the slip, strike fleets' jumps and waits, the gap between Brood surges, Bloom Node growth. A fight
-//                    with a pilot present and the hold on the galaxy keep real time. (1 = as before)
-//   dip              the powers' diplomacy keeps the same pace as a slowed galaxy: the leaders' waits between decisions, a
-//                    pair's wait between dealings, the wait between proposals, and the shortest and the wearying length of
-//                    a war are multiplied by this (1 = as before)
 // The values are tuned by war checks (BEYOND_DESIGN.md "Game length"); a tune file sets LEN_SET.std.* or LEN_SET.long.*.
-const LEN_SET={legacy:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0,clock:1,dip:1},
-  std:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0,clock:1,dip:1},
-  long:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0,clock:1,dip:1}};
+const LEN_SET={legacy:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0},
+  std:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0},
+  long:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0}};
 const LEN={...LEN_SET.legacy};
 let LEN_NEW='std';
 function lenKey(){return S&&!S.training&&S.glen&&LEN_SET[S.glen]?S.glen:'legacy'}
-const LEN_DIP0={leadCool:[...REL.leadCool],pairCool:REL.pairCool,warMin:REL.warMin,warLong:REL.warLong,propEvery:DECL.propEvery};
-const LEN_T0={hop:RAID.hop,wait:RAID.wait,cool:RAID.cool,slack:RAID.slack,gap:SURGE.gap,every:[...BLOOM.every]};
-function lenApply(){Object.assign(LEN,LEN_SET[lenKey()]);WIN_TIME=LEN.hold;VIC_NEED=LEN.need;TRUCE_POWERS=!!LEN.truce;
-  const d=LEN.dip>0?LEN.dip:1;REL.leadCool=LEN_DIP0.leadCool.map(x=>x*d);REL.pairCool=LEN_DIP0.pairCool*d;REL.warMin=LEN_DIP0.warMin*d;REL.warLong=LEN_DIP0.warLong*d;DECL.propEvery=LEN_DIP0.propEvery*d;
-  const k=LEN.clock>1?LEN.clock:1;RAID.hop=LEN_T0.hop*k;RAID.wait=LEN_T0.wait*k;RAID.cool=LEN_T0.cool*k;RAID.slack=LEN_T0.slack*k;SURGE.gap=LEN_T0.gap*k;BLOOM.every=LEN_T0.every.map(x=>x*k)}
-// the clock stretches what happens out of sight to match: a fleet's flight to its target, a build, a capital in the slip
-// (each stage of an off-screen event, once, when it starts). A fight or a build with a pilot in the system keeps real time,
-// and so does anything a pilot ordered.
-function lenEvStretch(k){for(const ev of S.events||[]){const st=ev.stage||'';if(ev.lenK===st)continue;ev.lenK=st;if(st==='engaged'||st==='done'||ev.live||ev.att==='player'||ev.owner==='player'||ev.pid!=null)continue;
-    for(const f of['eta','until','hold'])if(typeof ev[f]==='number'&&ev[f]>S.T&&ev[f]<1e11)ev[f]=S.T+(ev[f]-S.T)*k}}
+function lenApply(){Object.assign(LEN,LEN_SET[lenKey()]);WIN_TIME=LEN.hold;VIC_NEED=LEN.need;TRUCE_POWERS=!!LEN.truce}
 {const o=newGame;newGame=function(){const r=o.apply(this,arguments);try{if(S&&!S.training&&!S.glen)S.glen=LEN_NEW;lenApply()}catch(e){console.error(e)}return r}}
 {const o=migrate;migrate=function(){const r=o.apply(this,arguments);try{lenApply()}catch(e){}return r}}
 // the Brood's quiet opening
@@ -49,13 +31,6 @@ function lenBroodF(){if(!(LEN.bq<1)||!S)return 1;const a=LEN.quiet,b=Math.max(LE
   return o.apply(this,arguments)}}
 // tempo: the wait until a side's next offensive, stretched
 {const o=planOffensive;planOffensive=function(f){const r=o.apply(this,arguments);try{const a=S.ai&&S.ai[f];if(LEN.tempo!==1&&a&&a.next>S.T)a.next=S.T+(a.next-S.T)*LEN.tempo}catch(e){}return r}}
-{const o=strategicTick;strategicTick=function(){try{lenApply()}catch(e){}
-  const k=LEN.clock>1?LEN.clock:1;if(k===1)return o.apply(this,arguments);
-  S.lenAcc=(S.lenAcc||0)+1;if(S.lenAcc<k)return;S.lenAcc-=k;
-  const b={};for(const f in S.ai)b[f]=[S.ai[f].next,S.ai[f].build];
-  const r=o.apply(this,arguments);
-  try{for(const f in S.ai){const a=S.ai[f],p=b[f]||[];if(a.next!==p[0]&&a.next>S.T)a.next=S.T+(a.next-S.T)*k;if(a.build!==p[1]&&a.build>S.T)a.build=S.T+(a.build-S.T)*k}}catch(e){console.error(e)}
-  try{lenEvStretch(k)}catch(e){console.error(e)}
-  return r}}
+{const o=strategicTick;strategicTick=function(){try{lenApply()}catch(e){}return o.apply(this,arguments)}}
 // the war check's record: the setting and its dials
 {const o=relStats;relStats=function(){const r=o.apply(this,arguments);try{r.glen=lenKey();r.len={...LEN}}catch(e){}return r}}
