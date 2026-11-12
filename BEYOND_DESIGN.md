@@ -4117,3 +4117,12 @@ pass. Step one is the dials, with no change in play yet (16zzzzg_length.js; test
 - Not built, on purpose: the coalition against a leading power from the proposal. The user turned truces against a power
   off on 8 Nov ("no truce against a power at 20 systems"); it comes back only if the other dials can't reach the target
   and the user agrees.
+
+### Game length: the galaxy clock dial (12 Nov 2026)
+Eleven quick looks (120 galaxies, 30 hours each) showed that the win-rule dials cannot reach 12 hours on their own:
+- **Offensive tempo** did nothing for length. With twice the wait between offensives the powers still won at a median of 7.1 h (7.3 h before), and the Brood rose to 43%, because the tempo dial did not slow its building. A war's pace is set by what the warehouses and industry produce, not by how often a side attacks.
+- **The Brood's quiet opening** only delayed the Brood (13% at 30%-strength for two hours), and the powers then won sooner (6.7 h).
+- **More systems to win, a longer hold and no win before hour 6** helped most: 24 systems, a 30-minute hold and the hour-6 floor gave a median of 7.7 h (the powers' wins 9.6 h) with 5% unfinished. But every Brood win then landed exactly at 6.5 h (the floor plus the hold), and pushing further (26 systems, a 45-minute hold) left 16% unfinished.
+- **A truce against a power on the win clock** made things worse (the Brood 28 to 33%, up to 15% unfinished). It stays off.
+
+So `LEN` gets one more dial, **`clock`**: the strategic turn (mining into the warehouses, industry, every side's decisions, the makers and the rest of the off-screen galaxy) runs once every `clock` beats of 10 s, and each side's waits for its next offensive and build stretch to match. Battles, sieges, convoys and the hold keep real time. It is 1 in every setting until the war checks choose a value and the user agrees what a slower galaxy means for a pilot (shelves restocking, job boards and rock regrowth run on the same turn). Test: `length.py`.

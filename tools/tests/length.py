@@ -26,11 +26,14 @@ async def main():
       // tempo: the wait to the next offensive is doubled
       S.T=8000;const po=S.ai.varkesh;LEN_SET.std.tempo=1;lenApply();const camp=campBusy;campBusy=()=>true;const r0=[];for(let i=0;i<40;i++){planOffensive('varkesh');r0.push(po.next-S.T)}LEN_SET.std.tempo=2;lenApply();const r1=[];for(let i=0;i<40;i++){planOffensive('varkesh');r1.push(po.next-S.T)}campBusy=camp;
       out.t1=r0.reduce((a,b)=>a+b,0)/40;out.t2=r1.reduce((a,b)=>a+b,0)/40;
+      // the clock: at 2 the strategic turn runs every other beat, and the wait to a side's next build is doubled
+      LEN_SET.std.tempo=1;LEN_SET.std.clock=2;lenApply();S.lenAcc=0;let nT=0;const df=diffuse;diffuse=function(){nT++;return df.apply(this,arguments)};S.ai.varkesh.build=0;S.ai.varkesh.next=1e12;for(let i=0;i<10;i++){S.T+=10;strategicTick();if(i===1)out.cBuild=S.ai.varkesh.build-S.T}diffuse=df;out.cTurns=nT;LEN_SET.std.clock=1;lenApply();
       const g=S.glen;S.glen=undefined;lenApply();out.legacy={need:VIC_NEED,hold:WIN_TIME,key:lenKey()};S.glen=g;Object.assign(LEN_SET.std,keep);lenApply();S.T=10;return JSON.stringify(out)})()"""))
     check('the dials set the systems to win and the hold time',r['need']==22 and r['hold']==1800,r)
     check("the Brood's quiet opening: 40% strength at first, rising to full by the set hour",abs(r['f0']-.4)<1e-9 and abs(r['fMid']-.7)<1e-9 and r['fFull']==1 and abs(r['brOff']-2.5)<1e-6,r)
     check('no hold starts before the floor; after it the clock starts as before',r['vicEarly'] is None and r['vicLate']=='halcyon',r)
     check('tempo 2 doubles the wait to the next offensive',1.7<r['t2']/r['t1']<2.3,r)
+    check('clock 2: the strategic turn runs on every other beat and the wait to the next build is doubled',r['cTurns']==5 and 300<=r['cBuild']<=520,{k:r[k] for k in('cTurns','cBuild')})
     check('a galaxy with no setting keeps the old rules (20 systems, 10 minutes)',r['legacy']=={'need':20,'hold':600,'key':'legacy'},r)
     l=await ev(LED);check('ledger exact',l=='exact',l)
     check('no errors',not errs,errs[:3])

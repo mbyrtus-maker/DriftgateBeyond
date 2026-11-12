@@ -17674,10 +17674,14 @@ function stSeats(nm,size,n,k){const M=MDL.i[nm],K=M.sp.length,l=GST.lift*GST.ts*
 //   tempo            the time between any side's offensives is multiplied by this (1 = as before)
 //   truce            1 = the other powers call a truce against a power on the win clock (TRUCE_POWERS; the user turned
 //                    this off on 8 Nov 2026, so it is 0 in every setting and only war checks try it)
+//   clock            the galaxy's clock: the strategic turn (mining into the warehouses, industry, every side's decisions,
+//                    the makers and the rest of the off-screen galaxy) runs once every `clock` beats of 10 s instead of
+//                    every beat, and each side's waits for its next offensive and next build are stretched to match.
+//                    Battles, sieges, convoys and the hold on the galaxy keep real time. (1 = as before)
 // The values are tuned by war checks (BEYOND_DESIGN.md "Game length"); a tune file sets LEN_SET.std.* or LEN_SET.long.*.
-const LEN_SET={legacy:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0},
-  std:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0},
-  long:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0}};
+const LEN_SET={legacy:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0,clock:1},
+  std:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0,clock:1},
+  long:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0,clock:1}};
 const LEN={...LEN_SET.legacy};
 let LEN_NEW='std';
 function lenKey(){return S&&!S.training&&S.glen&&LEN_SET[S.glen]?S.glen:'legacy'}
@@ -17693,7 +17697,13 @@ function lenBroodF(){if(!(LEN.bq<1)||!S)return 1;const a=LEN.quiet,b=Math.max(LE
   return o.apply(this,arguments)}}
 // tempo: the wait until a side's next offensive, stretched
 {const o=planOffensive;planOffensive=function(f){const r=o.apply(this,arguments);try{const a=S.ai&&S.ai[f];if(LEN.tempo!==1&&a&&a.next>S.T)a.next=S.T+(a.next-S.T)*LEN.tempo}catch(e){}return r}}
-{const o=strategicTick;strategicTick=function(){try{lenApply()}catch(e){}return o.apply(this,arguments)}}
+{const o=strategicTick;strategicTick=function(){try{lenApply()}catch(e){}
+  const k=LEN.clock>1?LEN.clock:1;if(k===1)return o.apply(this,arguments);
+  S.lenAcc=(S.lenAcc||0)+1;if(S.lenAcc<k)return;S.lenAcc-=k;
+  const b={};for(const f in S.ai)b[f]=[S.ai[f].next,S.ai[f].build];
+  const r=o.apply(this,arguments);
+  try{for(const f in S.ai){const a=S.ai[f],p=b[f]||[];if(a.next!==p[0]&&a.next>S.T)a.next=S.T+(a.next-S.T)*k;if(a.build!==p[1]&&a.build>S.T)a.build=S.T+(a.build-S.T)*k}}catch(e){console.error(e)}
+  return r}}
 // the war check's record: the setting and its dials
 {const o=relStats;relStats=function(){const r=o.apply(this,arguments);try{r.glen=lenKey();r.len={...LEN}}catch(e){}return r}}
 
