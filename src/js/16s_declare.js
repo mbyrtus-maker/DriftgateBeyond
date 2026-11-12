@@ -11,7 +11,7 @@ function myStations(P){return myDepots(P).filter(R=>R.pst)}
 function declOK(P){return!P.sworn&&!P.decl&&myStations(P).length>0&&!S.unb}
 function declare(P){if(P.sworn)return'You fly for a faction: renounce it first.';if(P.decl)return'You have already declared.';if(!myStations(P).length)return'Declaring takes a Station of your own.';
   P.decl={name:`${P.name||'Your'} Free Company`.replace(/^Your Free/,'Your Free'),T:S.T};P.props=[];allFeed(`⚑ ${P.name||'A contractor'} declares a faction: ${P.decl.name}. It holds ${controlCounts().player||0} system${(controlCounts().player||0)===1?'':'s'}.`,'news');
-  return`✓ ${P.decl.name} is declared. Hold ${VIC_NEED} systems for ${Math.round(WIN_TIME/60)} minutes to win the galaxy; lead, and the powers will unite against you.`}
+  return`✓ ${P.decl.name} is declared. Hold ${VIC_NEED} systems for ${Math.round(WIN_TIME/60)} minutes to win the galaxy. Lose your last Station and the faction falls back into a company.`}
 // the coalition aimed at a declared faction makes its members hostile to the founder
 {const o=pilotHostile;pilotHostile=function(P,x){if(o.apply(this,arguments))return true;P=P||S.player;const C=S.coal;return!!(P&&P.decl&&C&&C.lead==='player'&&C.mem.includes(x))}}
 // allies proposed and accepted: their stations are open and their ships friendly while standing holds

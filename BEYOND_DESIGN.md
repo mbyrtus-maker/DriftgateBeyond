@@ -3951,3 +3951,37 @@ Built from the decision above (16zzzze_firsthour.js, 16zq_jobs2.js, 13_hud_dock_
 - **Shipyard:** the card for the class you fly shows your own hull's name and "current", not the yard's design for that
   class (at a freeport the yard sells a random design per class).
 - **Overview standing line:** each power's name and standing stay together when the line wraps.
+
+### The Pilot's Manual, rewritten for Beyond (11 Nov 2026)
+The user: "Rewrite the manual" (decided above, for every pilot). The manual (H; `src/page.html`, `#help`) still described
+Driftgate 1: 7 systems and a two-hour deadline, the Hollow Relay's tolls, fabricated markers, four ores, Mk upgrades,
+faction command and a faction chosen at the start. It is now written for Beyond, at about half the length (2,600 words
+against 5,200), in short paragraphs under fourteen headings:
+- left column: Starting out, Controls (the key list, unchanged), Instruments, Flying and jumping, Fighting, Mining, Hauling
+  and trade, Jobs standing and heat;
+- right column: The dock, The closed economy, How bases work, The powers the Brood and the Unbound, The war and winning,
+  Playing with friends.
+
+**The rule it was written to:** every statement was checked against the code or the newest design note; an old claim
+stayed only if it is still true, and nothing planned is described. So the manual says nothing about swearing to a power
+(not built), Ostrova's perk (being redesigned) or a truce of the powers against a leader (off since 8 Nov).
+
+**How bases work** states the rules pilots have hit as surprises: kits ride only in a Heavy Hauler, and one bought in
+another hull waits in that station's hangar; O builds; the company and its 100,000 cr treasury come before a Depot or
+Station Kit; a Station is upgraded from a Depot; a Station's five buildings set its level and are separate from development
+modules; a Depot mines only through its miners; R&D raises a brand line one grade at a time and the base caps the grade.
+
+Text only: no game behaviour changed. One CSS rule gives a heading room above it when it follows a paragraph. No test reads
+the manual's text (keys.py reads the key list, which is unchanged). Checked: start_screen.py, load.py, dock.py, keys.py, and
+screenshots at 1440×900 and 900×700.
+
+### Stale wording fixed alongside the manual (11 Nov 2026)
+Found while the manual's statements were checked against the code:
+- the declare message no longer says "lead, and the powers will unite against you" (`TRUCE_POWERS` is off); it says what
+  ends a faction;
+- the brand hint reads "Fabricate → Your brand" (at your own base Fabricate isn't under Station);
+- mining training says Riftstone is contraband in every power's space (it's legal nowhere);
+- the key list calls the Company screen "Company screen";
+- the Overview's "Build your first base" step sends you to Trade → Market → Components, where kits are sold.
+
+Left as found: Mirrorwater showed 3 Control Markers per power at a galaxy's start, not the 2 agreed (one more is harmless).
