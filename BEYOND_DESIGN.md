@@ -3991,3 +3991,56 @@ The graphics audit found the freeport (Compact) ships are still the old box-buil
 whether to rebuild them or drop them, the user: "Sand colored same as the powers." So freeport security, independent
 pilots and freeport traders fly the three powers' hull designs in the Compact's sand colour; the old kit ship models go
 once nothing draws them. With the graphics pass (stage 4); gameplay sizes and stats stay each class's own.
+### The guided start, built (11 Nov 2026)
+Built from "Decided: onboarding as a Training option" above. Code: `16zzzzf_guide.js` (new), with one line each in
+`13_hud_dock_map.js` (the dock's tab list asks `gdHide('bm')`), `16zzzc_indep.js` (`indNew(sid,role)`), `16zq_jobs2.js` and
+`14_save_start_legend_training.js` (the two lesson fixes below). Test: `guide.py` (in the quick suite).
+- **The entry.** First in the Flight school list: "Guided start: your first contract". It presses Launch for you (same
+  callsign check, freeport, role, hull, welcome and first save) and puts a guide on the pilot: `P.guide` (step, role, home,
+  what each step paid, skipped steps, the step's own notes), saved with the game. Solo pilots and hosts. A guest who picks
+  it joins as a normal pilot and is told so. Not offered to the Unbound. A pilot who uses Launch has no `P.guide` and
+  nothing changes for them.
+- **Where the step shows.** In flight: the training panel (top left), with Skip step and End guide (End asks twice). Docked:
+  a card at the top of the Overview (what to do, why, the pay, a button that opens the right tab or job), and a strip above
+  every other tab. `nextStep` returns the guide's step while one is on, and the Next step card gives way to it.
+- **Pay.** Each step is paid by `transfer` from the Freeport Compact's treasury (`S.econ.treasury.neutral`, the one wallet
+  all three freeports pay from: a freeport has no treasury of its own). A skipped step pays nothing.
+- **The five steps as built** (departures from the decided table marked *changed*):
+
+  | Step | Combat | Mining | Hauling | Pays |
+  | --- | --- | --- | --- | --- |
+  | 1 Shakedown | Fly to a marker 2 km out (on the clearest of twelve bearings from the freeport) and dock again | same | same | 150 cr |
+  | 2 First work | Guard an independent miner for one short trip in this system: within 2.5 km for 30 s while it is out, paid when it docks | Mine 5 t here and sell it at the freeport | *changed:* a Freeport request bought here and delivered to the nearest freeport (3 jumps) | 400 cr |
+  | 3 First jump | *changed:* guard a miner (not a hauler) to the system next door and back; you jump when it jumps | Mine 8 t in the system next door, sell it at home | *changed:* a Freeport request bought at another freeport and delivered home | 700 cr |
+  | 4 First upgrade | Buy a part on the Market and fit it (Ship); the guide names one that suits the ship | same | same | *changed:* the price paid for the part, up to 1,250 cr (what steps 1 to 3 paid); a part already owned completes the step and pays nothing |
+  | 5 Your choice | Take any job the pilot wasn't already on | same | same | *changed:* 250 cr |
+
+  Why: a freeport's system has one dock and both systems next to every freeport are deep space with no dock at all (the
+  nearest docks are 3 jumps off), so a hauler's first work can't be local or one jump, and no hauler flies "one jump and
+  back" to escort. Every new pilot is already Contractor Rating 1 (Rating 2 needs 150 points), so step 5 pays credits.
+  A Rating-1 pilot can't raise a grade, so "fit a part" means a maker's part swapped in for the stock one.
+- **Jobs the guide makes** when the board has none that fits, the way the game makes them:
+  - *Guard:* a guard hire (`I.hire`, 16zzzi) on an independent miner of the home freeport: one in port; else, for step 2,
+    one already mining the system; else a newcomer staked 1,500 cr by the Compact as every independent is (once a guide,
+    below the port's cap of 6). The hire's trip is short (6 t, 8 t), the Compact pays the flat fee and nothing comes from
+    the miner's purse. It shows on the Jobs board as the Compact's, only to that pilot. Untaken for 5 minutes, or the pilot
+    gone from the system, the miner is let go; a trip that goes wrong (raiders, the miner lost, the guard not there) posts
+    the job again.
+  - *Hauling:* a Freeport request already on the board that the pilot can buy in full and afford, else a new one posted as
+    the freeports post theirs (4 to 6 of a made good sold at this dock, 3 times its value, an hour to run). It is kept from
+    the independents while the step is on.
+- **Your path.** A panel under the Overview's usual content while the guide is on (Hide leaves one line with the next
+  rung): first contract, Contractor Rating 2, a better hull, a company, a Lair, a Depot, a Station, a faction. Each row has
+  Needs, Costs and Opens, read from `RATING`, `HULL_RATING`, `hullPrice`, `COP.deposit`, the kits' recipes and tonnage,
+  `LAIR_B`, `DEP`, `STA`, `VIC_NEED` and `WIN_TIME`. It carries the three rules: kits ride only in a Heavy Hauler; a Station
+  is upgraded from a Depot; a Station's buildings are separate from the development modules.
+- **Fewer controls on day one** (`gdHide`, guided pilots only; each appears with a one-line note): the intel-work picker
+  until a scouting job is selected; Build here (and O) until the pilot owns a kit or has a company; both Black market tabs
+  until Contractor Rating 2 or goods tagged stolen; the Company key (and 0) until the first contract is done. End guide
+  gives everything back at once.
+- **Left out:** "Practise this first" (a link from a step into a Flight school section). A section replaces the running
+  galaxy and ends in a page reload; it wasn't built or tested, so the real galaxy's save was not put at risk.
+- **Two lesson fixes found on the way** (Flight school, sections 1 and 2): the Jobs board opens on All in a lesson (it opened
+  on the hull's own kind, Fight, so "pick a job from the list" showed an empty list); and the pause between lesson steps
+  no longer waits for a new system's clock to catch up after a jump (each system's world counts from 0).
+- Also fixed: the Next step card's "Launch (—)" now names the launch key.

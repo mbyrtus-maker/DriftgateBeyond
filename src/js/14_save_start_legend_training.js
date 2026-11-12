@@ -296,7 +296,9 @@ function trPlan(track){if(track==='full')return TRAIN.map((_,i)=>i);const tr=TR_
 function trAdvance(){const T=S.training;trDummyGone();trPostGone();T.k++;T.i=T.k<T.plan.length?T.plan[T.k]:TRAIN.length;T.j=0;trEnter()}
 function trNext(){const T=S.training;T.j++;if(T.j>=TRAIN[T.i].steps.length){T.done.push(T.i);feed(`✓ Training: ${TRAIN[T.i].t} complete.`,'good');SFX.count&&SFX.count(true);trAdvance();return}trEnter()}
 function trainTick(){const T=S.training;if(!T||!W||!W.player)return;const c=trCur();
-  if(c){let ok=false;try{ok=c.s.ok()}catch(e){}if(ok&&W.t>=(T.cool||0)){T.cool=W.t+.6;trNext()}}
+  // (each system's world has its own clock, from 0: after a jump the pause between steps is not left waiting for the new
+  // system's clock to catch up with the old one's)
+  if(c){let ok=false;try{ok=c.s.ok()}catch(e){}if((T.cool||0)>W.t+.6)T.cool=0;if(ok&&W.t>=(T.cool||0)){T.cool=W.t+.6;trNext()}}
   const el=$('train');const c2=trCur();
   const h=c2?`<div class="trh"><b>Training · ${T.k+1}/${T.plan.length} · ${esc(c2.L.t)}</b><button type="button" class="trx" data-tr="min" aria-label="Collapse">${T.min?'+':'–'}</button></div>`
     +(T.min?'':`<div class="trs">${typeof c2.s.x==='function'?c2.s.x():c2.s.x}</div><div class="trp">${c2.L.steps.map((_,k)=>`<i class="${k<T.j?'d':k===T.j?'c':''}"></i>`).join('')}</div><div class="trb">${c2.s.ack?'<button type="button" class="btn sm pri" data-tr="ack">Got it</button>':'<button type="button" class="btn sm" data-tr="skip">Skip step</button>'}<button type="button" class="btn sm" data-tr="lesson">Next lesson</button><button type="button" class="btn sm" data-tr="exit">Exit</button></div>`)

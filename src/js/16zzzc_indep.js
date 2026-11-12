@@ -63,8 +63,8 @@ function indPath(I,a,b){if(a===b)return[a];const avoid=ptHas(I,'Safe Routes')||p
   const p=trPath(a,b)||[a];I.lastPath=p;return p}
 function indHops(a,b){return a===b?0:(HOP[a]&&HOP[a][b]!=null?HOP[a][b]:99)}
 // ---- arrival
-function indNew(sid){if(indAll().filter(indAlive).length>=IND.max)return null;if((S.econ.treasury.neutral||0)<IND.stake)return null;
-  const role=wpick({hauler:4,miner:3.5,fighter:2.5}),I={id:S.nextId++,name:indName(),port:sid,role,cls:IND.line[role][0],kit:{},hold:{},rp:0,stand:{halcyon:0,varkesh:0,ostrova:0},sector:sid,st:'dock',run:null,pt:null,deaths:0,born:S.T,jobs:0,earned:0,idleT:S.T};
+function indNew(sid,role0){if(indAll().filter(indAlive).length>=IND.max)return null;if((S.econ.treasury.neutral||0)<IND.stake)return null;
+  const role=role0||wpick({hauler:4,miner:3.5,fighter:2.5}),I={id:S.nextId++,name:indName(),port:sid,role,cls:IND.line[role][0],kit:{},hold:{},rp:0,stand:{halcyon:0,varkesh:0,ostrova:0},sector:sid,st:'dock',run:null,pt:null,deaths:0,born:S.T,jobs:0,earned:0,idleT:S.T};
   I.pt=ptRoll(role);indAll().push(I);transfer('neutral',indW(I),IND.stake);try{indShop(I,S.stations[sid])}catch(e){console.error(e)}return I}
 function indArrivals(){const A=S.ind.arr;for(const sid of indPorts()){const n=indAll().filter(I=>indAlive(I)&&I.port===sid).length;
   if(A[sid]==null){for(let i=n;i<IND.start;i++)indNew(sid);A[sid]=S.T+rnd(IND.arrive[0],IND.arrive[1]);continue}

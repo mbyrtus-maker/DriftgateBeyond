@@ -13,7 +13,7 @@ function nsJob(c,P){try{const L=jobsList(c,P,[P.cargo],!!(c.contracts||P.sworn),
     // within 2 jumps first; none that close (a galaxy's first minute) → the nearest
     const far=j=>(j.hops||0)>2?1:0;L.sort((a,b)=>(far(a)-far(b))||(jobRank(a,P)-jobRank(b,P))||(far(a)?(a.hops-b.hops):0)||(b.payN-a.payN));return L[0]||null}catch(e){return null}}
 function nextStep(c,P){if(!c||!P||S.unb||S.training)return null;
-  try{if(myJobRows())return{t:'You have a job under way',d:`Launch (${kb('dock')}) and follow its course marker. The job shows in your flight HUD, and the Jobs tab has its details.`,act:'tab',arg:'jobs',btn:'Open Jobs'}}catch(e){}
+  try{if(myJobRows())return{t:'You have a job under way',d:`Launch (${kb('act')}) and follow its course marker. The job shows in your flight HUD, and the Jobs tab has its details.`,act:'tab',arg:'jobs',btn:'Open Jobs'}}catch(e){}
   const j=nsJob(c,P);if(j)return{t:`Take a job: ${String(typeof jbKey==='function'&&jbKey(j)?String(j.title).replace(/ for [^ ]+$/,''):j.title).replace(/<[^>]*>/g,'')}`,d:`${j.where?esc(j.where)+' · ':''}pays ${j.pay}. It suits your ${esc(CLASSES[P.cls].name)}.`,act:'nsjob',arg:j.id,btn:'Show me the job'};
   if(!P.sworn){const ready=typeof coReady==='function'&&coReady(P),funded=typeof coFunded==='function'&&coFunded(P);
     if(!funded&&P.credits>=COP.deposit)return{t:'Set up your company',d:`You hold ${fmt(P.credits)} cr: enough for the ${fmt(COP.deposit)} cr treasury a company opens with. A company builds Depots and Stations, hires crews and posts jobs.`,act:'coprof',arg:'',btn:ready?'Company profile':'Set up my company'};
