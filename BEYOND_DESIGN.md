@@ -4100,3 +4100,20 @@ The parts the game draws without a model. Stage 2 already gave the live turret a
 - **Jump gate** (`GEN.gate`, `12_render.js`): it was a plain hoop with twelve lit cubes. Same size and place; now a main hoop with a dark inner liner and a thin outer rail, and twelve emitter pylons, each a housing astride the hoop with a lit band through it (the lights stay where the cubes were), a fin outside and an emitter horn with a lit tip pointing into the ring. A gate that is down still tints red.
 - **Cargo crate** (`GEN.crate`): it was a plain cube. Same size; now a body with corner posts, two dark bands and a hatch plate. Its outline, which carries its colour (a derelict's is the player's), is drawn as before; a torn-off hull section uses the same mesh, flattened and darkened, as before.
 - **Not changed, and why:** a ship's shield hit flash is still a flat-shaded bubble and the thrust streak a thin line (both need a change to the shader, not to a shape; left for a pass on shaders); the Bloom Heart, rocks and beacons were looked over in the stage 1 audit and read well. No gameplay value is touched: both meshes keep their size, so the gate's jump range and the crate's pick-up range look the same as they are.
+
+### Game length: the dials are in, at today's values (12 Nov 2026)
+The user (11 Nov): "game length needs to extend to 12-14 hours with the option to go longer"; built after the graphics
+pass. Step one is the dials, with no change in play yet (16zzzzg_length.js; test length.py):
+- A galaxy carries `S.glen`: 'std' for every new galaxy, 'long' as the option; a save from before has none and keeps the
+  old rules ('legacy').
+- `LEN_SET[glen]` holds the setting's dials, read into `LEN` every strategic tick:
+  - `quiet`, `full`, `bq`: the Brood's quiet opening. Its growth dials (`brBuild`, `brOff`, `brGraze`, `hiveRegrow`) run at
+    `bq` of full strength until `quiet` seconds, rising to full strength by `full`.
+  - `floor`: no side's hold on the galaxy starts before this many seconds; pilots are told once per would-be winner.
+  - `hold`, `need`: the hold time and the systems to win. `WIN_TIME` and `VIC_NEED` are now variables set from these.
+  - `tempo`: the wait to any side's next offensive is multiplied by this.
+- All three settings start at the old values (20 systems, 10 minutes, no floor, no quiet opening, tempo 1). The Standard
+  and Long values come from war checks: a tune file sets `LEN_SET.std.*`.
+- Not built, on purpose: the coalition against a leading power from the proposal. The user turned truces against a power
+  off on 8 Nov ("no truce against a power at 20 systems"); it comes back only if the other dials can't reach the target
+  and the user agrees.

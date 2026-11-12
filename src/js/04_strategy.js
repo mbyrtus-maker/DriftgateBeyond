@@ -297,7 +297,7 @@ function frigOrders(t){let best=t.sector,bs=-1e9;const bro=t.side==='brood',bcc=
     if(frigatesIn(d.id).some(o=>o!==t&&o.side===t.side))sc-=3;
     {const C=S.coal;if(C&&t.side!=='brood'){const ow=sideNorm(sectorOwner(d.id));if(C.mem.includes(t.side)){if(ow===C.lead)sc+=5*BAL.coal;if(frigatesIn(d.id).some(o=>sideNorm(o.side)===C.lead))sc+=4}else if(t.side===C.lead){if(ow===t.side&&frigatesIn(d.id).some(o=>hostE(t.side,o)))sc+=4;if(ow!==t.side)sc-=2.5}}}
     if(sc>bs){bs=sc;best=d.id}}return best}
-const WIN_TIME=600;   // Beyond: hold 20 systems for 10 minutes
+let WIN_TIME=600;   // Beyond: hold 20 systems for 10 minutes (a galaxy's length setting may change it: 16zzzzg_length.js)
 // Beyond: station extraction rounds at random to the nearest whole unit (its expected value is the exact rate), so the
 // per-faction rates in BAL.ext tune smoothly instead of in whole-unit steps
 function sRound(x){return Math.floor(x+Math.random())}
@@ -306,7 +306,7 @@ function sRound(x){return Math.floor(x+Math.random())}
 // modules add ore only through its miners too (scaled by its roster's work), so a depot with no miners gets no ore
 function stRate(R,cn){return(R.kind==='core'?5:R.kind==='hive'?BAL.brHive:R.owner==='player'?3:4)*(cn?2.2:1)*(BAL.ext[R.owner]||1)*(R.owner==='player'||R.owner==='brood'?1:BAL.aiEff)}
 function controlCounts(){const n={};for(const d of SECTOR_DEFS){let o=sectorOwner(d.id);if(o==='player')o=S.player.sworn||(S.player.decl?'player':null);if(o&&o!=='pirate'&&o!=='neutral')n[o]=(n[o]||0)+1}return n}
-const VIC_NEED=20;   // Beyond: 20 of the 42 systems that can be held (freeports and the Wrack can't), for WIN_TIME
+let VIC_NEED=20;   // (a galaxy's length setting may change it: 16zzzzg_length.js) Beyond: 20 of the 42 systems that can be held (freeports and the Wrack can't), for WIN_TIME
 // ============================================================ the coalition: when one side nears galaxy control, the other factions call a truce and
 // turn on it. The Brood never joins: it keeps playing for its own dominance, and if the Brood is the one winning, all three factions unite against it.
 // the side a pilot's work counts for: their sworn faction, or the Freeport Compact for an independent contractor
