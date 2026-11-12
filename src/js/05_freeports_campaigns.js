@@ -326,8 +326,8 @@ function astSurf(a,d){const sh=astShape((a.seed||a.id)%8),R=astR(a),sy=astScaleY
   if(!best)return{p:[d[0]*R,d[1]*R,d[2]*R],n:d};return{p:[d[0]*best.r,d[1]*best.r,d[2]*best.r],n:best.n}}
 // how far a ship's hull reaches below its centre (from its model), so it rests on its belly
 const BELLY={};
-function shipBelly(e){const k=(e.fac||e.side)+':'+e.cls;if(BELLY[k]!=null)return BELLY[k]*e.st.radius*1.25;let lo=.3;
-  try{const m=shipMesh(e.side==='pirate'?'pirate':e.fac,e.cls),d=m&&m.hull&&m.hull.data;if(d&&d.length){let mn=0;for(let i=1;i<d.length;i+=10)if(d[i]<mn)mn=d[i];if(mn<0)lo=-mn}}catch(err){}
+function shipBelly(e){const k=(meshFac(e)||e.side)+':'+e.cls;if(BELLY[k]!=null)return BELLY[k]*e.st.radius*1.25;let lo=.3;
+  try{const m=shipMesh(meshFac(e),e.cls),d=m&&m.hull&&m.hull.data;if(d&&d.length){let mn=0;for(let i=1;i<d.length;i+=10)if(d[i]<mn)mn=d[i];if(mn<0)lo=-mn}}catch(err){}
   BELLY[k]=lo;return lo*e.st.radius*1.25}
 const _lq=q0(),_lq2=q0(),_lq3=q0();
 // put a ship down on a rock: L holds the touchdown direction and the ship's attitude in the rock's frame

@@ -166,4 +166,4 @@ async def main():
       g.line([(0,y0),(W,y0)],fill=(30,36,48))
     out=os.path.join(OUTD,f'audit_{TAG}_code_{si//PER+1:02d}.png');sh.save(out);print('wrote',out,flush=True)
   print('page errors:',errs[:6])
-asyncio.run(main())
+if __name__=='__main__':asyncio.run(main())

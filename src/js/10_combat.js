@@ -280,7 +280,7 @@ function makeWreck(e){const s=S.sectors[W.sid],o={};inv.addAll(o,e.load);inv.add
   const R=e.st.radius*1.25,brood=e.side==='brood',pts=wreckPts(o,brood),q=qCopy(q0(),e.q),seen={};
   for(const p of pts){const L=WPT_OFF[p.k],n=seen[p.k]=(seen[p.k]||0)+1,off=Array.isArray(L[0])?L[n-1]||L[0]:L;qRot(q,off[0]*R,off[1]*R,off[2]*R,_bv1);
     Object.assign(p,{id:S.nextId++,wpt:1,x:Math.round(e.x+_bv1.x),y:Math.round(e.y+_bv1.y),z:Math.round(e.z+_bv1.z),heat:0,last:oreTotal(p),h0:oreTotal(p)})}
-  const w={id:S.nextId++,cls:e.cls,mf:e.fac||e.side,side:e.side,name:(e.tok&&e.tok.name)||'capital ship',x:Math.round(e.x),y:Math.round(e.y),z:Math.round(e.z),q,R,born:S.T,until:S.T+WRECK_LIFE,pts};
+  const w={id:S.nextId++,cls:e.cls,mf:meshFac(e)||e.side,side:e.side,name:(e.tok&&e.tok.name)||'capital ship',x:Math.round(e.x),y:Math.round(e.y),z:Math.round(e.z),q,R,born:S.T,until:S.T+WRECK_LIFE,pts};
   // the Brood smell it: scavengers come from the nearest Brood space, sooner and in greater numbers the closer it is
   const bh=broodHops(W.sid);if(bh<=3&&!brood)w.broodAt=S.T+[20,35,55,80][bh]+rnd(10);w.broodN=bh<=1?3:2;
   s.wrecks=s.wrecks||[];s.wrecks.push(w);

@@ -93,12 +93,19 @@ def barrel(M,base,length,r,role=DARK,style=None,rec=True):
         M.tube([Z(.88),Z(.93),Z(1.0)],[r*.9,r*1.4,r*1.3],7,lambda i,j,n,p:(MID,.8),cap0=True,cap1=False)
         M.rings(Z(1.0),[(0,[(math.cos(a)*r*1.3,math.sin(a)*r*1.3) for a in np.linspace(0,2*math.pi,7,endpoint=False)]),(0,[(math.cos(a)*r*.8,math.sin(a)*r*.8) for a in np.linspace(0,2*math.pi,7,endpoint=False)]),(-L*.05,[(math.cos(a)*r*.6,math.sin(a)*r*.6) for a in np.linspace(0,2*math.pi,7,endpoint=False)])],DARK,.4,inward=True,cap=(2,DARK,.25))
     if rec:M.part(M.gun,Z(1.0),n0)
+def cbox(M,c,size,role,taper=(1,1),sh=1.0,ch=.22):
+    # (11 Nov 2026) a box with its four long edges chamfered (ch of the half-width), centred on c, size (w,h,l), the front
+    # (+z) face scaled by taper: the Varkesh pods, housings and blocks, which were plain boxes. Same extents as box().
+    cx,cy,cz=c;w,h,l=size;tw,th=taper
+    def sec(sw,sh_):
+        a,b=sw/2,sh_/2;k=ch*min(a,b);return [(cx+a,cy-b+k),(cx+a,cy+b-k),(cx+a-k,cy+b),(cx-a+k,cy+b),(cx-a,cy+b-k),(cx-a,cy-b+k),(cx-a+k,cy-b),(cx+a-k,cy-b)]
+    loft(M,[(cz-l/2,sec(w,h)),(cz+l/2,sec(w*tw,h*th))],lambda i,j:(role,sh*[.92,1,1.06,1,.92,.84,.8,.84][j] if i>=0 else sh*.9))
 def drivebox(M,c,size,zl,r,role=DARK,sh=1.0,taper=(1,1)):
     # (11 Nov 2026) a Varkesh square drive: a housing box centred on c (size w,h,l) whose aft end is the nozzle itself, the
     # nozzle's lip at zl. The housing stops where the nozzle starts, so the throat and its glow show; a plain box with a
     # glowing disc on its back face hid them. taper scales the housing's front face.
     w,h,l=size;d=min(.08,l*.62);z0=zl+d;z1=c[2]+l/2
-    box(M,(c[0],c[1],(z0+z1)/2),(w,h,z1-z0),role,taper=taper,sh=sh)
+    cbox(M,(c[0],c[1],(z0+z1)/2),(w,h,z1-z0),role,taper=taper,sh=sh)
     M.vent((c[0],c[1],zl),r,d,style='varkesh',frame=(w/2,h/2))
 def ring(M,c,R,r,role,seg=28,sides=6,axis='z'):
     pts=[];c=np.array(c,float)
@@ -124,7 +131,7 @@ def swift():
         plate(M,[(sx*.18,.0,.12),(sx*.3,-.02,-.05),(sx*.28,-.02,-.12),(sx*.16,0,-.04)],.02,MID)       # canards
         barrel(M,(sx*.2,-.03,.0),.32,.018)
     M.tube([(0,0,-.98),(0,0,-1.08)],[.12,.1],12,lambda i,j,n,p:(DARK,.9),cap0=False,cap1=False);M.vent((0,0,-1.08),.1)
-    for k in range(4):plate(M,[(-.12,.165,-.1-k*.18),(.12,.165,-.1-k*.18),(.12,.165,-.16-k*.18),(-.12,.165,-.16-k*.18)],.005,ACC,.9)  # spine stripe
+    for k in range(4):on_hull(M,fus,-.16-k*.18,-.1-k*.18,.075,.008,ACC,.9)                                         # spine stripes, laid on the hull (11 Nov 2026: flat plates at one height, they stood off it where it slopes away aft)
     return M
 
 # ------------------------------------------------------------------ Varkesh Fang: light fighter
@@ -137,14 +144,14 @@ def fang():
     for sx in (1,-1):
         for k,z in enumerate((.18,-.15,-.48)):box(M,(sx*.3,.13,z),(.08,.16,.3),MID,taper=(.9,.85),sh=.96+.04*k)   # bolted side armour
         plate(M,[(sx*.3,-.04,.15),(sx*.72,-.06,-.12),(sx*.72,-.06,-.4),(sx*.3,-.04,-.55)],.07,DARK)               # stubby slab wing
-        box(M,(sx*.72,-.06,-.12),(.13,.13,.42),MID)                                                               # gun pod
+        cbox(M,(sx*.72,-.06,-.12),(.13,.13,.42),MID,(.82,.82))                                                     # gun pod, chamfered and tapered
         barrel(M,(sx*.72,-.03,.09),.38,.028)
         barrel(M,(sx*.72,-.09,.09),.34,.028)
         plate(M,[(sx*.18,.05,.78),(sx*.12,-.06,.78),(sx*.09,-.07,1.02),(sx*.11,.0,1.06)],.05,ACC)                  # the fangs
         drivebox(M,(sx*.16,0,-.9),(.2,.2,.14),-.98,.08)                                          # square drives (vents set just behind the drive face: flush, their glow flickered at range)
         plate(M,[(sx*.25,.2,-.45),(sx*.33,.42,-.7),(sx*.33,.42,-.8),(sx*.25,.2,-.8)],.05,ACC,.9)                    # stub fins, footed on the side armour
     barrel(M,(0,-.176,.25),.5,.035)                                                                                # chin gun: the extra slot (11 Nov 2026: a touch higher, so its breech block stays inside the hull's old box)
-    box(M,(0,-.2,.18),(.14,.1,.22),DARK)
+    cbox(M,(0,-.2,.18),(.14,.1,.22),DARK,(.8,.8))
     for z in (-.55,-.25,.05):on_hull(M,body,z-.06,z+.06,.11,.025,ACC,.9)                                         # armour bands, aft of the canopy (one used to cut through it)
     return M
 
@@ -181,7 +188,8 @@ def hex_role(i,j):return ([MID,MID,MID,DARK,DARK,DARK][j],[1,1.05,1,.9,.85,.9][j
 # ------------------------------------------------------------------ Halcyon Kite: medium fighter (double delta, twin engines)
 def kite():
     M=Mesh(12)
-    loft(M,[(-1.15,LENS(.16,.12)),(-.85,LENS(.22,.16)),(-.2,LENS(.23,.19)),(.45,LENS(.17,.16)),(.95,LENS(.08,.08,-.01)),(1.28,LENS(.012,.012,-.02))],lens_role)
+    fus=[(-1.15,LENS(.16,.12)),(-.85,LENS(.22,.16)),(-.2,LENS(.23,.19)),(.45,LENS(.17,.16)),(.95,LENS(.08,.08,-.01)),(1.28,LENS(.012,.012,-.02))]
+    loft(M,fus,lens_role)
     M.blob((0,.17,.45),.13,GLASS,sub=2,squash=(.85,.75,2.6),noise=0)
     for sx in (1,-1):
         plate(M,[(sx*.15,.02,.7),(sx*.42,.04,-.05),(sx*.2,.03,-.1)],.03,LIGHT)                                     # forward strake
@@ -191,15 +199,17 @@ def kite():
         M.tube([(sx*.2,-.02,-.3),(sx*.2,-.02,-1.12),(sx*.2,-.02,-1.22)],[.1,.11,.1],10,lambda i,j,n,p:(MID,.95),cap0=True,cap1=False)
         M.vent((sx*.2,-.02,-1.22),.085)
         plate(M,[(sx*.22,.12,-.62),(sx*.4,.58,-1.02),(sx*.4,.58,-1.14),(sx*.22,.12,-1.15)],.025,ACC,.95)        # tall canted twin tail
+        M.blob((sx*.215,.09,-.88),.05,MID,sub=1,squash=(.55,.8,5.2),noise=0)                                       # a root fairing joining it to the engine nacelle (it stood .03 above it)
         barrel(M,(sx*.26,-.014,.1),.38,.02)                                                                         # under the strake, its fairing set into it (11 Nov 2026: it hung .05 below)
-        M.tube([(sx*.6,-.06,-.25),(sx*.6,-.06,-.7)],[.035,.035],8,lambda i,j,n,p:(DARK,.9))                     # missile launcher pod
-    for k in range(5):plate(M,[(-.13,.2,-.05-k*.17),(.13,.2,-.05-k*.17),(.13,.2,-.11-k*.17),(-.13,.2,-.11-k*.17)],.005,ACC,.9)
+        M.tube([(sx*.6,-.045,-.25),(sx*.6,-.045,-.7)],[.035,.035],8,lambda i,j,n,p:(DARK,.9))                   # missile launcher pod, against the wing's underside
+    for k in range(5):on_hull(M,fus,-.11-k*.17,-.05-k*.17,.085,.008,ACC,.9)                                       # spine stripes, laid on the hull
     return M
 
 # ------------------------------------------------------------------ Halcyon Osprey: heavy fighter (blended wing, twin booms, three drives)
 def osprey():
     M=Mesh(13)
-    loft(M,[(-1.1,LENS(.2,.15)),(-.8,LENS(.3,.2)),(-.1,LENS(.32,.24)),(.55,LENS(.22,.19)),(1.1,LENS(.1,.09,-.01)),(1.42,LENS(.015,.015,-.02))],lens_role)   # (11 Nov 2026) the stern stops short of the centre drive, whose nozzle now stands out of it
+    fus=[(-1.1,LENS(.2,.15)),(-.8,LENS(.3,.2)),(-.1,LENS(.32,.24)),(.55,LENS(.22,.19)),(1.1,LENS(.1,.09,-.01)),(1.42,LENS(.015,.015,-.02))]
+    loft(M,fus,lens_role)   # (11 Nov 2026) the stern stops short of the centre drive, whose nozzle now stands out of it
     M.blob((0,.22,.55),.15,GLASS,sub=2,squash=(.9,.75,2.5),noise=0)
     for sx in (1,-1):
         plate(M,[(sx*.28,.02,.45),(sx*.7,.05,-.1),(sx*.66,.05,-.55),(sx*.28,.02,-.75)],.06,LIGHT)                    # blended inner wing
@@ -209,11 +219,12 @@ def osprey():
         M.vent((sx*.68,.04,-1.38),.07)
         plate(M,[(sx*.68,.1,-.85),(sx*.68,.5,-1.22),(sx*.68,.5,-1.34),(sx*.68,.1,-1.32)],.03,ACC,.95)              # boom tails
         for dx in (.44,.56):barrel(M,(sx*dx,-.022,.12),.42,.022)                                                     # twin guns side by side under the inner wing (11 Nov 2026: they were one behind the other on one line, the rear one firing into the front one)
-        M.tube([(sx*1.0,-.08,-.3),(sx*1.0,-.08,-.75)],[.04,.04],8,lambda i,j,n,p:(DARK,.9))
+        M.tube([(sx*1.0,-.052,-.3),(sx*1.0,-.052,-.75)],[.04,.04],8,lambda i,j,n,p:(DARK,.9))                   # launcher pod, against the wing's underside (it hung .03 below)
     plate(M,[(-.68,.42,-1.22),(.68,.42,-1.22),(.68,.42,-1.32),(-.68,.42,-1.32)],.025,ACC)                          # stabiliser between the booms
     M.tube([(0,0,-1.04),(0,0,-1.12)],[.15,.135],10,lambda i,j,n,p:(MID,.9),cap0=False,cap1=False);M.vent((0,0,-1.2),.13,.09)
     M.blob((0,.27,-.35),.13,MID,sub=2,squash=(1,.4,1),noise=0);ring(M,(0,.33,-.35),.13,.018,WIN,seg=18,sides=5,axis='y')   # dorsal emitter dish
-    for k in range(6):plate(M,[(-.15,.25,.25-k*.17),(.15,.25,.25-k*.17),(.15,.25,.19-k*.17),(-.15,.25,.19-k*.17)],.005,ACC,.9)
+    for k in range(6):
+        if not -.52<.22-k*.17<-.18:on_hull(M,fus,.19-k*.17,.25-k*.17,.09,.008,ACC,.9)                               # spine stripes, laid on the hull (none under the emitter dish)
     return M
 
 # ------------------------------------------------------------------ Varkesh Talon: medium fighter (a pincer: two claw sponsons reach past a short cockpit pod)
@@ -222,7 +233,7 @@ def talon():
     pod=[(-.75,HEX(.24,.2)),(-.2,HEX(.28,.23)),(.3,HEX(.24,.2)),(.55,HEX(.14,.12,-.02))]
     loft(M,pod,hex_role)                                                                                         # short cockpit pod
     on_hull(M,pod,.08,.42,.08,.035,GLASS)                                                                          # slit canopy, laid on the pod
-    box(M,(0,0,-.92),(1.3,.3,.34),DARK,taper=(.92,.9))                                                             # wide drive block
+    cbox(M,(0,0,-.92),(1.3,.3,.34),DARK,(.92,.9),ch=.3)                                                           # wide drive block, its edges chamfered
     for sx in (1,-1):
         loft(M,[(-.85,HEX(.15,.17,0,sx*.62)),(-.1,HEX(.17,.19,0,sx*.64)),(.75,HEX(.13,.15,-.01,sx*.6)),(1.15,HEX(.07,.08,-.02,sx*.5))],hex_role)  # claw sponson
         plate(M,[(sx*.47,.1,1.05),(sx*.53,-.1,1.05),(sx*.3,-.06,1.32),(sx*.27,.05,1.3)],.06,ACC)                      # claw tip curling inward
@@ -242,18 +253,18 @@ def halberd():
     loft(M,core,hex_role)                                                                                        # armoured core into a chisel prow
     on_hull(M,core,.2,.55,.1,.035,GLASS)                                                                           # slit canopy, laid on the core
     for sx in (1,-1):plate(M,[(sx*.05,.24,.8),(sx*.26,.2,.8),(sx*.2,.07,1.18),(sx*.05,.08,1.18)],.03,ACC)                # chevron armour on the prow
-    box(M,(0,.0,1.15),(.3,.1,.16),DARK)
+    cbox(M,(0,.0,1.15),(.3,.1,.16),DARK,(.8,.7))
     for z in (-.6,-.3,0):on_hull(M,core,z-.07,z+.07,.15,.025,ACC,.9)                                               # armour bands, aft of the canopy (one used to cut through it)
     for sx in (1,-1):
         for sy in (1,-1):
             px,py=sx*.78,sy*.5
             plate(M,[(sx*.25,sy*.15,.25),(px*.95,py*.95,.05),(px*.95,py*.95,-.55),(sx*.25,sy*.15,-.75)],.07,DARK if sy<0 else MID)   # slab arm
-            box(M,(px,py,-.15),(.22,.22,1.1),MID,taper=(.8,.8))                                                  # pod
-            box(M,(px,py,.38),(.16,.16,.12),ACC,sh=.95)
+            cbox(M,(px,py,-.15),(.22,.22,1.1),MID,(.72,.72),ch=.28)                                               # pod, chamfered and tapered
+            cbox(M,(px,py,.38),(.16,.16,.12),ACC,(.9,.9),.95,.28)
             barrel(M,(px,py,.42),.45,.034)                                                                         # gun out of each pod
             drivebox(M,(px,py,-.75),(.2,.2,.14),-.83,.07)                                         # drive at the back of each pod
-            for k in range(3):box(M,(px+sx*.12,py,.1-k*.25),(.03,.18,.18),DARK,sh=.95)                              # armour ribs on the pod
-    box(M,(0,-.38,.0),(.22,.12,.4),DARK);barrel(M,(0,-.4,.2),.5,.03)                                                 # ventral gun
+            for k in range(3):box(M,(px+sx*(.098,.105,.12)[k],py,.1-k*.25),(.03,.18,.18),DARK,sh=.95)                    # armour ribs on the pod's flank, following its taper
+    cbox(M,(0,-.38,.0),(.22,.12,.4),DARK,(.75,.8));barrel(M,(0,-.4,.2),.5,.03)                                                # ventral gun
     return M
 
 # ------------------------------------------------------------------ Ostrova Wisp: medium fighter (a crescent on rods)
@@ -277,7 +288,7 @@ def wisp():
     for sy in (1,-1):plate(M,[(0,sy*.1,-.5),(0,sy*.42,-.85),(0,sy*.38,-.95),(0,sy*.08,-.9)],.02,MID)
     M.blob((0,.12,.32),.075,GLASS,sub=2,squash=(.9,.7,2.0),noise=0)
     M.tube([(0,0,1.0),(0,0,1.42)],[.02,.012],6,lambda i,j,n,p:(LIGHT,.9))
-    for z,r in ((1.2,.065),(1.34,.045)):ring(M,(0,0,z),r,.011,ACC,seg=14,sides=5)
+    for z,r in ((1.2,.065),(1.34,.045)):ring(M,(0,0,z),r,.011,ACC,seg=14,sides=5);plate(M,[(-r,0,z),(r,0,z),(0,.006,z+.004)],.006,ACC)   # sensor rings, each on a crossbar through the mast (they floated round it)
     M.vent((0,0,-.92),.055)
     return M
 
@@ -308,7 +319,7 @@ def vigil():
             M.blob(tuple(np.array([0,0,-.25])+u*sg*.62),.06,GLASS,sub=1,noise=0)                                  # crystal node at each tip of the X
             M.tube([u*sg*.2+[0,0,-.25],u*sg*.6+[0,0,-.25]],[.022,.022],6,lambda i,j,n,p:(LIGHT,.9),cap0=False,cap1=False)   # spoke from the body
     M.blob((0,.24,.25),.1,GLASS,sub=2,squash=(.9,.6,2.0),noise=0)                                                       # canopy
-    M.blob((0,.3,-.45),.09,MID,sub=2,squash=(1,.35,1),noise=0);ring(M,(0,.33,-.45),.09,.013,ACC,seg=18,sides=5,axis='y')  # sensor dish on the back
+    M.blob((0,.225,-.45),.09,MID,sub=2,squash=(1,.35,1),noise=0);ring(M,(0,.255,-.45),.09,.013,ACC,seg=18,sides=5,axis='y')  # sensor dish on the back
     return M
 
 # (11 Nov 2026) each power's builders make their nozzles and guns in that power's design language (brood.styled)

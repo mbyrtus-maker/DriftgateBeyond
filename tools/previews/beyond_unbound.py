@@ -10,7 +10,7 @@ import numpy as np
 from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,loft,box,plate,barrel,ring,LENS,HEX,lens_role,hex_role,drivebox,loft_top
 from beyond_work import finish,crystal,abox,lights,STAR
 from beyond_recon import dish,SMH,smh_role,seat
-from beyond_capitals import tube,pd,bridge_varkesh,giant_gun
+from beyond_capitals import tube,pd,bridge_varkesh,giant_gun,bore
 PI=math.pi
 OCT=lambda w,h,dx=0,dy=0:[(math.cos(a)*w+dx,math.sin(a)*h+dy) for a in np.linspace(PI/8,2*PI+PI/8,8,endpoint=False)]
 def oct_role(i,j):return ([LIGHT,LIGHT,LIGHT,MID,MID,DARK,DARK,MID][j],[.95,.92,.95,.9,.85,.8,.8,.88][j])
@@ -68,7 +68,7 @@ def raider():
     hal_wing(M,(bx+.08,0,-.95),(bx-.55,.02,-1.15),.22,node=False)                                                  # tailplane on the boom side only
     plate(M,[(bx,.1,-.8),(bx,.1,-1.1),(bx,.36,-1.12),(bx,.3,-.92)],.02,LIGHT,1.0)                                    # tail fin
     crystal(M,-.75,-.35,.04,.05,bx,.18)                                                                             # crystal radar fin on the boom
-    patch(M,(-.5,.05,0),.18,.22);patch(M,(.7,.05,-.1),.14,.18)
+    patch(M,(-.5,.041,0),.18,.22);patch(M,(.7,.041,-.1),.14,.18)                                                     # scrap patches, down on the wing (they stood off it)
     spikes(M,[(bx,-.04,1.0),(cx,-.05,.82)],L=.12)
     return finish(M,2.0,1.0)
 def skiff():
@@ -113,7 +113,7 @@ def plunderer():
     M=Mesh(404)
     hal_pod(M,[(.55,.24,.2),(1.1,.26,.21),(1.5,.14,.1),(1.68,.03,.03)]);canopy(M,(0,.2,1.05),.15)
     var_slab(M,[(-1.35,.22,.2),(.6,.24,.22)]);weld(M,.56,HEX(.24,.22))
-    for z in (-.9,-.1):tube(M,[(-.18,0,z),(-.42,0,z)],[.04,.04],DARK,.8,5);tube(M,[(.18,0,z),(.42,0,z)],[.04,.04],DARK,.8,5)
+    for z in (-.9,-.1):tube(M,[(-.18,0,z),(-.42,0,z)],[.04,.04],DARK,.8,5);tube(M,[(.18,0,z),(.5,0,z)],[.04,.04],DARK,.8,5)   # (the starboard struts reach into the crystal hold; they stopped at its faces' hollows)
     var_slab(M,[(-1.15,.16,.2),(.25,.16,.2)],dx=-.58,smooth=True);weld(M,-.45,SMH(.16,.2))                          # Varkesh container hold
     for z in (-.95,-.45,.05):loft(M,[(z-.02,at(SMH(.17,.21),-.58)),(z+.02,at(SMH(.17,.21),-.58))],(ACC,.85))
     crystal(M,-1.25,.4,.19,.2,.6,0)                                                                                 # Ostrova crystal hold
@@ -135,16 +135,18 @@ def wrecker():
     var_slab(M,[(-1.0,.24,.2),(.8,.3,.24),(1.25,.16,.12),(1.45,.04,.03)],smooth=True)
     ost_spire(M,[(-1.7,.05,.05),(-1.3,.16,.15),(-.95,.22,.19)]);weld(M,-.98,OCT(.22,.19))
     ring(M,(0,.0,-1.42),.26,.025,ACC,seg=24,sides=5)
+    for a in (0,PI/2,PI,3*PI/2):tube(M,[(math.cos(a)*.1,math.sin(a)*.1,-1.42),(math.cos(a)*.25,math.sin(a)*.25,-1.42)],[.014,.014],LIGHT,.9,4)   # the halo's spokes (it floated round the tail spire)
     for x in (-.11,.11):M.vent((x,0,-1.72),.06,style='ostrova')
     canopy(M,(.04,.22,.55),.14)
     for sx in (1,-1):
         hal_wing(M,(sx*.24,.02,.2),(sx*1.25,-.05,-.55),.65)
-        tube(M,[(sx*.62,-.04,-.1),(sx*.62,-.13,-.1)],[.02,.02],DARK,.8,4)
+        tube(M,[(sx*.62,.0,-.1),(sx*.62,-.15,-.1)],[.02,.02],DARK,.8,4)
+        tube(M,[(sx*.95,-.03,-.2),(sx*.95,-.11,-.2)],[.018,.018],DARK,.8,4)                                         # (12 Nov 2026) the outer torpedo's pylon: it hung .05 under the wing with nothing holding it
         crystal(M,-.55,.35,.07,.07,sx*.62,-.18)                                                                     # crystal torpedoes
         crystal(M,-.45,.3,.055,.055,sx*.95,-.13)
     var_gun(M,(0,-.172,.95),.4,.03,2,.08)                                                                           # chin guns (11 Nov 2026: raised into the hull; their mount hung just under it)
     seat(M,(0,.235,-.35),.135)                                                                                       # the turret's seat, on the spine
-    patch(M,(-.1,.25,.0),.14,.3);patch(M,(.15,.22,-.5),.1,.2,(.6,1,0))
+    patch(M,(-.1,.2265,.0),.14,.3);patch(M,(.15,.22,-.5),.1,.2,(.6,1,0))                                             # (the top patch stood .02 above the hull)
     return finish(M,2.7,1.0)
 def ravager():
     # capital (destroyer class): three faction hulls welded end to end, a Varkesh chisel prow with ram spikes, a Halcyon lens
@@ -155,8 +157,10 @@ def ravager():
     var_slab(M,[(.85,.42,.32),(1.7,.36,.26),(2.3,.14,.1),(2.45,.03,.03)],smooth=True)                                # Varkesh prow
     hal_pod(M,[(-.9,.5,.34),(.0,.56,.38),(.9,.46,.34)]);weld(M,.88,SMH(.42,.32))                                     # Halcyon midsection
     ost_spire(M,[(-2.5,.24,.22),(-2.2,.38,.32),(-.9,.44,.34)]);weld(M,-.9,OCT(.44,.34))                              # Ostrova stern
-    tube(M,[(0,.42,-.4),(0,.42,2.6)],[.06,.05],DARK,.95,10,cap1=False)                                              # rail cannon
-    for z in (1.2,1.6,2.0,2.35):ring(M,(0,.42,z),.13,.02,WIN,seg=16,sides=5)
+    tube(M,[(0,.42,-.4),(0,.42,2.6)],[.06,.05],DARK,.95,10,cap1=False);bore(M,(0,.42,2.6),.05)                     # rail cannon
+    for z in (1.2,1.6,2.0,2.35):
+        ring(M,(0,.42,z),.13,.02,WIN,seg=16,sides=5)
+        for a in (PI/2,PI/2+2*PI/3,PI/2+4*PI/3):tube(M,[(math.cos(a)*.04,.42+math.sin(a)*.04,z),(math.cos(a)*.118,.42+math.sin(a)*.118,z)],[.012,.012],DARK,.85,4)   # (12 Nov 2026) three struts hold each accelerator ring to the rail: the forward two hung in space
     for z in (-.3,.5):tube(M,[(0,.3,z),(0,.4,z)],[.05,.05],DARK,.85,6)
     giant_gun(M,(.22,.36,-.3))
     bridge_varkesh(M,(-.2,.38,-1.15),.9);dish(M,(-.2,.86,-1.25),.12)

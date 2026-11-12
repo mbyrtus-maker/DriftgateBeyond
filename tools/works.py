@@ -35,11 +35,11 @@ def wk_def():
     # defence platform: a braced gun deck (the game mounts live turrets on its corners) with a fire-control mast
     S=Comp();S.add('platform_large',(0,0,0),0,1.5)
     for i in range(4):
-        a=i*H/2+H/4;S.add('supports_low',(math.sin(a)*1.0,-.5,math.cos(a)*1.0),a,.9,True)
-    S.add('structure_detailed',(0,-.05,0),0,.9);S.add('structure_closed',(0,-.95,0),0,.8)
+        a=i*H/2+H/4;S.add('supports_low',(math.sin(a)*1.0,.01,math.cos(a)*1.0),a,.9,True)   # (12 Nov 2026) the braces hang from the deck's underside (they hung half a unit below it, holding nothing)
+    S.add('structure_detailed',(0,-.05,0),0,.9);S.add('structure_closed',(0,-.95,0),0,.97)   # (the keel block reaches the deck: it stopped short of it)
     S.add('machine_wireless',(0,.85,0),0,.8);S.add('satelliteDish_large',(0,1.3,0),0,.9)
     for i in range(4):
-        a=i*H/2;S.add('barrels',(math.sin(a)*.9,.05,math.cos(a)*.9),a,.6)
+        a=i*H/2+H/4;S.add('barrels',(math.sin(a)*1.66,.05,math.cos(a)*1.66),a,.6)   # (12 Nov 2026) the drum stacks stand in the deck's corners: they stood where the live turrets' turntables go
     return S.model()
 def wk_armor():
     # shield & hull works: a tall emitter pylon on a generator base, ringed by conduit

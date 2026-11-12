@@ -30,7 +30,7 @@ def architect():
     box(M,(0,-.42,-.1),(.6,.32,1.0),MID,sh=.9);box(M,(0,-.42,-.1),(.64,.06,1.04),ACC)                               # folded depot module
     for z in (-.5,.3):tube(M,[(-.32,-.2,z),(-.32,-.42,z)],[.02,.02],LIGHT,.9,4);tube(M,[(.32,-.2,z),(.32,-.42,z)],[.02,.02],LIGHT,.9,4)
     for sx in (1,-1):barrel(M,(sx*.53,-.1,-.42),.3,.016)                                                              # a small gun under the front of each boom (clear of the printing lens ahead of the nose)
-    M.vent((0,0,-1.21),.12);lights(M,[(.2,-.1,1.0),(-.2,-.1,1.0)],.03)
+    M.vent((0,0,-1.21),.12);lights(M,[(.07,-.03,1.03),(-.07,-.03,1.03)],.03)
     return finish(M,3.0,1.0)
 def foundry():
     # Varkesh constructor: an armoured hex hull with two great crane arms forward ending in pincer manipulators, a bundle of girders

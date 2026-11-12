@@ -15,7 +15,7 @@
 //   - Missiles and torpedoes have a body.
 // ---- the model a mesh was built from, so a ship's entity can reach its model's points
 {const o=mdlMesh;mdlMesh=function(name,fac,s){const m=o.apply(this,arguments);if(m)m.mdl=name;return m}}
-function entMdl(e){try{const m=shipMesh(e.side==='pirate'?'pirate':e.fac,e.role==='limpet'?'limpet':e.cls),n=m&&m.hull&&m.hull.mdl;return n&&MDL.i?MDL.i[n]||null:null}catch(err){return null}}
+function entMdl(e){try{const m=shipMesh(meshFac(e),e.role==='limpet'?'limpet':e.cls),n=m&&m.hull&&m.hull.mdl;return n&&MDL.i?MDL.i[n]||null:null}catch(err){return null}}
 {const o=engFix;engFix=function(name){const M=MDL.i&&MDL.i[name];if(M&&M.ex)return M.e;return o.apply(this,arguments)}}
 // ---- shots drawn from the muzzle
 const GFX={ease:.15,flash:.07},_gfv={x:0,y:0,z:0};
@@ -75,3 +75,56 @@ const _mq=q0();
   // the body's nose at the missile's point, its tail back along the flight (the streak's first two thirds)
   mModel(MM,m.x-ux*L*.5,m.y-uy*L*.5,m.z-uz*L*.5,_mq,L,L,L);drawMesh(mslMesh(m.kind==='torpedo'?'torpedo':m.kind==='swarm'?'swarm':'missile'),MM)}}catch(err){if(!gfxErr++)console.error(err)}return r}}
 let gfxErr=0;
+// ---- the Compact's ships fly the powers' designs, in sand (the user, 11 Nov 2026: "Sand colored same as the powers")
+// Every ship that drew one of Driftgate 1's kit models (freeport security and traffic, independent pilots, anything on the
+// neutral side) draws its class in one of the three powers' designs, painted in its own side's colours. Which design: the one
+// its home freeport's Shipyard sells for that class (S.yardRoll), so what flies out of a freeport matches what its yard
+// offers: an independent pilot's home port, otherwise the freeport of the system the ship is in, otherwise a freeport picked
+// by the system's name. No dice: the same ship draws the same design every frame and after a save and load. Only the drawn
+// model changes; a ship's class, stats and hit size are the class's own, as before (the powers' own Swift and Fang differ
+// from the class's radius by 5% and 4%; a Compact ship drawn as one keeps the class's radius).
+const CZ_CLS=new Set(['interceptor','striker','heavy','bomber','gunboat','scout','scout2','picket','skiff','prospector','dredger','courier','freighter','bulker','constructor','drone']);
+function czModel(line,cls){if(cls==='picket')cls='interceptor';const d=designOf(line,cls);if(d&&d.m&&mdlHas(d.m))return d.m;const w=WORK_MDL[line]&&WORK_MDL[line][cls];if(w&&mdlHas(w))return w;const m=hasOwnK(FAC_MDL[line],cls)?FAC_MDL[line][cls]:null;return m&&mdlHas(m)?m:null}
+function czHash(s){s=String(s);let h=7;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h}
+// is this (side, class) one that has no design of its own
+function czIs(fac,cls){if(!CZ_CLS.has(cls)||!fac||fac==='brood'||fac==='pirate'||fac==='wraith')return false;if(typeof fac==='string'&&fac.startsWith('cz:'))return false;return!FAC_IDS.includes(fmFac(fac))}
+// the freeport whose yard a ship's design comes from: its home port if it has one, else by the system it is in
+function czPort(port,sid){const YR=(S&&S.yardRoll)||{};if(port&&YR[port])return port;if(sid&&YR[sid])return sid;const ks=Object.keys(YR).sort();return ks.length?ks[czHash(sid||'')%ks.length]:null}
+function czPick(port,sid,cls,seed){try{if(S&&typeof yardRoll==='function')yardRoll()}catch(err){}const p=czPort(port,sid),YR=(S&&S.yardRoll)||{},c2=cls==='picket'?'interceptor':cls;let l=p&&YR[p]&&YR[p][c2];
+  if(!l||!czModel(l,cls))l=FAC_IDS[czHash((p||sid||'')+':'+cls+':'+(seed==null?'':seed))%FAC_IDS.length];if(!czModel(l,cls))l=FAC_IDS.find(f=>czModel(f,cls))||null;return l}
+// a ship's design line, found once and kept on it (and found again the same way after a load)
+function czLine(e){if(e.dl&&e.dlc===e.cls)return e.dl;let port=null;try{if(e.indId!=null&&S.ind&&S.ind.list){const I=S.ind.list.find(x=>x.id===e.indId);port=I&&I.port}}catch(err){}
+  e.dl=czPick(port,W&&W.sid,e.cls,e.indId);e.dlc=e.cls;return e.dl}
+// the mesh side of a ship: the Unbound's, a Compact ship's design line and paint ('cz:<line>:<side>'), or its own
+function meshFac(e){if(e.side==='pirate')return'pirate';if(czIs(e.fac,e.cls)){const l=czLine(e);if(l)return'cz:'+l+':'+e.fac}return e.fac}
+{const o=shipMesh;shipMesh=function(fac,cls){let line=null,paint=fac;
+  if(typeof fac==='string'&&fac.startsWith('cz:')){const a=fac.split(':');line=a[1];paint=a.slice(2).join(':')||'neutral'}
+  else if(czIs(fac,cls))line=czPick(null,W&&W.sid,cls,null);
+  const cz=line=>{const m=line&&MDL.ready?czModel(line,cls):null;if(!m)return null;const key='cz'+line+':'+paint+':'+cls;if(MESH[key])return MESH[key];const L=new GB();L.seg([0,0,0],[0,0,0],[0,0,0]);
+    return MESH[key]={hull:mdlMesh(m,paint,1),rim:L.upload(true),eng:engFix(m).map(e=>e.slice()),mdl:true}};
+  let r=line?cz(line):null;if(r)return r;r=o.call(this,paint,cls);
+  // any other side that asks for one of these classes and has no model of its own (the kit ships are gone from the pack)
+  if((!r||!r.mdl)&&MDL.ready&&CZ_CLS.has(cls)&&paint!=='brood'){const f=fmFac(paint),c=cz(FAC_IDS.includes(f)?f:czPick(null,W&&W.sid,cls,null));if(c)return c}
+  return r}}
+// ---- station turrets stand on seats (12 Nov 2026; the user, 11 Nov 2026: "Careful on the turrets, some of them are
+// floating above their hulls"). The powers' stations and depots, the freeports and the Haven carry a barbette for each live
+// turret (tools/stseats.py; 'sp' in the pack: the deck's point and the hull's normal there). The turret's turntable stands on
+// the deck, upright to the hull. They used to sit at the middle of whichever face lay furthest out in a fixed direction, the
+// turntable sunk 15 m into it and the turret leaning away from the station's centre whatever the face's slope. With fewer
+// turrets than seats (a forward depot has two of a depot's four) they take seats spread evenly round the hull; a forward
+// depot is a depot drawn at 80/105 of its size, and so are its turrets.
+const GST={lift:13.2,ts:1.15,wkr:.6};
+function stSeats(nm,size,n,k){const M=MDL.i[nm],K=M.sp.length,l=GST.lift*GST.ts*k,out=[];for(let i=0;i<n;i++){const s=M.sp[(n<K?Math.floor(i*K/n):i)%K];out.push({p:[s[0]*size+s[3]*l,s[1]*size+s[4]*l,s[2]*size+s[5]*l],n:[s[3],s[4],s[5]]})}return out}
+{const o=mdlStationTurrets;mdlStationTurrets=function(SE){const R=SE&&SE.rec,nm=SE&&!SE._mt&&MDL.ready&&!bmOwned(R)&&stMdlName(SE.fac,SE.kind,R&&R.sid),M=nm&&MDL.i[nm];
+  if(M&&M.sp&&M.sp.length){SE._mt=1;devEnt(SE);const fwd=R&&R.fwd,size=ST_MDL.size[fwd?'fdepot':SE.kind]||150,k=fwd?ST_MDL.size.fdepot/ST_MDL.size.depot:1,L=SE.turrets.filter(t=>!t.mod),T=stSeats(nm,size,L.length,k);
+    SE._ts=GST.ts*k;L.forEach((tu,i)=>{tu.p=T[i].p;tu.n=T[i].n});return}
+  return o.apply(this,arguments)}}
+// The defence platform's turrets (a station's Defence works, under the station) stand on its gun deck, upright. They hung
+// 8 m above the deck with their "up" pointing away from the station's centre, which is downward there: upside down in the
+// air over the deck. Their place round the deck is unchanged; the pivot is the turntable's height above the deck's top ('dk'
+// in the pack, tools/build_models.py), and the up is the platform's own. They also stand 8.7 m nearer the middle (.60 of the
+// platform's size out, from .74): at .74 the turntables overhung the deck's raised kerb; .60 is the one radius where all of
+// the two, four or six stand clear of both the kerb and the fire-control block (tools/stseats.py measures it).
+{const o=devEnt;devEnt=function(SE){const r=o.apply(this,arguments);try{const R=SE&&SE.rec,M=MDL.ready&&MDL.i&&MDL.i.wk_def;
+  if(M&&M.dk!=null&&R&&SE.turrets&&!bmOwned(R)&&SE.fac!=='brood'&&SE.kind!=='hive'){const d=devOf(R);if(d&&d.def){const c=wkLayout(SE.kind,'def',d.def).parts[0],u=WKU.def;
+    const L=SE.turrets.filter(t=>t.mod&&!t.n),n=L.length;L.forEach((t,i)=>{const a=i/n*TAU+.4;t.p=[c[0]+Math.cos(a)*u*GST.wkr,c[1]+u*M.dk+GST.lift*GST.ts,c[2]+Math.sin(a)*u*GST.wkr];t.n=[0,1,0]})}}}catch(e){}return r}}

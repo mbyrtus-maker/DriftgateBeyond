@@ -117,6 +117,10 @@ MODELS={
  'rockbase':('struct',rockbase),
  'yard':('struct',lambda:comp([('hangar_largeA',(0,0,0),0,1.6),('hangar_largeA',(0,0,0),H,1.6,True),('platform_large',(2.6,-.2,0),H/2,1.3),('platform_large',(-2.6,-.2,0),H/2,1.3),('supports_high',(2.6,-.135,1.1),0,1),('supports_high',(-2.6,-.135,-1.1),0,1),('barrels_rail',(2.6,-.135,-.6),0,.9),('craft_cargoA',(-2.6,-.135,.5),H/2,.7),('machine_generator',(0,1.59,1.2),0,1)])),   # (7 Nov 2026) the deck gear stands on the platforms' recessed decks (-.135) and the roof generator on the solid roof (1.6) beside its open hatch
 }
+# (12 Nov 2026) Driftgate 1's fifteen kit ships are no longer packed: the Compact's ships, the last to draw them, fly the powers'
+# designs in sand (the user, 11 Nov 2026: "Sand colored same as the powers"; src/js/16zzzzf_gfx.js). The kit carrier and escort
+# stay as the fallback for a capital with no design line, and the old kit Bombard and Vesper as they were.
+for _k in ('interceptor','striker','heavy','bomber','scout','scout2','picket','gunboat','skiff','prospector','dredger','courier','freighter','bulker','constructor'):MODELS.pop(_k)
 for _k,_f in BROOD_MODELS.items():
     if _k=='b_leviathan':continue   # the old frigate-class Leviathan isn't packed: the Hive Ship replaced it
     MODELS[_k]=('ship',_f);GLOW_N[_k]=0   # Brood: glow comes from their sacs and vents, not the stern rule
@@ -209,6 +213,21 @@ def _fp_ports(v):
 for _v,_n in (('mw','by_freeport'),('cw','by_freeport_cw'),('ew','by_freeport_ew')):PTS[_n]=_fp_ports(_v)
 MODELS['by_haven']=('base',lambda:_BUB.scrapheart().out())
 MODELS['by_rift']=('base',lambda:_BRS.riftstone().out())
+# (12 Nov 2026) turret seats on the powers' stations and depots, the freeports and the Haven (tools/stseats.py): each of these
+# models gets a barbette for every live turret the game stands on it, built into the hull where it is solid under the whole
+# turntable; the pack keeps each seat's deck point and normal ('sp'). They had none: the game perched each turret on the middle
+# of whichever face lay furthest out, sunk to its trunnions and leaning.
+import stseats as _SS
+for _n in _SS.SIZE:
+    def _mk(name,build):
+        def g():
+            M=build();log=[];_SS.seats(M,_SS.COUNT[name],_SS.SIZE[name],avoid=PTS.get(name,()),want=getattr(M,'want',()),log=log,ports=_SS.PORTS.get(name,()))
+            for l in log:print(name,l,flush=True)
+            r=M.out();_BRD.LAST=dict(_BRD.LAST or {},stn=M.stn);return r
+        return g
+    _SEATB={'by_freeport':lambda:_BFS.freeport('mw'),'by_freeport_cw':lambda:_BFS.freeport('cw'),'by_freeport_ew':lambda:_BFS.freeport('ew'),'by_haven':lambda:_BUB.scrapheart()}
+    for _fac,_ln,_st,_dp in _BFS.FACTION_STATIONS:_SEATB['by_st_'+_fac]=_st;_SEATB['by_dp_'+_fac]=_dp
+    MODELS[_n]=('base',_mk(_n,_SEATB[_n]))
 # (5 Nov 2026) the shared assault ship (beyond_assault.py, approved 2 Nov): one model for every faction, in its colours
 import beyond_assault as _BA
 MODELS['dz_assault']=('ship',lambda:_BA.assault().out());GLOW_N['dz_assault']=0
@@ -273,7 +292,11 @@ def pack():
         allp=P.reshape(-1,3);lo,hi=allp.min(0),allp.max(0);c=(lo+hi)/2
         if BBOX:bb[name]=[[round(float(v),5) for v in lo],[round(float(v),5) for v in hi],len(P)];continue
         if kind=='struct':c[1]=(lo[1]+hi[1])/2
+        if meta.get('stn'):EXTRA.setdefault(name,{})['sp']=[[round(float(x),4) for x in (np.array(p)-c)/(max(hi-lo)/2)]+[round(float(x),4) for x in n] for p,n in meta['stn']]
         P=P-c;half=max(hi-lo)/2;P=P/half          # longest half-extent = 1 (ships draw at radius x1.25, like the hand-built ones)
+        if name=='wk_def':
+            # (12 Nov 2026) the gun deck's top, where the game stands the defence platform's turrets (16zzzzf_gfx.js): found under the first turret's place
+            _t,_=_SS.rays(P,[np.array([math.cos(.4)*.74,2.0,math.sin(.4)*.74])],np.array([0,-1.,0]));EXTRA.setdefault(name,{})['dk']=round(float(2.0-_t[0]),4)
         tris=[];roles=[];shades=[]
         zlo=P[:,:,2].min();L=P[:,:,2].max()-zlo
         for k,t in enumerate(P):

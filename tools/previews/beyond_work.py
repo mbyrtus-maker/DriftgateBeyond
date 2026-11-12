@@ -82,15 +82,16 @@ def plover():    # medium miner: the Osprey's twin booms become fat ore hoppers 
     for sx in (1,-1):
         loft(M,[(-1.15,[(x+sx*.72,y) for x,y in LENS(.12,.12)]),(-.85,[(x+sx*.72,y) for x,y in LENS(.3,.27)]),(.15,[(x+sx*.72,y) for x,y in LENS(.32,.28)]),
                 (.7,[(x+sx*.72,y) for x,y in LENS(.22,.2)]),(.95,[(x+sx*.72,y) for x,y in LENS(.1,.1)])],lens_role)        # hopper boom
-        for z in (-.6,-.25,.1):hatch(M,(sx*.72,.285,z),.32,.22)
+        for z in (-.6,-.25,.1):hatch(M,(sx*.72,.278,z),.2,.22)                                                       # hatches on the boom's crown (wider, their edges stood off its curve)
         drill(M,(sx*.72,0,.95),.45,.1)
-        lens_head(M,(sx*.5,-.18,.8),.06)
+        lens_head(M,(sx*.72,-.105,.84),.06)                                                                          # mining lens under the boom's nose (11 Nov 2026: it hung in the gap between pod and boom)
         plate(M,[(sx*.2,.0,.2),(sx*.45,.0,.2),(sx*.45,.0,-.5),(sx*.2,.0,-.5)],.06,MID)                               # struts to the pod
         plate(M,[(sx*.72,.25,-.9),(sx*.72,.45,-1.1),(sx*.72,.45,-1.2),(sx*.72,.24,-1.2)],.03,ACC,.95)
         M.blob((sx*1.04,0,-.3),.05,WIN,sub=1,noise=0)
         M.vent((sx*.72,0,-1.16),.1)
-        launcher(M,(sx*.72,-.27,.3),3)
+        launcher(M,(sx*.72,-.19,.3),3)
     for sx in (1,-1):[ring(M,(sx*.72,0,z),.33,.016,ACC,seg=22,sides=4) for z in (-.75,.5)]
+    for sx in (1,-1):[tube(M,[(sx*.72+math.cos(a)*.2,math.sin(a)*.2,.5),(sx*.72+math.cos(a)*.325,math.sin(a)*.325,.5)],[.014,.014],LIGHT,.9,4) for a in (PI/4,3*PI/4,5*PI/4,7*PI/4)]   # (12 Nov 2026) the forward hoop stood off the boom where it tapers: four struts hold it
     lights(M,[(.15,-.04,.82),(-.15,-.04,.82)])
     return finish(M,2.6)
 def heron():     # heavy miner: a broad flattened lens hull with two stacked hoppers, drills, four drives
@@ -106,7 +107,7 @@ def heron():     # heavy miner: a broad flattened lens hull with two stacked hop
         drill(M,(sx*.4,-.08,.82),.55,.12)                                                                            # (4 Nov 2026: set into the bow; they hung in space beside it)
         plate(M,[(sx*.75,.0,-.1),(sx*1.25,.02,-.55),(sx*1.2,.02,-.75),(sx*.7,.0,-.7)],.06,LIGHT)
         box(M,(sx*1.15,-.04,-.6),(.18,.14,.3),MID);M.blob((sx*1.15,.08,-.6),.05,WIN,sub=1,noise=0)                # drone bays
-        plate(M,[(sx*.55,.2,-.85),(sx*.65,.48,-1.12),(sx*.65,.48,-1.22),(sx*.55,.2,-1.2)],.035,ACC,.95)
+        plate(M,[(sx*.45,.18,-.85),(sx*.65,.48,-1.12),(sx*.65,.48,-1.22),(sx*.45,.09,-1.05)],.035,ACC,.95)          # tails, their roots on the hull (they stood off its falling stern)
         launcher(M,(sx*.6,-.3,.4),3)
         for dx in (.2,.5):M.vent((sx*dx,0,-1.22),.11)
     lights(M,[(.4,.0,1.0),(-.4,.0,1.0),(0,.18,1.02)])
@@ -137,7 +138,7 @@ def albatross(): # medium hauler: a broad, thick flying-wing whose wings are car
         for dx in (.3,.75):M.vent((sx*dx,0,-1.0),.09)
         barrel(M,(sx*.5,-.1,.42),.34,.017)                                                                          # a gun under each wing bay
     loft(M,[(.2,LENS(.14,.1,.22)),(.45,LENS(.16,.13,.26)),(.75,LENS(.08,.06,.22))],lens_role);M.blob((0,.38,.5),.11,GLASS,sub=2,squash=(1,.7,1.6),noise=0)
-    lights(M,[(.35,-.02,1.0),(-.35,-.02,1.0)])
+    lights(M,[(.1,-.045,1.0),(-.1,-.045,1.0)])                                                                     # under the nose's lip (they hung beside it)
     return finish(M,2.6)
 def pelican():   # heavy hauler: a huge bulbous cargo pouch hull between two big engine pylons
     M=Mesh(56)
@@ -153,7 +154,7 @@ def pelican():   # heavy hauler: a huge bulbous cargo pouch hull between two big
         M.blob((sx*1.0,.42,.3),.06,WIN,sub=1,noise=0)
         hatch(M,(sx*.3,.5,-.1),.3,.6)
     M.vent((0,0,-1.27),.18)
-    lights(M,[(.3,-.05,1.24),(-.3,-.05,1.24)])
+    lights(M,[(.1,.02,1.24),(-.1,.02,1.24)])                                                                       # on the nose (they hung beside it)
     return finish(M,3.3)
 
 # ============================================================== VARKESH
@@ -297,7 +298,7 @@ def glim():      # light miner: a spire cockpit inside a halo, a crystal cargo h
     for k in range(3):a=PI/2+k*2*PI/3;plate(M,[(math.cos(a)*.12,math.sin(a)*.12,-.55),(math.cos(a)*.5,math.sin(a)*.5,-.82),(math.cos(a)*.45,math.sin(a)*.45,-.9),(math.cos(a)*.1,math.sin(a)*.1,-.85)],.025,MID)
     launcher(M,(0,-.2,.0),2,ACC)
     M.vent((0,0,-.82),.06)
-    lights(M,[(.1,-.1,.6),(-.1,-.1,.6)])
+    lights(M,[(.2,0,.5),(-.2,0,.5)])                                                                               # on the prongs' outer sides (they hung below the spire)
     return finish(M,2.0)
 def lumen():     # medium miner: a central spire cockpit forward with mining lenses at its nose; crystal holds set in two rings crossed in an X
     M=Mesh(72)
@@ -311,10 +312,10 @@ def lumen():     # medium miner: a central spire cockpit forward with mining len
         for sg in (1,-1):
             tip=np.array([0,0,-.5])+u*sg*.78
             crystal(M,-1.25,.25,.17,.17,tip[0],tip[1])                                                                # crystal hold set in the ring, stretched from its front to its back
-            tube(M,[u*sg*.2+[0,0,-.5],u*sg*.6+[0,0,-.5]],[.025,.025],LIGHT,.9,5,cap0=False,cap1=False)
-    for k in range(3):a=PI/2+k*2*PI/3;plate(M,[(math.cos(a)*.15,math.sin(a)*.15,-.8),(math.cos(a)*.42,math.sin(a)*.42,-1.05),(math.cos(a)*.38,math.sin(a)*.38,-1.13),(math.cos(a)*.12,math.sin(a)*.12,-1.07)],.025,MID)
+            tube(M,[u*sg*.09+[0,0,-.5],u*sg*.64+[0,0,-.5]],[.025,.025],LIGHT,.9,5,cap0=False,cap1=False)             # spokes from inside the spire to the holds (11 Nov 2026: they started .08 clear of it)
+    for k in range(3):a=PI/2+k*2*PI/3;plate(M,[(math.cos(a)*.07,math.sin(a)*.07,-.8),(math.cos(a)*.42,math.sin(a)*.42,-1.05),(math.cos(a)*.38,math.sin(a)*.38,-1.13),(math.cos(a)*.03,math.sin(a)*.03,-1.02)],.025,MID)   # fins rooted in the spire (they stood off it)
     M.vent((0,0,-1.02),.06)
-    lights(M,[(.1,-.1,.98),(-.1,-.1,.98)])
+    lights(M,[(.05,-.04,1.02),(-.05,-.04,1.02)])
     return finish(M,2.6)
 def delve():     # heavy miner: a great drill spire with a lens ring at its prow; four crystal ore holds held by two halos, one at their fronts, one at their backs
     M=Mesh(73)
@@ -330,7 +331,7 @@ def delve():     # heavy miner: a great drill spire with a lens ring at its prow
         a=PI/4+k*PI/2;dx,dy=math.cos(a)*R,math.sin(a)*R
         crystal(M,-1.0,.55,.26,.26,dx,dy)                                                                            # crystal ore hold set in the halo
         # (4 Nov 2026) the halo spokes and fins start inside the spire: on the diagonals its diamond section is narrower, and they floated
-        for z in (-.8,.3):tube(M,[(math.cos(a)*.1,math.sin(a)*.1,z),(math.cos(a)*.75,math.sin(a)*.75,z)],[.035,.035],LIGHT,.9,5)
+        for z in (-.8,.3):tube(M,[(math.cos(a)*.1,math.sin(a)*.1,z),(math.cos(a)*.93,math.sin(a)*.93,z)],[.035,.035],LIGHT,.9,5)   # (12 Nov 2026: out to the halo; they stopped .13 short of it, and the spire hung loose inside the holds)
         plate(M,[(math.cos(a)*.09,math.sin(a)*.09,-.8),(math.cos(a)*.5,math.sin(a)*.5,-1.1),(math.cos(a)*.46,math.sin(a)*.46,-1.2),(math.cos(a)*.06,math.sin(a)*.06,-1.15)],.03,MID)
     M.blob((0,.24,.45),.1,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
     M.vent((0,0,-1.27),.09)
@@ -376,9 +377,9 @@ def monolith():  # heavy hauler: a solid spire fuselage with a bridge, two halos
         crystal(M,-1.2,.75,.3,.3,cx,cy)                                                                              # large crystal hold set in the halos
         for z in (-.75,.3):tube(M,[(math.cos(a)*.25,math.sin(a)*.25,z),(math.cos(a)*(R-.2),math.sin(a)*(R-.2),z)],[.035,.035],LIGHT,.9,5,cap0=False,cap1=False)
     for k in range(3):
-        a=PI/2+k*2*PI/3;dx,dy=math.cos(a)*.24,math.sin(a)*.24
+        a=PI/2+k*2*PI/3;dx,dy=math.cos(a)*.16,math.sin(a)*.16                                                           # (11 Nov 2026) the spire drives set into the stern (at .24 they hung .04 clear of it)
         loft(M,[(-1.95,DIA(.03,.03,dx,dy)),(-1.75,DIA(.09,.09,dx,dy)),(-1.45,DIA(.09,.09,dx,dy))],SP);M.vent((dx,dy,-1.97),.05)   # spire drives astern
-    lights(M,[(.15,-.12,1.35),(-.15,-.12,1.35)])
+    lights(M,[(.05,-.05,1.38),(-.05,-.05,1.38)])                                                                   # on the nose (they hung beside it)
     return finish(M,3.3)
 # (11 Nov 2026) each power's builders make their nozzles and guns in that power's design language (brood.styled)
 from brood import styled as _styled

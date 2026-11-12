@@ -39,7 +39,8 @@ def turret(M,c,r=.1,role=MID,back=True):
     for sx in (1,-1):tube(M,[c+[sx*r*.35,0,d*r*.6],c+[sx*r*.35,0,d*(r*.6+.32)]],[.018,.016],DARK,1.0,6)
 def mast(M,base,h,r=.012,role=LIGHT,rings=2):
     b=np.array(base,float);tube(M,[b,b+[0,h,0]],[r,r*.6],role,.9,5)
-    for k in range(rings):ring(M,tuple(b+[0,h*(.55+.25*k),0]),.05-.012*k,.008,ACC,seg=10,sides=4,axis='y')
+    for k in range(rings):
+        q=b+[0,h*(.55+.25*k),0];rr=.05-.012*k;ring(M,tuple(q),rr,.008,ACC,seg=10,sides=4,axis='y');plate(M,[q+[-rr,0,-.004],q+[rr,0,-.004],q+[rr,0,.004],q+[-rr,0,.004]],.005,ACC)   # each ring on a crossbar through the mast (11 Nov 2026: they floated round it)
 def dish(M,c,r,role=MID,axis='y'):
     M.blob(tuple(c),r,role,sub=2,squash=(1,.28,1) if axis=='y' else (1,1,.28),noise=0);ring(M,tuple(c),r,.014,ACC,seg=20,sides=4,axis=axis)
 def limpets(M,c,n=3):
@@ -51,7 +52,7 @@ def lark():      # scout: a slim needle with a long sensor boom forward, a small
     H=[(-.8,LENS(.08,.07)),(-.4,LENS(.13,.11)),(.2,LENS(.12,.11)),(.6,LENS(.05,.05,-.01))]
     loft(M,H,lens_role);cheek(M,H,.02,.28,.011,-.035)                                                               # a slim gun low on each cheek
     M.blob((0,.1,.15),.07,GLASS,sub=2,squash=(.9,.75,2.2),noise=0)
-    tube(M,[(0,0,.6),(0,0,1.15)],[.015,.01],LIGHT,.9,5);ring(M,(0,0,.95),.04,.008,ACC,seg=10,sides=4)               # sensor boom
+    tube(M,[(0,0,.6),(0,0,1.15)],[.015,.01],LIGHT,.9,5);ring(M,(0,0,.95),.04,.008,ACC,seg=10,sides=4);plate(M,[(-.04,0,.95),(.04,0,.95),(0,.005,.954)],.005,ACC)   # sensor boom, its ring on a crossbar
     dish(M,(0,.15,-.3),.08)
     for sx in (1,-1):
         plate(M,[(sx*.1,0,.05),(sx*.6,.04,-.35),(sx*.56,.04,-.45),(sx*.1,0,-.35)],.02,LIGHT)
@@ -69,7 +70,7 @@ def skylark():   # advanced scout: a larger lens body carrying a big radome on t
     M.blob((0,.42,-.28),.34,MID,sub=2,squash=(1,.17,1),noise=0);ring(M,(0,.42,-.28),.34,.018,ACC,seg=26,sides=4,axis='y')   # the radome
     for sx in (1,-1):
         plate(M,[(sx*.15,0,.1),(sx*.75,.03,-.4),(sx*.7,.03,-.52),(sx*.15,0,-.45)],.025,LIGHT)
-        tube(M,[(sx*.45,-.06,-.05),(sx*.45,-.06,-.4)],[.035,.035],DARK,.9,6);limpets(M,(sx*.45,-.1,-.1),3)          # limpet pods
+        tube(M,[(sx*.45,-.03,-.05),(sx*.45,-.03,-.4)],[.035,.035],DARK,.9,6);limpets(M,(sx*.45,-.07,-.1),3)         # limpet pods, against the wing's underside (they hung .03 below)
         M.blob((sx*.72,.03,-.46),.04,WIN,sub=1,noise=0)
         plate(M,[(sx*.08,.1,-.7),(sx*.2,.35,-.98),(sx*.2,.35,-1.04),(sx*.08,.09,-1.0)],.02,ACC,.95)
     box(M,(0,-.13,.0),(.1,.06,.2),ACC)                                                                               # beacon device
@@ -84,10 +85,11 @@ def condor():    # bomber: a heavy lens fuselage, a great swept wing span with t
     for sx in (1,-1):
         plate(M,[(sx*.22,.02,.35),(sx*1.25,.08,-.45),(sx*1.2,.08,-.62),(sx*.22,.02,-.5)],.04,LIGHT)                 # great swept wing
         M.blob((sx*1.22,.08,-.54),.05,WIN,sub=1,noise=0)
-        for dx in (.5,.85):tube(M,[(sx*dx,-.02,0),(sx*dx,-.07,0)],[.02,.02],DARK,.9,4);torpedo(M,(sx*dx,-.12,-.45),.75,.055)   # slung torpedoes
+        for dx,pz in ((.5,0),(.85,-.3)):tube(M,[(sx*dx,.03+(dx-.5)*.12,pz),(sx*dx,-.085,pz)],[.02,.02],DARK,.9,4);torpedo(M,(sx*dx,-.12,-.45),.75,.055)   # (12 Nov 2026: the outer pylon stood ahead of the swept wing's leading edge, holding nothing)
+           # slung torpedoes, their pylons up into the wing (they stopped short of it)
         plate(M,[(sx*.12,.15,-.65),(sx*.28,.48,-1.0),(sx*.28,.48,-1.08),(sx*.12,.14,-1.02)],.025,ACC,.95)
         M.vent((sx*.12,0,-1.1),.08)
-    plate(M,[(-.14,-.2,.3),(.14,-.2,.3),(.14,-.2,-.5),(-.14,-.2,-.5)],.02,DARK)                                    # bomb-bay doors
+    loft(M,[(-.55,LENS(.06,.03,-.14)),(-.3,LENS(.13,.09,-.147)),(.1,LENS(.13,.09,-.147)),(.35,LENS(.06,.03,-.14))],lambda i,j:(MID,.9) if j<6 else (DARK,1.25))   # the bomb bay: a shallow belly fairing with dark doors (11 Nov 2026: the doors were a flat plate hanging .05 under the belly; the fairing reaches as low, so the hull's packed size is unchanged)
     return finish(M,2.7,1.0)
 def harrier():   # heavy bomber: a long clean lens hull, tandem canopies, a forward-swept wing with a torpedo pod under each side, a rear ball turret
     M=Mesh(84)
@@ -218,7 +220,7 @@ def sentinel():  # heavy bomber: a spire with tandem seats, a gun pod on the aft
     loft(M,[(-.98,DIA(.05,.03,0,.16)),(-.84,DIA(.12,.06,0,.18)),(-.62,DIA(.12,.06,0,.18)),(-.48,DIA(.05,.03,0,.16))],SP);seat(M,(0,.25,-.73),.104,gx=1/1.15)   # the turret's seat on a pod on the aft fuselage (11 Nov 2026: the live turret stands here; the modelled gun pod's own turret is gone)
     for sx in (1,-1):
         plate(M,[(sx*.15,-.05,.35),(sx*.5,-.1,.0),(sx*.48,-.1,-.25),(sx*.15,-.05,-.35)],.025,WIN,.85)              # crystal fins
-        torpedo(M,(sx*.36,-.18,-.4),.8,.05,LIGHT)                                                                      # torpedo lances
+        torpedo(M,(sx*.36,-.14,-.4),.8,.05,LIGHT)                                                                      # torpedo lances, against the fins' undersides (they hung .04 below)
     vee_tail(M,-.82,.52)
     M.vent((0,0,-1.22),.06)
     return finish(M,2.95,1.15)

@@ -40,7 +40,7 @@ function dstMdl(fac,cls){if(cls==='frigate'&&DST.mdl[fac]&&fac!=='pirate')return
 function mgSpec(e){if(e.role!=='frigate'||!e.tok)return null;if(isDst(e.tok))return e.side==='brood'?DST.maw:DST.gun;if(isCar(e.tok)&&e.side==='pirate')return DST.rav;return null}
 function mgNose(e){qRot(e.q,0,0,1,_f);const r=e.st.radius;return{x:e.x+_f.x*r*.95,y:e.y+_f.y*r*.95+r*.1,z:e.z+_f.z*r*.95}}
 function mgShot(e,G,T){const n=mgNose(e),spd=900,lp=T.type==='ship'?leadPoint({x:n.x,y:n.y,z:n.z,vx:0,vy:0,vz:0},T,spd):T;let dx=lp.x-n.x,dy=lp.y-n.y,dz=lp.z-n.z;const l=hyp(dx,dy,dz)||1;dx/=l;dy/=l;dz/=l;
-  W.shots.push({x:n.x,y:n.y,z:n.z,vx:dx*spd,vy:dy*spd,vz:dz*spd,dmg:G.dmg,side:e.side,src:e,ttl:3.4,col:sideCol(e.side),sty:'capital',cap:true,mg:1});if(!MUTE){fxBoom(n,60,'#ffe2b0');const v=vAt(e);if(v>.05)SFX.lance(Math.min(1,v*1.5))}
+  W.shots.push(gfxShot(e,{x:n.x,y:n.y,z:n.z,vx:dx*spd,vy:dy*spd,vz:dz*spd,dmg:G.dmg,side:e.side,src:e,ttl:3.4,col:sideCol(e.side),sty:'capital',cap:true,mg:1}));if(!MUTE){fxBoom(n,60,'#ffe2b0');const v=vAt(e);if(v>.05)SFX.lance(Math.min(1,v*1.5))}
   qRot(e.q,0,0,1,_f);e.vx-=_f.x*8;e.vy-=_f.y*8;e.vz-=_f.z*8}
 // the maw: a beam straight ahead, hitting every hostile ship, station and works it passes near
 function segD(ax,ay,az,ux,uy,uz,L,p){const px=p.x-ax,py=p.y-ay,pz=p.z-az;const t=clamp(px*ux+py*uy+pz*uz,0,L);return hyp(px-ux*t,py-uy*t,pz-uz*t)}

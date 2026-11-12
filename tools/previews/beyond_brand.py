@@ -3,7 +3,7 @@
 # language, built around the weapon that made its name. The Wraith, a conqueror's trophy, belongs to no faction: a faceted stealth wing.
 import math
 import numpy as np
-from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,loft,box,plate,ring,LENS,HEX,lens_role,barrel
+from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,loft,box,plate,ring,LENS,HEX,lens_role,barrel,loft_top
 from beyond_work import finish,abox,crystal,lights,sqdrive,hatch
 from beyond_recon import SMH,smh_role,dish
 from beyond_capitals import tube,giant_gun,stacks
@@ -11,11 +11,11 @@ PI=math.pi
 OCT=lambda w,h,dx=0,dy=0:[(math.cos(a)*w+dx,math.sin(a)*h+dy) for a in np.linspace(PI/8,2*PI+PI/8,8,endpoint=False)]
 def oct_role(i,j):return ([LIGHT,LIGHT,LIGHT,MID,MID,DARK,DARK,MID][j],[1,.97,1,.95,.9,.85,.85,.92][j])
 
-def cells(M,x0,x1,z0,z1,y,nx,nz,dy=0.0):
+def cells(M,x0,x1,z0,z1,y,nx,nz,dy=0.0,surf=None):
     # a bank of missile launch cells: dark square hatches with amber rims and a glow in each
     for i in range(nx):
         for k in range(nz):
-            x=x0+(x1-x0)*(i+.5)/nx;z=z0+(z1-z0)*(k+.5)/nz;yy=y+dy*abs(x)
+            x=x0+(x1-x0)*(i+.5)/nx;z=z0+(z1-z0)*(k+.5)/nz;yy=surf(x,z) if surf else y+dy*abs(x)   # surf: the hull's height there (the cells stood off the wing where it curves away)
             w=(x1-x0)/nx*.38;l=(z1-z0)/nz*.38
             plate(M,[(x-w,yy,z-l),(x+w,yy,z-l),(x+w,yy,z+l),(x-w,yy,z+l)],.012,DARK,.8)
             M.blob((x,yy+.008,z),min(w,l)*.45,WIN,sub=1,squash=(1,.3,1),noise=0)
@@ -25,16 +25,17 @@ def gannet():
     # between freight hatches and banks of missile launch cells (the barrage), a glass cockpit set straight into the hull, small tail plates, floodlights
     M=Mesh(701)
     sec=lambda w,h,dy=0:[(math.cos(a)*w,math.sin(a)*h*(1 if math.sin(a)>0 else .55)+dy) for a in np.linspace(0,2*PI,16,endpoint=False)]
-    loft(M,[(-1.0,sec(.75,.15)),(-.6,sec(1.3,.26)),(.2,sec(1.15,.28)),(.75,sec(.6,.22)),(1.1,sec(.2,.1))],lambda i,j:((LIGHT,1.0) if j<8 else (MID,.92)))
+    Hs=[(-1.0,sec(.75,.15)),(-.6,sec(1.3,.26)),(.2,sec(1.15,.28)),(.75,sec(.6,.22)),(1.1,sec(.2,.1))];top=lambda x,z:loft_top(Hs,z,x)+.004
+    loft(M,Hs,lambda i,j:((LIGHT,1.0) if j<8 else (MID,.92)))
     for sx in (1,-1):
-        cells(M,sx*.35,sx*1.0,-.55,.25,.27,3,4,-.02) if sx>0 else cells(M,sx*1.0,sx*.35,-.55,.25,.27,3,4,-.02)   # launch cells in the outer bays
+        cells(M,sx*.35,sx*1.0,-.55,.25,.27,3,4,-.02,top) if sx>0 else cells(M,sx*1.0,sx*.35,-.55,.25,.27,3,4,-.02,top)   # launch cells in the outer bays
         hatch(M,(sx*.22,.28,-.2),.22,.5)                                                                        # freight hatches on the spine
         plate(M,[(sx*.4,.22,-.7),(sx*.5,.42,-.92),(sx*.5,.42,-1.02),(sx*.4,.22,-.98)],.035,ACC,.95)
         M.blob((sx*1.28,.0,-.4),.06,WIN,sub=1,noise=0)
         for dx in (.3,.75):M.vent((sx*dx,0,-1.0),.09)
         barrel(M,(sx*.5,-.115,.4),.34,.017)                                                                         # a gun under each wing bay
     M.blob((0,.24,.62),.15,GLASS,sub=2,squash=(1,.55,1.6),noise=0)                                                 # cockpit set straight into the hull
-    lights(M,[(.38,-.02,1.05),(-.38,-.02,1.05)],.035)
+    lights(M,[(.13,-.045,1.04),(-.13,-.045,1.04)],.035)
     M.xf(lambda Q:Q*np.array([.86,1,1]))                                                                            # a little narrower
     return finish(M,2.8,1.0)
 def bombard():

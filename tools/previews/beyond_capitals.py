@@ -250,7 +250,7 @@ def peregrine(): # destroyer: a lens hull that splits into two prongs round a sp
         for z in (-1.2,-.4,.4):pd(M,(sx*.4,.2,z),.07)
         pd(M,(sx*.27,.2,1.3),.06)
         sidewin(M,sx*.505,.08,-1.6,.2)
-    tube(M,[(0,0,.6),(0,0,2.55)],[.075,.06],DARK,.95,10,cap1=False);ring(M,(0,0,2.55),.075,.016,ACC,seg=14,sides=4)   # spinal rail cannon
+    tube(M,[(0,0,.6),(0,0,2.55)],[.075,.06],DARK,.95,10,cap1=False);ring(M,(0,0,2.55),.075,.016,ACC,seg=14,sides=4);bore(M,(0,0,2.55),.06)   # spinal rail cannon
     for z in (1.0,1.4,1.8,2.15):ring(M,(0,0,z),.15-.012*(z-1),.022,WIN,seg=20,sides=5)                          # accelerator rings
     loft(M,[(-1.2,LENS(.1,.05,.3)),(-1.0,LENS(.2,.09,.32)),(.2,LENS(.18,.08,.31)),(.5,LENS(.06,.03,.3))],lens_role)   # capacitor bank
     for z in (-.8,-.4,0):plate(M,[(-.14,.405,z+.1),(.14,.405,z+.1),(.14,.405,z-.1),(-.14,.405,z-.1)],.006,WIN,.9)
@@ -260,6 +260,11 @@ def peregrine(): # destroyer: a lens hull that splits into two prongs round a sp
     lights(M,[(.26,-.1,2.2),(-.26,-.1,2.2)],.035)
     return finish(M,4.1,1.0)
 
+def bore(M,c,r,depth=None,n=10):
+    # (11 Nov 2026) the mouth of a big gun at c facing +z: a rim, and a dark bore going back into the barrel (the big guns
+    # were open pipes); the muzzle is recorded, so the game's main-gun shot is drawn leaving from it
+    c=np.array(c,float);d=depth or r*1.6;n0=len(M.T);C=lambda q:[(math.cos(a)*q,math.sin(a)*q) for a in np.linspace(0,2*PI,n,endpoint=False)]
+    M.rings(c,[(0,C(r)),(0,C(r*.74)),(-d,C(r*.6))],DARK,.42,inward=True,cap=(2,DARK,.2));M.part(M.gun,c,n0)
 def giant_gun(M,c):
     # one giant main gun: a broad barbette, a long angled housing, one huge barrel with a muzzle brake, pointing +z
     x,y,z=c
@@ -267,7 +272,7 @@ def giant_gun(M,c):
     loft(M,[(z-.42,[(a+x,b+y+.15) for a,b in SMH(.2,.1)]),(z-.3,[(a+x,b+y+.15) for a,b in SMH(.27,.14)]),(z+.3,[(a+x,b+y+.15) for a,b in SMH(.25,.13)]),(z+.42,[(a+x,b+y+.15) for a,b in SMH(.18,.09)])],smh_role)
     tube(M,[(x,y+.15,z+.35),(x,y+.15,z+.6),(x,y+.15,z+1.55)],[.1,.075,.06],DARK,1.0,10,cap0=False,cap1=False)
     ring(M,(x,y+.15,z+.62),.085,.02,ACC,seg=14,sides=4)
-    tube(M,[(x,y+.15,z+1.5),(x,y+.15,z+1.72)],[.09,.09],MID,.95,8,cap1=False)
+    tube(M,[(x,y+.15,z+1.5),(x,y+.15,z+1.72)],[.09,.09],MID,.95,8,cap1=False);bore(M,(x,y+.15,z+1.72),.09,n=8)
     for zz in (1.56,1.64):ring(M,(x,y+.15,z+zz),.092,.012,DARK,seg=12,sides=4)
     plate(M,[(x-.12,y+.2885,z+.15),(x+.12,y+.2885,z+.15),(x+.12,y+.2935,z-.15),(x-.12,y+.2935,z-.15)],.012,ACC,.9)   # (7 Nov 2026) laid on the housing's slope: flat, it crossed the housing's top at 1 degree and flickered
 def ironclad():  # destroyer: an armoured smoothed-hex hull on a flared armour belt, two giant main guns on the centreline (the second
@@ -297,7 +302,7 @@ def prism():     # destroyer: a faceted hull carrying three long spars (two abov
     oct_role=lambda i,j:([LIGHT,LIGHT,LIGHT,MID,MID,DARK,DARK,MID][j],[1,.97,1,.95,.9,.85,.85,.92][j])
     loft(M,[(-2.3,OCT(.3,.28)),(-1.8,OCT(.44,.38)),(.2,OCT(.4,.34)),(.85,OCT(.2,.18))],oct_role)                     # faceted hull
     tube(M,[(0,0,.8),(0,0,1.55)],[.1,.08],WIN,1.0,6,cap0=False,cap1=False)                                          # energy conduit
-    crystal(M,1.3,2.8,.3,.3,0,0)                                                                               # the lens: a great prow crystal
+    M.part(M.gun,(0,0,2.8),len(M.T));crystal(M,1.3,2.8,.3,.3,0,0)                                                                             # the lens: a great prow crystal
     for a in (PI/6,5*PI/6,3*PI/2):                                                                                   # three spars
         u=np.array([math.cos(a),math.sin(a)])
         pts=[(u[0]*r,u[1]*r,z) for r,z in ((.3,-1.6),(.62,-.5),(.62,.9),(.2,2.1))]
