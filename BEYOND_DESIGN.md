@@ -4126,3 +4126,18 @@ Eleven quick looks (120 galaxies, 30 hours each) showed that the win-rule dials 
 - **A truce against a power on the win clock** made things worse (the Brood 28 to 33%, up to 15% unfinished). It stays off.
 
 So `LEN` gets one more dial, **`clock`**: the strategic turn (mining into the warehouses, industry, every side's decisions, the makers and the rest of the off-screen galaxy) runs once every `clock` beats of 10 s, and each side's waits for its next offensive and build stretch to match. Battles, sieges, convoys and the hold keep real time. It is 1 in every setting until the war checks choose a value and the user agrees what a slower galaxy means for a pilot (shelves restocking, job boards and rock regrowth run on the same turn). Test: `length.py`.
+
+### Game length: the clock's first looks, and a diplomacy-pace dial (12 Nov 2026)
+Quick looks, 120 galaxies each (clock 2.2 run for 40 hours):
+
+| Tune | Median | Earliest tenth | Powers' median win | Unfinished | Brood |
+|---|---|---|---|---|---|
+| baseline | 5.8 h | 3.1 h | 7.3 h | 0% | 26% |
+| `clock` 1.5 | 7.1 h | 4.0 h | 10.0 h | 0% | 38% |
+| `clock` 2.2 | 12.8 h | 5.8 h | 15.5 h | 1% | 40% |
+| `clock` 2.2, the Brood's growth at two-thirds | 12.8 h | 6.4 h | 16.1 h | 1% | 39% |
+| `clock` 2.2, the Brood's growth at half | 12.5 h | 7.0 h | 16.0 h | 2% | 38% |
+
+The clock stretches the whole spread about 2.2 times and galaxies still finish, but the Brood's share rises to about 40% and does not respond to its own growth dials. The powers declare 13.2 wars a galaxy under clock 2.2 against 9.0 at baseline: the leaders' waits and a war's shortest and wearying lengths are real-time timers, so against halved production the powers fight each other more. Whether that is the cause is being tested, not settled.
+
+For that test `LEN` gets a dial **`dip`**: the leaders' waits between decisions (`REL.leadCool`), a pair's wait between dealings (`REL.pairCool`), the wait between proposals (`DECL.propEvery`), and the shortest and the wearying length of a war (`REL.warMin` 600 s and `REL.warLong` 2,400 s, which were bare numbers in `weary` and the leaders' options) are multiplied by it. It is 1 in every setting, so nothing changes in play.

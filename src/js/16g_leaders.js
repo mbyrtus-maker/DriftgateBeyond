@@ -7,7 +7,7 @@
 // Leaders (one per power, two traits) choose among the events whose triggers are true right now, and announce them with a reason.
 const REL={on:true,war:-50,hostile:-10,friendly:25,allied:60,drift:.004,
   kill:.8,capKill:5,beacon:3,strike:4,capture:12,depot:18,raze:24,raid:3,leader:40,
-  leadCool:[150,300],pairCool:300,logMax:80,chronMax:160};
+  leadCool:[150,300],pairCool:300,warMin:600,warLong:2400,logMax:80,chronMax:160};
 const REL_BANDS=[['War','#ff3b30'],['Hostile','#ff8a5c'],['Neutral','#ece4cf'],['Friendly','#9fd8a8'],['Allied','#5fe0a0']];
 const TRAITS=['Ambitious','Vengeful','Mercantile','Cautious','Scheming','Patient','Wary','Loyal','Zealous','Honourable','Ruthless','Industrious','Isolationist','Opportunist'];
 const LEAD0={halcyon:{title:'Chair of the Merchant Houses',traits:['Mercantile','Cautious']},varkesh:{title:'Marshal',traits:['Ambitious','Vengeful']},ostrova:{title:'First Archivist',traits:['Scheming','Patient']}};
@@ -65,7 +65,7 @@ function surplus(f,k){const st=S.econ.stock[f]||{};return(st[k]||0)>(k==='fe'||k
 const PACT_ITEMS=['fe','cu','ir','xc','plate','wire','coil'];
 function pactNeed(f,g){for(const k of PACT_ITEMS)if((short(f,k)&&surplus(g,k))||(short(g,k)&&surplus(f,k)))return k;return null}
 function underSiege(f){return S.events.some(e=>e.type==='offensive'&&e.stage!=='done'&&e.st&&S.stations[e.st]&&S.stations[e.st].owner===f)}
-function weary(f,g){const lost=((S.loss||{})[f]||{})[g]||0,P=pairOf(f,g);return lost>=8||(S.econ.treasury[f]||0)<60000||(controlCounts().brood||0)>=3||(P&&P.war&&S.T-P.warT>2400)}
+function weary(f,g){const lost=((S.loss||{})[f]||{})[g]||0,P=pairOf(f,g);return lost>=8||(S.econ.treasury[f]||0)<60000||(controlCounts().brood||0)>=3||(P&&P.war&&S.T-P.warT>REL.warLong)}
 // the events a leader can choose from right now, each with its cause
 function leaderOptions(f){const out=[],n=controlCounts();
   for(const g of FAC_IDS){if(g===f)continue;const P=pairOf(f,g),v=relOf(f,g);if(!P||S.T<P.cool)continue;const hurt=((S.hurt||{})[f]||{})[g]||0,gr=(leaderOf(f).grudge||{})[g]||0;
@@ -77,7 +77,7 @@ function leaderOptions(f){const out=[],n=controlCounts();
     if(!P.ally&&!P.war&&v>REL.allied){const th=FAC_IDS.find(h=>h!==f&&h!==g&&(n[h]||0)>=VIC_NEED-2)||((n.brood||0)>=3?'brood':null);if(th)add('alliance',th==='brood'?'the Brood is spreading':`${FAC(th).short} is nearing control of the galaxy`,()=>evAlliance(f,g,th))}
     if(!P.ally&&hurt>=12)add('reprisal',`${FAC(g).short} struck ${FAC(f).short} hard`,()=>evReprisal(f,g));
     if(!P.war&&!P.ally&&((v<REL.war&&(gr>0||hurt>0))||(v<REL.hostile&&gr>=1&&(hasT(f,'Vengeful')||hasT(f,'Ambitious')||hasT(f,'Ruthless')))||(v<REL.hostile&&(n[g]||0)>=(n[f]||0)+2&&(hasT(f,'Ambitious')||hasT(f,'Opportunist')))))add('war',v<REL.war?`an unanswered wrong`:`${FAC(g).short} is leading in systems`,()=>evWar(f,g));
-    if(P.war&&S.T-P.warT>600&&weary(f,g))add('ceasefire',`the war is bleeding ${FAC(f).short}`,()=>evCeasefire(f,g));
+    if(P.war&&S.T-P.warT>REL.warMin&&weary(f,g))add('ceasefire',`the war is bleeding ${FAC(f).short}`,()=>evCeasefire(f,g));
     if(P.ally&&((n[g]||0)>=VIC_NEED-2||((S.econ.treasury[g]||0)>(S.econ.treasury[f]||0)*1.5&&(n[g]||0)<(n[f]||0))))add('betrayal',(n[g]||0)>=VIC_NEED-2?`${FAC(g).short} is nearing control of the galaxy`:`${FAC(g).short} is rich and weak`,()=>evBetrayal(f,g))}
   return out}
 function leaderTick(){if(!S||!S.leaders||!REL.on)return;

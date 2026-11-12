@@ -16,14 +16,19 @@
 //                    the makers and the rest of the off-screen galaxy) runs once every `clock` beats of 10 s instead of
 //                    every beat, and each side's waits for its next offensive and next build are stretched to match.
 //                    Battles, sieges, convoys and the hold on the galaxy keep real time. (1 = as before)
+//   dip              the powers' diplomacy keeps the same pace as a slowed galaxy: the leaders' waits between decisions, a
+//                    pair's wait between dealings, the wait between proposals, and the shortest and the wearying length of
+//                    a war are multiplied by this (1 = as before)
 // The values are tuned by war checks (BEYOND_DESIGN.md "Game length"); a tune file sets LEN_SET.std.* or LEN_SET.long.*.
-const LEN_SET={legacy:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0,clock:1},
-  std:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0,clock:1},
-  long:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0,clock:1}};
+const LEN_SET={legacy:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0,clock:1,dip:1},
+  std:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0,clock:1,dip:1},
+  long:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0,clock:1,dip:1}};
 const LEN={...LEN_SET.legacy};
 let LEN_NEW='std';
 function lenKey(){return S&&!S.training&&S.glen&&LEN_SET[S.glen]?S.glen:'legacy'}
-function lenApply(){Object.assign(LEN,LEN_SET[lenKey()]);WIN_TIME=LEN.hold;VIC_NEED=LEN.need;TRUCE_POWERS=!!LEN.truce}
+const LEN_DIP0={leadCool:[...REL.leadCool],pairCool:REL.pairCool,warMin:REL.warMin,warLong:REL.warLong,propEvery:DECL.propEvery};
+function lenApply(){Object.assign(LEN,LEN_SET[lenKey()]);WIN_TIME=LEN.hold;VIC_NEED=LEN.need;TRUCE_POWERS=!!LEN.truce;
+  const d=LEN.dip>0?LEN.dip:1;REL.leadCool=LEN_DIP0.leadCool.map(x=>x*d);REL.pairCool=LEN_DIP0.pairCool*d;REL.warMin=LEN_DIP0.warMin*d;REL.warLong=LEN_DIP0.warLong*d;DECL.propEvery=LEN_DIP0.propEvery*d}
 {const o=newGame;newGame=function(){const r=o.apply(this,arguments);try{if(S&&!S.training&&!S.glen)S.glen=LEN_NEW;lenApply()}catch(e){console.error(e)}return r}}
 {const o=migrate;migrate=function(){const r=o.apply(this,arguments);try{lenApply()}catch(e){}return r}}
 // the Brood's quiet opening
