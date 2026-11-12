@@ -3898,3 +3898,22 @@ Overview tab now opens with a red line when a strike is on its way ("Raid incomi
 Found in review. Since the Brand screen gave the name-only parts (landing kit, beacon rig, launch rack, cargo scanner,
 hidden hold) an empty entry in `BR.step`, a Rift Shard used while upgrading one of them picked a trait from an empty list
 and threw. It now says the shard burned out, as it did before (16zi_small.js `pupr`).
+
+### Proposed, not agreed: onboarding, war length and system texture (11 Nov 2026)
+The user, after the review and rating: "Design the onboarding, suggest how long a war would need to last, not all 46 need
+something special but we could add more texture to some of the systems, create a design doc." The full proposal is a Claude
+Doc: https://claude.ai/artifact/3dWyL8BohLaVZ38SELR1Gx. Nothing here is built or agreed yet. In short:
+- **Onboarding:** a paid five-step first contract for each role (shakedown, first work, first jump, first upgrade, your
+  choice), an Overview "Ready now" that always names a next step, a "Your path" panel (contractor to faction, with each
+  rung's rule and cost), day-one controls hidden until they matter, one Jobs row per target with Recommended first, a
+  rewritten manual.
+- **War length:** wars end at a median of 5.8 h today (war check of 10 Nov: 26% before hour 4, 51% before hour 6; the
+  Brood's wins at a median of 3.7 h). A hauler earns 14,300 to 24,900 cr an hour, so the 100,000 cr company deposit takes
+  6 to 9 h. Proposed: a median of about 14 h and no win before hour 6, by a quiet opening for the Brood, an earliest-win
+  hour, a 30-minute final hold with a galaxy-wide countdown, and a coalition against a leader at 16 systems; a host
+  setting Short / Standard / Long. The medians are targets, not measured.
+- **System texture:** 12 of 46 systems get one rule each (The Dark, The Glass, The Ash, The Flare Star, The Iron Belt,
+  The Graveyard, The Ice Shoals, The Hush, Truce Water, The Lanes, The Lanterns, The Hollow Relay), in five kinds of rule.
+  Rules apply in live systems only, so the off-screen war is unchanged; nothing creates or destroys goods.
+- **Decisions open:** Standard length, the hour-6 floor, the 100,000 cr deposit, whether the first contract is offered to
+  everyone, which systems, the Hollow Relay derelict, whether AI obeys Truce Water and The Hush.
