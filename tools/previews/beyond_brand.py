@@ -3,7 +3,7 @@
 # language, built around the weapon that made its name. The Wraith, a conqueror's trophy, belongs to no faction: a faceted stealth wing.
 import math
 import numpy as np
-from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,loft,box,plate,ring,LENS,HEX,lens_role
+from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,loft,box,plate,ring,LENS,HEX,lens_role,barrel
 from beyond_work import finish,abox,crystal,lights,sqdrive,hatch
 from beyond_recon import SMH,smh_role,dish
 from beyond_capitals import tube,giant_gun,stacks
@@ -32,18 +32,21 @@ def gannet():
         plate(M,[(sx*.4,.22,-.7),(sx*.5,.42,-.92),(sx*.5,.42,-1.02),(sx*.4,.22,-.98)],.035,ACC,.95)
         M.blob((sx*1.28,.0,-.4),.06,WIN,sub=1,noise=0)
         for dx in (.3,.75):M.vent((sx*dx,0,-1.0),.09)
+        barrel(M,(sx*.5,-.115,.4),.34,.017)                                                                         # a gun under each wing bay
     M.blob((0,.24,.62),.15,GLASS,sub=2,squash=(1,.55,1.6),noise=0)                                                 # cockpit set straight into the hull
     lights(M,[(.38,-.02,1.05),(-.38,-.02,1.05)],.035)
-    M.T=[np.array(t)*[.86,1,1] for t in M.T]                                                                       # a little narrower
+    M.xf(lambda Q:Q*np.array([.86,1,1]))                                                                            # a little narrower
     return finish(M,2.8,1.0)
 def bombard():
     # Varkesh house-brand miner: one huge shell cannon running the whole length of the ship down its centre, carried between two
     # armoured side hulls joined by braces over it, disappearing astern into a broad armoured aft section; the port hull carries the
     # cockpit, the starboard hull the ore hopper and a docked Ward Drone; vents along each side hull's outer flank, stacks and drives
     M=Mesh(702)
-    tube(M,[(0,0,-.7),(0,0,-.4),(0,0,1.5)],[.15,.12,.09],DARK,1.0,10,cap0=True,cap1=False)                          # the cannon, out of the aft section
+    tube(M,[(0,0,-.7),(0,0,-.4),(0,0,1.5)],[.15,.12,.09],DARK,1.0,10,cap0=True,cap1=True)                          # the cannon, out of the aft section
     for z in (-.4,.3,.9):ring(M,(0,0,z),.12,.02,ACC,seg=14,sides=4)
-    tube(M,[(0,0,1.45),(0,0,1.8)],[.13,.13],MID,.95,8,cap1=False)
+    n0=len(M.T);tube(M,[(0,0,1.45),(0,0,1.8)],[.13,.13],MID,.95,8,cap1=False)
+    C8=lambda q:[(math.cos(a)*q,math.sin(a)*q) for a in np.linspace(0,2*PI,8,endpoint=False)]
+    M.rings((0,0,1.8),[(0,C8(.13)),(0,C8(.098)),(-.16,C8(.085))],DARK,.45,inward=True,cap=(2,DARK,.22));M.part(M.gun,(0,0,1.8),n0)   # the muzzle: a rim and a dark bore (it was an open pipe); the shell leaves from here
     for z in (1.56,1.68):ring(M,(0,0,z),.135,.015,DARK,seg=12,sides=4)
     loft(M,[(-1.6,SMH(.62,.3)),(-.65,SMH(.66,.32)),(-.45,SMH(.5,.24))],smh_role)                                    # aft section the gun runs into (to -1.6: at -1.55 the drives hung behind it)
     for sx in (1,-1):
@@ -70,7 +73,7 @@ def vesper():
         crystal(M,.0,2.0,.07,.07,sx*.17,0)
         tube(M,[(sx*.08,0,.1),(sx*.17,0,.1)],[.03,.03],LIGHT,.9,5)
     for z in (.7,1.15,1.6):ring(M,(0,0,z),.26,.03,ACC,seg=24,sides=5);ring(M,(0,0,z),.25,.012,WIN,seg=24,sides=4)
-    crystal(M,1.0,1.45,.05,.05,0,0);M.blob((0,0,1.22),.07,GLOW,sub=1,noise=0)
+    crystal(M,1.0,1.45,.05,.05,0,0);M.blob((0,0,1.22),.07,GLOW,sub=1,noise=0);M.part(M.gun,(0,0,2.0),len(M.T))      # the slug between the rails; its shots leave from between the rail tips
     dish(M,(0,.2,-.25),.16)
     zc=-.75;R=.55
     for th in (PI/4,-PI/4):                                                                                          # X-wing rings
@@ -98,11 +101,15 @@ def wraith():
         W=[(sx*.345,0,.42),(sx*1.2,-.03,-.6),(sx*1.08,-.03,-.82),(sx*.43,0,-.9)]                                    # wing root on the body's side edge
         plate(M,W,.03,MID,.9)                                                                                          # thick swept wing
         r0=np.array(W[0]);t1=np.array(W[1]);tube(M,[r0+(t1-r0)*.26+[0,.045,0],t1+[0,.045,0]],[.012,.012],GLOW,1.0,4,cap0=False,cap1=False)   # edge light, along the leading edge
-        tube(M,[(sx*.33,-.04,.38),(sx*.33,-.04,.66)],[.025,.02],DARK,1.0,6)                                             # hidden guns
-        plate(M,[(sx*.12,-.01,-.96),(sx*.34,-.01,-.94),(sx*.34,-.01,-.99),(sx*.12,-.01,-1.01)],.012,GLOW,1.0)            # slit vents
+        barrel(M,(sx*.33,-.04,.38),.28,.019)                                                                           # the guns in the leading edge
+        n0=len(M.T);plate(M,[(sx*.12,-.01,-.96),(sx*.34,-.01,-.94),(sx*.34,-.01,-.99),(sx*.12,-.01,-1.01)],.012,GLOW,1.0);M.eng.append([np.array((sx*.23,-.01,-1.0)),.07,n0,len(M.T)])   # slit vents: its drives (recorded, so the flares sit here and not on the edge lights)
     loft(M,[(.12,D(.12,.05,.205)),(.45,D(.1,.07,.18)),(.68,D(.03,.02,.15))],(GLASS,1.0))
     return finish(M,2.0,1.0)
 
+# (11 Nov 2026) each power's builders make their nozzles and guns in that power's design language (brood.styled)
+from brood import styled as _styled
+for _names,_st in (('gannet','halcyon'),('bombard','varkesh'),('vesper','ostrova'),):
+    for _n in _names.split():globals()[_n]=_styled(_st)(globals()[_n])
 BRAND=[('halcyon','Halcyon Accord',[('Gannet','House-brand hauler: missile barrage',gannet)]),
        ('varkesh','Varkesh Dominion',[('Bombard','House-brand miner: shell cannon',bombard)]),
        ('ostrova','Ostrova Collective',[('Vesper','House-brand scout: railgun',vesper)]),

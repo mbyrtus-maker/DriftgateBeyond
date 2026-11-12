@@ -7,9 +7,9 @@
 # Nose is +z, up +y; finish() sets the length (fighters 2.0, medium 2.6, heavy 3.2, capitals 3.6-4.6).
 import math
 import numpy as np
-from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,loft,box,plate,barrel,ring,LENS,HEX,lens_role,hex_role
+from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,loft,box,plate,barrel,ring,LENS,HEX,lens_role,hex_role,drivebox,loft_top
 from beyond_work import finish,crystal,abox,lights,STAR
-from beyond_recon import dish,SMH,smh_role
+from beyond_recon import dish,SMH,smh_role,seat
 from beyond_capitals import tube,pd,bridge_varkesh,giant_gun
 PI=math.pi
 OCT=lambda w,h,dx=0,dy=0:[(math.cos(a)*w+dx,math.sin(a)*h+dy) for a in np.linspace(PI/8,2*PI+PI/8,8,endpoint=False)]
@@ -40,9 +40,10 @@ def hal_wing(M,root,tip,chord=.4,node=True):
     if node:M.blob(tuple(t),.05,WIN,sub=1,noise=0)
 def var_stub(M,c,size):abox(M,c,size,DARK,(.8,.8),.8)
 def var_gun(M,c,L=.35,r=.03,n=1,sp=.07):
+    # a stolen Varkesh gun on its mount block (11 Nov 2026: the shared gun, with a breech and a muzzle brake; it was a plain stick)
     c=np.array(c,float);abox(M,tuple(c+[0,0,-.06]),(r*3.2+sp*(n-1),r*2.6,.16),DARK,(.8,.8),.75)
-    for k in range(n):x=(k-(n-1)/2)*sp;tube(M,[c+[x,0,0],c+[x,0,L]],[r,r*.85],DARK,1.0,6)
-def sq_drive(M,c,s):box(M,c,(s,s*.85,s*.8),DARK,sh=.75);M.vent((c[0],c[1],c[2]-s*.42),s*.36)
+    for k in range(n):x=(k-(n-1)/2)*sp;barrel(M,tuple(c+[x,0,0]),L,r*.82,style='varkesh')
+def sq_drive(M,c,s):drivebox(M,c,(s,s*.85,s*.8),c[2]-s*.42,s*.36,sh=.75)
 def canopy(M,c,r,sq=(1,.75,1.6)):M.blob(tuple(c),r,GLASS,sub=2,squash=sq,noise=0)
 
 # ------------------------------------------------------------------ hulls
@@ -53,11 +54,11 @@ def raider():
     M=Mesh(401);bx=-.32;cx=.42
     ost_spire(M,[(-1.15,.07,.07),(-.95,.13,.12),(.5,.13,.12),(.95,.07,.07),(1.1,.015,.015)],dx=bx)                  # Ostrova boom
     for z in (-.55,.15):ring(M,(bx,0,z),.14,.012,ACC,seg=16,sides=4)
-    M.vent((bx,0,-1.16),.075)
+    M.vent((bx,0,-1.16),.075,style='ostrova')
     hal_pod(M,[(-.42,.06,.06),(-.25,.15,.14),(.45,.16,.14),(.78,.08,.07),(.92,.02,.02)],dx=cx,dy=.02)             # Halcyon cockpit pod, off centre
     canopy(M,(cx,.15,.25),.12,(1,.75,1.8))
     var_slab(M,[(-1.05,.1,.09),(-.75,.13,.12),(-.42,.12,.11)],dx=cx,dy=.02);ring(M,(cx,.02,-.43),.135,.012,ACC,seg=16,sides=4)   # engine behind the cockpit
-    M.vent((cx,.02,-1.06),.08)
+    M.vent((cx,.02,-1.06),.08,style='varkesh')
     for sx in (1,-1):                                                                                             # one large swept Varkesh wing through both bodies
         P=[(0,0,.32),(sx*1.45,-.02,-.48),(sx*1.45,-.02,-.78),(0,0,-.45)]
         plate(M,P,.07,MID,.8)
@@ -86,6 +87,7 @@ def skiff():
     for sx in (1,-1):hal_wing(M,(sx*.16,-.02,-.25),(sx*.62,-.05,.12),.3)                                           # small forward-swept wings
     for k,x in enumerate((-.1,0,.1)):tube(M,[(x,.1,-.9),(x*1.6,.4+.06*(k%2),-1.15)],[.01,.006],LIGHT,.9,4);M.blob((x*1.6,.4+.06*(k%2),-1.15),.025,WIN,sub=1,noise=0)
     patch(M,(-.12,.14,.2),.08,.2,(-.5,1,0))
+    for sx in (1,-1):barrel(M,(sx*.12,-.105,.45),.3,.013,ACC,style='ostrova')                                          # a stolen lance under each side of the spire
     return finish(M,2.2,1.0)
 def corsair():
     # medium: a Varkesh hex body with a chisel prow and twin chin guns, welded to a Halcyon lens drive section, four Halcyon swept
@@ -115,12 +117,13 @@ def plunderer():
     var_slab(M,[(-1.15,.16,.2),(.25,.16,.2)],dx=-.58,smooth=True);weld(M,-.45,SMH(.16,.2))                          # Varkesh container hold
     for z in (-.95,-.45,.05):loft(M,[(z-.02,at(SMH(.17,.21),-.58)),(z+.02,at(SMH(.17,.21),-.58))],(ACC,.85))
     crystal(M,-1.25,.4,.19,.2,.6,0)                                                                                 # Ostrova crystal hold
-    tube(M,[(0,.46,-.45),(0,.46,-1.75)],[.12,.14],GLASS,1.0,10,cap1=False);M.vent((0,.46,-1.76),.11)               # boom engine on a pylon on top, crystal-clad
+    tube(M,[(0,.46,-.45),(0,.46,-1.75)],[.12,.14],GLASS,1.0,10,cap1=False);M.vent((0,.46,-1.76),.11,style='ostrova')               # boom engine on a pylon on top, crystal-clad
     for z in (-.7,-1.1,-1.5):ring(M,(0,.46,z),.14,.014,WIN,seg=14,sides=4)
     for z in (-.8,-1.35):abox(M,(0,.33,z),(.08,.2,.16),DARK,(1,1),.75)
     crystal(M,-1.15,.35,.13,.13,0,-.47)                                                                            # crystal pontoon underneath
     for z in (-.75,-.1):tube(M,[(0,-.2,z),(0,-.38,z)],[.03,.03],DARK,.8,5)
-    sq_drive(M,(.3,-.02,-1.45),.26);M.vent((-.0,0,-1.36),.11)                                                       # Varkesh drive block
+    sq_drive(M,(.3,-.02,-1.45),.26);M.vent((-.0,0,-1.36),.11,style='varkesh');[var_gun(M,(sx*.11,-.145,1.05),.4,.026) for sx in (1,-1)]   # Varkesh drive block; a stolen gun under each side of the cockpit pod
+   #                                                      # Varkesh drive block
     pd(M,(0,.22,.25),.09,MID)
     patch(M,(0,.24,.1),.16,.3);patch(M,(.1,.23,-.9),.12,.2);spikes(M,[(.1,-.06,1.55),(-.1,-.06,1.55),(0,-.12,1.5)],L=.15)
     lights(M,[(.16,-.06,1.5),(-.16,-.06,1.5)],.03)
@@ -132,14 +135,15 @@ def wrecker():
     var_slab(M,[(-1.0,.24,.2),(.8,.3,.24),(1.25,.16,.12),(1.45,.04,.03)],smooth=True)
     ost_spire(M,[(-1.7,.05,.05),(-1.3,.16,.15),(-.95,.22,.19)]);weld(M,-.98,OCT(.22,.19))
     ring(M,(0,.0,-1.42),.26,.025,ACC,seg=24,sides=5)
-    for x in (-.11,.11):M.vent((x,0,-1.72),.06)
+    for x in (-.11,.11):M.vent((x,0,-1.72),.06,style='ostrova')
     canopy(M,(.04,.22,.55),.14)
     for sx in (1,-1):
         hal_wing(M,(sx*.24,.02,.2),(sx*1.25,-.05,-.55),.65)
         tube(M,[(sx*.62,-.04,-.1),(sx*.62,-.13,-.1)],[.02,.02],DARK,.8,4)
         crystal(M,-.55,.35,.07,.07,sx*.62,-.18)                                                                     # crystal torpedoes
         crystal(M,-.45,.3,.055,.055,sx*.95,-.13)
-    var_gun(M,(0,-.2,.95),.4,.03,2,.08)
+    var_gun(M,(0,-.172,.95),.4,.03,2,.08)                                                                           # chin guns (11 Nov 2026: raised into the hull; their mount hung just under it)
+    seat(M,(0,.235,-.35),.135)                                                                                       # the turret's seat, on the spine
     patch(M,(-.1,.25,.0),.14,.3);patch(M,(.15,.22,-.5),.1,.2,(.6,1,0))
     return finish(M,2.7,1.0)
 def ravager():
@@ -164,7 +168,7 @@ def ravager():
     abox(M,(.95,-.05,.05),(.22,.2,1.3),DARK,(.8,.8),.75)                                                             # Varkesh pylon to starboard
     for z in (-.2,.6):abox(M,(.68,-.05,z),(.4,.08,.12),DARK,(1,1),.7);pd(M,(.95,.08,z),.065,MID)
     for x,y in ((-.12,-.1),(.12,-.1)):sq_drive(M,(x,y,-2.55),.16)
-    for k in range(3):a=PI/2+k*2*PI/3;M.vent((math.cos(a)*.13,math.sin(a)*.12+.08,-2.52),.06)
+    for k in range(3):a=PI/2+k*2*PI/3;M.vent((math.cos(a)*.13,math.sin(a)*.12+.08,-2.52),.06,style='ostrova')
     M.vent((-.62,-.05,-.72),.07)
     spikes(M,[(.16,-.1,2.25),(-.16,-.1,2.25),(.25,.05,2.0),(-.25,.05,2.0)],(0,0,1),.25,.04)
     for c,n in (((.2,.36,.3),(0,1,0)),((-.3,.32,-.5),(-.4,1,0)),((.35,-.2,1.3),(.5,-1,0)),((-.35,.1,-2.0),(-1,.3,0))):patch(M,c,.22,.4,n)
@@ -187,7 +191,7 @@ def pinnace(M,c,side,k=1.6):
     loft(M,[(z+k*a,at(SMH(k*w,k*h),x,y)) for a,w,h in ((-.3,.08,.06),(-.22,.1,.075),(-.02,.13,.09),(.16,.1,.07),(.3,.03,.03))],smh_role)
     M.blob((x,y+k*.07,z+k*.03),k*.045,GLASS,sub=1,squash=(1,.7,1.6),noise=0)
     for dx in (-.05,.05):tube(M,[(x+k*dx,y-k*.03,z+k*.17),(x+k*dx*1.8,y-k*.05,z+k*.4)],[k*.014,k*.005],ACC,.95,4,cap0=True,cap1=False)
-    M.vent((x,y,z-k*.31),k*.045)
+    M.vent((x,y,z-k*.31),k*.045,style='varkesh')
     for dz in (-.12,.1):
         tube(M,[(x-side*k*.1,y,z+k*dz),(x-side*.36,y,z+k*dz)],[.025,.025],DARK,.85,5)
         abox(M,(x-side*.33,y,z+k*dz),(.08,.08,.08),ACC,(1,1),.9)

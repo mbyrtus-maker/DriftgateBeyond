@@ -131,7 +131,7 @@ function mlBeam(e,a){qRot(e.q,0,0,1,_f);const F=mlFrame(a),R=F.R,r=e.st.radius,o
 function mlRate(P){return(LOAD.ml.rate[P.cls]||.2)*(1+.2*(blTier(P)-1))*(1+PG.ml*(Math.max(1,fitG(P,'mlaser'))-1))}
 // one frame of cutting (host and single player; a guest's client calls it with show only, for the beam)
 function mlCut(e,P,a,dt,sec,show){const need=LOAD.ml.e*dt;if(e.energy<need)return'energy';e.energy-=need;const B=mlBeam(e,a);if(!B)return'aim';
-  if(!MUTE)W.beams.push({src:e,x:B.x,y:B.y,z:B.z,ttl:.06,col:B.on?'#7ad9a7':'#f0b24a'});if(!B.on){if(!MUTE&&Math.random()<dt*6)fxSpark(B,'#f0b24a',1);return'ring'}
+  if(!MUTE)W.beams.push({src:e,x:B.x,y:B.y,z:B.z,ttl:.06,col:B.on?'#7ad9a7':'#f0b24a',ml:1});if(!B.on){if(!MUTE&&Math.random()<dt*6)fxSpark(B,'#f0b24a',1);return'ring'}
   if(!MUTE&&Math.random()<dt*10)fxSpark(B,'#ffe0b0',1);if(show)return'cut';
   e.mlAcc=(e.mlAcc||0)+mlRate(P)*dt;while(e.mlAcc>=1){const k=mainOre(a);if(!k)break;if(mass(k)>e.st.cargo-invMass(P.cargo))return'full';e.mlAcc-=1;inv.take(a.ore,k,1);inv.add(P.cargo,k,1);a.lased=1}
   if(oreTotal(a)<=0){removeAst(sec,a);return'done'}return'cut'}

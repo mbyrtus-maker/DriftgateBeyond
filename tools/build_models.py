@@ -7,6 +7,7 @@ from frigate import build_frigate
 from capitals import build_carrier,build_escort
 from rockbase import build_rockbase
 from brood import BROOD_MODELS
+import brood as _BRD
 from works import WORKS
 from mdlcheck import zlift
 import os as _os;_K=_os.path.join(_os.path.dirname(_os.path.abspath(__file__)),'kits');KD=_os.path.join(_K,'kenney-space-kit','GLTF')+'/';QD=_os.path.join(_K,'quaternius-lowpoly-spaceships','OBJ')+'/'
@@ -250,11 +251,27 @@ for _k,_f in _RD.models().items():MODELS[_k]=('base',_rdpart(_f,_k))
 for _k,_v in WORKS.items():MODELS[_k]=('struct',_v[0] if len(_v)>2 else (lambda f:lambda:comp_model(f))(_v[0]))
 FIT={'rockbase':230,'station':150,'depot':105,'forge':120,'relay':120,'yard':120,**{k:v[1] for k,v in WORKS.items()}}
 FIT.update({'by_st_halcyon':170,'by_st_varkesh':170,'by_st_ostrova':170,'by_dp_halcyon':105,'by_dp_varkesh':105,'by_dp_ostrova':105,'by_freeport':210,'by_freeport_cw':210,'by_freeport_ew':210,'by_haven':240})   # world half-size: docking ports scale by it
+# (11 Nov 2026) two helpers for working on single models (the full build takes about nine minutes, most of it the z-fight lift
+# on the big stations):
+#   DG_ONLY=name,name python3 build_models.py   rebuilds only those models and keeps every other one's bytes and index
+#                                               entry from the pack on disk (finish with a full build before committing)
+#   DG_BBOX=out.json python3 build_models.py    writes each model's box before it is normalised ([lo,hi], model units) and
+#                                               packs nothing: compare two of these to see that a change kept a model's
+#                                               packed size and centre (tools/bboxcheck.py)
+ONLY=set(x for x in _os.environ.get('DG_ONLY','').split(',') if x);BBOX=_os.environ.get('DG_BBOX')
 def pack():
-    idx={};blob=bytearray()
+    idx={};blob=bytearray();bb={}
+    if ONLY:
+        import gzip as _gz
+        old_idx=json.load(open('models_idx.json'));old_blob=_gz.decompress(base64.b64decode(open('models_gz.b64').read()))
     for name,(kind,fn) in MODELS.items():
-        P,N,R=fn();P=np.array(P,dtype=float).reshape(-1,3,3)
+        if ONLY and name not in ONLY and name in old_idx:
+            m=dict(old_idx[name])
+            while len(blob)%4:blob+=b'\0'
+            o=m['o'];m['o']=len(blob);blob+=old_blob[o:o+m['n']*20];idx[name]=m;continue
+        _BRD.LAST=None;P,N,R=fn();P=np.array(P,dtype=float).reshape(-1,3,3);meta=_BRD.LAST or {}
         allp=P.reshape(-1,3);lo,hi=allp.min(0),allp.max(0);c=(lo+hi)/2
+        if BBOX:bb[name]=[[round(float(v),5) for v in lo],[round(float(v),5) for v in hi],len(P)];continue
         if kind=='struct':c[1]=(lo[1]+hi[1])/2
         P=P-c;half=max(hi-lo)/2;P=P/half          # longest half-extent = 1 (ships draw at radius x1.25, like the hand-built ones)
         tris=[];roles=[];shades=[]
@@ -283,12 +300,19 @@ def pack():
             if not eng:eng=[[0,0,round(float(zlo),3),.1]]
         while len(blob)%4:blob+=b'\0'
         off=len(blob);blob+=q.tobytes();blob+=bytes(roles);blob+=bytes(int(np.clip(s*100,0,255)) for s in shades)
+        # (11 Nov 2026) a builder that recorded its nozzles gets one flare on each, exactly there ('ex': the game takes them as
+        # they are); the flare's size follows the nozzle's, by the rule the glow clusters gave a single nozzle before
+        ex=0
+        if kind=='ship' and meta.get('eng'):
+            eng=[[round(float(v),3) for v in (np.array(q,float)-c)/half]+[round(float(max(.04,min(.2,.507*r/half+.03))),3)] for q,r,_ in meta['eng']];ex=1
+        NORM=lambda L:[[round(float(v),3) for v in (np.array(q[0],float)-c)/half] for q in L]
         if name in ENGX:eng=[[round(float(v),3) for v in list((np.array(m[:3])-c)/half)+[m[3]/half]] for m in ENGX[name]]
         tp=[[round(float(x),3) for x in (np.array(m)-c)/half] for m in MOUNTS.get(name,[])]
         pt=[[round(float(x),3) for x in (np.array(m)-c)/half] for m in PTS.get(name,[])]
         sb={k:[[round(float(x),3) for x in (np.array(m)-c)/half] for m in v] for k,v in SUBS.get(name,{}).items()}
-        idx[name]={**({'c':[round(float(x),4) for x in c],'h':round(float(half),4)} if kind=='base' else {}),'o':off,'n':len(T),'k':kind,'s':FIT.get(name,1),'e':eng,'tp':tp,'top':round(float(T[:,:,1].max()),3),**({'pt':pt} if pt else {}),**({'tn':TNORM[name]} if name in TNORM else {}),**({'lg':[[[round(float(x),3) for x in (np.array(p)-c)/half],[round(float(x),3) for x in d],round(float(hs)/half,4)] for p,d,hs in LG[name]]} if LG.get(name) else {}),**({'wb':{k:[[round(float(x),3) for x in (np.array(m)-c)/half] for m in v] for k,v in WB[name].items()}} if name in WB else {}),**({'sub':sb} if sb else {}),**EXTRA.get(name,{})}
+        idx[name]={**({'c':[round(float(x),4) for x in c],'h':round(float(half),4)} if kind=='base' else {}),'o':off,'n':len(T),'k':kind,'s':FIT.get(name,1),'e':eng,**({'ex':1} if ex else {}),**({'g':NORM(meta['gun'])} if kind=='ship' and meta.get('gun') else {}),**({'ml':NORM(meta['mine'])} if kind=='ship' and meta.get('mine') else {}),**({'ts':NORM(meta['seat'])[0]} if kind=='ship' and meta.get('seat') else {}),'tp':tp,'top':round(float(T[:,:,1].max()),3),**({'pt':pt} if pt else {}),**({'tn':TNORM[name]} if name in TNORM else {}),**({'lg':[[[round(float(x),3) for x in (np.array(p)-c)/half],[round(float(x),3) for x in d],round(float(hs)/half,4)] for p,d,hs in LG[name]]} if LG.get(name) else {}),**({'wb':{k:[[round(float(x),3) for x in (np.array(m)-c)/half] for m in v] for k,v in WB[name].items()}} if name in WB else {}),**({'sub':sb} if sb else {}),**EXTRA.get(name,{})}
         print(name.ljust(12),kind,len(T),'tris',('eng %d'%len(eng)) if eng else '',('lifted %d'%zl) if zl else '')
+    if BBOX:json.dump(bb,open(BBOX,'w'));print('wrote',BBOX,len(bb),'boxes');sys.exit(0)
     return idx,bytes(blob)
 idx,blob=pack()
 for r in ENGZ:

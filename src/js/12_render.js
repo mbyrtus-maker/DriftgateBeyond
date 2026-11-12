@@ -560,7 +560,7 @@ function draw3D(){
   if(W.bridge){const F=W.bridge.f,O=bridgeOrigin(F);mModel(MM,O.x,O.y,O.z,F.q,1,1,1);qRot(F.q,.22,1,.3,_u);const l=hyp(_u.x,_u.y,_u.z);G.uniform3f(PM.u.uL,_u.x/l,_u.y/l,_u.z/l);G.uniform3fv(PM.u.uSun,BR_SUN);G.uniform3fv(PM.u.uAmb,BR_AMB);drawMesh(bridgeMesh(F.fac),MM);useMesh()}
   for(const e of W.ents){if(e.type!=='ship'||!e.alive)continue;if(e.isPlayer&&hideP)continue;if(W.bridge&&e===W.bridge.f&&!mdlHas(e.fac==='brood'?BROOD_MDL[e.cls]:e.cls))continue;const sc=e.st.radius*1.25;if(!inView(e.x,e.y,e.z,sc*2))continue;const fac=e.side==='pirate'?'pirate':e.fac,m=shipMesh(fac,e.role==='limpet'?'limpet':e.cls);
     mModel(MM,e.x,e.y,e.z,e.q,sc,sc,sc);const hurt=W.t-e.lastHit<.08;drawMesh(m.hull,MM,ONE3,hurt?[.35,.25,.15]:ZERO3);drawMesh(m.rim,MM);
-    if(hasTur(e.cls)&&!(W.gunseat&&gsEnt()===e)){const T=e.tur||{yaw:Math.PI,pitch:.1};turretQ(e,T,_gq3);{const m=turMount(e);qRot(e.q,0,m[0]*sc,m[1]*sc,_u)}mModel(MM,e.x+_u.x,e.y+_u.y,e.z+_u.z,_gq3,sc,sc,sc);const tm=gturretMesh(fac);drawMesh(tm.hull,MM,ONE3,ZERO3);drawMesh(tm.rim,MM)}}
+    if(hasTur(e.cls)&&!(W.gunseat&&gsEnt()===e))gfxDrawTurret(e,fac,sc)}
   drawBerthed();
   G.enable(G.BLEND);G.blendFunc(G.ONE,G.ONE);G.depthMask(false);useMesh();
   // ship shield bubbles: flash on hit, burst outward when they collapse, pulse when they come back
@@ -581,16 +581,16 @@ function draw3D(){
     const fl=e.thrusting?(e.boosting?1.9:1.25)+Math.sin(t*50+sc)*.15:.5;qRot(e.q,0,0,-1,_f);
     for(const en of m.eng){qRot(e.q,en[0]*sc,en[1]*sc,en[2]*sc,_u);const ex=e.x+_u.x,ey=e.y+_u.y,ez=e.z+_u.z,rr=en[3]*sc;engGlow(ex,ey,ez,rr,fl,c);
       if(e.thrusting){const Lt=rr*(e.boosting?16:9);streak(ex,ey,ez,ex+_f.x*Lt,ey+_f.y*Lt,ez+_f.z*Lt,rr*.8,c,.32)}}
-    if(e.isPlayer)sprite(e.x,e.y+sc*.3,e.z,sc*.18,rgb(PLAYER_COL),.6);
+    gfxFlash(e,sc,c);if(e.isPlayer)sprite(e.x,e.y+sc*.3,e.z,sc*.18,rgb(PLAYER_COL),.6);
     {const gk=e.gj?e.gj.t/GATE_HOLD:e.gjc?((W.t*.6)%1):(e.isPlayer&&W.gc?W.gc.t/GATE_HOLD:-1);if(gk>=0){sprite(e.x,e.y,e.z,sc*(2.2+3*gk)+6*Math.sin(t*9),[.6,.8,1],.18+.35*gk);sprite(e.x,e.y,e.z,sc*(1+gk),c,.25+.3*gk)}}}
   for(const b of W.shots){const sp=hyp(b.vx,b.vy,b.vz)||1,st=SHOT_STY[b.sty]||SHOT_STY.pulse,L=st[0],w=st[1],c=rgb(b.col);const ux=b.vx/sp,uy=b.vy/sp,uz=b.vz/sp;
-    bolt(b.x-ux*L,b.y-uy*L,b.z-uz*L,b.x,b.y,b.z,w*.95,c,1)}
+    const gp=gfxShotPos(b,sp,L);bolt(gp.x-ux*gp.L,gp.y-uy*gp.L,gp.z-uz*gp.L,gp.x,gp.y,gp.z,w*.95,c,1)}
   for(const e of W.ents){if(e.type!=='ship'||!e.mining||!e.alive)continue;const a=e.mining,sc=e.st.radius*1.25,nl=CLASSES[e.cls].lasers||1;qRot(e.q,0,0,1,_f);qRot(e.q,1,0,0,_r);const k=mainOre(a)||'fe',c=rgb(ITEMS[k].col);
-    for(let li=0;li<nl;li++){const o=(li-(nl-1)/2)*sc*.55,j=rnd(-6,6),sx=e.x+_f.x*sc+_r.x*o,sy=e.y+_f.y*sc+_r.y*o,sz=e.z+_f.z*sc+_r.z*o;capsule(sx,sy,sz,a.x+j,a.y-j,a.z+j,7,c,.3);capsule(sx,sy,sz,a.x+j,a.y-j,a.z+j,3,c,.6);capsule(sx,sy,sz,a.x+j,a.y-j,a.z+j,1.1,[1,1,1],.85)}if(Math.random()<.4)fxSpark({x:a.x+rnd(-12,12),y:a.y+rnd(-12,12),z:a.z+rnd(-12,12)},ITEMS[k].col,1)}
+    for(let li=0;li<nl;li++){const o=(li-(nl-1)/2)*sc*.55,j=rnd(-6,6),mh=gfxMineHead(e,li,nl,_gfv),sx=mh?mh.x:e.x+_f.x*sc+_r.x*o,sy=mh?mh.y:e.y+_f.y*sc+_r.y*o,sz=mh?mh.z:e.z+_f.z*sc+_r.z*o;capsule(sx,sy,sz,a.x+j,a.y-j,a.z+j,7,c,.3);capsule(sx,sy,sz,a.x+j,a.y-j,a.z+j,3,c,.6);capsule(sx,sy,sz,a.x+j,a.y-j,a.z+j,1.1,[1,1,1],.85)}if(Math.random()<.4)fxSpark({x:a.x+rnd(-12,12),y:a.y+rnd(-12,12),z:a.z+rnd(-12,12)},ITEMS[k].col,1)}
   for(const e of W.ents){if(e.type!=='ship'||!e.alive||!e.hitPt)continue;const ha=W.t-e.shHitT;if(ha<.25)sprite(e.x+e.hitPt.x,e.y+e.hitPt.y,e.z+e.hitPt.z,e.st.radius*(1.2-ha*2),[.6,.85,1],1-ha/.25)}
   {const p=W.player,sp=hyp(p.vx,p.vy,p.vz);if(sp>150&&!S.player.docked&&!W.dead){const A=GEN.dust.arr,al=clamp((sp-150)/380,0,.5)*(p.boosting?1.6:1),k=.055*(p.boosting?1.8:1);
     for(let i=0;i<180;i++){const o=i*8,x=A[o],y=A[o+1],z=A[o+2];if(!inView(x,y,z,10))continue;streak(x,y,z,x-p.vx*k,y-p.vy*k,z-p.vz*k,.9,[.7,.8,1],al)}}}
-  for(const b of W.beams){const e=b.src;if(!e.alive||(e.isPlayer&&(S.player.docked||W.dead)))continue;qRot(e.q,0,0,1,_f);const r=e.st.radius*1.25,sx=e.x+_f.x*r,sy=e.y+_f.y*r,sz=e.z+_f.z*r,c=rgb(b.col),fl=.8+Math.random()*.4;
+  for(const b of W.beams){const e=b.src;if(!e.alive||(e.isPlayer&&(S.player.docked||W.dead)))continue;qRot(e.q,0,0,1,_f);const r=e.st.radius*1.25,mh=b.ml?gfxMineHead(e,0,1,_gfv):null,sx=mh?mh.x:e.x+_f.x*r,sy=mh?mh.y:e.y+_f.y*r,sz=mh?mh.z:e.z+_f.z*r,c=rgb(b.col),fl=.8+Math.random()*.4;
     capsule(sx,sy,sz,b.x,b.y,b.z,7*fl,c,.22);capsule(sx,sy,sz,b.x,b.y,b.z,3*fl,c,.75);capsule(sx,sy,sz,b.x,b.y,b.z,1.1,[1,1,1],.95);sprite(sx,sy,sz,7*fl,c,.85);sprite(b.x,b.y,b.z,11*fl,c,.9);sprite(b.x,b.y,b.z,4*fl,[1,1,1],.8)}
   for(const m of W.missiles){const sp=hyp(m.vx,m.vy,m.vz)||1,ux=m.vx/sp,uy=m.vy/sp,uz=m.vz/sp,c=rgb(m.col),k=(MK[m.kind]||MK.missile).k,tx=m.x-ux*14*k,ty=m.y-uy*14*k,tz=m.z-uz*14*k;streak(tx,ty,tz,m.x,m.y,m.z,3*k,m.kind==='torpedo'?[1,.8,.4]:m.kind==='swarm'?[1,.55,.78]:[.85,.85,.9],.9);sprite(tx,ty,tz,(9+Math.random()*4)*k,c,1);sprite(tx,ty,tz,4*k,[1,1,1],1);if(k>1)sprite(m.x,m.y,m.z,26+8*Math.sin(W.t*12),[1,.75,.3],.5)}
   for(const d of W.decoys)sprite(d.x,d.y,d.z,16+Math.random()*8,[1,.85,.5],Math.min(1,d.life));

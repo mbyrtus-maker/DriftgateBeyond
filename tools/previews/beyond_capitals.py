@@ -23,9 +23,16 @@ def stacks(M,base,n,sp=.16,h=.3):
 
 def pd(M,c,r=.07,role=MID,up=True):
     # a point-defence turret: a base, a dome and twin barrels pointing forward
-    c=np.array(c,float);s=1 if up else -1
-    tube(M,[c,c+[0,s*r*.5,0]],[r*1.2,r*1.1],DARK,.9,8);M.blob(tuple(c+[0,s*r*.7,0]),r,role,sub=1,squash=(1,.7,1),noise=0)
-    for sx in (1,-1):tube(M,[c+[sx*r*.35,s*r*.8,r*.3],c+[sx*r*.35,s*r*.8,r*1.9]],[.012,.011],DARK,1.0,5)
+    # (11 Nov 2026) shaped: a turntable set a little into what it stands on, a faceted two-tier housing, a mantlet and twin
+    # barrels with muzzle collars (it was a drum, a squashed ball and two plain sticks). The same seat c and the same size;
+    # recorded with its mount's direction so the mount check can measure its seating.
+    c=np.array(c,float);s=1 if up else -1;n0=len(M.T)
+    tube(M,[c-[0,s*r*.22,0],c+[0,s*r*.34,0]],[r*1.2,r*1.12],DARK,.9,8)
+    tube(M,[c+[0,s*r*.34,0],c+[0,s*r*.95,0],c+[0,s*r*1.4,0]],[r*.98,r*.8,r*.3],role,1.0,6)
+    box(M,(c[0],c[1]+s*r*.7,c[2]+r*.72),(r*1.15,r*.5,r*.5),DARK,sh=1.15)
+    for sx in (1,-1):
+        b=c+[sx*r*.33,s*r*.7,r*.9];tube(M,[b,b+[0,0,r*1.25]],[.011,.0095],DARK,1.0,5,cap0=False,cap1=False);tube(M,[b+[0,0,r*1.2],b+[0,0,r*1.5]],[.0155,.0155],MID,.8,5)
+    M.part(M.pd,c,n0,(0,s,0),r)
 def spots(M,pts,r=.12,y=0):
     # deck landing spots: an accent ring with a bar
     for x,z in pts:
@@ -306,6 +313,10 @@ def prism():     # destroyer: a faceted hull carrying three long spars (two abov
     for k in range(3):a=PI/2+k*2*PI/3;M.vent((math.cos(a)*.15,math.sin(a)*.14,-2.32),.1)
     return finish(M,4.1,1.0)
 
+# (11 Nov 2026) each power's builders make their nozzles and guns in that power's design language (brood.styled)
+from brood import styled as _styled
+for _names,_st in (('shrike peregrine sovereign','halcyon'),('vanguard ironclad bastille','varkesh'),('lantern prism cathedral','ostrova'),):
+    for _n in _names.split():globals()[_n]=_styled(_st)(globals()[_n])
 CAPITALS=[('halcyon','Halcyon Accord',[('Shrike','Escort',shrike),('Peregrine','Destroyer',peregrine),('Sovereign','Carrier',sovereign)]),
           ('varkesh','Varkesh Dominion',[('Vanguard','Escort',vanguard),('Ironclad','Destroyer',ironclad),('Bastille','Carrier',bastille)]),
           ('ostrova','Ostrova Collective',[('Lantern','Escort',lantern),('Prism','Destroyer',prism),('Cathedral','Carrier',cathedral)])]
