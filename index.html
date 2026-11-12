@@ -2402,7 +2402,7 @@ function sideNorm(sd){return sd==='player'?(S.player.sworn||'neutral'):sd}
 function coalNames(m){const n=m.map(f=>FACTIONS[f].short);return n.length>1?n.slice(0,-1).join(', ')+' and '+n[n.length-1]:n[0]}
 // (8 Nov 2026, the user) no truce against a power or your declared faction at 20 systems: only the Containment Accord
 // against the Brood remains. TRUCE_POWERS=false skips the truce; a saved truce against a power is dropped.
-const TRUCE_POWERS=false;
+let TRUCE_POWERS=false;   // (a galaxy's length setting may switch it: LEN.truce in 16zzzzg_length.js; off in every setting unless the user agrees)
 function coalTick(){if(!TRUCE_POWERS){S.ffa=null;if(S.coal&&S.coal.lead!=='brood')S.coal=null}const n=controlCounts();let lead=null,best=0;for(const k in n){if(k==='pirate')continue;if(n[k]>best){best=n[k];lead=k}}
   const C=S.coal,pf=S.player.sworn,nb=n.brood||0;
   if(nb>=ACCORD_ON&&!(C&&C.lead==='brood')){S.ffa=null;S.coal={lead:'brood',mem:[...FAC_IDS],since:S.T,accord:1};if(running&&!STRAT_SIM())SFX.accord();feed(`⚠ The Containment Accord: the Brood holds ${nb} systems. Halcyon, Varkesh and Ostrova stop fighting each other everywhere and turn their fleets on the Bloom until it is pushed back below ${ACCORD_OFF}.`,'bad');return}
@@ -17672,14 +17672,16 @@ function stSeats(nm,size,n,k){const M=MDL.i[nm],K=M.sp.length,l=GST.lift*GST.ts*
 //   hold             seconds a side must hold `need` systems to win (WIN_TIME)
 //   need             systems to win (VIC_NEED)
 //   tempo            the time between any side's offensives is multiplied by this (1 = as before)
+//   truce            1 = the other powers call a truce against a power on the win clock (TRUCE_POWERS; the user turned
+//                    this off on 8 Nov 2026, so it is 0 in every setting and only war checks try it)
 // The values are tuned by war checks (BEYOND_DESIGN.md "Game length"); a tune file sets LEN_SET.std.* or LEN_SET.long.*.
-const LEN_SET={legacy:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1},
-  std:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1},
-  long:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1}};
+const LEN_SET={legacy:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0},
+  std:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0},
+  long:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0}};
 const LEN={...LEN_SET.legacy};
 let LEN_NEW='std';
 function lenKey(){return S&&!S.training&&S.glen&&LEN_SET[S.glen]?S.glen:'legacy'}
-function lenApply(){Object.assign(LEN,LEN_SET[lenKey()]);WIN_TIME=LEN.hold;VIC_NEED=LEN.need}
+function lenApply(){Object.assign(LEN,LEN_SET[lenKey()]);WIN_TIME=LEN.hold;VIC_NEED=LEN.need;TRUCE_POWERS=!!LEN.truce}
 {const o=newGame;newGame=function(){const r=o.apply(this,arguments);try{if(S&&!S.training&&!S.glen)S.glen=LEN_NEW;lenApply()}catch(e){console.error(e)}return r}}
 {const o=migrate;migrate=function(){const r=o.apply(this,arguments);try{lenApply()}catch(e){}return r}}
 // the Brood's quiet opening

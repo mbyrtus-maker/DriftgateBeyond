@@ -314,7 +314,7 @@ function sideNorm(sd){return sd==='player'?(S.player.sworn||'neutral'):sd}
 function coalNames(m){const n=m.map(f=>FACTIONS[f].short);return n.length>1?n.slice(0,-1).join(', ')+' and '+n[n.length-1]:n[0]}
 // (8 Nov 2026, the user) no truce against a power or your declared faction at 20 systems: only the Containment Accord
 // against the Brood remains. TRUCE_POWERS=false skips the truce; a saved truce against a power is dropped.
-const TRUCE_POWERS=false;
+let TRUCE_POWERS=false;   // (a galaxy's length setting may switch it: LEN.truce in 16zzzzg_length.js; off in every setting unless the user agrees)
 function coalTick(){if(!TRUCE_POWERS){S.ffa=null;if(S.coal&&S.coal.lead!=='brood')S.coal=null}const n=controlCounts();let lead=null,best=0;for(const k in n){if(k==='pirate')continue;if(n[k]>best){best=n[k];lead=k}}
   const C=S.coal,pf=S.player.sworn,nb=n.brood||0;
   if(nb>=ACCORD_ON&&!(C&&C.lead==='brood')){S.ffa=null;S.coal={lead:'brood',mem:[...FAC_IDS],since:S.T,accord:1};if(running&&!STRAT_SIM())SFX.accord();feed(`⚠ The Containment Accord: the Brood holds ${nb} systems. Halcyon, Varkesh and Ostrova stop fighting each other everywhere and turn their fleets on the Bloom until it is pushed back below ${ACCORD_OFF}.`,'bad');return}

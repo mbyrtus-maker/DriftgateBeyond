@@ -10,14 +10,16 @@
 //   hold             seconds a side must hold `need` systems to win (WIN_TIME)
 //   need             systems to win (VIC_NEED)
 //   tempo            the time between any side's offensives is multiplied by this (1 = as before)
+//   truce            1 = the other powers call a truce against a power on the win clock (TRUCE_POWERS; the user turned
+//                    this off on 8 Nov 2026, so it is 0 in every setting and only war checks try it)
 // The values are tuned by war checks (BEYOND_DESIGN.md "Game length"); a tune file sets LEN_SET.std.* or LEN_SET.long.*.
-const LEN_SET={legacy:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1},
-  std:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1},
-  long:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1}};
+const LEN_SET={legacy:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0},
+  std:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0},
+  long:{quiet:0,full:0,bq:1,floor:0,hold:600,need:20,tempo:1,truce:0}};
 const LEN={...LEN_SET.legacy};
 let LEN_NEW='std';
 function lenKey(){return S&&!S.training&&S.glen&&LEN_SET[S.glen]?S.glen:'legacy'}
-function lenApply(){Object.assign(LEN,LEN_SET[lenKey()]);WIN_TIME=LEN.hold;VIC_NEED=LEN.need}
+function lenApply(){Object.assign(LEN,LEN_SET[lenKey()]);WIN_TIME=LEN.hold;VIC_NEED=LEN.need;TRUCE_POWERS=!!LEN.truce}
 {const o=newGame;newGame=function(){const r=o.apply(this,arguments);try{if(S&&!S.training&&!S.glen)S.glen=LEN_NEW;lenApply()}catch(e){console.error(e)}return r}}
 {const o=migrate;migrate=function(){const r=o.apply(this,arguments);try{lenApply()}catch(e){}return r}}
 // the Brood's quiet opening
