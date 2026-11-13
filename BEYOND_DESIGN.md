@@ -4161,3 +4161,13 @@ What the clock looks found, for the record (120 galaxies each, clock 2.2, 40 hou
 The clock reached the length but always raised the Brood, and nothing tried brought it back. **The cause is not traced.** Disproved: the Brood's growth dials (no effect), the powers' diplomacy pace (wars per galaxy returned to 8.5 from 13.2, the Brood stayed at 40%), and real-time off-screen durations (stretching them made it worse). An instrumented run did show the powers' attacks on the Brood succeeding less often under the clock (33% and 28% in the first two stretched hours against 44% and 37%).
 
 Still standing from the earlier looks: 24 systems to win, a 30-minute hold and no win before hour 6 give a 7.7 h median (the powers' wins 9.6 h), the Brood 24%, 5% unfinished at 30 hours. Reaching 12 to 14 hours needs a rule that works the same in view and out of view, to be agreed with the user.
+
+### Decided: settle near 8 hours (12 Nov 2026)
+Asked which rule change to test next toward 12 to 14 hours (overstretch, tougher bases, costlier warships, or settling), the user chose **"Settle near 8 hours"**: the win rule alone, no new war rules, the 12 to 14 hour target dropped.
+
+- **Standard** (`LEN_SET.std`, every new galaxy unless Long is picked): 24 systems held for 30 minutes, and no win before hour 6. Quick look (120 galaxies, 30 h): median 7.7 h, the powers' wins 9.6 h, none before hour 6, the Brood 24%, Halcyon 22, Varkesh 28, Ostrova 20, 5% unfinished.
+- **Long** (`LEN_SET.long`): 24 systems held for an hour, and no win before hour 10. Quick look (120 galaxies, 40 h): median 11.0 h, the Brood 22%, Halcyon 19, Ostrova 26, Varkesh 27, 6% unfinished. More than half of the galaxies end at exactly hour 11 (the floor plus the hold): the leader has usually already won and waits the floor out.
+- **A galaxy saved before the setting** has no `S.glen` and keeps 20 systems for 10 minutes.
+- **Start screen:** step 6, "Game length", under the ship choice (`#glens`, built by `16zzzzg_length.js` after the start layout); the choice is kept in `dgbeyond.glen` and stamped on the galaxy by `newGame`. A guest reads the host's setting from the galaxy it is sent.
+- **Wording:** the map's "Galaxy control" line adds the length and "no win before hour N" until the floor passes; the start screen and the Pilot's Manual state the rule.
+- Test: `length.py`. The 600-galaxy war check on Standard is recorded below when it finishes.

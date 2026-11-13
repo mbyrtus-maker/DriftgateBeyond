@@ -17683,7 +17683,7 @@ const LEN={...LEN_SET.legacy};
 let LEN_NEW='std';
 try{const k=localStorage.getItem('dgbeyond.glen');if(k==='std'||k==='long')LEN_NEW=k}catch(e){}
 // the start screen's choice (step 6, under the ship): made when a galaxy is made; a saved galaxy or one you join keeps its own
-const LEN_INFO={std:['Standard','About 8 hours.'],long:['Long','About 12 hours or more.']};
+const LEN_INFO={std:['Standard','About 8 hours.'],long:['Long','About 11 hours or more.']};
 function lenLine(k){const L=LEN_SET[k];return`${L.need} systems held for ${L.hold>=3600?(L.hold/3600===1?'an hour':Math.round(L.hold/360)/10+' hours'):Math.round(L.hold/60)+' minutes'} wins${L.floor?`, and no win before hour ${Math.round(L.floor/3600)}`:''}`}
 function lenPickDraw(){const el=$('glens');if(!el)return;el.innerHTML=Object.keys(LEN_INFO).map(k=>`<button class="role" type="button" data-glen="${k}" aria-pressed="${k===LEN_NEW}"><b>${LEN_INFO[k][0]}</b><span>${LEN_INFO[k][1]} ${lenLine(k)}.</span></button>`).join('')}
 (function(){const sp=$('start')&&$('start').querySelector('.shippick');if(!sp||$('glens'))return;
