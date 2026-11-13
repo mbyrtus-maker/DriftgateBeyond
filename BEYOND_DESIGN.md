@@ -4171,3 +4171,12 @@ Asked which rule change to test next toward 12 to 14 hours (overstretch, tougher
 - **Start screen:** step 6, "Game length", under the ship choice (`#glens`, built by `16zzzzg_length.js` after the start layout); the choice is kept in `dgbeyond.glen` and stamped on the galaxy by `newGame`. A guest reads the host's setting from the galaxy it is sent.
 - **Wording:** the map's "Galaxy control" line adds the length and "no win before hour N" until the floor passes; the start screen and the Pilot's Manual state the rule.
 - Test: `length.py`. The 600-galaxy war check on Standard is recorded below when it finishes.
+
+### Game length: Standard's war check (12 Nov 2026)
+600 galaxies, 30 hours, `PPORT=mw`, the build's own Standard setting (24 systems, a 30-minute hold, no win before hour 6), no tune file:
+
+| | Brood | Halcyon | Varkesh | Ostrova | Unfinished |
+|---|---|---|---|---|---|
+| Share of galaxies | 24% | 20% | 27% | 23% | 5% |
+
+Median 8.2 h; a tenth over by 6.5 h, a quarter by 6.5 h, three quarters by 11.7 h, nine tenths by 16.1 h. None ends before hour 6; 46% end before hour 8. The Brood's wins come at a median of 6.5 h (the floor plus the hold), the powers' at 9.6 h. No page errors. The quick suite passes on the same build. Published.
