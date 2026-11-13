@@ -13,10 +13,18 @@ async def main():
       print(('ok  ' if ok else 'FAIL'),n,str(d)[:300])
       if not ok:bad.append(n)
     await pg.goto(GAME+'?name=Tester',wait_until='domcontentloaded');await pg.wait_for_function('window.__dg&&__dg.ev("MDL.ready")',timeout=60000)
-    await pg.evaluate("document.getElementById('mpName').value='Tester'");await pg.evaluate("document.getElementById('bLaunch').click()")
+    await pg.evaluate("document.getElementById('mpName').value='Tester'")
+    # the start screen's length choice: Standard is chosen; Long can be picked and is remembered; back to Standard for the rest
+    r0=await pg.evaluate("(()=>{const b=[...document.querySelectorAll('#glens [data-glen]')];return{n:b.length,on:b.filter(x=>x.getAttribute('aria-pressed')==='true').map(x=>x.dataset.glen),txt:b.map(x=>x.textContent)}})()")
+    await pg.click('#glens [data-glen="long"]');r1=await pg.evaluate("(()=>({new:__dg.ev('LEN_NEW'),on:[...document.querySelectorAll('#glens [aria-pressed=true]')].map(x=>x.dataset.glen),ls:localStorage.getItem('dgbeyond.glen')}))()")
+    await pg.click('#glens [data-glen="std"]');r2=await pg.evaluate("__dg.ev('LEN_NEW')")
+    check('the start screen offers Standard and Long, with Standard chosen',r0['n']==2 and r0['on']==['std'] and '24 systems held for 30 minutes' in r0['txt'][0] and 'hour 6' in r0['txt'][0],r0)
+    check('picking Long sets the next galaxy\'s length and is remembered; Standard can be picked back',r1=={'new':'long','on':['long'],'ls':'long'} and r2=='std',[r1,r2])
+    await pg.evaluate("document.getElementById('bLaunch').click()")
     await pg.wait_for_function('__dg.ev("!!(S&&S.player)")',timeout=60000);await pg.wait_for_timeout(1200)
     ev=lambda c:pg.evaluate('c=>__dg.ev(c)',c)
     r=json.loads(await ev("JSON.stringify({glen:S.glen,key:lenKey(),need:VIC_NEED,hold:WIN_TIME,std:LEN_SET.std})"))
+    check('Standard is 24 systems for 30 minutes with no win before hour 6; the map says so',r['need']==24 and r['hold']==1800 and r['std']['floor']==21600 and 'no win before hour 6' in await ev("lenMapNote()"),await ev("lenMapNote()"))
     check('a new galaxy carries the Standard length setting, and the win rule reads its dials',r['glen']=='std' and r['key']=='std' and r['need']==r['std']['need'] and r['hold']==r['std']['hold'],r)
     r=json.loads(await ev("""(()=>{running=false;const keep={...LEN_SET.std};Object.assign(LEN_SET.std,{quiet:3600,full:7200,bq:.4,floor:7200,hold:1800,need:22,tempo:2});
       S.T=10;strategicTick();const out={need:VIC_NEED,hold:WIN_TIME,f0:lenBroodF()};const b0=BR0.brOff/(S.broodK||1);out.brOff=BAL.brOff/b0;
