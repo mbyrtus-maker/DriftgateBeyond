@@ -4272,3 +4272,6 @@ The user, on the AI ships' new lunge: "The animation is good, but the npc ship s
 - **Escorted freighters:** the formation jump still fires as the freighter jumps (`trHopNow`), now after the count.
 - This is a small change to play as well as to the picture: a trader spends about five seconds on the axis at each gate instead of up to ten braking beside it.
 - Tests: `escort.py` (a freighter at its gate does not jump before the count and does after it), and `freight`, `sysfreight`, `raiders`, `myjobs`, `stores`, `mp_guest_convoy` still pass.
+
+### The Cairn's canopy sits on its hull (14 Nov 2026)
+The user: "the cockpit on the cairn is off the hull". The Ostrova medium hauler's canopy (`cairn()` in `tools/previews/beyond_work.py`) was placed at height .14 over the nose's taper, where the spire's ridge is only .08 high, so it floated clear of the hull, further at its tip. It is now further aft, where the spire is thicker, and sunk into the ridge (centre height .098, a little shorter). Triangle count, box and gameplay points are unchanged (the pack's index entry for `dz_cairn` is identical). Rebuilt with `DG_ONLY=dz_cairn`, then checked against a full build.

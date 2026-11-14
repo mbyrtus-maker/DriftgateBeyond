@@ -360,7 +360,10 @@ def cairn():     # medium hauler: a spire, two rings, and three crystal cargo co
         a=PI/2+k*2*PI/3;cx,cy=math.cos(a)*R,math.sin(a)*R
         crystal(M,-.85,.65,.2,.2,cx,cy)                                                                              # crystal cargo container
         for z in (-.5,.3):tube(M,[(math.cos(a)*.12,math.sin(a)*.12,z),(math.cos(a)*(R-.15),math.sin(a)*(R-.15),z)],[.025,.025],LIGHT,.9,5,cap0=False,cap1=False)
-    M.blob((0,.14,.85),.06,GLASS,sub=2,squash=(.9,.7,1.8),noise=0)
+    # (14 Nov 2026, the user: "the cockpit on the cairn is off the hull") the canopy sat at y .14 over the nose's taper, where the
+    # spire's ridge is only .08 high, so it floated .02 clear and further at its tip. It is now further aft, where the spire is
+    # thicker, and sunk into the ridge
+    M.blob((0,.098,.72),.06,GLASS,sub=2,squash=(.9,.7,1.5),noise=0)
     for sx in (1,-1):barrel(M,(sx*.066,-.062,.55),.3,.012,ACC)                                                       # a lance under each side of the spire
     M.vent((0,0,-1.12),.06)
     return finish(M,2.6)
