@@ -4285,3 +4285,11 @@ The user: "on the title screen separate the animated ship from the station. Two 
 
 ### Title picture: the ship in its own panel, under the station's title (14 Nov 2026)
 The user: "move the ship animation further down below the title of the station animation so there's a clean break between the two animations". The one 400 px canvas is now two: `#stPic` (262 px) holds the station at the same place and size as before, with the freeport's title under it; then a rule; then `#stShip` (190 px, `stShipPic`) with the ship's show, larger than it was, and the ship's title under that. The start screen test passes.
+
+### Title pictures drawn by the game's renderer (14 Nov 2026)
+The user: "cockpit on the fang overlaps with the hull from some angles".
+
+- **Cause:** not the model. `mdlcheck.py` and `mdlgaps.py` are clean on `dz_fang`, and in flight the canopy stands clear of the hull. The title screen's pictures were painted triangle by triangle, back to front, onto a 2D canvas (`stDraw`). That has no depth buffer, so a thin part lying on a large face is painted over by the face from some angles: the Fang's slit canopy on its flat-topped hull is the plainest case. It only showed once the ship began turning through every axis.
+- **Now** the station and the ship on the title screen are drawn by the game's own renderer (`stGL` in `16zs_start2.js`): the models go into a corner of the 3D canvas at the start of the next 3D frame, before that frame clears it; the corner is read back, the background colour is made clear, and the result is laid over each panel's 2D backdrop of glow and stars. Same poses, places and sizes as before; the light is fixed from the upper left front. The ship's rim mesh is drawn too, as in flight.
+- **Fallback:** if the 3D canvas is smaller than a panel, the old painter is used.
+- Tests: `start_screen.py` and `load.py` pass. Checked by eye on the Fang at twelve moments of its turn, old against new.
