@@ -131,7 +131,7 @@ function pickupAndGates(p,P,st){const sec=S.sectors[W.sid];
 // gate transit: the field grabs the ship, lines it up on the gate axis and flings it down the tunnel (about 1.7 s),
 // then it drops out of the far gate (about 1.2 s of arrival with controls locked for the first half second)
 // (14 Nov 2026) the jump runs as long as its sound: 2 s out through the ring and 2.2 s of streaks on arrival (was 1.3 and 1.1)
-const JUMP_OUT=2,JUMP_X=.17,JIN={t:9,d:2.2},GATE_HOLD=5;
+const JUMP_OUT=2,JUMP_X=.145,JIN={t:9,d:2.2},GATE_HOLD=5;
 // line up on a gate and hold it: within ~500 m in front of the ring, near its axis, nose within 20° of straight through.
 // The gate field then holds the ship on the axis and counts down 5 seconds; break alignment or leave and it resets.
 function gateAxis(g){const l=hyp(g.x,g.y,g.z)||1;return{x:g.x/l,y:g.y/l,z:g.z/l}}

@@ -49,10 +49,11 @@ function gateChP(g){const k=gateChK(g);return k<=0?0:k>=1?1:Math.pow(k,1.4)}
 function gateBeam(i,p){return[clamp(p/.04,0,1),clamp(p,0,1)]}
 function gateChK(g){if(!W)return 0;if(W.gc&&W.gc.g===g)return clamp(1-(unbGateHold()-W.gc.t)/HJ.lead,0,1);if(W.jump&&W.jump.g===g)return 1;return 0}
 const GATE_C0=[.45,.7,1],GATE_C1=[0,0,0];
-// How long after the jump starts the ship crosses the ring and the gate bursts: JUMP_X (0.17 s; 0.12 was "just a touch
-// early. very very close", the user, 14 Nov 2026) plus the time this machine's sound takes to leave the speakers, as the
-// browser reports it (a few hundredths of a second on built-in audio, more on wireless headphones; capped at 0.25 s).
-function jumpX(){let l=0;try{const c=AU.ctx;if(c&&auOK())l=(c.outputLatency||0)+(c.baseLatency||0)}catch(e){}return JUMP_X+clamp(l||0,0,.25)}
+// How long after the jump starts the ship crosses the ring and the gate bursts. Set by ear with the user (14 Nov 2026):
+// 0.12 s was "just a touch early", 0.17 s plus the sound's whole output delay was "just a touch late", so this is the
+// middle of the two on any machine: JUMP_X (0.145 s) plus half the delay the browser reports between starting a sound and
+// its leaving the speakers (a few hundredths of a second on built-in audio, more on wireless headphones; capped at 0.25 s).
+function jumpX(){let l=0;try{const c=AU.ctx;if(c&&auOK())l=(c.outputLatency||0)+(c.baseLatency||0)}catch(e){}return JUMP_X+.5*clamp(l||0,0,.25)}
 // seconds since the ship crossed the ring (the gate's burst starts there), or -1 before that
 function gateBurstT(g){const J=W&&W.jump;return J&&J.g===g&&J.tx!==undefined?J.t-J.tx:-1}
 function gateDiscC(g){const k=gateChP(g);if(k<=0)return GATE_C0;GATE_C1[0]=.45+.4*k;GATE_C1[1]=.7+.24*k;GATE_C1[2]=1;return GATE_C1}

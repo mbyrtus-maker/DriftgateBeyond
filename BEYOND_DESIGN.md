@@ -4250,3 +4250,6 @@ The user: "Very close the burst from the gate is just slightly before the actual
 
 ### Gate burst: a touch later, and it allows for the sound's output delay (14 Nov 2026)
 The user, on the burst at 0.12 s: "just a touch early. very very close". The crossing (and with it the burst) now comes `jumpX()` seconds into the jump: `JUMP_X` 0.17 s plus the delay the browser reports between starting a sound and its leaving the speakers (`outputLatency` + `baseLatency`, capped at 0.25 s), so the picture holds its place against the blast on wireless headphones too. Each jump keeps its own value (`J.x`). Test: `jumpsnd.py`.
+
+### Gate burst: the middle of early and late (14 Nov 2026)
+The user, on 0.17 s plus the output delay: "the flash is just a touch late now". With 0.12 s a touch early and 0.17 s plus the whole delay a touch late, `jumpX()` is now the midpoint of the two on any machine: `JUMP_X` 0.145 s plus half the reported output delay. Test: `jumpsnd.py`.
