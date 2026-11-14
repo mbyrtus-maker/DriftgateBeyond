@@ -4275,3 +4275,10 @@ The user, on the AI ships' new lunge: "The animation is good, but the npc ship s
 
 ### The Cairn's canopy sits on its hull (14 Nov 2026)
 The user: "the cockpit on the cairn is off the hull". The Ostrova medium hauler's canopy (`cairn()` in `tools/previews/beyond_work.py`) was placed at height .14 over the nose's taper, where the spire's ridge is only .08 high, so it floated clear of the hull, further at its tip. It is now further aft, where the spire is thicker, and sunk into the ridge (centre height .098, a little shorter). Triangle count, box and gameplay points are unchanged (the pack's index entry for `dz_cairn` is identical). Rebuilt with `DG_ONLY=dz_cairn`, then checked against a full build.
+
+### Title picture: the ship has its own show (14 Nov 2026)
+The user: "on the title screen separate the animated ship from the station. Two different animations, leave the station where it is and have the ship model spin through the various axis so you can see it fully".
+
+- **Before:** the chosen ship sat at the lower left of the title picture, swaying a little and bobbing, under a station that turned slowly; the two read as one scene and the ship only ever showed one side.
+- **Now** (`stShowQ`, `ST_SHOW` in `16zs_start2.js`): the station is where it was, with its slow spin. The ship has its own place, centred under it and a little larger, and its own animation: from its three-quarter pose it makes one full turn about each of its axes in turn (round to either side, a loop nose over tail, a roll), 5 s each with eased starts and stops and 0.7 s still between. A full turn ends in the starting pose, so the three follow on without a jump, and every face of the hull comes round in about 17 s.
+- With reduced motion set in the browser the picture is still, as before.

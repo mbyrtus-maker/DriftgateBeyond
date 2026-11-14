@@ -19,12 +19,21 @@ function stDraw(c,d,q,cx,cy,s,dim){const Ld=[.35,.55,.76],tris=[],v={x:0,y:0,z:0
   tris.sort((a,b)=>a[0]-b[0]);c.lineJoin='round';c.lineWidth=.6;for(const[,P,col]of tris){c.fillStyle=col;c.strokeStyle=col;c.beginPath();c.moveTo(P[0],P[1]);c.lineTo(P[2],P[3]);c.lineTo(P[4],P[5]);c.closePath();c.fill();c.stroke()}}
 function stR(d){let m=1;for(let i=0;i<d.length;i+=10)m=Math.max(m,Math.hypot(d[i],d[i+1],d[i+2]));return m}
 const ST_Q=(()=>{const A=(x,y,z,a)=>qAxis(x,y,z,a,q0());return qMul(A(1,0,0,.42),A(0,1,0,.7),q0())})();
+// the ship's show on the title picture: which way it is turned t seconds in. Each axis gets ST_SHOW.turn s for one full
+// turn (eased), then ST_SHOW.rest s still; a full turn brings it back to its pose, so the three follow on without a jump.
+const ST_SHOW={turn:5,rest:.7,axes:[[0,1,0],[1,0,0],[0,0,1]]};
+function stShowQ(t){const P=ST_SHOW.turn+ST_SHOW.rest,n=ST_SHOW.axes.length,c=((t%(P*n))+P*n)%(P*n),i=Math.min(n-1,Math.floor(c/P)),u=Math.min(1,(c-i*P)/ST_SHOW.turn),e=u*u*(3-2*u),A=ST_SHOW.axes[i];return qAxis(A[0],A[1],A[2],e*TAU,q0())}
 function stPic(t){t=t||stT;stT=t;const cv=$('stPic');if(!cv||!G||!MDL.ready)return;const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;if(cv.width!==Math.round(w*DPR)||cv.height!==Math.round(h*DPR)){cv.width=w*DPR;cv.height=h*DPR}const c=cv.getContext('2d');c.setTransform(DPR,0,0,DPR,0,0);c.clearRect(0,0,w,h);
   const pir=selFac==='pirate',port=pir?WRACK.sid:selPort,col=pir?sideCol('pirate'):'#e8c878',line=FAC(selFac).col||'#5fa8ff';
   const g=c.createRadialGradient(w*.62,h*.36,10,w*.62,h*.36,Math.max(w,h)*.7);g.addColorStop(0,'rgba(40,52,84,.55)');g.addColorStop(1,'rgba(5,7,13,0)');c.fillStyle=g;c.fillRect(0,0,w,h);
   let sd=port.split('').reduce((a,ch)=>a*31+ch.charCodeAt(0),7)>>>0;const rr=()=>(sd=(sd*1664525+1013904223)>>>0)/4294967296;c.fillStyle='rgba(236,228,207,.55)';for(let i=0;i<70;i++){c.beginPath();c.arc(rr()*w,rr()*h,rr()*1.1+.2,0,TAU);c.fill()}
   try{const nm=pir?'by_haven':stMdlName('neutral','free',port),m=nm&&MDL.i[nm]?stMesh(nm,pir?'pirate':'neutral',pir?240:210):stationMesh(pir?'pirate':'neutral','station');const s=Math.min(w,h)*.36/stR(m.core.data),qs=qMul(ST_Q,qAxis(0,1,0,t*.12,q0()),q0());stDraw(c,m.core.data,qs,w*.6,h*.36,s,.95);if(m.spin&&m.spin.data&&m.spin.data.length>30)stDraw(c,m.spin.data,qMul(qs,qAxis(0,1,0,t*.35,q0()),q0()),w*.6,h*.36,s,.95)}catch(e){}
-  try{const d=shipMesh(selFac,selCls).hull.data,s=Math.min(w,h)*.2/stR(d),qh=qMul(SHIP2D_Q,qMul(qAxis(0,1,0,Math.sin(t*.55)*.32,q0()),qAxis(0,0,1,Math.sin(t*.8)*.08,q0()),q0()),q0());stDraw(c,d,qh,w*.3+Math.sin(t*.37)*5,h*.74+Math.sin(t*1.1)*4,s,1)}catch(e){}
+  // (14 Nov 2026, the user: "separate the animated ship from the station. Two different animations, leave the station where it
+  // is and have the ship model spin through the various axis so you can see it fully") The ship has its own place under the
+  // station and its own show: from its three-quarter pose it turns once about each of its axes in turn (a full turn to
+  // either side, a loop nose over tail, a roll), easing in and out with a short rest between, so every face of the hull
+  // comes round. The station keeps its slow spin above it.
+  try{const d=shipMesh(selFac,selCls).hull.data,s=Math.min(w,h)*.22/stR(d);stDraw(c,d,qMul(SHIP2D_Q,stShowQ(t),q0()),w*.5,h*.79,s,1)}catch(e){}
   $('stCap').innerHTML=`<div><span class="lab">Freeport</span><b style="color:${col}">${esc(DEF[port].name)}</b></div><div style="text-align:right"><span class="lab">Ship</span><b style="color:${line}">${esc(FAC(selFac).hulls[selCls])}</b><span class="note" style="margin:0;display:block">${esc(CLASSES[selCls].name)}</span></div>`}
 // ---- the layout: built once from the existing sheet
 (function(){const sb=$('start')&&$('start').querySelector('.sbody');if(!sb)return;const kids=[...sb.children],steps=kids.filter(e=>e.classList.contains('step'));if(steps.length<4)return;
