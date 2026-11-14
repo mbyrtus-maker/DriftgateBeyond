@@ -49,14 +49,16 @@ function gateChP(g){const k=gateChK(g);return k<=0?0:k>=1?1:Math.pow(k,1.4)}
 function gateBeam(i,p){return[clamp(p/.04,0,1),clamp(p,0,1)]}
 function gateChK(g){if(!W)return 0;if(W.gc&&W.gc.g===g)return clamp(1-(unbGateHold()-W.gc.t)/HJ.lead,0,1);if(W.jump&&W.jump.g===g)return 1;return 0}
 const GATE_C0=[.45,.7,1],GATE_C1=[0,0,0];
+// seconds since the ship crossed the ring (the gate's burst starts there), or -1 before that
+function gateBurstT(g){const J=W&&W.jump;return J&&J.g===g&&J.tx!==undefined?J.t-J.tx:-1}
 function gateDiscC(g){const k=gateChP(g);if(k<=0)return GATE_C0;GATE_C1[0]=.45+.4*k;GATE_C1[1]=.7+.24*k;GATE_C1[2]=1;return GATE_C1}
-function gateDiscA(g,t){const k=gateChP(g),a=.2+.06*Math.sin(t*3);if(k<=0)return a;const jt=W.jump&&W.jump.g===g?W.jump.t:-1;return a+k*(.2+.06*Math.sin(t*(6+20*k)))+(jt>=0?.25*Math.max(0,1-jt/.5):0)}
-function gateFx(t){const g=W.gc?W.gc.g:W.jump?W.jump.g:null;if(!g)return;const k=gateChP(g);if(k<=0)return;const jt=W.jump?W.jump.t:-1,fade=jt>=0?Math.max(0,1-jt/.9):1,C=GATE_C0,WT=ONE3;
+function gateDiscA(g,t){const k=gateChP(g),a=.2+.06*Math.sin(t*3);if(k<=0)return a;const bt=gateBurstT(g);return a+k*(.2+.06*Math.sin(t*(6+20*k)))+(bt>=0?.25*Math.max(0,1-bt/.5):0)}
+function gateFx(t){const g=W.gc?W.gc.g:W.jump?W.jump.g:null;if(!g)return;const k=gateChP(g);if(k<=0)return;const jt=W.jump?W.jump.t:-1,fade=jt>=0?Math.max(0,1-Math.max(0,jt-JUMP_X)/.9):1,C=GATE_C0,WT=ONE3;
   qLook(-g.x,-g.y,-g.z,0,1,0,_qs);qMul(_qs,qAxis(0,0,1,t*.15,_qs2),_qs);
-  // the heads stop a little short of the centre (93% of the way) at the end of the countdown and close the last of it in the
-  // first 80 ms of the jump, with the flash: the sound comes out of the speakers slightly after it is started, so beams
-  // that met on the frame the jump begins would still look early
-  if(fade>0){const B=gateBeam(0,k),on=B[0],r=jt>=0?Math.min(1,.93+.07*jt/.08):B[1]*.93,sh=.94+.06*Math.sin(t*9);
+  // the heads stop a little short of the centre (93% of the way) at the end of the countdown and close the last of it while
+  // the ship covers the last metres to the ring; they meet as it crosses, and the burst starts there (the user: "the burst
+  // from the gate is just slightly before the actual jump")
+  if(fade>0){const B=gateBeam(0,k),on=B[0],r=jt>=0?(W.jump.tx!==undefined?1:Math.min(1,.93+.07*jt/JUMP_X)):B[1]*.93,sh=.94+.06*Math.sin(t*9);
     for(let i=0;i<12;i++){const a=i/12*TAU;qRot(_qs,Math.cos(a)*86,Math.sin(a)*86,0,_u);const ox=_u.x,oy=_u.y,oz=_u.z,x=g.x+ox,y=g.y+oy,z=g.z+oz;
       sprite(x,y,z,(7+7*k)*on*sh,C,.8*on*fade);sprite(x,y,z,3.5*on,WT,.9*on*fade);
       // the beam, and a bright head where it has got to
@@ -64,5 +66,5 @@ function gateFx(t){const g=W.gc?W.gc.g:W.jump?W.jump.g:null;if(!g)return;const k
     // the core grows smoothly as the beams close on it
     const pu=1+.06*Math.sin(t*(8+14*k)),cm=.3+.7*r*r;sprite(g.x,g.y,g.z,(6+38*k*k)*pu*cm,WT,(.25+.5*k)*fade);sprite(g.x,g.y,g.z,(20+85*k*k)*pu*cm,C,(.1+.18*k)*fade);
     for(let i=0;i<18;i++){const u=(i*.618+t*(.35+.9*k))%1,a=i*2.399+t*1.3+u*3,rr=92*(1-u);qRot(_qs,Math.cos(a)*rr,Math.sin(a)*rr,0,_u);sprite(g.x+_u.x,g.y+_u.y,g.z+_u.z,2+3*k,C,.7*k*u*fade)}}
-  if(jt>=0){const f=Math.max(0,1-jt/.7);if(f>0){sprite(g.x,g.y,g.z,120+900*Math.min(1,jt/.25),WT,.85*f);
-      for(let i=0;i<24;i++){const a=i/24*TAU,r=100+jt*700;qRot(_qs,Math.cos(a)*r,Math.sin(a)*r,0,_u);sprite(g.x+_u.x,g.y+_u.y,g.z+_u.z,14+30*f,C,.6*f)}}}}
+  const bt=gateBurstT(g);if(bt>=0){const f=Math.max(0,1-bt/.7);if(f>0){sprite(g.x,g.y,g.z,120+900*Math.min(1,bt/.25),WT,.85*f);
+      for(let i=0;i<24;i++){const a=i/24*TAU,r=100+bt*700;qRot(_qs,Math.cos(a)*r,Math.sin(a)*r,0,_u);sprite(g.x+_u.x,g.y+_u.y,g.z+_u.z,14+30*f,C,.6*f)}}}}

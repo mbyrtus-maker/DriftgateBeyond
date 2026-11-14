@@ -4238,3 +4238,12 @@ The user, on the beams that lit in turn at the pace of the clip's loudness: "ok 
 - **They meet with the blast, not before it.** The heads stop 93% of the way to the centre at the end of the countdown and close the rest in the first 80 ms of the jump, with the flash. Sound leaves the speakers slightly after it is started, so beams that met on the frame the jump begins would still look early.
 - The core grows smoothly with the beams' reach instead of with the count of beams that had arrived.
 - Test: `jumpsnd.py` (all twelve the same length at every moment and short of the centre until the jump; the curve's values at the quarters).
+
+### Gate burst: at the ship's crossing, not at the start of the jump (14 Nov 2026)
+The user: "Very close the burst from the gate is just slightly before the actual jump."
+
+- **Cause:** the burst (the core's flash and the ring of light thrown outward) started on the frame the jump began, but the ship was still 60 m or more short of the ring and took 0.2 to 0.4 s to reach it, so the gate fired before the ship went through.
+- **Now the burst starts as the ship crosses the ring** (`J.tx` set in `gateTransit`, read by `gateBurstT`). The ring's film flashes from the same moment.
+- **The crossing comes at a fixed 0.12 s into the jump** (`JUMP_X`), whatever distance the field left: the ship's first speed is that distance over 0.12 s (`J.v0`), and it never drops below it. So the crossing, the burst and the sound's blast (started at the jump, heard a little later through the speakers) fall together.
+- **The beams** close their last 7% over those 0.12 s and meet as the ship crosses.
+- Test: `jumpsnd.py` (from 60 m and from 240 m short the crossing comes 0.10 to 0.15 s in; no burst before it). `escort.py` and `train_flight.py` still pass.
