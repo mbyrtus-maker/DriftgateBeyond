@@ -635,7 +635,7 @@ function draw3D(){
     const ha=W.t-(e.shHitT===undefined?-9:e.shHitT),sp=shHitU(e);if(!(ha<SH_FL)&&!sp)continue;const R=e.st.radius*1.25*1.5;if(!inView(e.x,e.y,e.z,R*1.2))continue;
     if(!on){useShieldFx();on=true}const A=e.shHitA||.5;mModel(MM,e.x,e.y,e.z,e.q,R,R*.7,R*1.1);drawShieldFx(R,R*.7,R*1.1,SH_COL,ha<SH_FL?.75*A*(1-ha/SH_FL):0,.5+.5*A)}
     if(on)useMesh()}
-  for(const g of GATES[W.sid]){if(!inView(g.x,g.y,g.z,150))continue;qLook(-g.x,-g.y,-g.z,0,1,0,_qs);mModel(MM,g.x,g.y,g.z,_qs,1,1,1);const down=S.gateDown[gateKey(W.sid,g.to)];drawMesh(GEN.disc,MM,down?[1,.3,.25]:[.45,.7,1],ZERO3,down?.12:.2+.06*Math.sin(t*3))}
+  for(const g of GATES[W.sid]){if(!inView(g.x,g.y,g.z,150))continue;qLook(-g.x,-g.y,-g.z,0,1,0,_qs);mModel(MM,g.x,g.y,g.z,_qs,1,1,1);const down=S.gateDown[gateKey(W.sid,g.to)];drawMesh(GEN.disc,MM,down?[1,.3,.25]:gateDiscC(g),ZERO3,down?.12:gateDiscA(g,t))}
   {const B=S.beacons&&S.beacons[W.sid];if(B&&isScoutCls(S.player.cls)&&W.player&&d3(W.player,B)<BCN_R*5){mModel(MM,B.x,B.y,B.z,Q_ID,BCN_R,BCN_R,BCN_R);drawMesh(GEN.bcnZone,MM,B.owner?rgb(sideCol(B.owner)):[.85,.85,.8],ZERO3,.55)}}
   drawWorksFx(t);
   if(SE&&SE.sMax&&!SE.offline&&SE.shield>0){const fr=SE.shield/SE.sMax,B=stBub(SE),col=rgb(sideCol(SE.fac));mModel(MM,B.x,B.y,B.z,B.q,B.rx,B.ry,B.rz);drawMesh(GEN.shield,MM,col,ZERO3,.018+.045*fr);
@@ -645,6 +645,7 @@ function draw3D(){
     if(!o.owner||o.breached||o.cap.p>0){mModel(MM,OE.x,OE.y,OE.z,OE.q||q0(),450,450,450);drawMesh(GEN.ring,MM,rgb(o.cap.side?sideCol(o.cap.side):'#ece4cf'),ZERO3,.35+.6*o.cap.p)}}
   {const D=GEN.dust,A=D.arr,sp=hyp(W.player.vx,W.player.vy,W.player.vz);const al=clamp(sp/250,.15,.8);for(let i=0;i<D.base.length;i++){const b=D.base[i],o=i*8;A[o]=((b[0]-cam.x)%1000+1000)%1000-500+cam.x;A[o+1]=((b[1]-cam.y)%1000+1000)%1000-500+cam.y;A[o+2]=((b[2]-cam.z)%1000+1000)%1000-500+cam.z;A[o+3]=.6;A[o+4]=.68;A[o+5]=.85;A[o+6]=al;A[o+7]=1.4}
     G.useProgram(PP.p);G.uniformMatrix4fv(PP.u.uVP,false,VP);G.uniform3f(PP.u.uOff,0,0,0);G.uniform1f(PP.u.uPx,DPR);G.bindBuffer(G.ARRAY_BUFFER,D.buf);G.bufferData(G.ARRAY_BUFFER,A,G.DYNAMIC_DRAW);attribs([3,4,1],8);G.drawArrays(G.POINTS,0,D.base.length);curMesh=null}
+  gateFx(t);
   for(const e of W.ents){if(e.type!=='ship'||!e.alive)continue;if(e.isPlayer&&(S.player.docked||W.dead||cam.mode==='cockpit'))continue;if(W.bridge&&e===W.bridge.f)continue;const sc=e.st.radius*1.25;if(e.role==='limpet'){if((t*2.2+e.x*.01)%1<.45){qRot(e.q,0,.66*sc,0,_u);sprite(e.x+_u.x,e.y+_u.y,e.z+_u.z,sc*1.1,rgb(sideCol(e.side)),.95)}continue}const m=shipMesh(meshFac(e),e.cls),c=rgb((e.isPlayer?S.player.trail:e.trail)||(e.isPlayer?FAC(e.fac).col:sideCol(e.side)));
     const fl=e.thrusting?(e.boosting?1.9:1.25)+Math.sin(t*50+sc)*.15:.5;qRot(e.q,0,0,-1,_f);
     let ei=0;for(const en of m.eng){qRot(e.q,en[0]*sc,en[1]*sc,en[2]*sc,_u);const ex=e.x+_u.x,ey=e.y+_u.y,ez=e.z+_u.z,rr=en[3]*sc;engGlow(ex,ey,ez,rr,fl,c);
