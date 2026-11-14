@@ -4263,3 +4263,12 @@ The user: "ai npcs jumping through a gate while pilot is in sector I dont' need 
 - **Arrivals:** a ship that appears beside a gate still has its own flash; the gate's film now pulses with it (`fxWarp` wrapper, within 650 m of a gate).
 - **Not done:** a guest pilot does not see the picture, because the host runs the AI and a guest only sees the ship vanish from the snapshot. No sound was added.
 - Test: `jumpsnd.py` (the ship is gone at once; the picture starts where it was, reaches the centre at 0.16 s, runs on through; cleared within a second).
+
+### Traders hold the count of five at a gate, and leave at once (14 Nov 2026)
+The user, on the AI ships' new lunge: "The animation is good, but the npc ship stays in place a little too long so its looks like its still blinking. Remember they can't jump for a count of 5 either."
+
+- **Cause:** traders (the freighters, convoys and supply haulers that `traderThink` flies) were the one kind of ship that did not use the gate rule. A trader was marked arrived 260 m short of the ring with no count, then sat braking until the galaxy's 10-second turn removed it. With the new picture, its ghost lunged through the ring while the real ship stayed where it was for up to ten seconds, then vanished.
+- **Now** a trader jumps like every other ship: `npcGateJump` takes it onto the gate's axis, holds the count of five (with the charging glow, and held longer if it is jammed or tethered), then removes it on the spot and leaves its picture lunging through. The galaxy's turn finds it gone and moves the trader on at its usual time, exactly as when it removes one itself.
+- **Escorted freighters:** the formation jump still fires as the freighter jumps (`trHopNow`), now after the count.
+- This is a small change to play as well as to the picture: a trader spends about five seconds on the axis at each gate instead of up to ten braking beside it.
+- Tests: `escort.py` (a freighter at its gate does not jump before the count and does after it), and `freight`, `sysfreight`, `raiders`, `myjobs`, `stores`, `mp_guest_convoy` still pass.

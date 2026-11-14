@@ -57,9 +57,9 @@ async def main():
     # an escorted freighter at its gate with its escort near jumps at once
     r=json.loads(await ev("""(()=>{const P=S.player,f=P.sworn||'halcyon';const g=GATES[W.sid][0];const st=S.econ.stock[f];inv.add(st,'fe',0);const n=Math.min(5,st.fe||0);if(!n)return JSON.stringify({sent:false,why:'no fe'});inv.take(st,'fe',n);const t=haulSend(f,W.sid,g.to,{fe:n},'test:hop','test',null);if(!t){inv.add(st,'fe',n);return JSON.stringify({sent:false})}
       cvSign(t,pkeyOf(P),P.name);let e=W.ents.find(x=>x.alive&&x.tradeT===t);if(!e){t.live=false;e=spawnTrader(t,false)}const ge=W.ents.find(x=>x.type==='gate'&&x.to===g.to);e.ai.dest=ge;e.ai.arrived=false;
-      e.x=ge.x*.97;e.y=ge.y*.97;e.z=ge.z*.97;const p=W.player;p.x=e.x+150;p.y=e.y;p.z=e.z;const s0=t.sector;traderThink(e,1/30);
-      return JSON.stringify({sent:true,hopped:t.sector===g.to&&s0!==t.sector,gone:!W.ents.includes(e),hops:t.esc?t.esc.hops:-1})})()"""))
-    check('an escorted freighter reaching its gate with its escort near jumps at once (and the jump counts)',r.get('hopped') and r.get('gone') and r.get('hops')==1,r)
+      e.x=ge.x*.97;e.y=ge.y*.97;e.z=ge.z*.97;const p=W.player;p.x=e.x+150;p.y=e.y;p.z=e.z;const s0=t.sector;traderThink(e,1/30);const early=t.sector!==s0||!W.ents.includes(e);e.gj={g:ge,t:GATE_HOLD};traderThink(e,1/30);
+      return JSON.stringify({sent:true,early,hopped:t.sector===g.to&&s0!==t.sector,gone:!W.ents.includes(e),hops:t.esc?t.esc.hops:-1})})()"""))
+    check('an escorted freighter at its gate holds the count of five like any ship, then jumps with its escort near (and the jump counts)',r.get('early') is False and r.get('hopped') and r.get('gone') and r.get('hops')==1,r)
     l=await ev(LED);check('ledger exact at the end',l=='exact',l)
     check('no errors',not errs,errs[:3])
     print('ALL OK' if not bad else 'FAILED: '+', '.join(bad))
