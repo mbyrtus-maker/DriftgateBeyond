@@ -4222,9 +4222,19 @@ The user, on the first version of the jump sounds: "timing on the jump sounds is
 - Test: `jumpsnd.py` (the power-up level, the jump's lengths and the first-frame lunge added); `train_flight.py` and `escort.py` still pass.
 
 ### Gate power-up: every beam completes, at the pace of the sound (14 Nov 2026)
+*Superseded: the beams no longer light in turn or follow the clip's loudness moment by moment; see "Gate power-up: one smooth movement".*
 The user: "The lasers that make the jumpgate never quite complete and speed of them should match the sound effect but the jump sound is now aligned." So the sound's timing stays as it is; only the beams change.
 
 - **Why they never completed:** each emitter lit in turn across the whole charge and its beam's reach was tied to how long it had been lit, so the last three reached only three quarters, a half and a quarter of the way by the jump.
 - **Now** (`gateBeam`): the twelve light in turn over the first 60% of the power-up and each beam takes 40% of it to reach the centre, so the last one arrives as the power-up reaches 1. Each beam has a bright head where it has got to, and the core grows with the number of beams that have arrived.
 - **The pace comes from the sound** (`hjEnv`, `gateChP`, `hjLv`): the decoded charge clip's loudness is measured 30 times a second up to the blast, and the power-up's progress is the share of that loudness heard so far. It moves slowly through the quiet opening (14% at a quarter of the time, 38% at half, 68% at three quarters), quickens with each surge, and reaches 1 exactly at the blast. The loudness at each instant drives the beams' flicker. If the clip is not decoded, progress is the plain share of the time.
 - Test: `jumpsnd.py` (all twelve beams complete at full charge and only then; progress runs 0 to 1 and never backward).
+
+### Gate power-up: one smooth movement (14 Nov 2026)
+The user, on the beams that lit in turn at the pace of the clip's loudness: "ok now they all reach but they aren't all drawn in even lines they jump and skip and complete. Needs to be one smooth animation." and "they complete a little too early before the jump".
+
+- **All twelve beams are drawn together, the same length at every moment** (`gateBeam`). The emitters no longer light in turn, which had most beams finished well before the jump.
+- **One smooth curve sets the pace** (`gateChP`): the share of the charge's time raised to 1.4. That is the shape of the sound's build (measured on the clip: 14%, 38% and 68% of its loudness heard at the quarter points; the curve gives 14, 38 and 67) without its surges, which made the beams lurch. The measuring code (`hjEnv`, `hjLv`) is removed, and the beams' flicker with it; a slow 6% shimmer is left.
+- **They meet with the blast, not before it.** The heads stop 93% of the way to the centre at the end of the countdown and close the rest in the first 80 ms of the jump, with the flash. Sound leaves the speakers slightly after it is started, so beams that met on the frame the jump begins would still look early.
+- The core grows smoothly with the beams' reach instead of with the count of beams that had arrived.
+- Test: `jumpsnd.py` (all twelve the same length at every moment and short of the centre until the jump; the curve's values at the quarters).
