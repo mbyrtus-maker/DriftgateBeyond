@@ -28,7 +28,7 @@ def load(name):
     # the model as the pack would hold it: centred on its box, longest half-extent 1; returns it with what its builder recorded
     import brood
     brood.LAST=None
-    kind,fn=d1kit.NS['MODELS'][name];P,N,R=fn();P=np.array(P,float).reshape(-1,3,3);lo=P.reshape(-1,3).min(0);hi=P.reshape(-1,3).max(0);c=(lo+hi)/2;h=max(hi-lo)/2
+    kind,fn=d1kit.NS['MODELS'][name];brood.Mesh.AUTOSEAT=(kind=='ship' and not os.environ.get('DG_NOSEAT'));P,N,R=fn();P=np.array(P,float).reshape(-1,3,3);lo=P.reshape(-1,3).min(0);hi=P.reshape(-1,3).max(0);c=(lo+hi)/2;h=max(hi-lo)/2
     meta=getattr(brood,'LAST',None);pts={}
     if meta:
         for k in ('eng','gun','mine','seat'):pts[k]=[((np.array(p[0],float)-c)/h,p[1]/h if k=='eng' else 0) for p in meta.get(k,[])]
