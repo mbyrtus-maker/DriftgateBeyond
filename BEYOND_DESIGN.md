@@ -4253,3 +4253,13 @@ The user, on the burst at 0.12 s: "just a touch early. very very close". The cro
 
 ### Gate burst: the middle of early and late (14 Nov 2026)
 The user, on 0.17 s plus the output delay: "the flash is just a touch late now". With 0.12 s a touch early and 0.17 s plus the whole delay a touch late, `jumpX()` is now the midpoint of the two on any machine: `JUMP_X` 0.145 s plus half the reported output delay. Test: `jumpsnd.py`.
+
+### AI ships through a gate: a lunge, a streak and a small flash (14 Nov 2026)
+The user: "ai npcs jumping through a gate while pilot is in sector I dont' need to see all the beams and the flash but they should do something rather than blink out of existence".
+
+- **Before:** an AI ship charged at the gate for 5 s with a growing glow, then was removed with one flash where it sat, 60 m short of the ring (a trader was removed 260 m short, with no charge at all).
+- **Now** (`gateOutFx`, `gateGhostMesh`, `gateGhostFx` in `16zzzzh_jumpsnd.js`): the ship is still removed from the world at once, so nothing in the game changes (tokens, cargo, tests of who is where). What stays for 0.6 s is a picture of it (`W.gouts`): the hull lunges to the ring's centre in 0.16 s and on through it, stretching along its line of flight, with a streak of its side's colour behind; as it crosses, the ring gives a small flash and its film pulses. No beams and no burst: those stay the pilot's own.
+- **Where:** `npcGateJump` (flights, haulers, ships leaving, contract and crew runs, independents) and traders reaching a gate (`traderThink`). A ship more than 700 m from a gate, or one that warps out away from a gate (a sortie called home), keeps the old flash.
+- **Arrivals:** a ship that appears beside a gate still has its own flash; the gate's film now pulses with it (`fxWarp` wrapper, within 650 m of a gate).
+- **Not done:** a guest pilot does not see the picture, because the host runs the AI and a guest only sees the ship vanish from the snapshot. No sound was added.
+- Test: `jumpsnd.py` (the ship is gone at once; the picture starts where it was, reaches the centre at 0.16 s, runs on through; cleared within a second).

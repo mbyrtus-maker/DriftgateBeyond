@@ -26,6 +26,15 @@ async def main():
       smp=(n)=>{if(n==='cdBeep'||n==='cdGo')_jl.push([n,T()]);return true};
       if(S.player.docked)undock();return 1})()""")
     await pg.wait_for_function('__dg.ev("!S.player.docked&&!W.docking")',timeout=30000)
+    await pg.wait_for_function('__dg.ev("W.ents.some(x=>x.type===\'ship\'&&x.alive&&!x.isPlayer&&!x.tok&&x.st)")',timeout=30000)
+    # another ship through a gate: it is removed at once as before, and leaves a half-second picture that lunges through the ring
+    r9=json.loads(await ev("(()=>{const g=GATES[W.sid][0],d=gateAxis(g);let e=W.ents.find(x=>x.type==='ship'&&x.alive&&!x.isPlayer&&!x.tok&&x.st);if(!e)return JSON.stringify({none:1});W.gouts=[];e.x=g.x-d.x*60;e.y=g.y-d.y*60;e.z=g.z-d.z*60;e.gj={g,t:GATE_HOLD};const n0=W.ents.length,fx0=W.fx.length,done=npcGateJump(e,g,.05,1),o=W.gouts[0];if(!o)return JSON.stringify({done,ghost:0});const P=a=>{gateGhostAt(o,a);return[_u.x-g.x,_u.y-g.y,_u.z-g.z]},al=v=>+(v[0]*d.x+v[1]*d.y+v[2]*d.z).toFixed(0);return JSON.stringify({done,gone:!W.ents.includes(e)&&W.ents.length===n0-1,ghost:W.gouts.length,flash:W.fx.length-fx0,a0:al(P(0)),ac:al(P(GOUT.tc)),a1:al(P(GOUT.tc+.2)),pulse0:gatePulse(g),pT:+(g.pT-W.t).toFixed(2)})})()"))
+    if r9.get('none'):print('note no AI ship in this system to test a departure with')
+    else:
+      check('an AI ship jumping out is removed at once and leaves a picture that starts where it was, reaches the ring\'s centre and runs on through it',r9['done'] is True and r9['gone'] and r9['ghost']==1 and r9['a0']==-60 and r9['ac']==0 and r9['a1']>200 and r9['pulse0']==0 and abs(r9['pT']-.16)<.02,r9)
+      await pg.wait_for_timeout(1500)
+      r10=json.loads(await ev("JSON.stringify({left:(W.gouts||[]).length})"))
+      check('the picture is gone within a second',r10['left']==0,r10)
     sid0=await ev("W.sid");await ev(PLACE)
     await pg.wait_for_function('__dg.ev("W.sid")!=="%s"'%sid0,timeout=40000)
     L=json.loads(await ev("JSON.stringify(_jl)"));st=[x for x in L if x[0]=='start'];bp=[x for x in L if x[0]=='cdBeep'];go=[x for x in L if x[0]=='cdGo']

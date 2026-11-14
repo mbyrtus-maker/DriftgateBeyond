@@ -57,8 +57,8 @@ function jumpX(){let l=0;try{const c=AU.ctx;if(c&&auOK())l=(c.outputLatency||0)+
 // seconds since the ship crossed the ring (the gate's burst starts there), or -1 before that
 function gateBurstT(g){const J=W&&W.jump;return J&&J.g===g&&J.tx!==undefined?J.t-J.tx:-1}
 function gateDiscC(g){const k=gateChP(g);if(k<=0)return GATE_C0;GATE_C1[0]=.45+.4*k;GATE_C1[1]=.7+.24*k;GATE_C1[2]=1;return GATE_C1}
-function gateDiscA(g,t){const k=gateChP(g),a=.2+.06*Math.sin(t*3);if(k<=0)return a;const bt=gateBurstT(g);return a+k*(.2+.06*Math.sin(t*(6+20*k)))+(bt>=0?.25*Math.max(0,1-bt/.5):0)}
-function gateFx(t){const g=W.gc?W.gc.g:W.jump?W.jump.g:null;if(!g)return;const k=gateChP(g);if(k<=0)return;const jt=W.jump?W.jump.t:-1,fade=jt>=0?Math.max(0,1-Math.max(0,jt-(W.jump.x||JUMP_X))/.9):1,C=GATE_C0,WT=ONE3;
+function gateDiscA(g,t){const k=gateChP(g),a=.2+.06*Math.sin(t*3)+gatePulse(g);if(k<=0)return a;const bt=gateBurstT(g);return a+k*(.2+.06*Math.sin(t*(6+20*k)))+(bt>=0?.25*Math.max(0,1-bt/.5):0)}
+function gateFx(t){gateGhostFx();const g=W.gc?W.gc.g:W.jump?W.jump.g:null;if(!g)return;const k=gateChP(g);if(k<=0)return;const jt=W.jump?W.jump.t:-1,fade=jt>=0?Math.max(0,1-Math.max(0,jt-(W.jump.x||JUMP_X))/.9):1,C=GATE_C0,WT=ONE3;
   qLook(-g.x,-g.y,-g.z,0,1,0,_qs);qMul(_qs,qAxis(0,0,1,t*.15,_qs2),_qs);
   // the heads stop a little short of the centre (93% of the way) at the end of the countdown and close the last of it while
   // the ship covers the last metres to the ring; they meet as it crosses, and the burst starts there (the user: "the burst
@@ -73,3 +73,29 @@ function gateFx(t){const g=W.gc?W.gc.g:W.jump?W.jump.g:null;if(!g)return;const k
     for(let i=0;i<18;i++){const u=(i*.618+t*(.35+.9*k))%1,a=i*2.399+t*1.3+u*3,rr=92*(1-u);qRot(_qs,Math.cos(a)*rr,Math.sin(a)*rr,0,_u);sprite(g.x+_u.x,g.y+_u.y,g.z+_u.z,2+3*k,C,.7*k*u*fade)}}
   const bt=gateBurstT(g);if(bt>=0){const f=Math.max(0,1-bt/.7);if(f>0){sprite(g.x,g.y,g.z,120+900*Math.min(1,bt/.25),WT,.85*f);
       for(let i=0;i<24;i++){const a=i/24*TAU,r=100+bt*700;qRot(_qs,Math.cos(a)*r,Math.sin(a)*r,0,_u);sprite(g.x+_u.x,g.y+_u.y,g.z+_u.z,14+30*f,C,.6*f)}}}}
+// ---- other ships through a gate (14 Nov 2026; the user: "ai npcs jumping through a gate while pilot is in sector I dont'
+// need to see all the beams and the flash but they should do something rather than blink out of existence").
+// A ship that jumps out is still removed from the world at once, as before, so nothing in the game changes; what is left
+// behind for half a second is a picture of it (W.gouts): the hull lunges to the ring's centre in GOUT.tc s and on through
+// it, stretching along its line of flight, with a streak of its side's colour behind it; as it crosses, the ring gives a
+// small flash and its film pulses. No beams and no burst: those stay the pilot's own.
+// A ship arriving near a gate pulses that gate's film too (its own arrival flash is as before).
+const GOUT={tc:.16,life:.62,acc:7000};
+function gateDefOf(g,far){const L=W&&GATES[W.sid];if(!L||!g)return null;if(L.includes(g))return g;let b=null,bd=1e9;for(const q of L){const d=d3(q,g);if(d<bd){bd=d;b=q}}return bd<(far||400)?b:null}
+// the film's extra brightness from a ship that has just crossed (g.pT is the moment, in the world's clock)
+function gatePulse(g){if(!W||g.pT===undefined||g.pW!==W.sid)return 0;const a=W.t-g.pT;return a>=0&&a<.5?.3*(1-a/.5):0}
+function gateOutFx(e,g){if(!W||!e||!g||e.isPlayer||!e.st)return false;const G=gateDefOf(g);if(!G)return false;const d=gateAxis(G),dist=d3(e,G);if(dist>700)return false;
+  (W.gouts=W.gouts||[]).push({src:e,cls:e.cls,role:e.role,sc:e.st.radius*1.25,x:e.x,y:e.y,z:e.z,gx:G.x,gy:G.y,gz:G.z,dx:d.x,dy:d.y,dz:d.z,q:qLook(d.x,d.y,d.z,0,1,0,q0()),t0:W.t,c:hexRGB(sideCol(e.side)),v1:dist/GOUT.tc});
+  G.pT=W.t+GOUT.tc;G.pW=W.sid;return true}
+// where a departing ship's picture is, a seconds after it left (into _u), and how stretched it is (returned)
+function gateGhostAt(o,a){if(a<GOUT.tc){const k=a/GOUT.tc;_u.x=o.x+(o.gx-o.x)*k;_u.y=o.y+(o.gy-o.y)*k;_u.z=o.z+(o.gz-o.z)*k;return k*.6}
+  const b=a-GOUT.tc,s=o.v1*b+GOUT.acc*b*b;_u.x=o.gx+o.dx*s;_u.y=o.gy+o.dy*s;_u.z=o.gz+o.dz*s;return .6+Math.min(1,b/.15)*2.4}
+function gateGhostMesh(){const L=W&&W.gouts;if(!L||!L.length)return;for(const o of L){const a=W.t-o.t0;if(a<0||a>GOUT.tc+.16)continue;const st=gateGhostAt(o,a),x=_u.x,y=_u.y,z=_u.z;if(!inView(x,y,z,o.sc*8))continue;
+    let m=null;try{m=shipMesh(meshFac(o.src),o.role==='limpet'?'limpet':o.cls)}catch(e){}if(!m||!m.hull)continue;mModel(MM,x,y,z,o.q,o.sc,o.sc,o.sc*(1+st*1.6));drawMesh(m.hull,MM,ONE3,ZERO3);if(m.rim)drawMesh(m.rim,MM)}}
+function gateGhostFx(){const L=W&&W.gouts;if(!L||!L.length)return;for(let i=L.length-1;i>=0;i--){const o=L[i],a=W.t-o.t0;if(a>GOUT.life||a<-1){L.splice(i,1);continue}
+    const st=gateGhostAt(o,a),x=_u.x,y=_u.y,z=_u.z,f=Math.max(0,1-a/(GOUT.tc+.3)),len=o.sc*(3+st*14);
+    if(f>0){streak(x,y,z,x-o.dx*len,y-o.dy*len,z-o.dz*len,o.sc*.5,o.c,.75*f);streak(x,y,z,x-o.dx*len*.5,y-o.dy*len*.5,z-o.dz*len*.5,o.sc*.22,ONE3,.8*f);sprite(x,y,z,o.sc*(2.4+st),o.c,.5*f)}
+    // the ring's small flash as the ship crosses
+    const b=a-GOUT.tc;if(b>=0){const k=Math.max(0,1-b/.4);sprite(o.gx,o.gy,o.gz,40+220*Math.min(1,b/.12),ONE3,.6*k);sprite(o.gx,o.gy,o.gz,150+250*Math.min(1,b/.2),GATE_C0,.3*k)}}}
+// a ship arriving beside a gate (fxWarp at its new place) pulses that gate's film
+{const o=fxWarp;fxWarp=function(p,col){try{if(W&&p){const G=gateDefOf(p,650);if(G&&!(G.pT>W.t-.1&&G.pW===W.sid)){G.pT=W.t;G.pW=W.sid}}}catch(e){}return o.apply(this,arguments)}}

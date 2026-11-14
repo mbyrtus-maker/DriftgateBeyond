@@ -623,6 +623,7 @@ function draw3D(){
   for(const e of W.ents){if(e.type!=='ship'||!e.alive)continue;if(e.isPlayer&&hideP)continue;if(W.bridge&&e===W.bridge.f&&!mdlHas(e.fac==='brood'?BROOD_MDL[e.cls]:e.cls))continue;const sc=e.st.radius*1.25;if(!inView(e.x,e.y,e.z,sc*2))continue;const fac=meshFac(e),m=shipMesh(fac,e.role==='limpet'?'limpet':e.cls);
     mModel(MM,e.x,e.y,e.z,e.q,sc,sc,sc);const hurt=W.t-e.lastHit<.08;drawMesh(m.hull,MM,ONE3,hurt?[.35,.25,.15]:ZERO3);drawMesh(m.rim,MM);
     if(hasTur(e.cls)&&!(W.gunseat&&gsEnt()===e))gfxDrawTurret(e,fac,sc)}
+  gateGhostMesh();
   drawBerthed();
   G.enable(G.BLEND);G.blendFunc(G.ONE,G.ONE);G.depthMask(false);useMesh();
   // ship shield bubbles: flash on hit, burst outward when they collapse, pulse when they come back

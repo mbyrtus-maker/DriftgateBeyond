@@ -486,7 +486,7 @@ function npcGateJump(e,g,dt,urgency){const d=gateAxis(g);
   const J=e.gj;if(gateLocked(e))J.t=0;else J.t+=dt;const tx=g.x-d.x*60,ty=g.y-d.y*60,tz=g.z-d.z*60,ex=tx-e.x,ey=ty-e.y,ez=tz-e.z,el=hyp(ex,ey,ez)||1,sp=Math.min(50,el*.35),k=Math.min(1,1.6*dt);
   e.vx+=(ex/el*sp-e.vx)*k;e.vy+=(ey/el*sp-e.vy)*k;e.vz+=(ez/el*sp-e.vz)*k;faceDir(e,d.x,d.y,d.z,dt);e.thrusting=false;
   if(Math.random()<dt*(2+J.t*3))fxSpark({x:e.x+rnd(-20,20),y:e.y+rnd(-20,20),z:e.z+rnd(-20,20)},sideCol(e.side),1);
-  if(J.t>=GATE_HOLD){fxWarp(e,sideCol(e.side));despawn(e);return true}return false}
+  if(J.t>=GATE_HOLD){if(!gateOutFx(e,g))fxWarp(e,sideCol(e.side));despawn(e);return true}return false}
 function nearestGate(e){let b=null,bd=1e9;for(const g of GATES[W.sid]){const d=d3(g,e);if(d<bd){bd=d;b=g}}return b}
 function despawn(e){if(e.drones)for(const d of e.drones)if(d.alive&&W.ents.includes(d)){fxWarp(d,sideCol(d.side));d.mom=null;despawn(d)}
   if(e.escortG){e.escortG.escort=null;for(const m of grpAlive(e.escortG))if(m.role==='escort'){m.role='patrol';m.ai.retireAt=W.t+25}}
