@@ -217,7 +217,7 @@ table.t td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white
 #dBody .corow.dim{opacity:.55}#dBody .cowrap.jb2{grid-template-columns:minmax(0,1fr) 400px}.mptitle{font-family:var(--f-disp,'Big Shoulders Display',sans-serif);font-weight:800;font-size:22px;letter-spacing:.08em;text-transform:uppercase}
 .mpforce{display:flex;gap:10px;align-items:center;width:100%;background:transparent;border:0;border-bottom:1px solid rgba(35,45,69,.55);padding:8px 4px;color:var(--ivory,#ece4cf);font:inherit;font-size:13px;text-align:left;cursor:pointer}.mpforce.on{background:rgba(240,178,74,.06)}
 .mpchk{width:12px;height:12px;border:1px solid #36435f;flex:none}.mpforce.on .mpchk{background:var(--amber,#f0b24a);border-color:var(--amber,#f0b24a)}.mpslot-course .note{margin:6px 0 8px}
-.st2{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:6px}.st2l{min-width:0}.st2r{position:sticky;top:0;align-self:start;padding:18px 26px 0 0}#stPic{width:100%;height:400px;display:block}
+.st2{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:6px}.st2l{min-width:0}.st2r{position:sticky;top:0;align-self:start;padding:18px 26px 0 0}#stPic{width:100%;height:262px;display:block}#stShip{width:100%;height:190px;display:block;margin-top:16px;border-top:1px solid rgba(236,228,207,.14)}
 .st2cap{display:flex;justify-content:space-between;gap:10px;padding:2px 4px 0}.st2cap b{display:block;font-family:var(--f-display);font-weight:800;font-size:18px;letter-spacing:.06em;text-transform:uppercase}.st2cap .lab{display:block}
 .st2h{cursor:pointer;user-select:none}.st2h:hover,.st2h:focus-visible{color:var(--ivory)}.st2v{font-style:normal;text-transform:none;letter-spacing:0;color:var(--ivory);font-size:13px;margin-left:6px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.st2c{color:var(--faint);font-weight:400}
 .st2leg{padding:0 26px 4px}#start .st2l .brand h1{font-size:min(50px,5vw);white-space:nowrap}#stLeg .lgs{display:flex;flex-direction:column;gap:5px;font-size:13px}
@@ -12789,19 +12789,24 @@ const ST_SHOW={turn:5,rest:.7,axes:[[0,1,0],[1,0,0],[0,0,1]]};
 function stShowQ(t){const P=ST_SHOW.turn+ST_SHOW.rest,n=ST_SHOW.axes.length,c=((t%(P*n))+P*n)%(P*n),i=Math.min(n-1,Math.floor(c/P)),u=Math.min(1,(c-i*P)/ST_SHOW.turn),e=u*u*(3-2*u),A=ST_SHOW.axes[i];return qAxis(A[0],A[1],A[2],e*TAU,q0())}
 function stPic(t){t=t||stT;stT=t;const cv=$('stPic');if(!cv||!G||!MDL.ready)return;const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;if(cv.width!==Math.round(w*DPR)||cv.height!==Math.round(h*DPR)){cv.width=w*DPR;cv.height=h*DPR}const c=cv.getContext('2d');c.setTransform(DPR,0,0,DPR,0,0);c.clearRect(0,0,w,h);
   const pir=selFac==='pirate',port=pir?WRACK.sid:selPort,col=pir?sideCol('pirate'):'#e8c878',line=FAC(selFac).col||'#5fa8ff';
-  const g=c.createRadialGradient(w*.62,h*.36,10,w*.62,h*.36,Math.max(w,h)*.7);g.addColorStop(0,'rgba(40,52,84,.55)');g.addColorStop(1,'rgba(5,7,13,0)');c.fillStyle=g;c.fillRect(0,0,w,h);
+  const sy=Math.min(144,h*.55),sr=Math.min(w,400)*.36;const g=c.createRadialGradient(w*.62,sy,10,w*.62,sy,Math.max(w,h)*.7);g.addColorStop(0,'rgba(40,52,84,.55)');g.addColorStop(1,'rgba(5,7,13,0)');c.fillStyle=g;c.fillRect(0,0,w,h);
   let sd=port.split('').reduce((a,ch)=>a*31+ch.charCodeAt(0),7)>>>0;const rr=()=>(sd=(sd*1664525+1013904223)>>>0)/4294967296;c.fillStyle='rgba(236,228,207,.55)';for(let i=0;i<70;i++){c.beginPath();c.arc(rr()*w,rr()*h,rr()*1.1+.2,0,TAU);c.fill()}
-  try{const nm=pir?'by_haven':stMdlName('neutral','free',port),m=nm&&MDL.i[nm]?stMesh(nm,pir?'pirate':'neutral',pir?240:210):stationMesh(pir?'pirate':'neutral','station');const s=Math.min(w,h)*.36/stR(m.core.data),qs=qMul(ST_Q,qAxis(0,1,0,t*.12,q0()),q0());stDraw(c,m.core.data,qs,w*.6,h*.36,s,.95);if(m.spin&&m.spin.data&&m.spin.data.length>30)stDraw(c,m.spin.data,qMul(qs,qAxis(0,1,0,t*.35,q0()),q0()),w*.6,h*.36,s,.95)}catch(e){}
-  // (14 Nov 2026, the user: "separate the animated ship from the station. Two different animations, leave the station where it
-  // is and have the ship model spin through the various axis so you can see it fully") The ship has its own place under the
-  // station and its own show: from its three-quarter pose it turns once about each of its axes in turn (a full turn to
-  // either side, a loop nose over tail, a roll), easing in and out with a short rest between, so every face of the hull
-  // comes round. The station keeps its slow spin above it.
-  try{const d=shipMesh(selFac,selCls).hull.data,s=Math.min(w,h)*.22/stR(d);stDraw(c,d,qMul(SHIP2D_Q,stShowQ(t),q0()),w*.5,h*.79,s,1)}catch(e){}
-  $('stCap').innerHTML=`<div><span class="lab">Freeport</span><b style="color:${col}">${esc(DEF[port].name)}</b></div><div style="text-align:right"><span class="lab">Ship</span><b style="color:${line}">${esc(FAC(selFac).hulls[selCls])}</b><span class="note" style="margin:0;display:block">${esc(CLASSES[selCls].name)}</span></div>`}
+  try{const nm=pir?'by_haven':stMdlName('neutral','free',port),m=nm&&MDL.i[nm]?stMesh(nm,pir?'pirate':'neutral',pir?240:210):stationMesh(pir?'pirate':'neutral','station');const s=sr/stR(m.core.data),qs=qMul(ST_Q,qAxis(0,1,0,t*.12,q0()),q0());stDraw(c,m.core.data,qs,w*.6,sy,s,.95);if(m.spin&&m.spin.data&&m.spin.data.length>30)stDraw(c,m.spin.data,qMul(qs,qAxis(0,1,0,t*.35,q0()),q0()),w*.6,sy,s,.95)}catch(e){}
+  $('stCap').innerHTML=`<div><span class="lab">Freeport</span><b style="color:${col}">${esc(DEF[port].name)}</b></div>`;
+  try{stShipPic(t,port,line)}catch(e){}}
+// (14 Nov 2026) The ship's own picture, under the station's and its title, with a rule between them (the user: "separate the
+// animated ship from the station. Two different animations ... have the ship model spin through the various axis so you can
+// see it fully", then "move the ship animation further down below the title of the station animation so there's a clean
+// break between the two animations"). From its three-quarter pose the ship turns once about each of its axes in turn (round
+// to either side, a loop nose over tail, a roll), easing in and out with a short rest between, so every face comes round.
+function stShipPic(t,port,line){const cv=$('stShip');if(!cv)return;const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;if(cv.width!==Math.round(w*DPR)||cv.height!==Math.round(h*DPR)){cv.width=w*DPR;cv.height=h*DPR}const c=cv.getContext('2d');c.setTransform(DPR,0,0,DPR,0,0);c.clearRect(0,0,w,h);
+  const g=c.createRadialGradient(w*.5,h*.5,10,w*.5,h*.5,Math.max(w,h)*.7);g.addColorStop(0,'rgba(40,52,84,.5)');g.addColorStop(1,'rgba(5,7,13,0)');c.fillStyle=g;c.fillRect(0,0,w,h);
+  let sd=(port+'ship').split('').reduce((a,ch)=>a*31+ch.charCodeAt(0),7)>>>0;const rr=()=>(sd=(sd*1664525+1013904223)>>>0)/4294967296;c.fillStyle='rgba(236,228,207,.5)';for(let i=0;i<34;i++){c.beginPath();c.arc(rr()*w,rr()*h,rr()*1.1+.2,0,TAU);c.fill()}
+  try{const d=shipMesh(selFac,selCls).hull.data,s=Math.min(w,h)*.43/stR(d);stDraw(c,d,qMul(SHIP2D_Q,stShowQ(t),q0()),w*.5,h*.5,s,1)}catch(e){}
+  $('stShipCap').innerHTML=`<div><span class="lab">Ship</span><b style="color:${line}">${esc(FAC(selFac).hulls[selCls])}</b><span class="note" style="margin:0;display:block">${esc(CLASSES[selCls].name)}</span></div>`}
 // ---- the layout: built once from the existing sheet
 (function(){const sb=$('start')&&$('start').querySelector('.sbody');if(!sb)return;const kids=[...sb.children],steps=kids.filter(e=>e.classList.contains('step'));if(steps.length<4)return;
-  const L=document.createElement('div');L.className='st2l';const R=document.createElement('div');R.className='st2r';R.innerHTML=`<canvas id="stPic" aria-label="Your freeport and ship"></canvas><div id="stCap" class="st2cap"></div>`;
+  const L=document.createElement('div');L.className='st2l';const R=document.createElement('div');R.className='st2r';R.innerHTML=`<canvas id="stPic" aria-label="Your freeport"></canvas><div id="stCap" class="st2cap"></div><canvas id="stShip" aria-label="Your ship"></canvas><div id="stShipCap" class="st2cap"></div>`;
   const W2=document.createElement('div');W2.className='st2';W2.appendChild(L);W2.appendChild(R);
   const brand=sb.querySelector('.brand'),legacy=$('legacy'),ver=$('ver'),mp=$('mpBox'),nameRow=$('mpName').closest('.mprow'),notes=kids.filter(e=>e.classList.contains('snote')&&e!==legacy&&e!==ver);
   const [sCall,sPort,sRole,sShip]=steps,legStep=document.createElement('div');legStep.className='step';legStep.innerHTML='<i>2</i><span>Legend</span>';const legBody=document.createElement('div');legBody.id='stLeg';legBody.className='st2leg';
