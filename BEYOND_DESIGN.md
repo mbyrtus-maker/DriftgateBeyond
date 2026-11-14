@@ -4220,3 +4220,11 @@ The user, on the first version of the jump sounds: "timing on the jump sounds is
 - **The countdown follows the sound's clock while the charge plays** (`gjCharge`). The game's clock can run behind real time when frames are slow, and the sound cannot, so the beeps and the jump could land late against the clip. A gap of over a second (the game was paused) restarts the clip at the right place.
 - Not checked by ear: I cannot hear the result. Staged pictures of the power-up, the jump and the arrival were looked over; the peak was toned down after the first pass whited out the view.
 - Test: `jumpsnd.py` (the power-up level, the jump's lengths and the first-frame lunge added); `train_flight.py` and `escort.py` still pass.
+
+### Gate power-up: every beam completes, at the pace of the sound (14 Nov 2026)
+The user: "The lasers that make the jumpgate never quite complete and speed of them should match the sound effect but the jump sound is now aligned." So the sound's timing stays as it is; only the beams change.
+
+- **Why they never completed:** each emitter lit in turn across the whole charge and its beam's reach was tied to how long it had been lit, so the last three reached only three quarters, a half and a quarter of the way by the jump.
+- **Now** (`gateBeam`): the twelve light in turn over the first 60% of the power-up and each beam takes 40% of it to reach the centre, so the last one arrives as the power-up reaches 1. Each beam has a bright head where it has got to, and the core grows with the number of beams that have arrived.
+- **The pace comes from the sound** (`hjEnv`, `gateChP`, `hjLv`): the decoded charge clip's loudness is measured 30 times a second up to the blast, and the power-up's progress is the share of that loudness heard so far. It moves slowly through the quiet opening (14% at a quarter of the time, 38% at half, 68% at three quarters), quickens with each surge, and reaches 1 exactly at the blast. The loudness at each instant drives the beams' flicker. If the clip is not decoded, progress is the plain share of the time.
+- Test: `jumpsnd.py` (all twelve beams complete at full charge and only then; progress runs 0 to 1 and never backward).
