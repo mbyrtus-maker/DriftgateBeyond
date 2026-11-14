@@ -4247,3 +4247,6 @@ The user: "Very close the burst from the gate is just slightly before the actual
 - **The crossing comes at a fixed 0.12 s into the jump** (`JUMP_X`), whatever distance the field left: the ship's first speed is that distance over 0.12 s (`J.v0`), and it never drops below it. So the crossing, the burst and the sound's blast (started at the jump, heard a little later through the speakers) fall together.
 - **The beams** close their last 7% over those 0.12 s and meet as the ship crosses.
 - Test: `jumpsnd.py` (from 60 m and from 240 m short the crossing comes 0.10 to 0.15 s in; no burst before it). `escort.py` and `train_flight.py` still pass.
+
+### Gate burst: a touch later, and it allows for the sound's output delay (14 Nov 2026)
+The user, on the burst at 0.12 s: "just a touch early. very very close". The crossing (and with it the burst) now comes `jumpX()` seconds into the jump: `JUMP_X` 0.17 s plus the delay the browser reports between starting a sound and its leaving the speakers (`outputLatency` + `baseLatency`, capped at 0.25 s), so the picture holds its place against the blast on wireless headphones too. Each jump keeps its own value (`J.x`). Test: `jumpsnd.py`.

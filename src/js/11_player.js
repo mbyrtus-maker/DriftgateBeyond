@@ -131,7 +131,7 @@ function pickupAndGates(p,P,st){const sec=S.sectors[W.sid];
 // gate transit: the field grabs the ship, lines it up on the gate axis and flings it down the tunnel (about 1.7 s),
 // then it drops out of the far gate (about 1.2 s of arrival with controls locked for the first half second)
 // (14 Nov 2026) the jump runs as long as its sound: 2 s out through the ring and 2.2 s of streaks on arrival (was 1.3 and 1.1)
-const JUMP_OUT=2,JUMP_X=.12,JIN={t:9,d:2.2},GATE_HOLD=5;
+const JUMP_OUT=2,JUMP_X=.17,JIN={t:9,d:2.2},GATE_HOLD=5;
 // line up on a gate and hold it: within ~500 m in front of the ring, near its axis, nose within 20° of straight through.
 // The gate field then holds the ship on the axis and counts down 5 seconds; break alignment or leave and it resets.
 function gateAxis(g){const l=hyp(g.x,g.y,g.z)||1;return{x:g.x/l,y:g.y/l,z:g.z/l}}
@@ -164,10 +164,10 @@ function gateTransit(J,dt){const p=W.player,g=J.g,l=hyp(g.x,g.y,g.z)||1,dx=g.x/l
   qSlerp(p.q,qLook(dx,dy,dz,0,1,0,_tq),Math.min(1,3.2*dt));
   // (14 Nov 2026) the ship lunges the moment the jump starts, where the sound's blast lands (it used to drift to the ring's
   // centre for half a second first): at the ring's centre while the ring is still ahead, then straight along the axis
-  // The ship reaches the ring JUMP_X s after the jump starts, however far short of it the field left it (J.v0 is the speed
+  // The ship reaches the ring J.x s (jumpX) after the jump starts, however far short of it the field left it (J.v0 is the speed
   // that takes), so the crossing, the gate's burst (J.tx, the moment it crossed) and the sound's blast fall together.
   {const rx=g.x-p.x,ry=g.y-p.y,rz=g.z-p.z,al=rx*dx+ry*dy+rz*dz;let ux=dx,uy=dy,uz=dz;if(al>20){const rl=hyp(rx,ry,rz)||1;ux=rx/rl;uy=ry/rl;uz=rz/rl}
-    if(J.v0===undefined)J.v0=Math.max(0,al)/JUMP_X;if(J.tx===undefined&&(al<=0||J.t>JUMP_X*3))J.tx=J.t;
+    if(J.v0===undefined){J.x=jumpX();J.v0=Math.max(0,al)/J.x}if(J.tx===undefined&&(al<=0||J.t>J.x*3))J.tx=J.t;
     const sp=Math.max(J.v0,320+J.t*J.t*1500);p.vx=ux*sp;p.vy=uy*sp;p.vz=uz*sp;p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt}
   p.thrusting=true;p.boosting=true;W.shake=Math.max(W.shake||0,.14+J.t*.1);
   const f=$('fade');f.style.opacity=clamp((J.t-JUMP_OUT+.35)/.35,0,1)}
