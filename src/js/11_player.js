@@ -143,11 +143,11 @@ function gateCountdown(p){const dt=W.fdt||1/60;let best=null;for(const g of GATE
   if(z.cos<.94){if(W.gc){W.gc=null;SFX.beep(140);flash('Alignment lost. Line up with the gate again.',true)}return}
   if(gateLocked(p)){if(W.gc){W.gc=null}if(W.t-(W.gateLockMsg||0)>3){W.gateLockMsg=W.t;flash('Jammed or tethered: the gate field won\u2019t take you until the bar drains or the line breaks.',true)}return}
   if(!W.gc||W.gc.g!==g){W.gc={g,t:0,last:6}}
-  const C=W.gc;C.t+=dt;const n=Math.ceil(unbGateHold()-C.t);if(n<C.last&&n>0){C.last=n;SFX.count(n===1)}
+  const C=W.gc;C.t+=dt;const n=Math.ceil(unbGateHold()-C.t);if(n<C.last&&n>0){C.last=n;gjCount(n)}gjCharge(unbGateHold()-C.t);
   // the field: ease the ship onto the axis and let it creep toward the ring
   const tx=g.x-z.d.x*60,ty=g.y-z.d.y*60,tz=g.z-z.d.z*60,ex=tx-p.x,ey=ty-p.y,ez=tz-p.z,el=hyp(ex,ey,ez)||1,sp=Math.min(55,el*.35),k=Math.min(1,1.6*dt);
   p.vx+=(ex/el*sp-p.vx)*k;p.vy+=(ey/el*sp-p.vy)*k;p.vz+=(ez/el*sp-p.vz)*k;
-  if(C.t>=unbGateHold()){W.gc=null;W.gate=null;W.jump={to:g.to,t:0,g};p.inJump=true;W.tgt=null;SFX.jump();flash(`Jumping to ${DEF[g.to].name}.`)}}
+  if(C.t>=unbGateHold()){W.gc=null;W.gate=null;W.jump={to:g.to,t:0,g};p.inJump=true;W.tgt=null;gjGo();flash(`Jumping to ${DEF[g.to].name}.`)}}
 function drawGateCountdown(c,t){if(W.jump||!W.gate||S.player.docked||W.dead)return;const cx=VW/2,cy=VH*.36,G=W.gate,C=W.gc,col=FAC(S.player.faction).col,to=DEF[G.g.to].name;
   c.save();c.textAlign='center';c.textBaseline='middle';
   if(S.gateDown[gateKey(W.sid,G.g.to)]){c.font='600 14px "Saira Semi Condensed",sans-serif';c.fillStyle='#ff5d4f';c.fillText(ogSealed(W.sid,G.g.to)?`GATE TO ${to.toUpperCase()} SEALED BY BROOD OVERGROWTH`:`GATE TO ${to.toUpperCase()} HAS COLLAPSED`,cx,cy);c.restore();return}

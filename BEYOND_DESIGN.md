@@ -4195,3 +4195,18 @@ The walkable bridge (`bridgeMesh` in `src/js/08_world.js`; one interior for carr
 - **Floor:** the crew-row walkway plate lay over the aisle plate (same height, both with grooves). It is now two plates either side of the aisle plate, so no plate overlaps another. The dais side strips stop at the front nosing instead of sharing its top face.
 - **Console frame:** the foot bar's back face shared the screen bezel's plane and was 4.0 wide like the bezel; it is now inset (3.9 wide, back inside the bezel). The key-row lip is 0.04 narrower than the desk.
 Console, seat, table and door positions, `BRIDGE.cons`, `BR_SOLID` and the overlay labels are unchanged. Near-coplanar pairs up to 0.012 apart were also checked; faces hidden behind another face (a decal's back, a glass pane's back behind its bezel) are not drawn over, so they were left.
+
+### Gate jump sounds from the user's two clips (14 Nov 2026)
+The user supplied two sound files: "one is the countdown for jumping one is the sound effect of jumping."
+
+- **The clips.** The countdown file is three 420 Hz beeps a second apart and a 720 Hz beep at 3.0 s. The jump file is 11.4 s: a quiet charge, the blast at 4.80 s, a tail to about 9.5 s. `tools/snd_add.py DIR` cuts them into the pack as `cdBeep`, `cdGo` and `hjump` (9.6 s), encoded like the rest (mono, 22.05 kHz, 48 kbit MP3); the pack grows from 353 to 430 KB. The source files are not in the repository: their names follow Pixabay's pattern, whose licence allows use in a game without credit but not passing the files on by themselves. `build_snd.py` would not carry them, so rerun `snd_add.py` after any full rebuild of the pack.
+- **In play** (`16zzzzh_jumpsnd.js`; the gate countdown in `11_player.js` calls `gjCount`, `gjCharge` and `gjGo`):
+  - The charge starts 4.85 s before the jump (0.15 s into the 5-second hold), so the blast lands as the ship jumps. 4.85 s is where the blast starts in the clip once a browser has decoded it.
+  - The low beep sounds at 3, 2 and 1 seconds to go, and the high beep with the blast, as in the user's file. The counts at 5 and 4 are silent under the rising charge.
+  - Leaving the approach, losing alignment or being jammed fades the charge out in a quarter of a second.
+  - The arrival 1.3 s later no longer plays a second jump sound; the blast's tail carries through it.
+  - Every other `SFX.jump` (a formation jump with a capital, a gunner's seat, a guest's hops) plays the clip from just before the blast.
+  - The clips play at their own pitch (the pack's other clips are lowered to 0.75).
+  - With the clips not loaded, the old beeps and warp play as before. Other ships' jumps and capital jumps (`fjump`) are unchanged.
+- **Levels** are set by calculation, not by ear (`HJ.vol` .3, `HJ.beep` .13, `HJ.go` .15): the blast sits near an explosion's level and the beeps near the old countdown's. They are the first thing to adjust if the user finds them loud or quiet.
+- Test: `jumpsnd.py` (timing logic with recorded stand-ins). A separate check with a running audio context confirmed the three clips decode and play in Chromium.
