@@ -4299,3 +4299,17 @@ The user, after the Cairn's canopy: "check the other models". `tools/mdlcheck.py
 - **By hand, in the builders:** Cairn spokes start at .06 (the diamond spire is .095 out on their lines); Obelisk halo spokes .08 (was .13); Lantern halo spokes .3 (was .38); Vesper halos .245/.235 (were .26/.25); Harrier torpedo pods up .025 under the wing; Architect depot cradle struts start at -.1 (were -.2); Plunderer boom pylons go down into the hull; Wraith edge lights .02 above the wing (were .045); Heron and Sledge launcher racks get a pylon into the hull (`launcher(..., pylon=)`); Varkesh bridge mast starts inside the top tier; Lumen mining lenses x .09 (were .13); Brood Watcher's drive lip z -.96 (was -.99).
 - **Left as meant:** the Vesper's slug between its rails; the Ostrova stations' floating segments, the freeports' hanging hoops, the R&D labs and sockets, the Riftstone's rocks; the dish on the defence platform and the habitat works' lower dome (kit parts, a move would change the box). Left for being under .006: Rampart, Foundry, Halo, Hive.
 - **Checks:** `bboxcheck.py` before and after a full build: 0 boxes changed. `mdlcheck.py` on every ship: only the Vesper's slug. `tools/tests/art.py`: ALL OK. Old kit models still drawn: `forge` (three outposts) and `yard` (one); `bombard`, `vesper`, `carrier`, `escort`, `station`, `depot`, `relay`, `rockbase` are replaced by `dz_*`/`by_*` models or only a fallback and were not touched.
+
+### The Wraith's model, redrawn in its own box (14 Nov 2026)
+The user: "Check the wraith and update it's model." The graphics pass had left it as "still coarse": 404 triangles, one body, two flat plates for wings, a canopy and four slits of light, and one gun each side although the hull is described as carrying quad cannons and two swarm-pod batteries.
+
+- **Check:** `mdlcheck.py` and `mdlgaps.py` were clean on it (the edge lights were seated earlier the same day). The fault was the lack of form, not a broken part.
+- **The new model** (`wraith()` in `tools/previews/beyond_brand.py`, 1,238 triangles), the same faceted stealth wing:
+  - a chined body in seven sections with a raised spine, a hood behind the canopy and a dark frame round the canopy's foot;
+  - cranked wings, thick at the root and thinner outboard, with a saw-toothed trailing edge; the leading edge, the tips and the edge lights are where they were;
+  - two canted tail fins;
+  - quad cannons: a faired housing in each wing root with two muzzles (the pack now records four muzzles, so shots leave from all four);
+  - the two swarm-pod batteries as a recessed panel of six cells on each wing root;
+  - dorsal intake slits, a thin light down each flank of the spine, and dark shrouds over the slit exhausts.
+- **Unchanged:** the box (`bboxcheck.py`: same box), so the drawn size and hit size; the two engine points; class and stats.
+- Checks: `mdlcheck.py` clean, `mdlgaps.py` no part clear at 0.003, `art.py` and `load.py` pass. Looked over in the builder preview and as the game draws it on the title screen.

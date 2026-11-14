@@ -3,7 +3,7 @@
 # language, built around the weapon that made its name. The Wraith, a conqueror's trophy, belongs to no faction: a faceted stealth wing.
 import math
 import numpy as np
-from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,loft,box,plate,ring,LENS,HEX,lens_role,barrel,loft_top
+from beyond_hulls import Mesh,LIGHT,MID,DARK,ACC,GLASS,GLOW,WIN,loft,box,plate,ring,LENS,HEX,lens_role,barrel,loft_top,on_hull
 from beyond_work import finish,abox,crystal,lights,sqdrive,hatch
 from beyond_recon import SMH,smh_role,dish
 from beyond_capitals import tube,giant_gun,stacks
@@ -91,22 +91,49 @@ def vesper():
     M=finish(M,2.7,1.0);M.keep_clear=[((0,0,.71),.2)]      # the slug floats between the rails by design (Mesh.seat_floaters leaves it)
     return M
 def wraith():
-    # the Wraith: a faceted stealth flying wing, clean and hard-angled, with some depth to it: a raised diamond body and spine, thick
-    # wings blended into it with straight swept edges, drives buried in slit vents, two heavy guns hidden in the leading edge, a faceted
-    # canopy, faint edge lights; a dark trophy finish
+    # the Wraith: a faceted stealth wing, the Legendary Ace's hull. (14 Nov 2026, the user: "Check the wraith and update it's
+    # model") It was the coarsest hull in the pack: one body, two flat plates for wings, a canopy and four slits of light. Same
+    # idea, size and box, drawn with what the ship is said to carry:
+    #   - a chined body in more sections, with a raised spine and a hood behind a framed, faceted canopy;
+    #   - cranked wings, thick at the root and thin outboard, with a saw-toothed trailing edge;
+    #   - two canted tail fins;
+    #   - quad cannons: two muzzles in a faired housing in each wing root (it had one each side);
+    #   - the two swarm-pod batteries: a recessed panel of cells on each wing root;
+    #   - dorsal intake slits, and shrouds over the slit exhausts; the faint edge lights stay.
     M=Mesh(704)
     D=lambda w,h,dy=0:[(w,dy),(w*.4,h+dy),(-w*.4,h+dy),(-w,dy),(-w*.4,-h*.6+dy),(w*.4,-h*.6+dy)]
     # one faceted body with the spine ridge built into its section (no overlapping pieces to fight), evenly shaded planes
     B=lambda w,h,r:[(w,0),(w*.4,h),(0,h+r),(-w*.4,h),(-w,0),(-w*.4,-h*.6),(w*.4,-h*.6)]
     role=lambda i,j:([MID,LIGHT,LIGHT,MID,DARK,DARK,DARK][j],[.95,1,.96,.95,.8,.78,.8][j])
-    loft(M,[(-.95,B(.42,.1,.04)),(-.35,B(.52,.2,.08)),(.45,B(.34,.17,.0)),(1.05,B(.04,.03,0))],role)
+    BODY=[(-.95,B(.42,.1,.04)),(-.72,B(.5,.165,.07)),(-.35,B(.52,.2,.08)),(.08,B(.45,.19,.045)),(.45,B(.34,.17,.0)),(.78,B(.17,.085,0)),(1.05,B(.04,.03,0))]
+    loft(M,BODY,role)
     for sx in (1,-1):
-        W=[(sx*.345,0,.42),(sx*1.2,-.03,-.6),(sx*1.08,-.03,-.82),(sx*.43,0,-.9)]                                    # wing root on the body's side edge
-        plate(M,W,.03,MID,.9)                                                                                          # thick swept wing
-        r0=np.array(W[0]);t1=np.array(W[1]);tube(M,[r0+(t1-r0)*.26+[0,.02,0],t1+[0,.02,0]],[.012,.012],GLOW,1.0,4,cap0=False,cap1=False)   # edge light, along the leading edge
-        barrel(M,(sx*.33,-.04,.38),.28,.019)                                                                           # the guns in the leading edge
-        n0=len(M.T);plate(M,[(sx*.12,-.01,-.96),(sx*.34,-.01,-.94),(sx*.34,-.01,-.99),(sx*.12,-.01,-1.01)],.012,GLOW,1.0);M.eng.append([np.array((sx*.23,-.01,-1.0)),.07,n0,len(M.T)])   # slit vents: its drives (recorded, so the flares sit here and not on the edge lights)
+        # the wing: the same leading edge and tip as before; an inner panel thick at the root, a thinner outer one, and a
+        # trailing edge that steps in and out
+        A=(sx*.78,-.015,-.099);T0=(sx*1.2,-.03,-.6);T1=(sx*1.08,-.03,-.82);Dn=(sx*.86,-.018,-.62)
+        plate(M,[(sx*.345,0,.42),A,Dn,(sx*.66,-.011,-.88),(sx*.43,0,-.74)],.05,MID,.9)                            # inner panel
+        plate(M,[A,T0,T1,Dn],.03,MID,.86)                                                                          # outer panel
+        r0=np.array((sx*.345,0,.42));t1=np.array(T0);tube(M,[r0+(t1-r0)*.26+[0,.02,0],t1+[0,.02,0]],[.012,.012],GLOW,1.0,4,cap0=False,cap1=False)   # edge light, along the leading edge
+        # quad cannons: a faired housing in the wing root with two muzzles
+        loft(M,[(-.2,[(sx*.3,-.075),(sx*.47,-.075),(sx*.47,.03),(sx*.3,.045)]),(.3,[(sx*.29,-.07),(sx*.43,-.07),(sx*.43,.02),(sx*.29,.035)]),(.44,[(sx*.31,-.055),(sx*.4,-.055),(sx*.4,-.01),(sx*.31,0)])],(DARK,.92))
+        barrel(M,(sx*.33,-.04,.38),.28,.019)
+        barrel(M,(sx*.385,-.032,.36),.25,.017)
+        # a swarm-pod battery: a recessed dark panel on the wing root, six cells
+        box(M,(sx*.56,.022,-.38),(.2,.02,.26),DARK,sh=.8)
+        for ix in (-.055,.0,.055):
+            for iz in (-.07,.06):box(M,(sx*.56+ix,.036,-.38+iz),(.038,.014,.09),ACC,sh=.55)
+        # a canted tail fin, footed in the body's upper side
+        plate(M,[(sx*.2,.1,-.56),(sx*.4,.255,-.83),(sx*.42,.255,-.97),(sx*.2,.08,-.93)],.026,MID,.92)
+        # dorsal intake slit beside the spine, and a thin light down the spine's flank
+        on_hull(M,BODY,-.6,-.22,.06,.014,DARK,.6,dx=sx*.2)
+        on_hull(M,BODY,-.86,-.3,.007,.006,GLOW,1.0,dx=sx*.085)
+        # the drives: slit vents (recorded, so the flares sit here and not on the edge lights) under a dark shroud
+        n0=len(M.T);plate(M,[(sx*.12,-.01,-.96),(sx*.34,-.01,-.94),(sx*.34,-.01,-.99),(sx*.12,-.01,-1.01)],.012,GLOW,1.0);M.eng.append([np.array((sx*.23,-.01,-1.0)),.07,n0,len(M.T)])
+        box(M,(sx*.23,.016,-.93),(.27,.03,.13),DARK,taper=(.85,.7),sh=.85)
+    # the canopy: faceted glass, a dark frame round its foot and a hood running back into the spine
     loft(M,[(.12,D(.12,.05,.205)),(.45,D(.1,.07,.18)),(.68,D(.03,.02,.15))],(GLASS,1.0))
+    loft(M,[(.1,D(.135,.03,.19)),(.45,D(.115,.04,.165)),(.7,D(.04,.012,.14))],(DARK,.85))
+    loft(M,[(-.3,D(.05,.02,.24)),(.0,D(.1,.045,.198)),(.14,D(.115,.045,.19))],(MID,.97))
     return finish(M,2.0,1.0)
 
 # (11 Nov 2026) each power's builders make their nozzles and guns in that power's design language (brood.styled)
