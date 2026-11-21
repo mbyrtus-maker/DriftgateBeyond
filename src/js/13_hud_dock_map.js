@@ -544,7 +544,7 @@ function keysNow(){const P=S.player,p=W&&W.player;if(!p||P.docked||W.bridge||W.g
   if(isScoutCls(P.cls)&&!P.limpetUsed&&limpetTarget())k.push([kb('mine'),'hold: limpet']);
   if(T&&T.kind==='ship'&&hostile('player',T.ref.side)){if(W.lock&&W.lock.locked&&P.rack>0)k.push([kb('msl'),'missile']);if((P.swarm||0)>0&&swarmCap(P))k.push([kb('swarm'),'swarm']);k.push([kb('track'),'hold to track'])}
   // a capital or station with systems: Shift+T picks one (they can be hit once its shield is down)
-  if(T&&(T.kind==='ship'||T.kind==='station')&&subRecOf(T.ref)&&hostile('player',T.kind==='station'?T.ref.fac:T.ref.side)){const sel=W.tsub&&W.tsub.E===T.ref;k.push(['Shift+'+kb('tgtH'),!subOpen(T.ref)?'systems (shield up)':sel?'next system':'pick a system'])}
+  if(T&&(T.kind==='ship'||T.kind==='station')&&subRecOf(T.ref)&&hostile('player',T.kind==='station'?T.ref.fac:T.ref.side)){const sel=W.tsub&&W.tsub.E===T.ref;k.push([kb('subCycle'),!subOpen(T.ref)?'systems (shield up)':sel?'next system':'pick a system'])}
   if(W.missiles.some(m=>m.tgt===p&&m.kind!=='swarm'))k.unshift([kb('flare'),'flares']);
   if(T&&(T.kind==='gate'||T.kind==='station'||T.kind==='ast'||T.kind==='outpost'))k.push([kb('autopilot'),'autopilot']);
   if(T&&T.kind==='ship'&&S.player.fmE!=null&&String(T.ref.id)===String(S.player.fmE))k.push([kb('autopilot'),apOn&&W.fmn?'formation on':'formation']);
