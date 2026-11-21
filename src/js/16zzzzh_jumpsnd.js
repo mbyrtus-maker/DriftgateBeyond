@@ -86,7 +86,10 @@ function gateDefOf(g,far){const L=W&&GATES[W.sid];if(!L||!g)return null;if(L.inc
 function gatePulse(g){if(!W||g.pT===undefined||g.pW!==W.sid)return 0;const a=W.t-g.pT;return a>=0&&a<.5?.3*(1-a/.5):0}
 function gateOutFx(e,g){if(!W||!e||!g||e.isPlayer||!e.st)return false;const G=gateDefOf(g);if(!G)return false;const d=gateAxis(G),dist=d3(e,G);if(dist>700)return false;
   (W.gouts=W.gouts||[]).push({src:e,cls:e.cls,role:e.role,sc:e.st.radius*1.25,x:e.x,y:e.y,z:e.z,gx:G.x,gy:G.y,gz:G.z,dx:d.x,dy:d.y,dz:d.z,q:qLook(d.x,d.y,d.z,0,1,0,q0()),t0:W.t,c:hexRGB(sideCol(e.side)),v1:dist/GOUT.tc});
-  G.pT=W.t+GOUT.tc;G.pW=W.sid;return true}
+  G.pT=W.t+GOUT.tc;G.pW=W.sid;
+  // (21 Nov 2026, co-op audit) only the host runs npcGateJump, so its guests saw the ship blink out: they are sent the
+  // departure (ship and gate) and draw the same picture from their copy of the ship (applySnap, event 'go')
+  if(NET.host&&e.id)(W.netEv=W.netEv||[]).push(['go',e.id,G.to]);return true}
 // where a departing ship's picture is, a seconds after it left (into _u), and how stretched it is (returned)
 function gateGhostAt(o,a){if(a<GOUT.tc){const k=a/GOUT.tc;_u.x=o.x+(o.gx-o.x)*k;_u.y=o.y+(o.gy-o.y)*k;_u.z=o.z+(o.gz-o.z)*k;return k*.6}
   const b=a-GOUT.tc,s=o.v1*b+GOUT.acc*b*b;_u.x=o.gx+o.dx*s;_u.y=o.gy+o.dy*s;_u.z=o.gz+o.dz*s;return .6+Math.min(1,b/.15)*2.4}

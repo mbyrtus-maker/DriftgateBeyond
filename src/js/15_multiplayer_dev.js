@@ -8,7 +8,7 @@
 // mid-session the next browser takes over from the last checkpoint. With nobody online the galaxy simply waits.
 const MP_HOME='https://mbyrtus-maker.github.io/DriftgateBeyond/';
 const MPV=1,MP={st:'off',code:'',name:'',pid:'',hostId:'',myId:'',sig:null,sigCfg:null,ice:null,links:{},host:null,cl:{},inp:{},rp:{},
-  seenEv:new Set(),snT:0,syT:0,prT:0,ckT:0,uT:0,since:0,ckpt:null,hostPid:null,roster:[],mid:0,pend:[],needPilot:false,elect:0,ckMeta:null};
+  seenEv:new Set(),nst:{old:0,big:0,err:0,sec:0},snT:0,syT:0,prT:0,ckT:0,uT:0,since:0,ckpt:null,hostPid:null,roster:[],mid:0,pend:[],needPilot:false,elect:0,ckMeta:null};
 const rid=n=>{let s='';const a='abcdefghijkmnpqrstuvwxyz23456789';for(let i=0;i<n;i++)s+=a[Math.floor(Math.random()*a.length)];return s};
 const cleanCall=n=>String(n||'').replace(/[^A-Za-z0-9 _.\-']/g,'').replace(/\s+/g,' ').trim().slice(0,16);
 const GAL_A=['amber','silver','crimson','quiet','iron','violet','solar','frozen','hollow','swift','golden','ember','azure','dusky','stellar','rusty'],GAL_B=['falcon','comet','drift','harbor','lantern','nova','kestrel','reef','vessel','orbit','beacon','spire','tide','forge','nebula','wren'];
@@ -82,9 +82,9 @@ function mkLink(peer,init){const pc=new RTCPeerConnection({iceServers:MP.ice}),L
   MP.links[peer]=L;return L}
 function linkClose(L,quiet){L.dead=true;if(quiet)L.quiet=true;try{L.pc.close()}catch(e){}if(MP.links[L.peer]===L)delete MP.links[L.peer]}
 function send(L,o,fast){if(!L||!L.open||L.dead)return;const s=JSON.stringify(o);
-  try{if(fast&&L.u.readyState==='open'&&s.length<15000){L.u.send(s);return}
+  try{if(fast&&L.u.readyState==='open'){if(s.length<15000){L.u.send(s);return}MP.nst.big++}
     if(L.r.readyState!=='open')return;if(s.length<15000){L.r.send(s);return}
-    const id=rid(6),n=Math.ceil(s.length/15000);for(let i=0;i<n;i++)L.r.send(`~${id}|${i}|${n}|`+s.slice(i*15000,(i+1)*15000))}catch(e){}}
+    const id=rid(6),n=Math.ceil(s.length/15000);for(let i=0;i<n;i++)L.r.send(`~${id}|${i}|${n}|`+s.slice(i*15000,(i+1)*15000))}catch(e){MP.nst.err++}}
 function linkRecv(L,d){if(typeof d!=='string')return;
   if(d[0]==='~'){const a=d.indexOf('|'),b=d.indexOf('|',a+1),c=d.indexOf('|',b+1),id=d.slice(1,a),i=+d.slice(a+1,b),n=+d.slice(b+1,c);const P=L.parts[id]=L.parts[id]||[];P[i]=d.slice(c+1);
     if(P.filter(x=>x!==undefined).length<n)return;delete L.parts[id];d=P.join('')}
@@ -126,7 +126,7 @@ function mpFail(msg){mpStatus(esc(msg)+(/github\.io$|^localhost$|^127\./.test(lo
 // ---- hosting
 function holdLock(){try{if(MP.lockHeld||!navigator.locks)return;MP.lockHeld=true;navigator.locks.request('dgbeyond-tab-'+rid(8),()=>new Promise(r=>{MP.lockRel=r}))}catch(e){}}
 function hostBegin(first){holdLock();NET.on=true;NET.host=true;NET.cl=false;NET.me=MP.pid;MP.since=performance.now();MP.st='host';MP.hostPid=MP.pid;
-  if(first){
+  if(first){MP.fromSolo=!!(S&&S.player&&!(MP.ckpt&&MP.ckpt.S));
     if(MP.ckpt&&MP.ckpt.S){mpAdoptState(MP.ckpt.S)}
     if(S&&S.player){mpRun();feed(`You are hosting “${MP.code}”. Friends who enter the same galaxy code join you.`,'info')}
     else if(MP.autoLaunch){const a=MP.autoLaunch;MP.autoLaunch=null;mpLaunch(a.fac,a.cls,a.port)}
@@ -163,7 +163,7 @@ function hostRecv(L,m){let c=MP.cl[L.peer];
   if(m.t==='newpilot'){if(!running||!S.player)return;if(!S.pilots[c.pid]){const lg=m.leg&&typeof m.leg==='object'?m.leg:null;if(S.unb){if(m.fac!=='pirate'||!lg||!((lg.pts||0)>=1)){send(L,{t:'msg',k:'flash',a:[m.fac!=='pirate'?'This is an Unbound crew galaxy: everyone here flies for the pirates.':'Joining an Unbound crew takes a Legend point of your own, earned flying for a faction.',true]});return}const NP=newPilot(c.pid,c.name,'pirate','raider',lg);runAs(c.pid,()=>unbP())}else if(FAC_IDS.includes(m.fac)&&START_HULLS.includes(m.cls))newPilot(c.pid,c.name,m.fac,m.cls,lg,typeof m.port==='string'?m.port:null);else{send(L,{t:'msg',k:'flash',a:['This galaxy flies for the factions. Unbound crews need a galaxy of their own.',true]});return}}hJoin(c);return}
   if(!c.ready)return;const pid=c.pid,P=S.pilots[pid];if(!P)return;
   switch(m.t){
-    case 'u':{if(P.docked)break;MP.inp[pid]={...m,at:performance.now()};P.x=m.x;P.y=m.y;P.z=m.z;P.vx=m.vx;P.vy=m.vy;P.vz=m.vz;P.q=m.q;P.fa=!!m.fa;P.wpn=m.w==='l'?'laser':'kinetic';P.route=m.rt||null;break}
+    case 'u':{if(P.docked)break;if(m.s&&m.s!==P.sector){MP.nst.sec++;break}if(typeof m.n==='number'){if(m.n<=(c.uN||0)){MP.nst.old++;break}c.uN=m.n}MP.inp[pid]={...m,at:performance.now()};P.x=m.x;P.y=m.y;P.z=m.z;P.vx=m.vx;P.vy=m.vy;P.vz=m.vz;P.q=m.q;P.fa=!!m.fa;P.wpn=m.w==='l'?'laser':'kinetic';P.route=m.rt||null;break}
     case 'msl':hMissile(pid,m);break;
     case 'jam':{const e=MP.rp[pid];P.jamMode=!!m.on;if(e)e.jamMode=!!m.on;break}
     case 'xpdr':{if(S.unb)runAs(pid,()=>{const R=unbP();if((R.xpdrOut||0)>S.T)return;R.xpdr=!!m.on});break}
@@ -338,7 +338,7 @@ function netTick(dt){if(NET.cl){clientTick(dt);return}if(!NET.host||!running||!S
       const SE=W.stationEnt,OE=W.outpostEnt,o=OE&&OE.o,B=W.scaffold||(W.pbuild?{x:W.pbuild.x,y:W.pbuild.y,z:W.pbuild.z,owner:S.player.sworn||'player',prog:W.pbuild.prog}:null);
       const gbs=W.ents.filter(e=>e.type==='ship'&&e.alive&&hasTur(e.cls));if(W===LW&&W.player&&hasTur(W.player.cls)&&!S.player.docked&&!gbs.includes(W.player))gbs.push(W.player);
       const gt=gbs.map(e=>{const T=turretOf(e);return[e.isPlayer?'p_'+NET.me:e.id,Math.round(T.yaw*100),Math.round(T.pitch*100),T.gunner==='local'?(S.player.name||MP.name):T.gunner?((S.pilots[T.gunner]||{}).name||'pilot'):'AI']});
-      const base={t:'sn',sid,T:Math.round(S.T*10)/10,m:ms,ev,gt,st:SE?[Math.round(SE.shield),SE.offline?1:0,SE.turrets.map(t=>[Math.round(t.aim.x*100),Math.round(t.aim.y*100),Math.round(t.aim.z*100)])]:0,
+      MP.snq=(MP.snq||0)+1;const base={t:'sn',n:MP.snq,sid,T:Math.round(S.T*10)/10,m:ms,ev,gt,st:SE?[Math.round(SE.shield),SE.offline?1:0,SE.turrets.map(t=>[Math.round(t.aim.x*100),Math.round(t.aim.y*100),Math.round(t.aim.z*100)])]:0,
         op:o?[Math.round(o.shield),Math.round(o.hull),Math.round(o.cap.p*100)/100,o.cap.side||0,o.breached?1:0,o.owner||0,Math.round(OE.aim.x*100),Math.round(OE.aim.y*100),Math.round(OE.aim.z*100)]:0,sc:B?[r1(B.x),r1(B.y),r1(B.z),B.owner,Math.round(B.prog*100)/100]:0,wk:(W.works||[]).map(w=>[w.id,Math.round(wkHp(w))]),de:W.decoys.map(d=>[r1(d.x),r1(d.y),r1(d.z),Math.round(d.life*10)/10]),
         nb:W.ents.filter(e=>e.npc&&e.alive&&e.ai&&e.ai.bl&&e.ai.bl.pts&&e.ai.bl.pts.length).map(e=>[e.id,e.ai.bl.st,e.ai.bl.pts.map(q=>[r1(q.x),r1(q.y),r1(q.z)])]),
         nc:(W.npcCh||[]).filter(c=>c.e&&c.e.alive).map(c=>[c.id,c.e.id,c.k,c.cr,r1(c.x),r1(c.y),r1(c.z),Math.round(c.vx),Math.round(c.vy),Math.round(c.vz)])};
@@ -358,13 +358,13 @@ function netTid(T){if(!T)return 0;if(T.type==='works')return T.id;if(T.type==='s
 function clientTick(dt){if(!running||!S||!S.player||!W)return;
   if(MP.seatGo){const G=MP.seatGo;if(performance.now()-G.t>12000){MP.seatGo=null;flash('Lost the Heavy Bomber you signed on to.',true)}else if(S.player.docked==='station'){undock()}else if(W.player&&!S.player.docked){const e=(LW.pup&&LW.pup[G.id])||W.ents.find(x=>x.id===G.id);if(e){const p=W.player;p.x=e.x;p.y=e.y+e.st.radius;p.z=e.z;p.vx=e.vx;p.vy=e.vy;p.vz=e.vz;MP.seatGo=null;enterSeat(e)}}}MP.uT-=dt;if(MP.uT>0)return;MP.uT=1/20;if(S.player.docked==='turret'&&W.gunseat){const G=W.gunseat;netSend({t:'g',yaw:+G.yaw.toFixed(3),pitch:+G.pitch.toFixed(3),f:(keys.Space||mouse.l||touch.fire)?1:0},true);return}const P=S.player,p=W.player;if(!p||P.docked||W.dead)return;
   const firing=!!(keys.Space||mouse.l||touch.fire);
-  netSend({t:'u',x:r1(p.x),y:r1(p.y),z:r1(p.z),vx:Math.round(p.vx),vy:Math.round(p.vy),vz:Math.round(p.vz),q:[+p.q.x.toFixed(4),+p.q.y.toFixed(4),+p.q.z.toFixed(4),+p.q.w.toFixed(4)],f:firing?1:0,w:P.wpn==='laser'?'l':'k',m:p.mining?p.mining.id:0,ml:p.mlA||0,b:p.boosting?1:0,th:p.thrusting?1:0,fa:P.fa?1:0,rt:P.route||0,j:W.jump?1:0},true)}
+  netSend({t:'u',x:r1(p.x),y:r1(p.y),z:r1(p.z),vx:Math.round(p.vx),vy:Math.round(p.vy),vz:Math.round(p.vz),q:[+p.q.x.toFixed(4),+p.q.y.toFixed(4),+p.q.z.toFixed(4),+p.q.w.toFixed(4)],f:firing?1:0,w:P.wpn==='laser'?'l':'k',m:p.mining?p.mining.id:0,ml:p.mlA||0,b:p.boosting?1:0,th:p.thrusting?1:0,fa:P.fa?1:0,rt:P.route||0,j:W.jump?1:0,n:MP.uN=(MP.uN||0)+1,s:W.sid},true)}
 function clientRecv(m){
   switch(m.t){
     case 'welcome':mpClientStart(m);break;
     case 'needpilot':MP.roster=m.r||MP.roster;if(MP.autoLaunch){const a=MP.autoLaunch;MP.autoLaunch=null;send(MP.host,{t:'newpilot',fac:a.fac,cls:a.cls,port:a.port,leg:legPack(MP.name)});mpStatus('Joining…');break}
       if(MP.roster.length&&MP.roster[0])selFac=MP.roster[0][2];MP.needPilot=true;running=false;$('hud').hidden=true;$('start').hidden=false;showStart();$('bContinue').hidden=true;mpStatus(`Connected to <b>${esc(MP.code)}</b>. ${MP.roster.length?'Already flying here: '+MP.roster.map(r=>`<b style="color:${sideCol(r[2])}">${esc(r[1])}</b> (${esc(FAC(r[2]).short)}, ${esc(DEF[r[3]].name)})`).join(', ')+'. Pick the same faction to start in their home system. ':''}Choose your ship, then Launch to join.`);break;
-    case 'sn':applySnap(m);break;
+    case 'sn':if(typeof m.n==='number'){if(m.n<=(MP.snN||0)){MP.nst.old++;break}MP.snN=m.n}applySnap(m);break;
     case 'pr':applyPR(m);if(S&&S.player&&S.player.docked&&!$('dock').hidden&&dockErr!=='Working…')renderDock();break;
     case 'sync':applySync(m.s);relinkFrigs();{const E=W&&W.stationEnt,R=W&&S.stations[W.sid];if(E&&R){E.rec=R;if(E.fac!==R.owner){E.fac=R.owner;E.name=R.name}}}break;
     case 'ftok':{const mine=new Map((m.f||[]).map(t=>[t.id,t]));S.frigates=(S.frigates||[]).filter(t=>t.owner!==MP.pid&&!mine.has(t.id)).concat(m.f||[]);relinkFrigs();if(W&&W.bridge&&W.bridge.panel)renderConsole(false);break}
@@ -389,7 +389,7 @@ function clientRecv(m){
     case 'reset':running=false;if(W)exitSector();WORLDS={};LW=null;W=null;S=null;$('hud').hidden=true;$('dock').hidden=true;$('win').hidden=true;buildSectorScene(null);showStart();mpStatus('The host started a new galaxy. Choose your faction and ship, then Launch.');break;
   }}
 function mpClientStart(m){const first=!running;if(W)exitSector();WORLDS={};LW=null;W=null;
-  S=m.S;S.pilots=S.pilots||{};S.player=S.pilots[MP.pid];NET.me=MP.pid;MP.hostPid=m.host;MP.st='joined';MP.needPilot=false;
+  S=m.S;S.pilots=S.pilots||{};S.player=S.pilots[MP.pid];NET.me=MP.pid;MP.hostPid=m.host;MP.snN=0;MP.st='joined';MP.needPilot=false;
   MP.ckpt={gid:S.gid,T:S.T,at:Date.now(),code:MP.code,S:m.S};
   if(!S.player){mpStatus('The host has no record of you.',true);return}
   if(S.player.docked==='bridge')S.player.docked='station';
@@ -420,8 +420,9 @@ function relinkFrigs(){const w=LW;if(!w||!w.pup)return;for(const id in w.pup){co
   if(MP.fjB){const e=Object.values(w.pup).find(x=>x.role==='frigate'&&x.tokId===MP.fjB.id);if(e){W.bridge={f:e,...MP.fjB.keep,panel:null};cam.snap=true;const st=MP.fjB.keep.seat;MP.fjB=null;if(st)openConsole('strat')}else if(performance.now()-MP.fjB.at>8000){MP.fjB=null;if(S.player.docked==='bridge'){S.player.docked=null;ejectReset();const p=W.player;netSend({t:'undock',x:p.x,y:p.y,z:p.z,vx:0,vy:0,vz:0,q:[p.q.x,p.q.y,p.q.z,p.q.w]});flash('Lost contact with the capital ship. Your fighter is adrift.',true)}}}}
 function applySnap(m){const w=LW;if(!w||m.sid!==w.sid||!running)return;w.pup=w.pup||{};const seen=new Set(),now=w.t,ast=S.sectors[w.sid].ast;
   for(const r of m.e){const id=r[0];let e=w.pup[id];const full=r.length>16;
-    if(full&&(!e||e.cls!==r[3]||e.side!==r[1])){const fresh=!e;if(e){const i=w.ents.indexOf(e);if(i>=0)w.ents.splice(i,1)}e=mkPup(r);w.pup[id]=e;w.ents.push(e);if(fresh&&e.role==='frigate'&&w.t>3&&!(MP.fjB&&MP.fjB.id===e.tokId)){const ow=W;W=w;try{frigArriveFx(e)}finally{W=ow}}}
+    if(full&&(!e||e.cls!==r[3]||e.side!==r[1]||e.role!==r[4])){const fresh=!e;if(e){const i=w.ents.indexOf(e);if(i>=0)w.ents.splice(i,1)}e=mkPup(r);w.pup[id]=e;w.ents.push(e);if(fresh&&e.role==='frigate'&&w.t>3&&!(MP.fjB&&MP.fjB.id===e.tokId)){const ow=W;W=w;try{frigArriveFx(e)}finally{W=ow}}}
     if(!e)continue;seen.add(id);const o=full?8:1;
+    if(full){e.tier=r[5]||1;e.wpn=r[6];e.momId=r[22];if(e.role==='pilot'){e.pname=r[7];e.trail=r[24]||null}else if(e.role!=='frigate'&&!r[23]){if(r[7])e.pname=r[7];else delete e.pname}}
     e.tx=r[o];e.ty=r[o+1];e.tz=r[o+2];e.tq=e.tq||q0();e.tq.x=r[o+3]/1000;e.tq.y=r[o+4]/1000;e.tq.z=r[o+5]/1000;e.tq.w=r[o+6]/1000;e.vx=r[o+7];e.vy=r[o+8];e.vz=r[o+9];e.snapAt=now;
     if(e.fresh===undefined){e.x=e.tx;e.y=e.ty;e.z=e.tz;qCopy(e.q,e.tq);qNorm(e.q);e.fresh=0}
     e.hull=r[o+10]/1000*e.st.hull;const sh=r[o+11]/1000*e.st.sCap;if(e.shield>1&&sh<=0){e.shBreakT=now}else if(e.shield<=0&&sh>e.st.sCap*.2)e.shUpT=now;e.shield=sh;
@@ -430,7 +431,7 @@ function applySnap(m){const w=LW;if(!w||m.sid!==w.sid||!running)return;w.pup=w.p
   relinkFrigs();
   npcBlSnap(w,m);
   {const own='p_'+MP.pid;for(const g of m.gt||[]){const e=g[0]===own?w.player:w.pup[g[0]];if(!e)continue;e.tur=e.tur||{yaw:Math.PI,pitch:.1};if(!(W.gunseat&&W.gunseat.id===g[0])){e.tur.yaw=g[1]/100;e.tur.pitch=g[2]/100}e.tur.gname=g[3]}}
-  for(const id in w.pup)if(!seen.has(id)){const e=w.pup[id];e.alive=false;const i=w.ents.indexOf(e);if(i>=0)w.ents.splice(i,1);delete w.pup[id];if(w.tgt&&w.tgt.ref===e)w.tgt=null}
+  const gone={};for(const id in w.pup)if(!seen.has(id)){const e=w.pup[id];gone[id]=e;e.alive=false;const i=w.ents.indexOf(e);if(i>=0)w.ents.splice(i,1);delete w.pup[id];if(w.tgt&&w.tgt.ref===e)w.tgt=null}
   for(const id in w.pup){const e=w.pup[id];if(e.momId){const M=e.momId==='p_'+MP.pid?w.player:w.pup[e.momId];e.mom=M||null;if(M&&e.role==='drone'){M.drones=M.drones||[];if(!M.drones.includes(e))M.drones.push(e)}}}
   const me='p_'+MP.pid,rt=id=>id==='S'?w.stationEnt:id==='O'?w.outpostEnt:id===me?w.player:id==='D'?null:w.pup[id]||null;
   w.mm=w.mm||{};const nm={},list=[];for(const r of m.m){let x=w.mm[r[0]];if(!x)x={kind:r[1],smoke:0,inv:{},ttl:9,checked:true,dmg:0,hp:0};Object.assign(x,{side:r[2],x:r[3],y:r[4],z:r[5],vx:r[6],vy:r[7],vz:r[8],tgt:rt(r[9]),col:r[10]});nm[r[0]]=x;list.push(x)}w.mm=nm;w.missiles=list;
@@ -447,6 +448,7 @@ function applySnap(m){const w=LW;if(!w||m.sid!==w.sid||!running)return;w.pup=w.p
     else if(v[0]==='b'){if(v[1]===me)continue;const src=w.pup[v[1]];if(src){w.beams.push({src,x:v[2],y:v[3],z:v[4],ttl:.11,col:v[5]});if(w.t-(src.sndT||0)>.45){src.sndT=w.t;SFX.laserNpc(vAt(src))}}}
     else if(v[0]==='x')fxBoom({x:v[1],y:v[2],z:v[3]},v[4],v[5]);
     else if(v[0]==='w')fxWarp({x:v[1],y:v[2],z:v[3]},v[4]);
+    else if(v[0]==='go'){const e=w.pup[v[1]]||gone[v[1]],G=(GATES[w.sid]||[]).find(g=>g.to===v[2]);if(e&&G){const o=W;W=w;try{gateOutFx(e,G)}finally{W=o}}}
     else if(v[0]==='m'){const src=w.pup[v[1]];if(src)SFX.missile(vAt(src)*.8,v[2])}}
   const p=w.player;if(p&&p.alive&&!S.player.docked&&!w.dead&&m.ps){const h=m.ps[0],sh=m.ps[1];
     if(h<p.hull-.5){w.hurt=.25;w.shake=Math.max(w.shake||0,.45);SFX.hull();p.lastHit=now}

@@ -80,5 +80,5 @@ function cjPick(o){const P=S.player;
 // the quick-keys line: how many jobs here
 let cjCnt={t:-9,n:0};
 {const o=hudUpdate;hudUpdate=function(){const r=o.apply(this,arguments);try{if(!cjOn())return r;const k=$('cKeys');if(!k)return r;
-  if(W.t-cjCnt.t>2){cjCnt.t=W.t;cjCnt.n=S.unb?cjPrey().length:cjList().jobs.length}let el=k.querySelector('.cjc');if(!el){el=document.createElement('div');el.className='sub cjc';k.appendChild(el)}
+  if(cjCnt.w!==W||W.t-cjCnt.t>2){cjCnt.w=W;cjCnt.t=W.t;cjCnt.n=S.unb?cjPrey().length:cjList().jobs.length}let el=k.querySelector('.cjc');if(!el){el=document.createElement('div');el.className='sub cjc';k.appendChild(el)}
   const t=cjCnt.n?`<kbd>I</kbd><kbd>I</kbd> ${S.unb?'Prey':'Jobs'} here: ${cjCnt.n}`:'';if(el.innerHTML!==t)el.innerHTML=t;el.hidden=!t}catch(e){}return r}}

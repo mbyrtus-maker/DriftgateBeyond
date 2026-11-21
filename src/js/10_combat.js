@@ -81,7 +81,7 @@ function fireLaser(e){if(jamDark(e))return;if(e.cool>0||e.landed||e.stealth||(e.
   W.beams.push({src:e,x:R.x,y:R.y,z:R.z,ttl:.11,col:e.isPlayer?FAC(S.player.faction).col:sideCol(e.side)})}
 function damageShip(e,dmg,srcSide,at,kind){
   {const me=W.player;if(me&&e.alive&&!e.ghost){if(e===me){if(srcSide&&srcSide!==me.side)musHit(e.shield>0)}else if(at&&(at.src===me||at===me))musHit(e.shield>0)}}
-  if(!e.alive||e.inJump||e.ghost||(e.isPlayer&&(W.detach||W.t<(W.ejectT||0))))return;if(NET.cl){if(e.isPlayer)return;e.lastHit=W.t;if(e.shield>0){e.shHitT=W.t;e.shHitA=.4;shHitShip(e,at);fxSpark(at||e,'#8fc8ff',3)}else fxSpark(at||e,'#ffd9a0',3);return}e.lastHit=W.t;e.lastHitBy=srcSide;if(e.role==='frigate'&&e.tok&&e.tok.pings)dmg*=limpetK(e.tok,srcSide);const h0=e.hull,s0=e.shield,rec=()=>dmgRec(e,srcSide,at,(s0-Math.max(0,e.shield))+(h0-Math.max(0,e.hull)));
+  if(!e.alive||e.inJump||e.ghost||(e.isPlayer&&(W.detach||W.t<(W.ejectT||0))))return;if(NET.cl){if(e.isPlayer){if(e.shield>0)shHitShip(e,at);return}e.lastHit=W.t;if(e.shield>0){e.shHitT=W.t;e.shHitA=.4;shHitShip(e,at);fxSpark(at||e,'#8fc8ff',3)}else fxSpark(at||e,'#ffd9a0',3);return}e.lastHit=W.t;e.lastHitBy=srcSide;if(e.role==='frigate'&&e.tok&&e.tok.pings)dmg*=limpetK(e.tok,srcSide);const h0=e.hull,s0=e.shield,rec=()=>dmgRec(e,srcSide,at,(s0-Math.max(0,e.shield))+(h0-Math.max(0,e.hull)));
   // escorts are light capitals: a torpedo that connects guts one (about 4 hits at grade 1, 2 at grade 5)
   if(e.stealth){if(e.isPlayer)stealthOff(true);else{e.stealth=false;e.masked=false;e.maskR=0;e.boot=W.t+BOOT_T;if(e.rp&&NET.host)netMsg(e.rp,'stealthoff')}}
   if(e.cls==='escort'&&(kind||(at&&at.kind))==='torpedo'){dmg*=ESC_TORP_MUL;stat('torpHit')}
