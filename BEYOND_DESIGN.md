@@ -4313,3 +4313,6 @@ The user: "Check the wraith and update it's model." The graphics pass had left i
   - dorsal intake slits, a thin light down each flank of the spine, and dark shrouds over the slit exhausts.
 - **Unchanged:** the box (`bboxcheck.py`: same box), so the drawn size and hit size; the two engine points; class and stats.
 - Checks: `mdlcheck.py` clean, `mdlgaps.py` no part clear at 0.003, `art.py` and `load.py` pass. Looked over in the builder preview and as the game draws it on the title screen.
+
+### Title pictures: no GL pixel read-back (21 Nov 2026)
+The title pictures' renderer (`stGL`, 14 Nov) read its corner of the 3D canvas back with `G.readPixels` on every picture. Chromium's driver logs "GPU stall due to ReadPixels" for each such call, which filled the console and turned up in the multiplayer tests' error lists (noticed by the mp-test bot during the co-op audit). The corner is now copied out with `drawImage` into a small 2D canvas and keyed there; the picture is the same and the warning is gone (2 warnings in 4 s on the old build, none on the new).

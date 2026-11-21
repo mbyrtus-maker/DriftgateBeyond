@@ -28,9 +28,9 @@ function stShowQ(t){const P=ST_SHOW.turn+ST_SHOW.rest,n=ST_SHOW.axes.length,c=((
 // lying on a big face (a slit canopy on a hull) was painted over by the face from some angles. Once the ship began to turn
 // through every axis the user saw it: "cockpit on the fang overlaps with the hull from some angles".
 // How: stPic only notes that a picture is wanted; the next 3D frame draws the models into a corner of the 3D canvas before
-// the frame's own drawing clears it (stGL), reads that corner back, makes the background colour clear, and lays the result
+// the frame's own drawing clears it (stGL), copies that corner out, makes the background colour clear, and lays the result
 // over each panel's 2D backdrop. If the 3D canvas is smaller than a panel, the old painter is used (stDraw).
-let stWant=null,stOff=null,stBuf=null,stImg=null;
+let stWant=null,stOff=null;
 const ST_KEY=(255<<24|15<<16|8<<8|5)>>>0,ST_FOV=16,ST_D=1000;
 function stPic(t){t=t||stT;stT=t;stWant=t}
 // the camera for a panel W x H device pixels: straight on from ST_D away through a long lens, so it reads like the flat
@@ -40,10 +40,12 @@ function stGL(c,cv,draw){const W=cv.width,H=cv.height,w=cv.clientWidth,h=cv.clie
     G.viewport(0,0,W,H);G.enable(G.SCISSOR_TEST);G.scissor(0,0,W,H);G.clearColor(5/255,8/255,15/255,1);G.clear(G.COLOR_BUFFER_BIT|G.DEPTH_BUFFER_BIT);G.enable(G.DEPTH_TEST);G.depthMask(true);G.depthFunc(G.LEQUAL);G.disable(G.BLEND);
     useMesh();G.uniform3f(PM.u.uL,.35,.55,.76);G.uniform3f(PM.u.uSun,1,.96,.88);G.uniform3f(PM.u.uAmb,.3,.32,.38);
     draw((m,q,cx,cy,rpx,r)=>{if(!m||!m.buf)return;const k=rpx*ST_D/(f*r*h/2);mModel(MM,((cx/w)*2-1)*ST_D*(W/H)/f,(1-(cy/h)*2)*ST_D/f,0,q,k,k,k);drawMesh(m,MM)});
-    if(!stBuf||stBuf.length!==W*H*4){stBuf=new Uint8Array(W*H*4);stImg=new ImageData(W,H)}
-    G.readPixels(0,0,W,H,G.RGBA,G.UNSIGNED_BYTE,stBuf);const S32=new Uint32Array(stBuf.buffer),D32=new Uint32Array(stImg.data.buffer);
-    for(let y=0;y<H;y++){const so=(H-1-y)*W,dn=y*W;for(let x=0;x<W;x++){const v=S32[so+x];D32[dn+x]=v===ST_KEY?0:v}}
-    if(!stOff)stOff=document.createElement('canvas');if(stOff.width!==W||stOff.height!==H){stOff.width=W;stOff.height=H}stOff.getContext('2d').putImageData(stImg,0,0);c.drawImage(stOff,0,0,w,h);return true}
+    // copy the corner out through a 2D canvas (not G.readPixels: the driver logs a "GPU stall due to ReadPixels" warning for
+    // every call, which filled the console and the tests' error lists), then clear the background colour
+    if(!stOff)stOff=document.createElement('canvas');if(stOff.width!==W||stOff.height!==H){stOff.width=W;stOff.height=H}
+    const oc=stOff.getContext('2d',{willReadFrequently:true});oc.globalCompositeOperation='copy';oc.drawImage(glc,0,glc.height-H,W,H,0,0,W,H);
+    const im=oc.getImageData(0,0,W,H),D32=new Uint32Array(im.data.buffer);for(let i=0,n=D32.length;i<n;i++)if(D32[i]===ST_KEY)D32[i]=0;
+    oc.putImageData(im,0,0);c.drawImage(stOff,0,0,w,h);return true}
   catch(e){return false}finally{G.disable(G.SCISSOR_TEST);VP.set(sv)}}
 function stPicNow(t){const cv=$('stPic');if(!cv||!G||!MDL.ready)return;const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;if(cv.width!==Math.round(w*DPR)||cv.height!==Math.round(h*DPR)){cv.width=w*DPR;cv.height=h*DPR}const c=cv.getContext('2d');c.setTransform(DPR,0,0,DPR,0,0);c.clearRect(0,0,w,h);
   const pir=selFac==='pirate',port=pir?WRACK.sid:selPort,col=pir?sideCol('pirate'):'#e8c878',line=FAC(selFac).col||'#5fa8ff';
