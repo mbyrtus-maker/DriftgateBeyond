@@ -212,7 +212,7 @@ function hgReturn(e,dt){const w=hgWorks(),SE=W.stationEnt;if(!w||!SE||SE.rec&&SE
   if(d<70){fxSpark(e,sideCol(e.side),2);despawn(e)}}
 // back in its bay (or, if the bays are gone or full, into the owner's stores)
 function hgDock(e){const sid=e.home.slice(3),R=S.stations[sid],own=R&&sideNorm(R.owner)===sideNorm(e.side);
-  const h=own&&R.owner==='player'?R.stock:S.econ.stock[e.side==='player'?sideNorm('player'):e.side];if(!h)return false;
+  const h=own&&R.owner==='player'?R.stock:(own&&storeOf(R))||S.econ.stock[e.side==='player'?sideNorm('player'):e.side];if(!h)return false;
   if(own&&(R.hg||[]).length<hgCap(R)){(R.hg=R.hg||[]).push({cls:e.cls,tier:e.tier,load:e.load})}else inv.addAll(h,e.load);inv.addAll(h,e.cargo);e.load={};e.cargo={};return true}
 function hgHtml(R){const L=hgLvl(R);if(!L)return'';const c={};for(const h of R.hg||[])c[h.cls]=(c[h.cls]||0)+1;const list=Object.keys(c).map(k=>`${c[k]} ${HGR_NAME[k]||k}${c[k]>1?'s':''}`).join(', ');
   return`<p class="note" style="margin:10px 0 0"><b>Fighter hangar</b> · ${(R.hg||[]).length} of ${hgCap(R)} bays filled${list?': '+list:''}. It builds a fighter every minute or two from ${R.owner==='player'?'the depot store':'its faction\'s stores'} and launches them when the depot is attacked. When the fighting stops, they fly back and land.</p>`}
@@ -515,7 +515,7 @@ function campBuild(f,m,mn){const sid=m.sector;if(!canBuildIn(sid,f))return'gone'
   const force={};takeFrom(FWD_COST,[R,st]);inv.addAll(force,FWD_COST);takeFrom(CONSTR_LD,srcs);inv.addAll(force,CONSTR_LD);
   const tier=factionTier(f),cls=[];for(let i=0;i<3+Math.min(3,m.boost||0);i++){const cl=pickFighter('patrol'),ld=loadout('patrol',tier,cl);if(takeFrom(ld,srcs)){inv.addAll(force,ld);cls.push(cl)}}
   if(cls.length<CR_ESC_MIN){inv.addAll(R,force);return null}   // never without an escort
-  const ev={id:S.nextId++,type:'build',att:f,sector:sid,eta:S.T+80,stage:'inbound',force,n:cls.length,tier,cls,site:stationSite(sid),prog:0,camp:m.id};S.events.push(ev);announce(ev);return ev}
+  const ev={id:S.nextId++,type:'build',att:f,sector:sid,eta:S.T+rjBuildEta(f,sid),stage:'inbound',force,n:cls.length,tier,cls,site:stationSite(sid),prog:0,camp:m.id};S.events.push(ev);announce(ev);return ev}
 // the faction holds its other attacks and constructor convoys while its campaign strike forms and flies (CAMP_SAVE would also
 // hold them for the end of the supply drive before it: 0 measured best in the faction war)
 let CAMP_SAVE=0,CAMP_MN=3,CAMP_RES_K=.35;
@@ -711,17 +711,17 @@ function campDockHtml(c,P,srcs){const C=myCamp(),f=P.sworn,m=C&&C.mv,n=controlCo
   if(m.stage!=='active'||(m.kind!=='mine'&&m.kind!=='haul'))return h+`<p class="note">${esc(campHow(m))}</p>`;
   const it=m.item,nm=ITEMS[it].name,rest=Math.max(0,Math.ceil(m.need-m.prog));
   if(m.kind==='mine'){const have=deliverable(P,it,srcs),bo=boughtOf(P,it),nn=Math.min(have,rest);h+=`<div class="act" style="margin-top:8px"><button class="btn" type="button" data-act="cmine" ${nn>0?'':'disabled'}>Deliver ${nn} ${esc(nm)} · +${fmt(Math.round(baseValue(it)*1.3*nn))} cr</button></div><p class="note">You have ${have} ${esc(nm)} you mined or salvaged in your hold and vault${bo?` (${bo} bought on a market don't count)`:''}.${esc(fieldHint(m,P.sector))}</p>`}
-  else{const p=W.player,free=Math.max(0,p.st.cargo-invMass(P.cargo)),stock=S.econ.stock[f][it]||0;
+  else{const p=W.player,free=Math.max(0,p.st.cargo-invMass(P.cargo)),stock=rjDockStore(c,f)[it]||0;
     if(sid===m.from){const nn=Math.min(rest,Math.floor(free/mass(it)),stock),dep=baseValue(it)*nn;h+=`<div class="act" style="margin-top:8px"><button class="btn" type="button" data-act="cload" ${nn>0&&P.credits>=dep?'':'disabled'}>Load ${nn} ${esc(nm)} · deposit ${fmt(dep)} cr</button></div><p class="note">${nn?`Fills ${nn*mass(it)} t of your hold. Deliver at ${esc(stN(m.to))} for the deposit back plus a ${fmt(Math.round(baseValue(it)*.35))} cr fee a unit.`:free<mass(it)?'Your hold is full.':'Nothing left to load.'}</p>`}
     else if(sid===m.to){const cn0=m.cons[k]||0,have=Math.min(P.cargo[it]||0,cn0+deliverable(P,it,[P.cargo],cn0)),nn=Math.min(have,rest);h+=`<div class="act" style="margin-top:8px"><button class="btn" type="button" data-act="chaul" ${nn>0?'':'disabled'}>Deliver ${nn} ${esc(nm)} from your hold</button></div><p class="note">${have?'':'Bring the consignment in your hold (not your vault). Goods bought on a market don\'t count.'}</p>`}
     else h+=`<p class="note">Load at ${esc(stN(m.from))} (${esc(DEF[m.from].name)}), deliver at ${esc(stN(m.to))} (${esc(DEF[m.to].name)}).</p>`}
   return h}
 function campAct(act,c,P,srcs){const C=myCamp(),m=C&&C.mv,f=P.sworn,k=pkey();if(!m||m.stage!=='active'){dockErr='That drive is closed.';return}
   const it=m.item,rest=Math.max(0,Math.ceil(m.need-m.prog)),add=n=>{m.prog+=n;m.help[k]=(m.help[k]||0)+n;if(!m.acc.includes(k))m.acc.push(k)};
-  if(act==='cmine'&&m.kind==='mine'){const n=Math.min(deliverable(P,it,srcs),rest);if(n<=0&&boughtOf(P,it)){dockErr='Ore bought on a market can\'t go to the drive: mine it yourself.';return}if(n<=0)return;takeFrom({[it]:n},srcs);inv.add(S.econ.stock[f],it,n);const got=transfer(f,'player',Math.round(baseValue(it)*1.3*n));add(n);weAdd(f,n*WE.drive);dockErr=`✓ Delivered ${n} ${ITEMS[it].name}: +${fmt(got)} cr. Drive ${Math.floor(m.prog)}/${m.need}.`}
-  else if(act==='cload'&&m.kind==='haul'&&P.sector===m.from){const p=W.player,n=Math.min(rest,Math.floor(Math.max(0,p.st.cargo-invMass(P.cargo))/mass(it)),S.econ.stock[f][it]||0),dep=baseValue(it)*n;if(n<=0||P.credits<dep)return;
-    transfer('player',f,dep);inv.add(P.cargo,it,inv.take(S.econ.stock[f],it,n));m.cons[k]=(m.cons[k]||0)+n;if(!m.acc.includes(k))m.acc.push(k);dockErr=`✓ Loaded ${n} ${ITEMS[it].name} (deposit ${fmt(dep)} cr). Fly them to ${stN(m.to)}.`}
-  else if(act==='chaul'&&m.kind==='haul'&&P.sector===m.to){const cn0=m.cons[k]||0,n=Math.min(P.cargo[it]||0,rest,cn0+deliverable(P,it,[P.cargo],cn0));if(n<=0&&(P.cargo[it]||0)>0){dockErr='Goods bought on a market can\'t go to the drive. Load a consignment, or bring goods you made.';return}if(n<=0)return;inv.take(P.cargo,it,n);inv.add(S.econ.stock[f],it,n);
+  if(act==='cmine'&&m.kind==='mine'){const n=Math.min(deliverable(P,it,srcs),rest);if(n<=0&&boughtOf(P,it)){dockErr='Ore bought on a market can\'t go to the drive: mine it yourself.';return}if(n<=0)return;takeFrom({[it]:n},srcs);inv.add(rjDockStore(c,f),it,n);const got=transfer(f,'player',Math.round(baseValue(it)*1.3*n));add(n);weAdd(f,n*WE.drive);dockErr=`✓ Delivered ${n} ${ITEMS[it].name}: +${fmt(got)} cr. Drive ${Math.floor(m.prog)}/${m.need}.`}
+  else if(act==='cload'&&m.kind==='haul'&&P.sector===m.from){const p=W.player,n=Math.min(rest,Math.floor(Math.max(0,p.st.cargo-invMass(P.cargo))/mass(it)),rjDockStore(c,f)[it]||0),dep=baseValue(it)*n;if(n<=0||P.credits<dep)return;
+    transfer('player',f,dep);inv.add(P.cargo,it,inv.take(rjDockStore(c,f),it,n));m.cons[k]=(m.cons[k]||0)+n;if(!m.acc.includes(k))m.acc.push(k);dockErr=`✓ Loaded ${n} ${ITEMS[it].name} (deposit ${fmt(dep)} cr). Fly them to ${stN(m.to)}.`}
+  else if(act==='chaul'&&m.kind==='haul'&&P.sector===m.to){const cn0=m.cons[k]||0,n=Math.min(P.cargo[it]||0,rest,cn0+deliverable(P,it,[P.cargo],cn0));if(n<=0&&(P.cargo[it]||0)>0){dockErr='Goods bought on a market can\'t go to the drive. Load a consignment, or bring goods you made.';return}if(n<=0)return;inv.take(P.cargo,it,n);inv.add(rjDockStore(c,f),it,n);
     const cn=Math.min(n,m.cons[k]||0);m.cons[k]=(m.cons[k]||0)-cn;const pay=Math.round(baseValue(it)*(cn*1.35+(n-cn)*1.15)*((P.lvl||0)>=2?1.1:1)),got=transfer(f,'player',pay);add(n);weAdd(f,n*WE.drive);dockErr=`✓ Delivered ${n} ${ITEMS[it].name}: +${fmt(got)} cr${cn?' (deposit back plus fee)':''}. Drive ${Math.floor(m.prog)}/${m.need}.`}
   if(m.prog>=m.need&&!NET.cl&&!CTX){const P2=campOf(f);if(P2.mv===m)campEnd(f,P2,true)}}
 // HUD card under the system name

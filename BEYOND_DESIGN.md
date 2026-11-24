@@ -2169,6 +2169,7 @@ You can change the appointment any time you're awake. Without a stand-in nothing
   - an aid shipment goes from the giver's home to the receiver's warehouse, and a pact trade from the seller's home to the buyer's (`intoF`);
   - a merchant whose market is gone, or a supply convoy whose station was lost, turns for home with its load rather than vanishing into the warehouse.
 - **Still jumping (to go with stage 3, the fleets):** an offensive's or build party's force going home when it's done (`finishOffensive`, `finishBuild`, sorties), a power's ships home from the player's convoy escort; a black-market run caught (goods to the catching power); a pilot's shipment whose pilot is gone. The Brood and the Unbound have no freighters: the Brood's outposts still send their surplus straight home, and the Unbound's loot comes home with their raids.
+  *Superseded: see "Real jobs" (24 Nov 2026): the Unbound have freighters, and the forces, the escort wing and the caught run on this list were audited again.*
 
 **Stage 3 as built (6 Nov 2026, `16zzq_raiders.js`; test `raiders.py`): raiders are tracked.**
 - **No chance raiders:** `popWants` no longer asks for raider wings (the powers' or the Brood's) or Unbound wings. Every hostile wing on the lanes is a tracked raid party (`S.raids`).
@@ -3431,6 +3432,7 @@ The user's answers to the proposal above: "1 should have their own category call
 "Control markers should always be available, especially at the start of a galaxy there should be 2 control markers available for every faction." Markers used to be built at the moment of purchase from the station's plate and conduit, so a station short of either sold none. Now:
 - **Starting stock:** every station that sells a power's markers keeps 2 of each on its shelf from the galaxy's start. That's its own power's markers at a power's station or depot, and all three powers' at a freeport. The Market tile shows how many are in stock.
 - **Restocking:** like the standard parts (`16zzzr_stdparts.js`): from the station's own store, and at a depot from its power's warehouse.
+  *Superseded: see "Real jobs" (24 Nov 2026): a depot builds from its own store and asks the warehouse for what it lacks by convoy.*
 - **Buying:** takes a shelf marker first, and builds one from plate and conduit only when the shelf is empty.
 - **Old saves:** a save from before gets the markers once on load (the ledger is rebased then).
 - **Test:** `stdparts.py`.
@@ -4346,3 +4348,62 @@ The user asked for controller support ("Also add controller support"). Built in 
 - **Lessons from the airplane game:** stick rest points learned from steady readings, never the first frame; untouched axes read 0; axes parked at +-1 on a non-standard layout ignored; round deadzone 0.21 with a slider (manual); live raw axes and buttons in the manual; the mouse steers only after it has moved since the pad was last used (`mouse.aim` cleared on any pad use); the first pad press tries to wake the audio and tells the player once if the browser still blocks it. A stick left off centre for 2 s is re-centred, so letting go of it afterwards deflects the other way for 2 s (as in the airplane game).
 - **Prompts:** `kb(id)` names the pad button while the pad was used last, keys after a key, mouse or touch.
 - **Not done:** rebinding pad buttons, rumble, typing in the multiplayer chat, analog thrust. Tested only with the fake pad, not a physical one.
+
+### Real jobs: nothing crosses between systems without a ship (user, 24 Nov 2026)
+The user: "Do an economy pass, are any goods being teleported between systems? In system teleportation is fine, but between systems is a haul job, getting ore is a mining job. Please make sure the economy is running on real jobs." and "the brood are allowed to teleport but only them."
+
+**The rule.** Goods change stores freely inside one system. Between systems they ride a ship that makes the trip (a convoy, a raid party, a fleet, a pilot). Ore comes out of rock in the system where the miner is and lands in a store in that system. The Brood alone is exempt.
+
+**The audit tool** (`tools/teleport.py`, harness `tools/teleport.js`). It plays one AI galaxy off-screen, gives every store in the ledger a place, and snapshots all of them around every game function that runs in a strategic tick. A window in which goods left one system and appeared in another with no ship's hold moving between them is a flow, listed with the function it happened in. Ships' holds move with their ships; Brood stores count as one place; debris drift, the drift re-seeding rock and the hourly fresh rock are nature. It ends `ALL OK` when only rock and debris flows are left. 10 game hours take about 6 minutes.
+
+**What it found in the old build** (two galaxies, 10 and 12 hours; ore-units, a part counted as the ore it is made of):
+| Flow | Units | Was |
+|---|---|---|
+| The Unbound's fence | 23,500 | Loot and bought copper, Vantium and conduit swapped places between the Wrack and the nearest freeport every tick |
+| Unbound plunder | 13,600 | Goods taken from a raided depot or outpost landed in the Wrack's store |
+| Scouts | 10,300 | Kitted from the warehouse at the core station, launched in the power's frontier system |
+| Refit wear | 7,000 | Worn parts of the powers' fitted pool fell as debris anywhere in their space |
+| Raid kits | 7,100 | A raid launched from any station with the home warehouse's kit; its kit went back to the home warehouse wherever it landed |
+| Refit parts | 4,300 | A part the powers bought at a freeport or a depot was in the home pool at once |
+| Overgrowth strikes, defenders | 4,400 | Bombers and reinforcing patrols were taken from home and their losses fell in the far system the same tick; survivors were home again at once |
+| Plunder of a core station | 3,200 | A tenth of the battered power's warehouse was in the victor's warehouse at once |
+| A convoy that could not deliver | 1,600 | A carrier's supplies with the carrier gone, an outpost kit with the outpost lost: into the home warehouse |
+| The Unbound's dig in Hollow Verge | 1,100 | Rock mined in the Verge with no miners landed in the Wrack |
+| Strike wings with no carrier | 900 | Survivors were in the home warehouse at once |
+| Standard stock at depots | 570 | Built from the home warehouse |
+| Halcyon's hired prospectors | 100 | Ore from any Halcyon system landed in the home warehouse |
+| Gate locks, makers' freight | under 100 each | A lock taken from the Wrack's shelf at the gate it clamped; a maker's shipment whose market was gone landed at the maker's home |
+
+**What changed** (`16zzzzj_realjobs.js`, with small edits where the flows were):
+- **The Unbound have freighters** (`unbHaul`; every other Unbound shipment still goes straight to the Wrack as before).
+  - *The fence* is a run: a freighter leaves the Wrack with up to 120 t of surplus (one run at a time, at least 30 t, or less when the Wrack is short of something), sells at the nearest freeport at the old prices, buys the copper, Vantium and conduit the Wrack lacks (up to 40, 12 and 24 a run) and carries them home. It can be raided like any convoy.
+  - *Plunder* from a depot or outpost leaves on a prize freighter for the Wrack; fence bookkeeping is done when it lands.
+  - *The dig in Hollow Verge* keeps its ore at a camp there (`S.econ.unbCamp`, in the ledger) and ships it home when there are 30 t or after 5 minutes.
+  - *A gate lock* rides out in the raid's kit from the Wrack.
+- **Raids:** a power's depot is a raid source with its own store; the home uses the muster and the warehouse. A depot picked for a raid that has no kit asks the warehouse for two strikers' worth by convoy (`rjKitAsk`, the garrison's `kit:` convoy). A raid unloads kit and loot into the depot it lands at; with no station of its own where its trip ends it flies on home.
+- **Response wings** are raised from the store of the station they launch from: the nearest in range that can field two ships, a depot from its own store (dropping a tier if it must), the home from the muster and the warehouse. The trip time follows the station used.
+- **Hunter groups** mass at home and their trip is counted from home. **Build parties** take 35 s a jump from home, never under 80 s (it was 80 s from anywhere).
+- **Scouts** launch at the core station.
+- **Defenders in a battle out of sight:** the extra patrol a warned power adds comes from the site's own store away from home, and what survives goes back there.
+- **Overgrowth:** the two bombers fly out from home (35 s a jump), strike when they arrive, and fly home as a tracked party. One strike at a time per growth.
+- **Plunder of a core station** rides home on the victor's convoy. **A convoy that can't deliver** (carrier gone, outpost lost, station lost) turns for home. **A strike wing whose carrier is gone** flies home as a tracked party. **A capital** refills from the store where it is (home, or a depot's own).
+- **Refit:** parts bought away from home ride a `refit parts` convoy, one per station per refit round, and join the pool when it lands; worn parts are scrapped in the home system.
+- **Standard stock and Control Markers at a depot** are built from the depot's own store; what it lacks it asks the warehouse for on a `std:` convoy.
+- **Halcyon's hired prospectors** work a Halcyon system that has a Halcyon station and land their ore in that station's store.
+- **A maker's shipment whose market is gone** turns for the maker's home.
+
+**At a dock** (read by hand, since the tool plays no pilot):
+- **Supply drives:** loading, delivering and mined-ore deliveries use the store of the station you are docked at (they used the home warehouse from anywhere).
+- **Traders at your depot:** what they buy leaves on their convoy for their home; what your depot buys comes out from their home and is paid for when it lands (goods on the way count against the next order). **Aid** a leader grants comes the same way.
+- **Control Markers, drone top-ups and a starter's components** come from the station you are docked at; the home warehouse only when you are docked in its system.
+- **Contraband you give up** goes to that power's station in the system, or home by convoy.
+
+**Left as they are, for the user to decide:**
+1. **Ships that appear beside a pilot in a live system with the home warehouse's kit:** patrols hunting a wanted pilot, the Unbound captain's escort, a hired wingman, the escort wing for your convoy, an ace's wing. On despawn their kit goes back to the home warehouse.
+2. **Kit shelves:** where a pilot is docked, a Lair, Depot or Station kit may be made with ore drawn from other markets ("so every market always has one", 9 Nov 2026). The tool lists it as known.
+3. **A pilot's own capital** refills from the pilot's vault (the faction's warehouse in solo play) wherever its base is.
+4. **A black-market run that is caught** hands its goods to the catching power's warehouse; the run itself is flown out of sight.
+5. **Saving** folds live ships' kits into their home stores.
+
+**Checked.** `tools/teleport.py`: the new build is `ALL OK` over a 10-hour galaxy (two earlier builds of the day also clean over 10 and 12 hours, bar a capital loaded at home and flown on in the same step, which the tool now recognises). New test `realjobs.py` (in `run.sh`): the fence out and back, plunder, raid sources and kit asks, response wings from a depot and from home, refit parts, standard stock, an Overgrowth strike, traders at a pilot's depot, the ledger exact after each.
+

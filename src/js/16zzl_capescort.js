@@ -54,7 +54,7 @@ function capDefMissing(t){const have=capDefHave(t).slice(),out=[];for(const c of
 function capDefKit(c){return carKit(c)}
 // filled from the faction's (or pilot's) stores when the carrier refits, like its wings
 function capDefFill(t,srcs){if(!capDefOK(t))return;for(const c of capDefMissing(t)){const kit=capDefKit(c);if(!takeFrom(kit,srcs))break;if(t.live&&carEnt(t)){const e=carEnt(t);inv.addAll(e.load,kit);(e.dbay=e.dbay||[]).push(c)}else{inv.addAll(t.load,kit);(t.def=t.def||[]).push(c)}}}
-{const o=capRefill;capRefill=function(t){const r=o.apply(this,arguments);try{if(capDefOK(t)){const f=t.side==='player'?sideNorm('player'):t.side,own=carOwned(t),st=own&&S.pilots&&S.pilots[t.owner]?S.pilots[t.owner].vault:S.econ.stock[f];if(st)capDefFill(t,own?[st]:[S.econ.fleet[f],st].filter(Boolean))}}catch(err){console.error(err)}return r}}
+{const o=capRefill;capRefill=function(t){const r=o.apply(this,arguments);try{if(capDefOK(t)){const f=t.side==='player'?sideNorm('player'):t.side,own=carOwned(t),st=own&&S.pilots&&S.pilots[t.owner]?S.pilots[t.owner].vault:S.econ.stock[f];{const sr=own?[st]:rjCapSrcs(t,f);if(st&&sr)capDefFill(t,sr)}}}catch(err){console.error(err)}return r}}
 // a carrier delivered fully loaded (the developer spawn) comes with its set too
 {const o=carFullLoad;carFullLoad=function(t){const r=o.apply(this,arguments);try{if(capDefOK(t)){t.def=[];for(const c of CAPJ.set){t.def.push(c);inv.addAll(t.load,capDefKit(c))}}}catch(err){console.error(err)}return r}}
 // the fabricator replaces a lost defence craft before anything else

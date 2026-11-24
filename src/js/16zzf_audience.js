@@ -62,8 +62,8 @@ function audAsk(P,f,k,x){const A=audOf(P,f),R=AUD_REQ[k];if(!R)return'';if(!A||A
   if(k==='pardon'){if(P.heat)P.heat[f]=0;if(P.aggro)delete P.aggro[f]}
   if(k==='ally'){if(isPow(x)){relAdd(f,x,-25,`at ${nm}'s request`);S.ai[f].focus={on:x,until:S.T+R.dur};S.ai[f].next=Math.min(S.ai[f].next,S.T+30)}P.allied=P.allied||{};P.allied[f]=1}
   if(k==='war'&&isPow(x)){const Pp=pairOf(f,x);if(Pp&&!Pp.war)evWar(f,x)}
-  if(k==='aid'){const R2=myStations(P)[0],st=S.econ.stock[f]||{},give={};for(const[i,n]of[['plate',20],['wire',10],['coil',6]]){const g=inv.take(st,i,n);if(g)give[i]=g}inv.addAll(R2.stock,give);const t=Object.entries(give).map(([i,n])=>`${n} ${ITEMS[i].name}`).join(', ');
-    chron(`${lName(f)} sends aid to ${nm}: ${t||'nothing to spare'}.`,'good',[f]);return`✓ ${lName(f)} agrees${t?`: ${t} delivered to ${R2.name}`:', but the warehouse is bare'}. −${R.cost} standing.`}
+  if(k==='aid'){const R2=myStations(P)[0],st=S.econ.stock[f]||{},give={};for(const[i,n]of[['plate',20],['wire',10],['coil',6]]){const g=inv.take(st,i,n);if(g)give[i]=g}const txt0={...give};rjAidSend(R2,f,give);const t=Object.entries(txt0).map(([i,n])=>`${n} ${ITEMS[i].name}`).join(', ');
+    chron(`${lName(f)} sends aid to ${nm}: ${t||'nothing to spare'}.`,'good',[f]);return`✓ ${lName(f)} agrees${t?`: ${t} ${FAC_HOME(f)===R2.sid?'delivered to':'on a convoy to'} ${R2.name}`:', but the warehouse is bare'}. −${R.cost} standing.`}
   chron(`${lName(f)} grants ${nm} ${R.tgt?`${R.n.toLowerCase()} ${x==='brood'?'the Brood':FACTIONS[x].name}`:`a ${R.n.toLowerCase()}`}.`,R.tgt?'big':'good',[f]);
   return`✓ ${lName(f)} grants it: ${R.n}${R.tgt?' '+(x==='brood'?'the Brood':FACTIONS[x].short):''}${R.dur?` for ${Math.round(R.dur/60)} minutes`:''}. −${R.cost} standing with ${FACTIONS[f].short}.`}
 // ---- what the agreements do

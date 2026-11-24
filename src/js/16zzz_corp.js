@@ -159,14 +159,14 @@ function ceRefitRate(f){let w=false,t=false;for(const g of FAC_IDS){if(g===f)con
 function ceRefit(){for(const f of FAC_IDS){const st=S.econ.stock[f];if(!st)continue;const pool=(S.corpFit=S.corpFit||{})[f]=S.corpFit[f]||{};
     // wear: half an hour's share of the fitted parts falls as debris in its space
     const tot=Object.values(pool).reduce((a,b)=>a+b,0);let lose=Math.floor(tot*CE.wear*CE.refit.every/3600+Math.random());const terr=[...territory(f)].filter(id=>S.sectors[id]);
-    while(lose-->0&&terr.length){const ks=Object.keys(pool).filter(k=>pool[k]>0);if(!ks.length)break;const k=pick(ks);inv.take(pool,k,1);toDebris(S.sectors[pick(terr)],{[k]:1})}
+    while(lose-->0&&terr.length){const ks=Object.keys(pool).filter(k=>pool[k]>0);if(!ks.length)break;const k=pick(ks);inv.take(pool,k,1);toDebris(S.sectors[FAC_HOME(f)]||S.sectors[pick(terr)],{[k]:1})}
     // buy
     let n=Math.floor(ceRefitRate(f)*CE.refit.every/3600+Math.random());const where=Object.values(S.stations).filter(R=>R&&(R.owner===f||R.owner==='neutral')&&R.sid!==WRACK.sid);
     while(n-->0){if((S.econ.treasury[f]||0)<CE.refit.keep)break;const c=[];
       for(const R of where){let ms;try{ms=mkStock(R)}catch(e){continue}for(const id in ms){const I=ITEMS[id];if(!I||!I.maker||!(ms[id]>0))continue;const pr=stPrice(R,id),bv=Math.max(1,baseValue(id));
         const w=((CE_TASTE[f]||{})[I.part]||1)*(CORP_W.has(I.part)?1:.6)*(1+2*ceGood(I.tr||{}))/Math.pow(pr/bv,.5)*(R.owner===f?1.3:1);if(w>0)c.push([[R,id,pr],w])}}
       if(!c.length)break;const[R,id,pr]=wpickArr(c),ms=mkStock(R),wl=R.owner==='neutral'?'neutral':R.owner,p=Math.ceil(pr);if((S.econ.treasury[f]||0)<p)break;
-      transfer(f,wl,p);inv.take(ms,id,1);inv.add(pool,id,1);if(R.mk)R.mk[id]=(R.mk[id]||0)-1;ceSale(ITEMS[id].maker,id,1,p,wl,R.sid)}}}
+      transfer(f,wl,p);inv.take(ms,id,1);rjFitGot(f,R,id,pool);if(R.mk)R.mk[id]=(R.mk[id]||0)-1;ceSale(ITEMS[id].maker,id,1,p,wl,R.sid)}}}
 {const o=ledger;ledger=function(){const r=o.apply(this,arguments);try{const L=r.L['Fleets in muster'];for(const f in S.corpFit||{}){const v=invVec(S.corpFit[f]);for(const e of RAWS){L[e]+=v[e];r.tot[e]+=v[e]}}}catch(e){}return r}}
 function ceTick(){if(NET.cl||!S||S.training||!S.corp)return;const T=S.T;
   if(T>=(S.ceMin||0)){S.ceMin=T+60;ceMinute()}if(T>=(S.ceRef||0)){S.ceRef=T+CE.refit.every;ceRefit()}ceReview();if(T>=(S.ceHr||3600)){S.ceHr=T+3600;ceHour()}}

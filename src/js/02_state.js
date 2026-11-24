@@ -189,7 +189,7 @@ function capBase(t){const f=t.side==='player'?sideNorm('player'):t.side;return f
 function carKit(c){return c==='heavy'||isBmb(c)?{plate:6,coil:2}:c==='striker'?{plate:5,coil:1}:{plate:4,coil:1}}
 function wingPick(f){return wpick(f==='brood'?{interceptor:2,striker:2,bomber:2}:{interceptor:1,striker:2,heavy:1.2,bomber:1.8})}
 // fill empty wing bays and assault bays from the faction's stores: the kits ride aboard, so the economy stays exact
-function capRefill(t){const f=t.side==='player'?sideNorm('player'):t.side,own=carOwned(t),st=own&&S.pilots&&S.pilots[t.owner]?S.pilots[t.owner].vault:S.econ.stock[f];if(!st)return;const srcs=own?[st]:[S.econ.fleet[f],st].filter(Boolean);
+function capRefill(t){const f=t.side==='player'?sideNorm('player'):t.side,own=carOwned(t),st=own&&S.pilots&&S.pilots[t.owner]?S.pilots[t.owner].vault:S.econ.stock[f];if(!st)return;const srcs=own?[st]:rjCapSrcs(t,f);if(!srcs)return;
   if(isCar(t)&&(t.owner||!t.wingInit)){t.wingInit=1;t.wing=t.wing||[];let g=0;while(carHave(t)<CAR_WING&&g++<CAR_WING*2){const c=wingPick(f),ld=carKit(c);if(!takeFrom(ld,srcs))break;inv.addAll(t.load,ld);t.wing.push(c)}}
   const cap=isCar(t)?(f==='brood'?0:CAR_ASSAULT):isEsc(t)?(f==='brood'?0:1):0;t.aload=t.aload||0;while(t.aload<cap&&takeFrom(ASSAULT_LD,srcs)){inv.addAll(t.load,ASSAULT_LD);t.aload++}}
 function capCanRefill(t){const f=t.side==='player'?sideNorm('player'):t.side,st=S.econ.stock[f];if(!st)return false;const sr=[S.econ.fleet[f],st].filter(Boolean);return(t.aload||0)<1&&haveIn(ASSAULT_LD,sr)}
@@ -282,7 +282,7 @@ function sortieDepart(M,p){const ev=S.events.find(v=>v.id===p.sortie);fxWarp(p,s
 function sortieFeed(ev,msg,kind){if(ev.wg)msg=`${WNAME[ev.wg]} wing · ${msg}`;const t=(S.frigates||[]).find(x=>x.id===ev.car);if(t&&t.owner)feedTo(t.owner,msg,kind);else if(friendSide(ev.side))feed(msg,kind)}
 // survivors come home: into the carrier's live world through the gate, into its wing, or (carrier gone) into faction stores
 function sortieHome(ev){const t=(S.frigates||[]).find(x=>x.id===ev.car&&isCar(x));ev.stage='done';const n=ev.craft.length;
-  if(!t){const f=sortieSide(ev);inv.addAll(S.econ.stock[f]||S.econ.stock.pirate,ev.force);ev.force={};ev.craft=[];return}
+  if(!t){const f=sortieSide(ev);prwHome(f,ev.from,ev.force);ev.force={};ev.craft=[];return}
   const w=t.live&&WORLDS[t.sector],E=w&&w.ents.find(x=>x.tok===t&&x.alive);
   if(E){inW(w,()=>{const g=t.sector===ev.from?W.ents.find(x=>x.type==='gate'&&x.to===ev.to):null;for(const c of ev.craft){const ld=carKit(c),got={};for(const k in ld){const m=Math.min(ld[k],ev.force[k]||0);if(m>0)got[k]=inv.take(ev.force,k,m)}
       const p=makeNPC('flight',E.side,c,factionTier(E.fac),got,E.home);p.fac=E.fac;p.mom=E;p.wg=ev.wg||wgPick(E);p.ai.orb=Math.random()*TAU;const at=g||E;p.x=at.x*(g?.93:1)+rnd(-60,60);p.y=at.y*(g?.93:1)+rnd(-40,40);p.z=at.z*(g?.93:1)+rnd(-60,60);qCopy(p.q,E.q);if(g)fxWarp(p,sideCol(p.side));(E.flights=E.flights||[]).push(p);W.ents.push(p)}
@@ -371,7 +371,7 @@ const TRADE_IN=.5;
 function atDocks(P){const Y=(S.yards||{})[yk()]||(P.sworn&&(S.yards||{})[P.sworn]);return!!(Y&&Y.sector===P.sector&&P.docked==='station')}
 const DOCKS_ONLY=[];   // the Heavy Bomber is sold at any core shipyard for credits
 function droneTopUp(P,store,fac,pay){const cap=(CLASSES[P.cls]&&CLASSES[P.cls].drones)||0;P.bay=P.bay||{};let need=cap-(P.bay.drone||0),got=0;if(need<0){inv.add(store||P.vault,'drone',-need);P.bay.drone=cap;return 0}if(need<=0)return 0;
-  for(const h of[store,fac&&S.econ.stock[fac],fac&&S.econ.fleet[fac]]){if(!h||need<=0)continue;let want=need;if(pay&&h!==store){const pr=Math.round(baseValue('drone'));want=Math.min(need,Math.floor(P.credits/Math.max(1,pr)))}const n=inv.take(h,'drone',want);if(n){if(pay&&h!==store)transfer('player',fac,n*Math.round(baseValue('drone')));inv.add(P.bay,'drone',n);need-=n;got+=n}}return got}
+  for(const h of[store,fac&&rjDockMk(P,fac),fac&&rjWhAt(fac,P.sector,'fleet')]){if(!h||need<=0)continue;let want=need;if(pay&&h!==store){const pr=Math.round(baseValue('drone'));want=Math.min(need,Math.floor(P.credits/Math.max(1,pr)))}const n=inv.take(h,'drone',want);if(n){if(pay&&h!==store)transfer('player',fac,n*Math.round(baseValue('drone')));inv.add(P.bay,'drone',n);need-=n;got+=n}}return got}
 // ---- ship bay: up to BAY_MAX stored ships. Upgrades belong to the ship, not the pilot: each stored ship keeps its fitted
 // components (grade 1–5), Aurora tunings, freeport refits and drones, and can be upgraded while it sits in the bay.
 const BAY_MAX=3;
@@ -385,7 +385,7 @@ function shipStrip(R,into){for(const sl of SLOTS){const t=R.tiers[sl.id]||1;if(t
     const l=(R.tune||{})[sl.id]||0;if(l){inv.add(into,'tune',tuneItems(l));R.tune[sl.id]=0}}if(R.tune&&R.tune.rf)R.tune.rf={};if(R.tune&&R.tune.vr){inv.addAll(into,vrInv(R));R.tune.vr={}}}
 // a fresh starter frame needs its grade 1 components: the station you're docked at supplies them from its own store (with the free
 // hull), then its faction's warehouse, then your own faction's, then your hold and vault
-function kitSrcs(store,fac,mkt){const P=S.player,pf=FAC_IDS.includes(P.sworn)&&!S.unb?P.sworn:null;return[mkt,fac&&S.econ.stock[fac],fac&&S.econ.fleet[fac],pf&&S.econ.stock[pf],P.cargo,store].filter((x,i,a)=>x&&a.indexOf(x)===i)}
+function kitSrcs(store,fac,mkt){const P=S.player,pf=FAC_IDS.includes(P.sworn)&&!S.unb?P.sworn:null;return[mkt,fac&&rjWhAt(fac,P.sector),fac&&rjWhAt(fac,P.sector,'fleet'),pf&&rjWhAt(pf,P.sector),P.cargo,store].filter((x,i,a)=>x&&a.indexOf(x)===i)}
 function issueKit(store,fac,mkt){const k=baseKit(),srcs=kitSrcs(store,fac,mkt);if(!haveIn(k,srcs))return false;takeFrom(k,srcs);return true}
 function shipsCount(P){return(P.ships||[]).length}
 function hullOwned(P,k){return START_HULLS.includes(k)}

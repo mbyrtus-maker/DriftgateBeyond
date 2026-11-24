@@ -127,14 +127,14 @@ function rdReview(){if(!rdOn())return;const T=S.T,sold={},grade={},byKind={};for
 // first (from their home makers), a freeport's parts weighted CE.refit.away (a third)
 {const o=ceRefit;ceRefit=function(){if(!rdOn())return o.apply(this,arguments);for(const f of FAC_IDS){const st=S.econ.stock[f];if(!st)continue;const pool=(S.corpFit=S.corpFit||{})[f]=S.corpFit[f]||{};
     const tot=Object.values(pool).reduce((a,b)=>a+b,0);let lose=Math.floor(tot*CE.wear*CE.refit.every/3600+Math.random());const terr=[...territory(f)].filter(id=>S.sectors[id]);
-    while(lose-->0&&terr.length){const ks=Object.keys(pool).filter(k=>pool[k]>0);if(!ks.length)break;const k=pick(ks);inv.take(pool,k,1);toDebris(S.sectors[pick(terr)],{[k]:1})}
+    while(lose-->0&&terr.length){const ks=Object.keys(pool).filter(k=>pool[k]>0);if(!ks.length)break;const k=pick(ks);inv.take(pool,k,1);toDebris(S.sectors[FAC_HOME(f)]||S.sectors[pick(terr)],{[k]:1})}
     let n=Math.floor(ceRefitRate(f)*CE.refit.every/3600+Math.random());const gmax=factionTier(f)+1,where=Object.values(S.stations).filter(R=>R&&(R.owner===f||R.owner==='neutral')&&R.sid!==WRACK.sid);
     while(n-->0){if((S.econ.treasury[f]||0)<CE.refit.keep)break;const c=[];
       for(const R of where){let ms;try{ms=mkStock(R)}catch(e){continue}for(const id in ms){const I=ITEMS[id];if(!I||!I.maker||!(ms[id]>0)||(I.grade||1)>gmax)continue;const pr=stPrice(R,id),bv=Math.max(1,baseValue(id));
         const tw=I.sys?((SYS_TASTE[f]||{})[I.sys]||1)*.8:((CE_TASTE[f]||{})[I.part]||1)*(CORP_W.has(I.part)?1:.6);
         const w=tw*(1+2*ceGood(I.tr||{}))*(1+.35*((I.grade||1)-1))/Math.pow(pr/bv,.5)*(R.owner===f?1:CE.refit.away);if(w>0)c.push([[R,id,pr],w])}}
       if(!c.length)break;const[R,id,pr]=wpickArr(c),ms=mkStock(R),wl=R.owner==='neutral'?'neutral':R.owner,p=Math.ceil(pr);if((S.econ.treasury[f]||0)<p)break;
-      transfer(f,wl,p);inv.take(ms,id,1);inv.add(pool,id,1);if(R.mk)R.mk[id]=(R.mk[id]||0)-1;ceSale(ITEMS[id].maker,id,1,p,wl,R.sid)}}}}
+      transfer(f,wl,p);inv.take(ms,id,1);rjFitGot(f,R,id,pool);if(R.mk)R.mk[id]=(R.mk[id]||0)-1;ceSale(ITEMS[id].maker,id,1,p,wl,R.sid)}}}}
 // ---- the Loadout: systems are installed, not upgraded
 function rdSysHtml(c,P,sl){const t=P.tiers[sl]||1,m=(P.sysm||{})[sl],cur=ITEMS[rdGid(m?`sy_${m}_${sl}`:`sy_${sl}`,t)],srcs=[P.cargo,c.storage||P.vault],cap=typeof gradeCap==='function'?gradeCap(P):5;
   const have=ITEM_ORDER.filter(id=>ITEMS[id]&&ITEMS[id].sys===sl&&countIn(id,srcs)>0);

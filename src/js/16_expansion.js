@@ -264,7 +264,8 @@ function pirBarred(){return W&&DEF[W.sid]&&DEF[W.sid].home&&!frigatesIn(W.sid).s
 {const o=spawnNPC;spawnNPC=function(role,side){if(side==='pirate'&&pirBarred())return null;return o.apply(this,arguments)}}
 // pirate carriers fly no assault ships (the Unbound plunder depots, they don't hold them) and take no supply convoys:
 // a carrier at the haven is restocked straight from Unbound stores, anywhere else what it asked for stays in the stores
-{const o=haulSend;haulSend=function(f,fromSid,toSid,load,key,why,car){if(f==='pirate'){const t=car&&(S.frigates||[]).find(x=>x.id===car);if(t&&t.sector==='wr'){t.store=t.store||{};inv.addAll(t.store,load)}else inv.addAll(S.econ.stock.pirate,load);return null}return o.apply(this,arguments)}}
+let rjUnbFly=false;
+{const o=haulSend;haulSend=function(f,fromSid,toSid,load,key,why,car){if(f==='pirate'&&!rjUnbFly){const t=car&&(S.frigates||[]).find(x=>x.id===car);if(t&&t.sector==='wr'){t.store=t.store||{};inv.addAll(t.store,load)}else inv.addAll(S.econ.stock.pirate,load);return null}return o.apply(this,arguments)}}
 {const o=capCanRefill;capCanRefill=function(t){if(t&&t.side==='pirate')return false;return o.apply(this,arguments)}}
 {const o=carOrder;carOrder=function(t,f){if(f==='pirate')return;return o.apply(this,arguments)}}
 {const o=capRefill;capRefill=function(t){const r=o.apply(this,arguments);if(t&&t.side==='pirate'){while((t.aload||0)>0){const got={};for(const k in ASSAULT_LD){const m=Math.min(ASSAULT_LD[k],t.load[k]||0);if(m>0)got[k]=inv.take(t.load,k,m)}inv.addAll(S.econ.stock.pirate,got);t.aload--}}return r}}
@@ -295,7 +296,7 @@ function pirTick(){if(NET.cl||!S||S.training)return;pirSetup();const st=S.econ.s
   // the salvage works: keels, lattice and cores for the slip (no Forge needed for rough Unbound work)
   craftAbstract(st,'lattice',1,next?8:3);craftAbstract(st,'core',1,next?3:1);if(next||pre){const nx=next||pre,kc=nx==='carrier'?6:1;craftAbstract(st,'keel',1,kc);if(nx==='carrier')craftAbstract(st,'frame',1,4)}
   const want={};if(next||pre){const need={},r=pirCost(next||pre);for(const k in r)need[k]=(need[k]||0)+r[k];const raw=invVec(need);for(const k of RAWS)want[k]=Math.ceil(raw[k]*.6)+20;want.wire=(need.wire||0)+12}want.cu=Math.max(want.cu||0,40);want.wire=Math.max(want.wire||0,24);pirFence(want);
-  {const sk={fe:1,cu:1,ir:1,xc:1,au:1,nu:1};let any=false;for(const k of['nu','cu'])if((want[k]||0)>(st[k]||0)){sk[k]=0;any=true}const s=S.sectors.ho;if(any&&s&&!S.stations.ho&&!WORLDS.ho)inv.addAll(st,extract(s,3,true,sk))}
+  {const sk={fe:1,cu:1,ir:1,xc:1,au:1,nu:1};let any=false;for(const k of['nu','cu'])if((want[k]||0)>(st[k]||0)){sk[k]=0;any=true}const s=S.sectors.ho;if(any&&s&&!S.stations.ho&&!WORLDS.ho)rjUnbCamp(extract(s,3,true,sk));else rjUnbCamp()}
   if(next&&!bld.length&&T-S.pir.lostT>=PIR_REBUILD&&H&&H.hull>H.hMax*.2&&haveIn(pirCost(next),[st])){const force={};takeFrom(pirCost(next),[st]);inv.addAll(force,pirCost(next));
     S.events.push({id:S.nextId++,type:'pirbuild',cls:next,att:'pirate',sector:'wr',force,until:T+(next==='carrier'?FRIGATE_TIME:ESCORT_TIME)*(unbWork('graving')>=1?.8:1),stage:'building'});
     allFeed(`☠ Unbound salvage crews are welding ${next==='carrier'?'a Ravager':'an escort'} together in the slip at Scrapheart Haven, The Wrack.`,'warn')}
@@ -427,7 +428,7 @@ function raidDispatch(){S.raids=S.raids||[];for(const side of[...FAC_IDS,'brood'
     if(S.T<300)continue;const srcL=raidSources(side).filter(s=>!mine.some(r=>r.src===s.sid&&S.T-r.T0<RAID.cool));if(!srcL.length)continue;
     // escorted convoys draw raiders more often; an Unbound capital on the hunt launches far more often than the haven
     let p=RAID.rate[kind];if(side==='pirate'&&srcL.some(s=>s.cap))p=RAID.rate.cap;if((S.traders||[]).some(t=>t.esc&&hostile(side,t.side)&&!raidTaken(t)&&srcL.some(s=>raidIntercept(s,t))))p+=RAID.esc;if(Math.random()>=p)continue;
-    const pk=raidPick(side,srcL);if(!pk)continue;const kit=raidShips(side,pk.src.srcs);if(!kit)continue;raidSend(side,pk,kit)}}
+    const pk=raidPick(side,srcL);if(!pk)continue;const kit=raidShips(side,pk.src.srcs);if(!kit){rjKitAsk(side,pk.src);continue}raidSend(side,pk,kit)}}
 // off-screen fight: the raiders' odds fall where the target's own station guns or a capital cover it
 function raidOdds(r,sid,base,owner){let p=base*(1+.06*(r.ships.reduce((a,s)=>a+s.tier,0)/r.ships.length-1))*Math.min(1,r.ships.length/3);const R=S.stations[sid];if(R&&R.owner===owner)p*=RAID.stnCut;if(frigatesIn(sid).some(o=>sideNorm(o.side)===owner))p*=RAID.capCut;return clamp(p,.05,.95)}
 function raidGrab(from,room,frac){const got={};for(const k of Object.keys(from).filter(k=>from[k]>0).sort((a,b)=>baseValue(b)/mass(b)-baseValue(a)/mass(a))){const n=Math.min(Math.floor(from[k]*frac),Math.floor(room/mass(k)));if(n>0){got[k]=inv.take(from,k,n);room-=n*mass(k)}if(room<1)break}return got}
@@ -502,10 +503,10 @@ function raidLiveCheck(r){const w=WORLDS[r.sector];const al=w?w.ents.filter(e=>e
 // ---- the Unbound raid, they don't hold: a forge, relay or depot they break is looted and left with its owner (the Wrack
 // Salvage Yard, their own home, is the one outpost they take and keep)
 function pirLootTo(got){const st=S.econ.stock.pirate,F=S.econ.fenced=S.econ.fenced||{};inv.addAll(st,got);for(const k in got)if(!RAWS.includes(k)&&!['plate','wire','coil','missile','torpedo','drone'].includes(k))F[k]=(F[k]||0)+got[k]}
-function pirRaidOutpost(o){const got=raidGrab(o.stock,120,.5);pirLootTo(got);o.raidT=S.T;if(RAID.outMode==='lvl'&&o.level>1){const lost={};for(const e of RAWS){const m=Math.floor(o.fort[e]/o.level);o.fort[e]-=m;lost[e]=m}toDebris(S.sectors[o.sector],lost);o.level--}if(RAID.outMode==='free'){pirLootTo(o.stock);o.stock={};o.owner=null}const os=oStats(o);o.hull=Math.max(1,Math.min(o.hull||os.hMax,os.hMax*.4));o.shield=0;o.breached=0;o.cap={side:null,p:0};
+function pirRaidOutpost(o){const got=raidGrab(o.stock,120,.5);pirLootTo(got,o.sector);o.raidT=S.T;if(RAID.outMode==='lvl'&&o.level>1){const lost={};for(const e of RAWS){const m=Math.floor(o.fort[e]/o.level);o.fort[e]-=m;lost[e]=m}toDebris(S.sectors[o.sector],lost);o.level--}if(RAID.outMode==='free'){pirLootTo(o.stock,o.sector);o.stock={};o.owner=null}const os=oStats(o);o.hull=Math.max(1,Math.min(o.hull||os.hMax,os.hMax*.4));o.shield=0;o.breached=0;o.cap={side:null,p:0};
   if(W&&W.outpostEnt&&W.outpostEnt.o===o)W.outpostEnt.lastHit=W.t;
   if(friendSide(o.owner))feed(`⚠ Unbound raiders broke ${o.name}'s defences and carried off ${invMass(got)} t of its stores. It is still ours.`,'bad');else if(covered(o.sector))feed(`Unbound raiders looted ${o.name} (${invMass(got)} t) and moved on.`,'news')}
-function pirRaidDepot(sid){const R=S.stations[sid];if(!R)return;R.raidT=S.T;const got=raidGrab(dStore(R),120,.35);pirLootTo(got);R.hull=Math.max(1,R.hMax*.25);R.shield=0;
+function pirRaidDepot(sid){const R=S.stations[sid];if(!R)return;R.raidT=S.T;const got=raidGrab(dStore(R),120,.35);pirLootTo(got,sid);R.hull=Math.max(1,R.hMax*.25);R.shield=0;
   if(friendSide(R.owner))feed(`⚠ Unbound raiders broke into ${R.name} and carried off ${invMass(got)} t of its stores. It is still ours.`,'bad');else if(covered(sid))feed(`Unbound raiders looted ${R.name} (${invMass(got)} t).`,'news')}
 {const o=capture;capture=function(op,side){if(side==='pirate'&&op&&op.id!=='wrack'&&!RAID.pirHold){if(op.owner)pirRaidOutpost(op);return}return o.apply(this,arguments)}}
 {const o=captureDepot;captureDepot=function(sid,side){if(side==='pirate'&&!RAID.pirHold){pirRaidDepot(sid);return}return o.apply(this,arguments)}}
@@ -885,7 +886,12 @@ function ogPlant(){const st=S.econ.stock.brood;if(!st||!haveIn(OG.cost,[st]))ret
   ogSay(O,`⚠ Brood spores on ${ogName(O)}. Burn them off in the next ${OG.seed} s or the gate will be sealed.`,'warn');return true}
 function ogKill(O,by){S.og=(S.og||[]).filter(x=>x!==O);if(O.stage!=='seed'&&S.gateDown&&S.gateDown[O.key]>S.T+1e8)delete S.gateDown[O.key];const s=S.sectors[O.a];if(s)toDebris(s,O.load);O.load={};
   ogSay(O,`✔ The Brood Overgrowth on ${ogName(O)} has been burned off${by&&FACTIONS[by]?` by ${FACTIONS[by].short}`:''}.${O.stage!=='seed'?' The gate is open again.':''}`,'good')}
-function ogTick(){if(NET.cl)return;S.og=S.og||[];const T=S.T,bc=(controlCounts().brood||0);
+// the bombers' strike on a growth when they reach it (24 Nov 2026: they fly out from home and home again, see 16zzzzj_realjobs.js)
+function ogStrikeHit(O,f,force,tier){const T=S.T,capNear=(S.frigates||[]).some(t=>t.side===f&&t.hull>0&&(t.sector===O.a||t.sector===O.b));
+  const p=clamp(.25+.1*tier+(capNear?.3:0)-(O.stage==='mature'?.1:0),.1,.85),win=Math.random()<p,s=S.sectors[O.a];
+  loseInv(force,win?rnd(.1,.3):rnd(.3,.6),s);prwHome(f,O.a,force);
+  if(win)ogKill(O,f);else{O.hp=Math.max(OG.hp*.2,O.hp-OG.hp*rnd(.2,.4));O.hitT=T;if(f===S.player.sworn)ogSay(O,`${FACTIONS[f].short} bombers hit the Overgrowth on ${ogName(O)} but couldn't burn it off.`,'info')}}
+function ogTick(){if(NET.cl)return;S.og=S.og||[];try{rjOgTick()}catch(e){console.error(e)}const T=S.T,bc=(controlCounts().brood||0);
   for(const O of S.og.slice()){
     if(O.stage==='seed'&&T-O.t0>=OG.seed){O.stage='grown';O.hp=Math.min(OG.hp,O.hp+OG.hp*.75);S.gateDown[O.key]=T+1e9;ogSay(O,`⚠ ${ogName(O)[0].toUpperCase()+ogName(O).slice(1)} is sealed by Brood Overgrowth. Nothing passes until it's burned off.`,'bad')}
     if(O.stage==='grown'&&T-O.t0>=OG.mature)O.stage='mature';
@@ -894,11 +900,9 @@ function ogTick(){if(NET.cl)return;S.og=S.og||[];const T=S.T,bc=(controlCounts()
     if(!live&&T-O.hitT>OG.regrowT)O.hp=Math.min(O.stage==='seed'?OG.hp*.25:OG.hp,O.hp+OG.hp*OG.regrow*10);
     // off-screen: the faction holding the far system sends a bomber strike now and then
     if(!live&&O.stage!=='seed'&&T>=O.strikeT){O.strikeT=T+rnd(OG.strike[0],OG.strike[1]);const f=ogStriker(O);if(!f)continue;
+      if(S.events.some(e=>e.type==='ogstrike'&&e.og===O.id&&e.stage==='fly'))continue;
       const srcs=[S.econ.fleet[f],S.econ.stock[f]].filter(Boolean),tier=factionTier(f),force={};for(let i=0;i<2;i++){const ld=loadout('patrol',tier,'bomber');if(takeFrom(ld,srcs))inv.addAll(force,ld)}
-      if(!Object.keys(force).length)continue;const capNear=(S.frigates||[]).some(t=>t.side===f&&t.hull>0&&(t.sector===O.a||t.sector===O.b));
-      const p=clamp(.25+.1*tier+(capNear?.3:0)-(O.stage==='mature'?.1:0),.1,.85),win=Math.random()<p,s=S.sectors[O.a];
-      loseInv(force,win?rnd(.1,.3):rnd(.3,.6),s);inv.addAll(S.econ.fleet[f]||S.econ.stock[f],force);
-      if(win)ogKill(O,f);else{O.hp=Math.max(OG.hp*.2,O.hp-OG.hp*rnd(.2,.4));O.hitT=T;if(f===S.player.sworn)ogSay(O,`${FACTIONS[f].short} bombers hit the Overgrowth on ${ogName(O)} but couldn't burn it off.`,'info')}}}
+      if(!Object.keys(force).length)continue;rjOgSend(O,f,force,tier)}}
   if(T<OG.start||T<(S.ogNext||0))return;if(S.og.length>=(bc>=6?3:2))return;if(ogPlant())S.ogNext=T+rnd(OG.gap[0],OG.gap[1]);else S.ogNext=T+60}
 {const o=strategicTick;strategicTick=function(){o.apply(this,arguments);try{ogTick()}catch(e){frameErr('overgrowth',e)}}}
 // live: the growth sits on its gate as a Brood target

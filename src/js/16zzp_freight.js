@@ -9,7 +9,7 @@
 //   - aid shipments and pact trades go from one power's home to the other's;
 //   - a merchant whose market is gone, or a convoy whose station was lost, turns for home instead of vanishing into it.
 // The Brood too (6 Nov 2026, the user): its depots (Bloom Nodes) and outposts keep their own stores, and Gorgers and Bloaters
-// carry their ore and kits to and from the hive. The Unbound's loot still comes home with their raids.
+// carry their ore and kits to and from the hive. (24 Nov 2026: the Unbound have freighters too, 16zzzzj_realjobs.js.)
 const FR={opMin:30,opKeep:25,kitAsk:2};
 const FR_KIT=new Set(['plate','wire','coil','lattice','drone','missile','torpedo','swarm','tune']);
 function frPower(f){return FAC_IDS.includes(f)}
@@ -25,7 +25,7 @@ function frShip(f,fromSid,load,key,why,intoF){if(!load||!Object.keys(load).lengt
 {const o=haulArrive;haulArrive=function(t){try{
   if(t&&t.okit){const ob=S.outposts[t.okit];if(ob&&ob.owner===t.side){cvEnd(t,true);inv.addAll(ob.stock,t.load);t.load={};return}}
   if(t&&t.intoF&&S.econ.stock[t.intoF]){cvEnd(t,true);inv.addAll(S.econ.stock[t.intoF],t.load);t.load={};return}
-  if(t&&!t.own&&!t.car&&!t.okit&&frCv(t.side)){const B=S.stations[t.to];if((!B||B.owner!==t.side)&&t.to!==frHomeSid(t.side)&&Object.keys(t.load||{}).length){cvEnd(t,true);frShip(t.side,t.to,t.load,'back','return');t.load={};return}}
+  if(t&&!t.own&&frCv(t.side)&&t.to!==frHomeSid(t.side)&&Object.keys(t.load||{}).length){const B=S.stations[t.to],lost=t.car?!(S.frigates||[]).some(x=>x.id===t.car):t.okit?true:(!B||B.owner!==t.side);if(lost){cvEnd(t,true);frShip(t.side,t.to,t.load,'back','return');t.load={};return}}
   }catch(e){console.error(e)}return o.apply(this,arguments)}}
 // ---- outposts: the surplus over 25 of each good (not kits) ships home once there's a hold's worth
 function frOutpost(oid){const o=S.outposts[oid];if(!o||!frCv(o.owner))return false;const key='op:'+oid;if(haulBusy(key))return true;

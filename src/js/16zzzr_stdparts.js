@@ -32,8 +32,13 @@ function stdIsWh(src){return!!S.econ&&FAC_IDS.some(f=>S.econ.stock[f]===src)}
 function stdTick(){if(NET.cl||!S||S.training||S.unb||S.T<(S.stdT||0))return;S.stdT=S.T+STD.every;const H=S.stdHave=S.stdHave||{};
   for(const R of mkStations()){let st;try{st=mkStock(R)}catch(e){continue}if(!st)continue;const W0=stdWantAt(R),k=R.sid||R.id,rec=H[k];
     if(!rec||rec.o!==R.owner){H[k]={o:R.owner,c:Object.fromEntries(Object.keys(W0).map(id=>[id,st[id]||0]))};continue}
-    const wh=isDepotF(R)&&S.econ&&S.econ.stock[R.owner];const srcs=[st,wh!==st?wh:null];
-    for(const id in W0){const cur=st[id]||0;let n=Math.min(W0[id]-cur,(rec.c[id]!=null?rec.c[id]:cur)-cur);while(n-->0&&stdBuild(id,st,srcs));rec.c[id]=st[id]||0}}}
+    // (24 Nov 2026) a depot builds from its own store; what it lacks it asks its power's warehouse for, by convoy (it was built
+    // straight from the warehouse, systems away)
+    const srcs=[st],lack={};
+    for(const id in W0){const cur=st[id]||0;let n=Math.min(W0[id]-cur,(rec.c[id]!=null?rec.c[id]:cur)-cur);let miss=0;while(n-->0){if(stdBuild(id,st,srcs))continue;miss=n+1;const rc=ITEMS[id].recipe;for(const q in rc)lack[q]=(lack[q]||0)+rc[q]*miss;break}
+      // a depot still owes its shelf what it couldn't build: it tries again when the convoy has landed
+      rec.c[id]=(st[id]||0)+(isDepotF(R)?miss:0)}
+    if(isDepotF(R)&&Object.keys(lack).length)try{rjStdAsk(R,lack)}catch(e){console.error(e)}}}
 // at the start (and an old save's first load) every station's stocked shelf is noted, so a sale is seen as a sale
 function stdNote(){const H=S.stdHave={};for(const R of mkStations()){let st;try{st=mkStock(R)}catch(e){continue}if(!st)continue;const W0=stdWantAt(R);H[R.sid||R.id]={o:R.owner,c:Object.fromEntries(Object.keys(W0).map(id=>[id,st[id]||0]))}}}
 {const o=partsSeed;partsSeed=function(){const r=o.apply(this,arguments);try{stdNote()}catch(e){}return r}}

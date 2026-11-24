@@ -66,7 +66,7 @@ function scanChoice(ch,P){P=P||S.player;const C=P.caught;if(!C||C.done)return'';
   if(ch==='bribe'){const L=leaderOf(f),ok=!(L&&hasT(L,'Vengeful'))&&Math.random()<clamp(.45+standOf(f,P)/150,.1,.9)&&P.credits>=C.bribe;
     if(ok){transfer('player',f,C.bribe);smHeat(P,f,C.heat/2,'bribed a patrol');msg=`💰 The ${FACTIONS[f].short} patrol takes ${fmt(C.bribe)} cr and looks the other way.`;P.caught=null;scanSay(key,msg);return msg}
     smHeat(P,f,SM.refused,'a refused bribe');C.done=0;C.heat+=SM.refused;C.t=SM.decide;C.noBribe=1;msg=`✋ The ${FACTIONS[f].short} patrol refuses your bribe. Surrender or run.`;scanSay(key,msg,true);return msg}
-  if(ch==='surrender'){const st=S.econ.stock[f]=S.econ.stock[f]||{};for(const x of C.L){const n=Math.min(x.n,P.cargo[x.k]||0);inv.take(P.cargo,x.k,n);inv.add(st,x.k,n);if(x.why==='run'||P.run&&P.run.item===x.k)P.run=null}
+  if(ch==='surrender'){const st={};for(const x of C.L){const n=Math.min(x.n,P.cargo[x.k]||0);inv.take(P.cargo,x.k,n);inv.add(st,x.k,n);if(x.why==='run'||P.run&&P.run.item===x.k)P.run=null}rjSeized(f,P.sector,st);
     const fine=transfer('player',f,Math.min(C.fine,P.credits));standAdd(f,SM.stand,'contraband',P);smHeat(P,f,C.heat,'caught with contraband');stolSync(P);
     msg=`⛔ Contraband confiscated by ${FACTIONS[f].short}${fine?`, and a ${fmt(fine)} cr fine`:''}.`;P.caught=null;scanSay(key,msg,true);return msg}
   if(ch==='run'){smHeat(P,f,C.heat*2+SM.runHeat,'ran from customs');P.ranF=P.ranF||{};P.ranF[f]=1;(P.aggro||(P.aggro={}))[f]=S.T+120;msg=`🏃 You run. ${FACTIONS[f].short} ships will hunt you until your heat with them cools below Hot.`;P.caught=null;scanSay(key,msg,true);return msg}return''}

@@ -7,6 +7,8 @@
 // Your market: mark goods in the depot's store for sale (keeping a reserve) or to buy (up to a target). Traders of the powers
 // that will deal with you visit every minute or so: they buy what's for sale at the market price, paid from their power's
 // treasury, and sell you what you want from their power's stores. Goods and credits only move, so both ledgers stay exact.
+// (24 Nov 2026: what they buy rides their convoy home, and what you buy comes out from their home by convoy, paid on landing;
+// see 16zzzzj_realjobs.js.)
 // AI crews: hire a pilot with a hull at your depot (the hull's price, to the Compact's yards). Each draws a wage every hour
 // (to the Compact, which supplies the crews) and uses up an Alloy Plate of running costs from the depot's store (into the outer
 // drift). If the wage can't be paid the pilot leaves; without the plate the ship is laid up. Orders: Mine (cuts ore from this
@@ -34,8 +36,8 @@ function ecoSum(R,from,to){const o={};for(const e of R.eco||[])if(e.t>=from&&e.t
 // ---- traders at your market
 function depTraders(P){return FAC_IDS.filter(f=>standOf(f,P)>=STAND.dock&&!pilotHostile(P,f))}
 function depTradeTick(){for(const R of Object.values(S.stations||{})){if(!R||R.owner!=='player'||R.kind!=='depot'||!R.sell)continue;const O=lairOwner({pid:R.pid||'me'})||S.player,fs=depTraders(O),reps=typeof hasB==='function'&&hasB(R,'market')?2:1,lot=DEP.lot*(typeof hasB==='function'&&hasB(R,'storage')?2:1),mg=(R.mg||1)*(reps>1?1.1:1);if(!fs.length)continue;for(let rep=0;rep<reps;rep++){if(Math.random()<.35)continue;const f=pick(fs),st=R.stock,fst=S.econ.stock[f]=S.econ.stock[f]||{};
-  for(const k in R.sell){const n=Math.min(lot,(st[k]||0)-(R.sell[k]||0));if(n<=0)continue;const pr=Math.max(1,Math.round(price(st,k)*mg));const pay=Math.min(n*pr,S.econ.treasury[f]||0);const m=Math.floor(pay/pr);if(m<=0)continue;inv.take(st,k,m);inv.add(fst,k,m);const got=payTo(O,f,m*pr);eco(R,'market',got,`${FACTIONS[f].short} traders bought ${m} ${ITEMS[k].name}`)}
-  for(const k in R.buy){const n=Math.min(lot,(R.buy[k]||0)-(st[k]||0),fst[k]||0);if(n<=0)continue;const pr=Math.max(1,Math.round(price(fst,k)));const m=Math.min(n,Math.floor(O.credits/pr));if(m<=0)continue;inv.take(fst,k,m);inv.add(st,k,m);payFrom(O,f,m*pr);eco(R,'market',-m*pr,`bought ${m} ${ITEMS[k].name} from ${FACTIONS[f].short} traders`)}}}}
+  for(const k in R.sell){const n=Math.min(lot,(st[k]||0)-(R.sell[k]||0));if(n<=0)continue;const pr=Math.max(1,Math.round(price(st,k)*mg));const pay=Math.min(n*pr,S.econ.treasury[f]||0);const m=Math.floor(pay/pr);if(m<=0)continue;rjDepOut(R,f,k,inv.take(st,k,m));const got=payTo(O,f,m*pr);eco(R,'market',got,`${FACTIONS[f].short} traders bought ${m} ${ITEMS[k].name}`)}
+  for(const k in R.buy){const n=Math.min(lot,(R.buy[k]||0)-(st[k]||0)-rjDepEnroute(R,k),fst[k]||0);if(n<=0)continue;const pr=Math.max(1,Math.round(price(fst,k)));const m=Math.min(n,Math.floor(O.credits/pr));if(m<=0)continue;rjDepIn(R,f,k,inv.take(fst,k,m),pr)}}}}
 // pay credits from a pilot to a treasury (guests' credits live on their own record)
 function payFrom(P,to,n){if(P===S.player)return transfer('player',to,n);const k=pkeyOf(P);let got=0;runAs(k,()=>{got=transfer('player',to,n)});return got}
 function payTo(P,from,n){if(P===S.player)return transfer(from,'player',n);const k=pkeyOf(P);let got=0;runAs(k,()=>{got=transfer(from,'player',n)});return got}

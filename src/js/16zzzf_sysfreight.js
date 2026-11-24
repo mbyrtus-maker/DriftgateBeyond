@@ -138,7 +138,10 @@ function rdFlyLost(t,sid){const m=t.test.m,c=ceOf(m),P=c&&c.rd;if(!P||P.fly!==t.
   ceNews(m,`'s test pilot ${t.test.name} was shot down in ${DEF[sid]?DEF[sid].name:'deep space'} with the prototype. The project goes back to materials.`)}
 // ---- arrivals and losses
 {const o=haulArrive;haulArrive=function(t){if(!t||!(t.syf||t.test))return o.apply(this,arguments);cvEnd(t,true);
-  if(t.test){rdFlyHome(t);return}mfjLand(t.syf.m,t.syf.k,t.to,t.load,t.syf.rid);t.load={}}}
+  if(t.test){rdFlyHome(t);return}
+  // (24 Nov 2026) a shipment whose market is gone turns for the maker's home (it landed there at once)
+  if(t.syf.k!=='mat'&&t.syf.k!=='in'&&t.syf.k!=='home'&&!syfOk(S.stations[t.to])){const hs=mkHomeSid(t.syf.m);if(hs&&hs!==t.to&&DEF[hs]&&Object.keys(t.load||{}).length){const b=haulSend(t.side,t.to,hs,t.load,'syfback:'+S.nextId,t.why);if(b){b.syf={m:t.syf.m,k:'home'};t.load={};return}}}
+  mfjLand(t.syf.m,t.syf.k,t.to,t.load,t.syf.rid);t.load={}}}
 function syfLost(t,sid){if(!t)return;if(t.test)rdFlyLost(t,sid);else if(t.syf&&t.syf.k==='mat'){const c=ceOf(t.syf.m);if(c&&c.rd&&c.rd.mj===t.syf.rid){c.rd.mj=null}}}
 {const o=haulLost;haulLost=function(t,sid,by){try{syfLost(t,sid)}catch(e){console.error(e)}return o.apply(this,arguments)}}
 {const o=traderLost;traderLost=function(e){try{const id=e&&e.home&&e.home.split(':')[1],t=(S.traders||[]).find(x=>String(x.id)===id);if(t&&(t.syf||t.test))syfLost(t,W.sid)}catch(err){console.error(err)}return o.apply(this,arguments)}}

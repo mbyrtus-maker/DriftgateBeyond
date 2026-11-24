@@ -26,7 +26,7 @@ function facDst(f){return(S.frigates||[]).filter(t=>t.side===f&&isDst(t)&&(!t.ow
 {const o=capHullMax;capHullMax=function(t){if(isDst(t))return DST.hull;return o.apply(this,arguments)}}
 // two assault ships aboard (none for the Brood), from the same stores as an escort's
 {const o=capRefill;capRefill=function(t){const r=o.apply(this,arguments);if(!isDst(t))return r;const f=t.side==='player'?sideNorm('player'):t.side;if(f==='brood'||f==='pirate')return r;
-  const own=carOwned(t),st=own&&S.pilots&&S.pilots[t.owner]?S.pilots[t.owner].vault:S.econ.stock[f];if(!st)return r;const srcs=own?[st]:[S.econ.fleet[f],st].filter(Boolean);
+  const own=carOwned(t),st=own&&S.pilots&&S.pilots[t.owner]?S.pilots[t.owner].vault:S.econ.stock[f];if(!st)return r;const srcs=own?[st]:rjCapSrcs(t,f);if(!srcs)return r;
   t.aload=t.aload||0;while(t.aload<DST.assault&&takeFrom(ASSAULT_LD,srcs)){inv.addAll(t.load,ASSAULT_LD);t.aload++}return r}}
 // in the world: the destroyer's shield, the Brood's none
 {const o=spawnFrigate;spawnFrigate=function(t,arrive){const e=o.apply(this,arguments);if(e&&isDst(t)){const sc=t.side==='brood'?0:DST.shield;e.st={...e.st,sCap:sc};e.shield=Math.min(t.shield==null?sc:t.shield,sc)}return e}}

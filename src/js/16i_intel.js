@@ -14,7 +14,7 @@ for(const f of FAC_IDS){ITEMS['bc_'+f]={name:`Control Marker (${FACTIONS[f].shor
 function fbHeld(P,o){if(!P||!P.cargo)return null;for(const f of FAC_IDS)if((P.cargo['bc_'+f]||0)>0&&o.owner!==f)return f;return null}
 // which powers' beacons this dock sells
 function fbSold(c,P){if(!c||!c.wallet||c.kind!=='station'||S.unb)return[];if(c.owner==='neutral')return FAC_IDS.slice();if(FAC_IDS.includes(c.owner))return[c.owner];return[]}
-function fbBuy(c,P,f){if(!fbSold(c,P).includes(f))return'Not sold here.';if(P.credits<CLAIM_PRICE)return'Not enough credits.';const rc=ITEMS.beacon.recipe,src=[c.market,S.econ.stock[c.wallet]].filter(Boolean);
+function fbBuy(c,P,f){if(!fbSold(c,P).includes(f))return'Not sold here.';if(P.credits<CLAIM_PRICE)return'Not enough credits.';const rc=ITEMS.beacon.recipe,src=[c.market,rjWhAt(c.wallet,P.sector)].filter(Boolean);
   if(!haveIn(rc,src))return'The station has no plate and conduit to spare for a beacon right now.';takeFrom(rc,src);transfer('player',c.wallet,CLAIM_PRICE);const k='bc_'+f,room=W&&W.player&&W.player.st?W.player.st.cargo-invMass(P.cargo):0,toHold=room>=mass(k);
   inv.add(toHold?P.cargo:c.storage,k,1);return`✓ Bought a Control Marker for ${FACTIONS[f].short} for ${fmt(CLAIM_PRICE)} cr. It's in your ${toHold?'hold':String(c.storageName).toLowerCase()}. Carry it into an unclaimed or breached outpost's ring in a fighter or bomber and hold there to claim it for ${FACTIONS[f].short}.`}
 function fbMarketHtml(c,P){const L=fbSold(c,P);if(!L.length)return'';const srcs=[P.cargo,c.storage];

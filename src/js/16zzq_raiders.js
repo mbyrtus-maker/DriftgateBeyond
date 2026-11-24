@@ -18,7 +18,7 @@ function prwGrounds(side,src){const out=[];for(const d of SECTOR_DEFS){const id=
   return out}
 function prwSend(side){const kind=side==='pirate'?'pirate':side==='brood'?'brood':'fac',mine=(S.raids||[]).filter(r=>r.side===side&&!r.ret&&!r.strike);if(mine.length>=PRW.max[kind])return null;
   const srcL=raidSources(side).filter(s=>!mine.some(r=>r.src===s.sid&&S.T-r.T0<RAID.cool));if(!srcL.length)return null;const src=pick(srcL),G=prwGrounds(side,src);if(!G.length)return null;
-  const c=wpickArr(G);const kit=raidShips(side,src.srcs);if(!kit)return null;const r=raidSend(side,{src,tgt:null,dep:null,c},kit);if(r){r.prowl=true;if(r.path.length===1&&r.state!=='wait'){r.state='wait';r.until=S.T+RAID.wait}}return r}
+  const c=wpickArr(G);const kit=raidShips(side,src.srcs);if(!kit){rjKitAsk(side,src);return null}const r=raidSend(side,{src,tgt:null,dep:null,c},kit);if(r){r.prowl=true;if(r.path.length===1&&r.state!=='wait'){r.state='wait';r.until=S.T+RAID.wait}}return r}
 {const o=raidDispatch;raidDispatch=function(){const x=o.apply(this,arguments);try{if(S.T>=300)for(const side of[...FAC_IDS,'brood','pirate']){const kind=side==='pirate'?'pirate':side==='brood'?'brood':'fac';if(Math.random()<PRW.rate[kind])prwSend(side)}}catch(e){console.error(e)}return x}}
 // a prowl stays out until its wait is up; it has no target to lose
 {const o=raidStillOn;raidStillOn=function(r){if(r&&r.prowl&&!r.tgt&&!r.dep)return r.state!=='wait'||S.T<(r.until||0);return o.apply(this,arguments)}}
