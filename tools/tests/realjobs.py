@@ -1,6 +1,6 @@
 # Real jobs (the user, 24 Nov 2026): between systems goods ride a ship; only the Brood may move them without one.
-# Checks the flows that used to change stores at once: the Unbound's fence and plunder, raids and response wings kitted from
-# the station they leave, the powers' refit parts, a depot's standard stock, traders at a pilot's depot, a supply drive, and
+# Checks the flows that used to change stores at once: the Unbound's fence and plunder, raids kitted from the station they
+# leave, response wings flown from home, the powers' refit parts, a depot's standard stock, traders at a pilot's depot, a supply drive, and
 # that the ledger stays exact throughout. tools/teleport.py audits a whole AI galaxy for anything else.
 import asyncio,json,os
 from playwright.async_api import async_playwright
@@ -51,14 +51,12 @@ async def main():
     check('a depot with no kit asks the warehouse for some by convoy',r['bare'] and r['asked'] and r.get('from')=='hp' and r['n']>0,r)
     check('the raid is kitted from the depot and unloads into it',r['fit'] and r['sent'] and r['back']>0 and r['whSame'],r)
     check('ledger exact after the raid',await led()=='exact',await led())
-    # ---- response wings: raised from the depot's own store when it can field one, else from home
+    # ---- response wings: raised at home from the muster and the warehouse, flown from home with the trip from home
     r=json.loads(await ev("""(()=>{const R=S.stations.hr,ds=dStore(R),wh=S.econ.stock.halcyon,fl=S.econ.fleet.halcyon;devLedger(()=>{inv.add(ds,'plate',40);inv.add(ds,'wire',30)});
-      const w0=JSON.stringify([wh,fl]),d0=invMass(ds);const ev1=dispatchResponse('halcyon','hr','distress');const a={from:ev1&&ev1.from,depot:d0-invMass(ds),whSame:w0===JSON.stringify([wh,fl]),n:ev1&&ev1.n};
-      if(ev1){ev1.stage='done';inv.addAll(wh,ev1.force);ev1.force={}}
-      devLedger(()=>{for(const k of['plate','wire','coil','missile'])inv.add(wh,k,inv.take(ds,k,ds[k]||0))});const ev2=dispatchResponse('halcyon','hr','distress');
-      const b={from:ev2&&ev2.from,eta:ev2&&Math.round(ev2.eta-S.T),hops:HOP.hp.hr};if(ev2){ev2.stage='done';inv.addAll(wh,ev2.force);ev2.force={}}return JSON.stringify({a,b})})()"""))
-    check('a depot with kit raises the wing from its own store',r['a']['from']=='hr' and r['a']['depot']>0 and r['a']['whSame'],r)
-    check('a bare depot: the wing comes from home, with the trip from home',r['b']['from']=='hp' and r['b']['eta']==25+22*r['b']['hops'],r)
+      const d0=invMass(ds),w0=invMass(wh)+invMass(fl);const e=dispatchResponse('halcyon','hr','distress');
+      const a={from:e&&e.from,eta:e&&Math.round(e.eta-S.T),hops:HOP.hp.hr,depot:d0-invMass(ds),home:w0-invMass(wh)-invMass(fl),n:e&&e.n};if(e){e.stage='done';inv.addAll(wh,e.force);e.force={}}return JSON.stringify(a)})()"""))
+    check('a response wing is raised at home, not from the depot beside the fight',r['from']=='hp' and r['depot']==0 and r['home']>0 and r['n']>=2,r)
+    check('its trip is counted from home',r['eta']==25+22*r['hops'] and r['hops']>=1,r)
     check('ledger exact after the responses',await led()=='exact',await led())
     # ---- the powers' refit parts ride home from a freeport
     r=json.loads(await ev("""(()=>{const R=S.stations.mw,pool=(S.corpFit=S.corpFit||{}).halcyon=S.corpFit.halcyon||{};const id=Object.keys(ITEMS).find(k=>ITEMS[k].maker&&(mkStock(R)[k]||0)>0);if(!id)return JSON.stringify({none:true});
@@ -97,7 +95,7 @@ async def main():
       for(;rounds<8;rounds++){for(const t of S.traders)if(t.pd&&t.pd.sid===sid&&!seen.has(t.id)){seen.add(t.id);cost+=t.pd.cost}
         n=RUN(()=>!S.traders.some(t=>(t.pd&&t.pd.sid===sid)||String(t.key).startsWith('pdep:')),600);whEnd=0;for(const f of FAC_IDS)whEnd+=(S.econ.stock[f].plate||0)-wh0[f];
         if(whEnd>0&&(R.stock.wire||0)-w0>0)break;depTradeTick()}
-      return JSON.stringify({sid,a,n,rounds,whEnd,wireEnd:(R.stock.wire||0)-w0,paid:crMid-P.credits,cost})})()"""))
+      return JSON.stringify({sid,a,n,rounds,whEnd,wireEnd:(R.stock.wire||0)-w0,paid:-(R.eco||[]).filter(e=>e.n<0&&String(e.w).startsWith('bought')).reduce((a,e)=>a+e.n,0),cost})})()"""))
     check('plate a trader buys at the depot leaves on its convoy',r['a']['sold']>0 and r['a']['out']>=1 and r['a']['outFrom']==r['sid'] and r['a']['whNow']==0,r)
     check('wire the depot buys comes out from the power\'s home',r['a']['inn']>=1 and r['a']['innFrom'] in('hp','vb','os') and r['a']['wireNow']==0,r)
     check('both land, and the depot pays on delivery',r['whEnd']>0 and r['wireEnd']>0 and 0<r['paid']<=r['cost'],r)

@@ -4377,11 +4377,12 @@ The user: "Do an economy pass, are any goods being teleported between systems? I
 **What changed** (`16zzzzj_realjobs.js`, with small edits where the flows were):
 - **The Unbound have freighters** (`unbHaul`; every other Unbound shipment still goes straight to the Wrack as before).
   - *The fence* is a run: a freighter leaves the Wrack with up to 120 t of surplus (one run at a time, at least 30 t, or less when the Wrack is short of something), sells at the nearest freeport at the old prices, buys the copper, Vantium and conduit the Wrack lacks (up to 40, 12 and 24 a run) and carries them home. It can be raided like any convoy.
-  - *Plunder* from a depot or outpost leaves on a prize freighter for the Wrack; fence bookkeeping is done when it lands.
+  - *Plunder* from a depot or outpost leaves on a prize freighter for the Wrack; fence bookkeeping is done when it lands. Loot a raid brings back to an Unbound capital in the field goes home the same way (the kit goes into the capital's store).
+  - *At the freeport* the fence's freighter flies the Compact's colours inside the port's own system, so the port's guns and guards let it dock (the Compact and the Unbound are hostile; out of sight nothing stops the run at the port, so nothing does in view).
   - *The dig in Hollow Verge* keeps its ore at a camp there (`S.econ.unbCamp`, in the ledger) and ships it home when there are 30 t or after 5 minutes.
   - *A gate lock* rides out in the raid's kit from the Wrack.
 - **Raids:** a power's depot is a raid source with its own store; the home uses the muster and the warehouse. A depot picked for a raid that has no kit asks the warehouse for two strikers' worth by convoy (`rjKitAsk`, the garrison's `kit:` convoy). A raid unloads kit and loot into the depot it lands at; with no station of its own where its trip ends it flies on home.
-- **Response wings** are raised from the store of the station they launch from: the nearest in range that can field two ships, a depot from its own store (dropping a tier if it must), the home from the muster and the warehouse. The trip time follows the station used.
+- **Response wings** are raised at the home station from the muster and the warehouse, as before, and fly from home: 25 s plus 22 s a jump from home (it was counted from the nearest station, where the wing appeared with the home's kit). A wing is still sent only where a station of its power is within range. A first build raised them from the nearest depot's own store; see "Balance" below.
 - **Hunter groups** mass at home and their trip is counted from home. **Build parties** take 35 s a jump from home, never under 80 s (it was 80 s from anywhere).
 - **Scouts** launch at the core station.
 - **Defenders in a battle out of sight:** the extra patrol a warned power adds comes from the site's own store away from home, and what survives goes back there.
@@ -4405,5 +4406,20 @@ The user: "Do an economy pass, are any goods being teleported between systems? I
 4. **A black-market run that is caught** hands its goods to the catching power's warehouse; the run itself is flown out of sight.
 5. **Saving** folds live ships' kits into their home stores.
 
-**Checked.** `tools/teleport.py`: the new build is `ALL OK` over a 10-hour galaxy (two earlier builds of the day also clean over 10 and 12 hours, bar a capital loaded at home and flown on in the same step, which the tool now recognises). New test `realjobs.py` (in `run.sh`): the fence out and back, plunder, raid sources and kit asks, response wings from a depot and from home, refit parts, standard stock, an Overgrowth strike, traders at a pilot's depot, the ledger exact after each.
+**Balance** (Standard game, 30 hours, `PPORT=mw`, neutral leaders; the last check before this was Brood 24%, Varkesh 27, Ostrova 23, Halcyon 20, unfinished 5, median 8.2 h over 600 galaxies):
+| Build | Galaxies | Brood | Varkesh | Ostrova | Halcyon | Unfinished | Median |
+|---|---|---|---|---|---|---|---|
+| First build: response wings from the nearest depot's own store | 60 | 8 | 32 | 23 | 32 | 5 | 6.8 h |
+| ... with Brood grazing 1.9 | 60 | 15 | 30 | 23 | 18 | 13 | 8.4 h |
+| ... with Brood grazing 2.8 | 60 | 17 | 35 | 18 | 20 | 10 | 9.9 h |
+| ... with the Unbound's flows instant again | 60 | 7 | 32 | 32 | 25 | 5 | 7.8 h |
+| ... with raids, response wings and defenders on the home warehouse again | 60 | 18 | 32 | 25 | 20 | 5 | 8.7 h |
+| ... with response wings alone on the home warehouse again | 28 (stopped) | 21 | 21 | 32 | 18 | 7 | 8.2 h |
+| ... with the wing flying back to its depot | 32 (stopped) | 16 | 34 | 25 | 16 | 9 | 9.8 h |
+| **As shipped: response wings raised at home and flown from home** | **150** | **23** | **29** | **23** | **20** | **6** | **8.7 h** |
+- The Brood's fall came from where response wings were raised, not from the Unbound's freighters, the raids or the defenders. Why depot-raised wings hurt the Brood so much is not traced: with them a depot's own plate fields a wing whenever one is called, the wing can hit a hostile capital where it arrives, and its kit then flies to the home warehouse; any of these may be the cause.
+- Brood grazing is not the lever for it: it raised the Brood only to 15 to 17% and doubled the unfinished galaxies. `BAL.brGraze` stays 1.0.
+- As shipped the shares are within noise of the last check (about ±4 points at 150 galaxies). Not tuned. The war-checked build lacks only the freighter for an Unbound capital's raid loot, added after it.
+
+**Checked.** `tools/teleport.py`: the shipped build is `ALL OK` over a 10-hour galaxy (three earlier builds of the day were also clean over 10 and 12 hours, bar a capital loaded at home and flown on in the same step, which the tool now recognises, and an Unbound capital's raid loot, fixed). New test `realjobs.py` (in `run.sh`): the fence out and back, plunder, raid sources and kit asks, a response wing raised at home with the trip from home, refit parts, standard stock, an Overgrowth strike, traders at a pilot's depot, the ledger exact after each.
 

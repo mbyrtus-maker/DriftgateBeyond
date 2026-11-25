@@ -502,8 +502,8 @@ function threatTick(){const T=S.T;for(const f of FAC_IDS){const A=S.ai[f];if(!A)
 // send a wing from the nearest station of faction f to sector sid. kind: 'distress' (a station under attack) or 'pilot' (a pilot asked for help)
 function dispatchResponse(f,sid,kind,o){o=o||{};if(!FACTIONS[f])return null;const maxH=kind==='pilot'?4:o.far?6:S.coal&&S.coal.lead===f?5:3;
   if(S.events.some(e=>e.type==='response'&&e.att===f&&e.sector===sid&&e.kind===kind&&e.stage!=='done'&&(kind!=='pilot'||e.pid===o.pid)))return null;
-  // (24 Nov 2026) the wing is raised from the store of the station it launches from: the nearest that can field one (a power's
-  // depots from their own stores, its home from the muster and the warehouse). It was the nearest station with the home's kit.
+  // (24 Nov 2026) the wing is raised at home from the muster and the warehouse and flies from home (rjRespSrcs); it was
+  // launched from the nearest station with the home's kit.
   let cands;if(FAC_IDS.includes(f))cands=rjRespSrcs(f,sid,maxH);else{const s0=respSource(f,sid);cands=s0&&s0.h<=maxH?[{sid:s0.sid,h:s0.h,srcs:[S.econ.fleet[f],S.econ.stock[f]].filter(Boolean)}]:[]}
   const capHere=frigatesIn(sid).some(t=>hostile(f,t.side)),n=kind==='pilot'?4:capHere?5:4,nb=capHere?2:0;
   for(const src of cands){const srcs=src.srcs,force={},cls=[];let tier=factionTier(f);if(src.depot)while(tier>1&&!haveIn(loadout('patrol',tier,'striker'),srcs))tier--;

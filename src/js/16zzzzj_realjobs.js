@@ -7,8 +7,8 @@
 //     ride a convoy to or from the Wrack (they went straight into the Wrack's store);
 //   - a raid is kitted from the store of the station it leaves and unloads where it lands (every station drew on the home
 //     warehouse); a station with no kit asks the warehouse for some by convoy;
-//   - a response wing is raised from the store of the station it launches from (it launched from the nearest station with
-//     the home warehouse's kit);
+//   - a response wing is raised at home and flies from home (it launched from the nearest station with the home
+//     warehouse's kit);
 //   - the powers' refit parts, bought at a freeport or a depot, ride home before they are fitted;
 //   - plunder from a battered core station rides home; a convoy that can't deliver turns for home; a strike wing whose
 //     carrier is gone flies home; bombers sent to burn Overgrowth fly there and back.
@@ -62,12 +62,18 @@ function rjKitAsk(side,src){try{if(!src||src.cap||!FAC_IDS.includes(side)||src.s
   if(!C&&sid!==home){const R=S.stations[sid];
     if(FAC_IDS.includes(side)&&R&&R.owner===side&&isDepotF(R)){const ds=dStore(R);inv.addAll(ds,r.kit);inv.addAll(ds,r.loot);r.kit={};r.loot={};S.raids.splice(S.raids.indexOf(r),1);return}
     // nowhere of its own to land here: it flies on home with everything aboard
-    r.state='home';r.src=home;r.cap=null;r.dest=home;r.path=trPath(sid,home);r.leg=0;r.next=S.T+RAID.hop;return}}}catch(e){console.error(e)}return o.apply(this,arguments)}}
+    r.state='home';r.src=home;r.cap=null;r.dest=home;r.path=trPath(sid,home);r.leg=0;r.next=S.T+RAID.hop;return}
+  // back aboard an Unbound capital in the field: the kit goes into its store, the loot home on a prize freighter
+  if(C&&side==='pirate'&&sid!==home&&Object.keys(r.loot||{}).length){const loot=r.loot;r.loot={};const t=unbShip(sid,loot,'loot','plunder');if(t)t.loot=1}}}catch(e){console.error(e)}return o.apply(this,arguments)}}
 // the Unbound's gate lock rides out with the raid (it was taken from the Wrack's shelf at the gate it clamped)
 {const o=raidSend;raidSend=function(side,pk,kit){const r=o.apply(this,arguments);try{if(r&&side==='pirate'&&pk.src&&pk.src.sid==='wr'&&!pk.src.cap&&!havenDown()&&Math.random()<glUnbChance()){const st=S.econ.stock.pirate;if(st.glock>0)inv.add(r.kit,'glock',inv.take(st,'glock',1))}}catch(e){console.error(e)}return r}}
-// ---- response wings: raised from the store of the station they launch from, the nearest that can field one
-function rjRespSrcs(f,sid,maxH){const home=FAC_HOME(f),c=[];for(const id in S.stations){const R=S.stations[id];if(R.owner!==f||R.kind==='hive')continue;const h=HOP[id][sid];if(h>maxH)continue;
-    const srcs=id===home?[S.econ.fleet[f],S.econ.stock[f]].filter(Boolean):isDepotF(R)?[dStore(R)]:null;if(srcs)c.push({sid:id,h,srcs,depot:id!==home})}return c.sort((a,b)=>a.h-b.h)}
+// ---- response wings: raised at home from the muster and the warehouse, and flown from home (they launched from the nearest
+// station with the home's kit). A wing still goes only where a station of its power is within range. (A first build raised
+// them from the nearest depot's own store: the powers then answered far more calls, the Brood's share fell from 24% to 8%,
+// and putting this one piece back restored it; see "Real jobs" in BEYOND_DESIGN.md.)
+function rjRespSrcs(f,sid,maxH){const near=respSource(f,sid),home=FAC_HOME(f);if(!near||near.h>maxH||!home||!HOP[home])return[];const R=S.stations[home];
+  if(!R||R.owner!==f)return[{sid:near.sid,h:near.h,srcs:[S.econ.fleet[f],S.econ.stock[f]].filter(Boolean)}];
+  return[{sid:home,h:HOP[home][sid]||0,srcs:[S.econ.fleet[f],S.econ.stock[f]].filter(Boolean)}]}
 // ---- the powers' refit parts ride home from where they were bought
 let rjFitBuf=null;
 function rjFitGot(f,R,id,pool){const home=FAC_HOME(f);if(!rjFitBuf||!home||R.sid===home){inv.add(pool,id,1);return}const k=f+'|'+R.sid;inv.add(rjFitBuf[k]=rjFitBuf[k]||{},id,1)}
